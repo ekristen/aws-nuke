@@ -38,9 +38,9 @@ func Test_Mock_{{ .Service }}{{ .Resource }}_Remove(t *testing.T) {
 		// populate fields
 	}
 
-	mockIAM.EXPECT().Delete{{ .Resource }}(gomock.Eq(&iam.Delete{{ .Resource }}Input{
+	mockIAM.EXPECT().{{ .Action }}{{ .ModdedResource }}(gomock.Eq(&{{ lower .Service }}.{{ .Action }}{{ .ModdedResource }}Input{
 		// need properties
-	})).Return(&iam.Delete{{ .Resource }}Output{}, nil)
+	})).Return(&iam.{{ .Action }}{{ .ModdedResource }}Output{}, nil)
 
 	err := {{ lower .Service }}{{ .Resource }}.Remove()
 	a.Nil(err)
@@ -65,17 +65,28 @@ func main() {
 		panic(errors.New("please provide a resource"))
 	}
 
+	action := "Delete"
+	moddedResource := resource
+	if strings.HasSuffix(resource, "Attachment") {
+		action = "Detach"
+		moddedResource = strings.TrimSuffix(resource, "Attachment")
+	}
+
 	tmpl, err := template.New("test").Funcs(sprig.TxtFuncMap()).Parse(rawTmpl)
 	if err != nil {
 		panic(err)
 	}
 
 	data := struct {
-		Service  string
-		Resource string
+		Service        string
+		Resource       string
+		ModdedResource string
+		Action         string
 	}{
-		Service:  service,
-		Resource: resource,
+		Service:        service,
+		Resource:       resource,
+		ModdedResource: moddedResource,
+		Action:         action,
 	}
 
 	var err1 error
