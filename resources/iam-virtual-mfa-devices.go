@@ -42,7 +42,7 @@ func ListIAMVirtualMFADevices(sess *session.Session) ([]Resource, error) {
 
 func (v *IAMVirtualMFADevice) Filter() error {
 	if strings.HasSuffix(v.serialNumber, "/root-account-mfa-device") {
-		return errors.New("Cannot delete root MFA device")
+		return errors.New("cannot delete root mfa device")
 	}
 	return nil
 }
