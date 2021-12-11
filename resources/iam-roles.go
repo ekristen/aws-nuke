@@ -4,17 +4,19 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/rebuy-de/aws-nuke/pkg/types"
 	"github.com/sirupsen/logrus"
 )
 
 type IAMRole struct {
-	svc  *iam.IAM
-	role *iam.Role
+	svc  iamiface.IAMAPI
 	name string
 	path string
+	tags []*iam.Tag
 }
 
 func init() {
@@ -52,9 +54,9 @@ func ListIAMRoles(sess *session.Session) ([]Resource, error) {
 
 			resources = append(resources, &IAMRole{
 				svc:  svc,
-				role: role,
 				name: *role.RoleName,
 				path: *role.Path,
+				tags: role.Tags,
 			})
 		}
 
@@ -77,7 +79,7 @@ func (e *IAMRole) Filter() error {
 
 func (e *IAMRole) Remove() error {
 	_, err := e.svc.DeleteRole(&iam.DeleteRoleInput{
-		RoleName: &e.name,
+		RoleName: aws.String(e.name),
 	})
 	if err != nil {
 		return err
@@ -88,7 +90,7 @@ func (e *IAMRole) Remove() error {
 
 func (role *IAMRole) Properties() types.Properties {
 	properties := types.NewProperties()
-	for _, tagValue := range role.role.Tags {
+	for _, tagValue := range role.tags {
 		properties.SetTag(tagValue.Key, tagValue.Value)
 	}
 	properties.

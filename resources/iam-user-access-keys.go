@@ -5,11 +5,12 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/rebuy-de/aws-nuke/pkg/types"
 )
 
 type IAMUserAccessKey struct {
-	svc         *iam.IAM
+	svc         iamiface.IAMAPI
 	accessKeyId string
 	userName    string
 	status      string

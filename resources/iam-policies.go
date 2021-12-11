@@ -1,15 +1,16 @@
 package resources
 
 import (
-	"github.com/sirupsen/logrus"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/rebuy-de/aws-nuke/pkg/types"
+	"github.com/sirupsen/logrus"
 )
 
 type IAMPolicy struct {
-	svc      *iam.IAM
+	svc      iamiface.IAMAPI
 	name     string
 	policyId string
 	arn      string
