@@ -3,10 +3,11 @@ package resources
 import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 )
 
 type IAMOpenIDConnectProvider struct {
-	svc *iam.IAM
+	svc iamiface.IAMAPI
 	arn string
 }
 

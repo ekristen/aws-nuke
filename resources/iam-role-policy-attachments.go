@@ -6,12 +6,13 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
 	"github.com/sirupsen/logrus"
 )
 
 type IAMRolePolicyAttachment struct {
-	svc        *iam.IAM
+	svc        iamiface.IAMAPI
 	policyArn  string
 	policyName string
 	roleName   string

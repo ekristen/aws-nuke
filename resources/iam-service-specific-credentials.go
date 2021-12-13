@@ -3,12 +3,13 @@ package resources
 import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
 	"github.com/sirupsen/logrus"
 )
 
 type IAMServiceSpecificCredential struct {
-	svc         *iam.IAM
+	svc         iamiface.IAMAPI
 	name        string
 	serviceName string
 	id          string
