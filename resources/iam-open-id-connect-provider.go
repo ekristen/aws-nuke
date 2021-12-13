@@ -3,13 +3,12 @@ package resources
 import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iam"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 )
 
 type IAMOpenIDConnectProvider struct {
-	svc  *iam.IAM
-	arn  string
-	tags []*iam.Tag
+	svc iamiface.IAMAPI
+	arn string
 }
 
 func init() {

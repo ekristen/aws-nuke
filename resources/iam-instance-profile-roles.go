@@ -6,14 +6,13 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iam"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
-	"github.com/sirupsen/logrus"
+	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 )
 
 type IAMInstanceProfileRole struct {
-	svc     *iam.IAM
-	role    *iam.Role
-	profile *iam.InstanceProfile
+	svc     iamiface.IAMAPI
+	role    string
+	profile string
 }
 
 func init() {

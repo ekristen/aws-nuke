@@ -3,11 +3,18 @@ module github.com/rebuy-de/aws-nuke/v2
 go 1.19
 
 require (
+	github.com/Masterminds/goutils v1.1.1 // indirect
+	github.com/Masterminds/semver v1.5.0 // indirect
+	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/aws/aws-sdk-go v1.44.295
 	github.com/fatih/color v1.15.0
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.3.0
+	github.com/huandu/xstrings v1.4.0 // indirect
+	github.com/iancoleman/strcase v0.2.0
+	github.com/imdario/mergo v0.3.14 // indirect
 	github.com/mb0/glob v0.0.0-20160210091149-1eb79d2de6c4
+	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/rebuy-de/rebuy-go-sdk/v4 v4.5.1
 	github.com/sirupsen/logrus v1.9.3
@@ -31,4 +38,12 @@ require (
 	golang.org/x/sys v0.6.0 // indirect
 	golang.org/x/tools v0.7.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
+
+)
+
+require github.com/rebuy-de/aws-nuke v2.10.0+incompatible
+
+require (
+	github.com/mitchellh/reflectwalk v1.0.2 // indirect
+	golang.org/x/crypto v0.7.0 // indirect
 )
