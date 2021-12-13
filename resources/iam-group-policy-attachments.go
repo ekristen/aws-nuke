@@ -5,14 +5,15 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iam"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+	"github.com/aws/aws-sdk-go/service/iam/iamiface"
+	"github.com/rebuy-de/aws-nuke/pkg/types"
 )
 
 type IAMGroupPolicyAttachment struct {
-	svc        *iam.IAM
+	svc        iamiface.IAMAPI
 	policyArn  string
 	policyName string
-	roleName   string
+	groupName  string
 }
 
 func init() {
@@ -42,7 +43,7 @@ func ListIAMGroupPolicyAttachments(sess *session.Session) ([]Resource, error) {
 				svc:        svc,
 				policyArn:  *pol.PolicyArn,
 				policyName: *pol.PolicyName,
-				roleName:   *role.GroupName,
+				groupName:  *role.GroupName,
 			})
 		}
 	}
@@ -54,7 +55,7 @@ func (e *IAMGroupPolicyAttachment) Remove() error {
 	_, err := e.svc.DetachGroupPolicy(
 		&iam.DetachGroupPolicyInput{
 			PolicyArn: &e.policyArn,
-			GroupName: &e.roleName,
+			GroupName: &e.groupName,
 		})
 	if err != nil {
 		return err
@@ -65,11 +66,11 @@ func (e *IAMGroupPolicyAttachment) Remove() error {
 
 func (e *IAMGroupPolicyAttachment) Properties() types.Properties {
 	return types.NewProperties().
-		Set("RoleName", e.roleName).
+		Set("GroupName", e.groupName).
 		Set("PolicyName", e.policyName).
 		Set("PolicyArn", e.policyArn)
 }
 
 func (e *IAMGroupPolicyAttachment) String() string {
-	return fmt.Sprintf("%s -> %s", e.roleName, e.policyName)
+	return fmt.Sprintf("%s -> %s", e.groupName, e.policyName)
 }

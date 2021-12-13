@@ -1,16 +1,18 @@
 package resources
 
 import (
-	"fmt"
+	"errors"
 	"strings"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 )
 
 type IAMVirtualMFADevice struct {
-	svc          *iam.IAM
-	user         *iam.User
+	svc          iamiface.IAMAPI
+	userName     string
 	serialNumber string
 }
 
@@ -30,7 +32,7 @@ func ListIAMVirtualMFADevices(sess *session.Session) ([]Resource, error) {
 	for _, out := range resp.VirtualMFADevices {
 		resources = append(resources, &IAMVirtualMFADevice{
 			svc:          svc,
-			user:         out.User,
+			userName:     *out.User.UserName,
 			serialNumber: *out.SerialNumber,
 		})
 	}
@@ -40,25 +42,26 @@ func ListIAMVirtualMFADevices(sess *session.Session) ([]Resource, error) {
 
 func (v *IAMVirtualMFADevice) Filter() error {
 	if strings.HasSuffix(v.serialNumber, "/root-account-mfa-device") {
-		return fmt.Errorf("Cannot delete root MFA device")
+		return errors.New("cannot delete root mfa device")
 	}
 	return nil
 }
 
 func (v *IAMVirtualMFADevice) Remove() error {
-	if v.user != nil {
-		_, err := v.svc.DeactivateMFADevice(&iam.DeactivateMFADeviceInput{
-			UserName: v.user.UserName, SerialNumber: &v.serialNumber,
-		})
-		if err != nil {
-			return err
-		}
+	if _, err := v.svc.DeactivateMFADevice(&iam.DeactivateMFADeviceInput{
+		UserName:     aws.String(v.userName),
+		SerialNumber: aws.String(v.serialNumber),
+	}); err != nil {
+		return err
 	}
 
-	_, err := v.svc.DeleteVirtualMFADevice(&iam.DeleteVirtualMFADeviceInput{
+	if _, err := v.svc.DeleteVirtualMFADevice(&iam.DeleteVirtualMFADeviceInput{
 		SerialNumber: &v.serialNumber,
-	})
-	return err
+	}); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (v *IAMVirtualMFADevice) String() string {

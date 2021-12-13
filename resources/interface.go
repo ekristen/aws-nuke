@@ -80,7 +80,7 @@ func GetLister(name string) ResourceLister {
 
 func GetListerNames() []string {
 	names := []string{}
-	for resourceType := range resourceListers {
+	for resourceType := range GetListers() {
 		names = append(names, resourceType)
 	}
 
