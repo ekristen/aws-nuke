@@ -2,19 +2,23 @@ package resources
 
 import (
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/rebuy-de/aws-nuke/pkg/types"
 )
 
 type IAMRolePolicy struct {
-	svc        *iam.IAM
-	role       iam.Role
+	svc        iamiface.IAMAPI
+	roleId     string
+	rolePath   string
+	roleName   string
 	policyName string
+	roleTags   []*iam.Tag
 }
 
 func init() {
@@ -56,8 +60,11 @@ func ListIAMRolePolicies(sess *session.Session) ([]Resource, error) {
 				for _, policyName := range policies.PolicyNames {
 					resources = append(resources, &IAMRolePolicy{
 						svc:        svc,
-						role:       *role,
+						roleId:     *role.RoleId,
+						roleName:   *role.RoleName,
+						rolePath:   *role.Path,
 						policyName: *policyName,
+						roleTags:   role.Tags,
 					})
 				}
 
@@ -80,7 +87,7 @@ func ListIAMRolePolicies(sess *session.Session) ([]Resource, error) {
 }
 
 func (e *IAMRolePolicy) Filter() error {
-	if strings.HasPrefix(aws.StringValue(e.role.Path), "/aws-service-role/") {
+	if strings.HasPrefix(e.rolePath, "/aws-service-role/") {
 		return fmt.Errorf("cannot alter service roles")
 	}
 	return nil
@@ -89,7 +96,7 @@ func (e *IAMRolePolicy) Filter() error {
 func (e *IAMRolePolicy) Remove() error {
 	_, err := e.svc.DeleteRolePolicy(
 		&iam.DeleteRolePolicyInput{
-			RoleName:   e.role.RoleName,
+			RoleName:   &e.roleName,
 			PolicyName: &e.policyName,
 		})
 	if err != nil {
@@ -102,16 +109,16 @@ func (e *IAMRolePolicy) Remove() error {
 func (e *IAMRolePolicy) Properties() types.Properties {
 	properties := types.NewProperties()
 	properties.Set("PolicyName", e.policyName)
-	properties.Set("role:RoleName", e.role.RoleName)
-	properties.Set("role:RoleID", e.role.RoleId)
-	properties.Set("role:Path", e.role.Path)
+	properties.Set("role:RoleName", e.roleName)
+	properties.Set("role:RoleID", e.roleId)
+	properties.Set("role:Path", e.rolePath)
 
-	for _, tagValue := range e.role.Tags {
+	for _, tagValue := range e.roleTags {
 		properties.SetTagWithPrefix("role", tagValue.Key, tagValue.Value)
 	}
 	return properties
 }
 
 func (e *IAMRolePolicy) String() string {
-	return fmt.Sprintf("%s -> %s", aws.StringValue(e.role.RoleName), e.policyName)
+	return fmt.Sprintf("%s -> %s", e.roleName, e.policyName)
 }

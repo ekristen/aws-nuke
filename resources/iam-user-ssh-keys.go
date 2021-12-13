@@ -5,11 +5,12 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/rebuy-de/aws-nuke/pkg/types"
 )
 
-type UserSSHKey struct {
-	svc      *iam.IAM
+type IAMUserSSHKey struct {
+	svc      iamiface.IAMAPI
 	userName string
 	sshKeyID string
 }
@@ -37,7 +38,7 @@ func ListIAMUserSSHPublicKeys(sess *session.Session) ([]Resource, error) {
 		}
 
 		for _, publicKey := range listOutput.SSHPublicKeys {
-			resources = append(resources, &UserSSHKey{
+			resources = append(resources, &IAMUserSSHKey{
 				svc:      svc,
 				userName: *user.UserName,
 				sshKeyID: *publicKey.SSHPublicKeyId,
@@ -48,17 +49,17 @@ func ListIAMUserSSHPublicKeys(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (u *UserSSHKey) Properties() types.Properties {
+func (u *IAMUserSSHKey) Properties() types.Properties {
 	return types.NewProperties().
 		Set("UserName", u.userName).
 		Set("SSHKeyID", u.sshKeyID)
 }
 
-func (u *UserSSHKey) String() string {
+func (u *IAMUserSSHKey) String() string {
 	return fmt.Sprintf("%s -> %s", u.userName, u.sshKeyID)
 }
 
-func (u *UserSSHKey) Remove() error {
+func (u *IAMUserSSHKey) Remove() error {
 	_, err := u.svc.DeleteSSHPublicKey(&iam.DeleteSSHPublicKeyInput{
 		UserName:       &u.userName,
 		SSHPublicKeyId: &u.sshKeyID,

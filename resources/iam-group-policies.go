@@ -5,10 +5,11 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 )
 
 type IAMGroupPolicy struct {
-	svc        *iam.IAM
+	svc        iamiface.IAMAPI
 	policyName string
 	groupName  string
 }
