@@ -26,7 +26,7 @@ jobs:
           cosign-release: "v1.4.1"
       - name: Setup Cosign
         run: |
-          echo ${COSIGN_KEY} > cosign.key
+          echo "${COSIGN_KEY}" > "$GITHUB_WORKSPACE/cosign.key"
         env:
           COSIGN_KEY: ${{ secrets.COSIGN_KEY }}
       - name: Run GoReleaser
