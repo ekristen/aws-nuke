@@ -17,28 +17,28 @@ func TestResolveResourceTypes(t *testing.T) {
 	}{
 		{
 			base:    types.Collection{"a", "b", "c", "d"},
-			include: []types.Collection{types.Collection{"a", "b", "c"}},
+			include: []types.Collection{{"a", "b", "c"}},
 			result:  types.Collection{"a", "b", "c"},
 		},
 		{
 			base:    types.Collection{"a", "b", "c", "d"},
-			exclude: []types.Collection{types.Collection{"b", "d"}},
+			exclude: []types.Collection{{"b", "d"}},
 			result:  types.Collection{"a", "c"},
 		},
 		{
 			base:    types.Collection{"a", "b"},
-			include: []types.Collection{types.Collection{}},
+			include: []types.Collection{{}},
 			result:  types.Collection{"a", "b"},
 		},
 		{
 			base:    types.Collection{"c", "b"},
-			exclude: []types.Collection{types.Collection{}},
+			exclude: []types.Collection{{}},
 			result:  types.Collection{"c", "b"},
 		},
 		{
 			base:    types.Collection{"a", "b", "c", "d"},
-			include: []types.Collection{types.Collection{"a", "b", "c"}},
-			exclude: []types.Collection{types.Collection{"a"}},
+			include: []types.Collection{{"a", "b", "c"}},
+			exclude: []types.Collection{{"a"}},
 			result:  types.Collection{"b", "c"},
 		},
 	}
@@ -72,7 +72,7 @@ func TestIsTrue(t *testing.T) {
 
 	trueStrings := []string{"true", " true", "true ", " TrUe "}
 	for _, ts := range trueStrings {
-		if ! IsTrue(ts) {
+		if !IsTrue(ts) {
 			t.Fatalf("IsTrue falsely returned 'false' for: %s", ts)
 		}
 	}
