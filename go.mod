@@ -46,4 +46,5 @@ require github.com/rebuy-de/aws-nuke v2.10.0+incompatible
 require (
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	golang.org/x/crypto v0.7.0 // indirect
+
 )
