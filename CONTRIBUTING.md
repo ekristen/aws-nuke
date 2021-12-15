@@ -6,7 +6,6 @@ Because of the amount of AWS services and their rate of change, we rely on your
 participation. For the same reason we can only act retroactive on changes of
 AWS services. Otherwise it would be a fulltime job to keep up with AWS.
 
-
 ## How Can I Contribute?
 
 ### Some Resource Is Not Supported by *aws-nuke*
@@ -18,7 +17,6 @@ resolve this:
   which resource is missing. This way someone can take care of it.
 * Add the resource yourself and open a Pull Request. Please follow the
   guidelines below to see how to create such a resource.
-
 
 ### Some Resource Does Not Get Deleted
 
@@ -32,14 +30,13 @@ Please check the following points before creating a bug issue:
   know about dependencies between resources. To work around this it will just
   retry deleting all resources in multiple iterations. Therefore it is normal
   that there are a lot of dependency errors in the first one. The iterations
-  are separated by lines starting with `Removal requested: ` and only the
+  are separated by lines starting with `Removal requested:` and only the
   errors in the last block indicate actual errros.
 
 File [an issue](https://github.com/rebuy-de/aws-nuke/issues/new) and describe
 as accurately as possible how to generate the resource on AWS that cause the
 errors in *aws-nuke*. Ideally this is provided in a reproducible way like
 a Terraform template or AWS CLI commands.
-
 
 ### I Have Ideas to Improve *aws-nuke*
 
@@ -55,20 +52,15 @@ You should take these steps if you have an idea how to improve *aws-nuke*:
    the case, open a new issue and describe your idea. Afterwards, we can
    discuss this idea and form a proposal.
 
-
 ### I Just Have a Question
 
-Please use our mailing list for questions: aws-nuke@googlegroups.com. You can
-also search in the mailing list archive, whether someone already had the same
-problem: https://groups.google.com/d/forum/aws-nuke
-
+Please use [GitHub Discussions](https://github.com/ekristen/aws-nuke/discussions)
 
 ## Resource Guidelines
 
 ### Consider Pagination
 
 Most AWS resources are paginated and all resources should handle that.
-
 
 ### Use Properties Instead of String Functions
 
@@ -90,7 +82,6 @@ Properties() types.Properties
 The interface for the String function is still there, because not all resources
 are migrated yet. Please use the Properties function for new resources.
 
-
 ### Filter Resources That Cannot Get Removed
 
 Some AWS APIs list resources, that cannot be deleted. For example:
@@ -99,7 +90,6 @@ Some AWS APIs list resources, that cannot be deleted. For example:
 * Resources that are created by AWS, but cannot be deleted by the user (eg some IAM Roles).
 
 Those resources should be excluded in the filter step, rather than in the list step.
-
 
 ## Styleguide
 
@@ -111,7 +101,6 @@ Like almost all Go projects, we are using `go fmt` as a single source of truth
 for formatting the source code. Please use `go fmt` before committing any
 change.
 
-
 ### Git
 
 #### Setup Email
@@ -122,7 +111,7 @@ is registered with a GitHub account.
 
 To set the email for all git commits, you can use this command:
 
-```
+```bash
 git config --global user.email "email@example.com"
 ```
 
@@ -130,13 +119,13 @@ If you want to change the email only for the *aws-nuke* repository, you can
 skip the `--global` flag. You have to make sure that you are executing this in
 the *aws-nuke* directory:
 
-```
+```bash
 git config user.email "email@example.com"
 ```
 
 If you already committed something with a wrong email, you can use this command:
 
-```
+```bash
 git commit --amend --author="Author Name <email@address.com>"
 ```
 

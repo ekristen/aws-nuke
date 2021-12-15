@@ -1,17 +1,32 @@
-# aws-nuke
+# aws-nuke (managed fork)
 
-![Build Status](https://github.com/rebuy-de/aws-nuke/workflows/Golang%20CI/badge.svg?branch=main)
-[![license](https://img.shields.io/github/license/rebuy-de/aws-nuke.svg)](https://github.com/rebuy-de/aws-nuke/blob/main/LICENSE)
-[![GitHub release](https://img.shields.io/github/release/rebuy-de/aws-nuke.svg)](https://github.com/rebuy-de/aws-nuke/releases)
-[![Docker Hub](https://img.shields.io/docker/pulls/rebuy/aws-nuke)](https://hub.docker.com/r/rebuy/aws-nuke)
+[![license](https://img.shields.io/github/license/ekristen/aws-nuke.svg)](https://github.com/ekristen/aws-nuke/blob/main/LICENSE)
+[![GitHub release](https://img.shields.io/github/release/ekristen/aws-nuke.svg)](https://github.com/ekristen/aws-nuke/releases)
 
 Remove all resources from an AWS account.
 
-> **Development Status** *aws-nuke* is stable, but it is likely that not all AWS
+**Development Status** *aws-nuke* is stable, but it is likely that not all AWS
 resources are covered by it. Be encouraged to add missing resources and create
-a Pull Request or to create an [Issue](https://github.com/rebuy-de/aws-nuke/issues/new).
+a Pull Request or to create an [Issue](https://github.com/ekristen/aws-nuke/issues/new).
 
-## Caution!
+## This is a Managed Fork
+
+**Important:** this is a full fork of the original tool written by the folks
+over at [rebuy-de](https://github.com/rebuy-de). This fork became necessary after
+attempting to make contributions and respond to issues to learn that the current
+maintainers only have time to work on the project about once a month and while
+receptive to bringing in other people to help maintain, made it clear it would take
+time. Considering the feedback cycle was already weeks on initial comms, I had
+to make the hard decision to fork and maintain myself.
+
+### Plans
+
+- Tests - would like to get more mock tests and integration tests in place
+- Tooling - make it easier to contribute by adding tools to automatically generate
+  base resources that need to be slightly modified for use.
+- Other Clouds - would like to add Azure and GCP (likely rename project at that point)
+
+## Caution
 
 Be aware that *aws-nuke* is a very destructive tool, hence you have to be very
 careful while using it. Otherwise you might delete production data.
@@ -48,14 +63,13 @@ To reduce the blast radius of accidents, there are some safety precautions:
 Feel free to create an issue, if you have any ideas to improve the safety
 procedures.
 
-
 ## Use Cases
 
-* We are testing our [Terraform](https://www.terraform.io/) code with Jenkins.
+- We are testing our [Terraform](https://www.terraform.io/) code with Jenkins.
   Sometimes a Terraform run fails during development and messes up the account.
   With *aws-nuke* we can simply clean up the failed account so it can be reused
   for the next build.
-* Our platform developers have their own AWS Accounts where they can create
+- Our platform developers have their own AWS Accounts where they can create
   their own Kubernetes clusters for testing purposes. With *aws-nuke* it is
   very easy to clean up these account at the end of the day and keep the costs
   low.
@@ -65,12 +79,11 @@ procedures.
 We usually release a new version once enough changes came together and have
 been tested for a while.
 
-You can find Linux, macOS and Windows binaries on the
-[releases page](https://github.com/rebuy-de/aws-nuke/releases), but we also
-provide containerized versions on [quay.io/rebuy/aws-nuke](https://quay.io/rebuy/aws-nuke)
-and [docker.io/rebuy/aws-nuke](https://hub.docker.com/r/rebuy/aws-nuke). Both
-are available for multiple architectures (amd64, arm64 & armv7).
-
+You can find Linux, macOS and Windows binaries on the [releases page](https://github.com/ekristen/aws-nuke/releases),
+but we also provide containerized versions on [ghcr.io/ekristen/aws-nuke](https://ghcr.io/ekristen/aws-nuke)
+and [docker.io/ekristen/aws-nuke](https://hub.docker.com/r/ekristen/aws-nuke). Both
+are available for multiple architectures (amd64, arm64 & armv7) using Docker manifests. You can reference
+the main tag on any system and get the correct docker image automatically.
 
 ## Usage
 
@@ -90,7 +103,7 @@ accounts:
 
 With this config we can run *aws-nuke*:
 
-```
+```bash
 $ aws-nuke -c config/nuke-config.yml --profile aws-nuke-example
 aws-nuke version v1.0.39.gc2f318f - Fri Jul 28 16:26:41 CEST 2017 - c2f318f37b7d2dec0e646da3d4d05ab5296d5bce
 
@@ -121,7 +134,6 @@ the `--no-dry-run` flag is missing. Also it wants to delete the
 administrator. We don't want to do this, because we use this user to access
 our account. Therefore we have to extend the config so it ignores this user:
 
-
 ```yaml
 regions:
 - eu-west-1
@@ -140,7 +152,7 @@ accounts:
       - "my-user -> ABCDEFGHIJKLMNOPQRST"
 ```
 
-```
+```bash
 $ aws-nuke -c config/nuke-config.yml --profile aws-nuke-example --no-dry-run
 aws-nuke version v1.0.39.gc2f318f - Fri Jul 28 16:26:41 CEST 2017 - c2f318f37b7d2dec0e646da3d4d05ab5296d5bce
 
@@ -219,7 +231,7 @@ or in [shared config
 file](https://docs.aws.amazon.com/cli/latest/userguide/cli-roles.html) with an
 assuming role.
 
-### Using custom AWS endpoint
+### Using Custom AWS Endpoints
 
 It is possible to configure aws-nuke to run against non-default AWS endpoints.
 It could be used for integration testing pointing to a local endpoint such as an
@@ -267,7 +279,8 @@ accounts:
 ```
 
 This can then be used as follows:
-```buildoutcfg
+
+```log
 $ aws-nuke -c config/my.yaml  --access-key-id <access-key> --secret-access-key <secret-key> --default-region demo10
 aws-nuke version v2.11.0.2.gf0ad3ac.dirty - Tue Nov 26 19:15:12 IST 2019 - f0ad3aca55eb66b93b88ce2375f8ad06a7ca856f
 
@@ -300,6 +313,7 @@ demo10 - EC2Volume - vol-dbea1d1083654d30a43366807a125aed - [tag:Name: "volume-5
 
 --- truncating long output ---
 ```
+
 ### Specifying Resource Types to Delete
 
 *aws-nuke* deletes a lot of resources and there might be added more at any
@@ -310,13 +324,13 @@ One way are filters, which already got mentioned. This requires to know the
 identifier of each resource. It is also possible to prevent whole resource
 types (eg `S3Bucket`) from getting deleted with two methods.
 
-* The `--target` flag limits nuking to the specified resource types.
-* The `--exclude` flag prevent nuking of the specified resource types.
+- The `--target` flag limits nuking to the specified resource types.
+- The `--exclude` flag prevent nuking of the specified resource types.
 
 It is also possible to configure the resource types in the config file like in
 these examples:
 
-```
+```yaml
 ---
 regions:
   - "eu-west-1"
@@ -334,7 +348,7 @@ accounts:
   555133742: {}
 ```
 
-```
+```yaml
 ---
 regions:
   - "eu-west-1"
@@ -358,10 +372,9 @@ If an exclude is used, then all its resource types will not be deleted.
 
 **Hint:** You can see all available resource types with this command:
 
-```
+```bash
 aws-nuke resource-types
 ```
-
 
 ### Feature Flags
 
@@ -378,7 +391,6 @@ feature-flags:
     CloudformationStack: true
   force-delete-lightsail-addons: true
 ```
-
 
 ### Filtering Resources
 
@@ -428,7 +440,7 @@ the list will be skipped. These will be marked as "filtered by config" on the
 Some resources support filtering via properties. When a resource support these
 properties, they will be listed in the output like in this example:
 
-```
+```log
 global - IAMUserPolicyAttachment - 'admin -> AdministratorAccess' - [RoleName: "admin", PolicyArn: "arn:aws:iam::aws:policy/AdministratorAccess", PolicyName: "AdministratorAccess"] - would remove
 ```
 
@@ -448,21 +460,21 @@ IAMUserAccessKey:
 
 There are also additional comparision types than an exact match:
 
-* `exact` – The identifier must exactly match the given string. This is the default.
-* `contains` – The identifier must contain the given string.
-* `glob` – The identifier must match against the given [glob
+- `exact` – The identifier must exactly match the given string. This is the default.
+- `contains` – The identifier must contain the given string.
+- `glob` – The identifier must match against the given [glob
   pattern](https://en.wikipedia.org/wiki/Glob_(programming)). This means the
   string might contains wildcards like `*` and `?`. Note that globbing is
   designed for file paths, so the wildcards do not match the directory
   separator (`/`). Details about the glob pattern can be found in the [library
   documentation](https://godoc.org/github.com/mb0/glob).
-* `regex` – The identifier must match against the given regular expression.
+- `regex` – The identifier must match against the given regular expression.
   Details about the syntax can be found in the [library
   documentation](https://golang.org/pkg/regexp/syntax/).
-* `dateOlderThan` - The identifier is parsed as a timestamp. After the offset is added to it (specified in the `value` field), the resulting timestamp must be AFTER the current
-  time. Details on offset syntax can be found in 
-  the [library documentation](https://golang.org/pkg/time/#ParseDuration). Supported
-  date formats are epoch time, `2006-01-02`, `2006/01/02`, `2006-01-02T15:04:05Z`, 
+- `dateOlderThan` - The identifier is parsed as a timestamp. After the offset is added
+  to it (specified in the `value` field), the resulting timestamp must be AFTER the
+  current time. Details on offset syntax can be found in the [library documentation](https://golang.org/pkg/time/#ParseDuration).
+  Supported date formats are epoch time, `2006-01-02`, `2006/01/02`, `2006-01-02T15:04:05Z`,
   `2006-01-02T15:04:05.999999999Z07:00`, and `2006-01-02T15:04:05Z07:00`.
 
 To use a non-default comparision type, it is required to specify an object with
@@ -477,7 +489,6 @@ IAMUserAccessKey:
   value: "admin -> *"
 ```
 
-
 #### Using Them Together
 
 It is also possible to use Filter Properties and Filter Types together. For
@@ -490,9 +501,10 @@ Route53HostedZone:
   value: "*.rebuy.cloud."
 ```
 
-####  Inverting Filter Results
+#### Inverting Filter Results
 
 Any filter result can be inverted by using `invert: true`, for example:
+
 ```yaml
 CloudFormationStack:
 - property: Name
@@ -503,7 +515,6 @@ CloudFormationStack:
 In this case *any* CloudFormationStack ***but*** the ones called "foo" will be
 filtered. Be aware that *aws-nuke* internally takes every resource and applies
 every filter on it. If a filter matches, it marks the node as filtered.
-
 
 #### Filter Presets
 
@@ -553,27 +564,44 @@ presets:
       - "OrganizationAccountAccessRole"
 ```
 
-
 ## Install
 
 ### Use Released Binaries
 
 The easiest way of installing it, is to download the latest
-[release](https://github.com/rebuy-de/aws-nuke/releases) from GitHub.
+[release](https://github.com/ekristen/aws-nuke/releases) from GitHub.
 
-#### Example for Linux Intel/AMD 
+#### Example for Linux Intel/AMD
 
 Download and extract
-`$ wget -c https://github.com/rebuy-de/aws-nuke/releases/download/v2.16.0/aws-nuke-v2.16.0-linux-amd64.tar.gz -O - | sudo tar -xz -C $HOME/bin`
+
+```bash
+wget -c https://github.com/rebuy-de/aws-nuke/releases/download/v2.16.0/aws-nuke-v2.16.0-linux-amd64.tar.gz -O - | sudo tar -xz -C $HOME/bin
+```
 
 Run
-`$ aws-nuke-v2.16.0-linux-amd64` 
+
+```bash
+aws-nuke-v2.16.0-linux-amd64
+```
 
 ### Compile from Source
 
 To compile *aws-nuke* from source you need a working
-[Golang](https://golang.org/doc/install) development environment. The sources
-must be cloned to `$GOPATH/src/github.com/rebuy-de/aws-nuke`.
+[Golang](https://golang.org/doc/install) development environment.
+
+*aws-nuke* uses go modules and so the clone path should no matter.
+
+The easiest way to compile is by using [goreleaser](https://goreleaser.io)
+
+```bash
+goreleaser --rm-dist --snapshot --single-target
+```
+
+**Note:** this will automatically build for your current architecture and place the result
+in the releases directory.
+
+You may also use `make` to compile the binary, this was left over from before the fork.
 
 Also you need to install [Glide](https://glide.sh/),
 [golint](https://github.com/golang/lint/) and [GNU
@@ -592,7 +620,7 @@ $ docker run \
     --rm -it \
     -v /full-path/to/nuke-config.yml:/home/aws-nuke/config.yml \
     -v /home/user/.aws:/home/aws-nuke/.aws \
-    quay.io/rebuy/aws-nuke:v2.11.0 \
+    ghcr.io/ekristen/aws-nuke \
     --profile default \
     --config /home/aws-nuke/config.yml
 ```
@@ -607,7 +635,6 @@ Make sure you use the latest version in the image tag. Alternatiely you can use
 `main` for the latest development version, but be aware that this is more
 likely to break at any time.
 
-
 ## Testing
 
 ### Unit Tests
@@ -620,13 +647,9 @@ To run the unit tests:
 make test
 ```
 
-
 ## Contact Channels
 
-Feel free to create a GitHub Issue for any bug reports or feature requests.
-Please use our mailing list for questions: aws-nuke@googlegroups.com. You can
-also search in the mailing list archive, whether someone already had the same
-problem: https://groups.google.com/d/forum/aws-nuke
+For now GitHub issues, may open a Slack or Discord if warranted.
 
 ## Contribute
 
