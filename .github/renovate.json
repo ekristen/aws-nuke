@@ -1,0 +1,36 @@
+{
+    "extends": [
+        "config:base"
+    ],
+    "packageRules": [
+        {
+            "matchManagers": [
+                "dockerfile"
+            ],
+            "matchUpdateTypes": [
+                "pin",
+                "digest"
+            ],
+            "automerge": true
+        },
+        {
+            "matchPackagePatterns": [
+                "^golang.*"
+            ],
+            "groupName": "golang",
+            "groupSlug": "golang"
+        }
+    ],
+    "regexManagers": [
+        {
+            "fileMatch": [
+                "^.github/workflows/.*"
+            ],
+            "matchStrings": [
+                "go-version: (?<currentValue>.*?)\n"
+            ],
+            "depNameTemplate": "golang",
+            "datasourceTemplate": "docker"
+        }
+    ]
+}
