@@ -6,3 +6,4 @@
 /mocks
 .envrc
 config.yaml
+cosign.key
