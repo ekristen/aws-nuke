@@ -88,13 +88,13 @@ docker_manifests:
       - ghcr.io/ekristen/aws-nuke:{{ .Version }}-arm32v7
 signs:
   - cmd: cosign
-    stdin: "{{ .Env.COSIGN_PWD }}"
+    stdin: "{{ .Env.COSIGN_PASSWORD }}"
     args:
       ["sign-blob", "--key=cosign.key", "--output=${signature}", "${artifact}"]
     artifacts: all
 docker_signs:
   - artifacts: all
-    stdin: "{{ .Env.COSIGN_PWD }}"
+    stdin: "{{ .Env.COSIGN_PASSWORD }}"
 checksum:
   name_template: "checksums.txt"
 snapshot:
