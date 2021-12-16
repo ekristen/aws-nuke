@@ -7,6 +7,8 @@ release:
     - glob: ./cosign.pub
 builds:
   - id: default
+    env:
+      - CGO_ENABLED=0
     goos:
       - darwin
       - linux
@@ -26,6 +28,7 @@ builds:
         goarch: arm
     ldflags:
       - -s
+      - -w
       - -X '{{ .ModulePath }}/cmd.BuildVersion={{ .Version }}'
       - -X '{{ .ModulePath }}/cmd.BuildDate={{ .Date }}'
       - -X '{{ .ModulePath }}/cmd.BuildHash={{ .Commit }}'
