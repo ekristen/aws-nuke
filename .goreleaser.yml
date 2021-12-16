@@ -7,6 +7,8 @@ release:
     - glob: ./cosign.pub
 builds:
   - id: default
+    env:
+      - CGO_ENABLED=0
     goos:
       - darwin
       - linux
