@@ -26,6 +26,7 @@ builds:
         goarch: arm
     ldflags:
       - -s
+      - -w
       - -X '{{ .ModulePath }}/cmd.BuildVersion={{ .Version }}'
       - -X '{{ .ModulePath }}/cmd.BuildDate={{ .Date }}'
       - -X '{{ .ModulePath }}/cmd.BuildHash={{ .Commit }}'
