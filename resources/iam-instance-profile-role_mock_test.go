@@ -18,14 +18,16 @@ func Test_Mock_IAMInstanceProfileRole_Remove(t *testing.T) {
 	mockIAM := mock_iamiface.NewMockIAMAPI(ctrl)
 
 	iamInstanceProfileRole := IAMInstanceProfileRole{
-		svc:     mockIAM,
-		role:    "role:foobar",
-		profile: "profile:foobar",
+		svc:  mockIAM,
+		role: "role:foobar",
+		profile: &iam.InstanceProfile{
+			InstanceProfileName: aws.String("profile:foobar"),
+		},
 	}
 
 	mockIAM.EXPECT().RemoveRoleFromInstanceProfile(gomock.Eq(&iam.RemoveRoleFromInstanceProfileInput{
 		RoleName:            aws.String(iamInstanceProfileRole.role),
-		InstanceProfileName: aws.String(iamInstanceProfileRole.profile),
+		InstanceProfileName: iamInstanceProfileRole.profile.InstanceProfileName,
 	})).Return(&iam.RemoveRoleFromInstanceProfileOutput{}, nil)
 
 	err := iamInstanceProfileRole.Remove()
