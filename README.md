@@ -376,6 +376,51 @@ If an exclude is used, then all its resource types will not be deleted.
 aws-nuke resource-types
 ```
 
+### AWS Cloud Control API Support
+
+> This feature is not yet released and is probably part of `v2.18`.
+
+*aws-nuke* supports removing resources via the AWS Cloud Control API. When
+executing *aws-nuke* it will automatically remove a manually managed set of
+resources via Cloud Control.
+
+Only a subset of Cloud Control supported resources will be removed
+automatically, because there might be resources that were already implemented
+and adding them too would bypass existing filters in user configs as Cloud
+Control has another naming scheme and a different set of properties. Moreover,
+there are some Cloud Control resources that need special handling which is not
+yet supported by *aws-nuke*.
+
+Even though the subset of automatically supported Cloud Control resources is
+limited, you can can configure *aws-nuke* to make it try any additional
+resource. Either via command line flags of via the config file.
+
+For the config file you have to add the resource to
+the`resource-types.cloud-control` list:
+
+```yaml
+resource-types:
+  cloud-control:
+  - AWS::EC2::TransitGateway
+  - AWS::EC2::VPC
+```
+
+If you want to use the command line, you have to add a `--cloud-control` flag
+for each resource you want to add:
+
+```sh
+aws-nuke \
+    -c nuke-config.yaml \
+    --cloud-control AWS::EC2::TransitGateway \
+    --cloud-control AWS::EC2::VPC
+```
+
+**Note:** There are some resources that are supported by Cloud Control and are
+already natively implemented by *aws-nuke*. If you configure to use Cloud
+Control for those resources, it will not execute the natively implemented code
+for this resource. For example with the `--cloud-control AWS::EC2::VPC` it will
+not use the `EC2VPC` resource.
+
 ### Feature Flags
 
 There are some features, which are quite opinionated. To make those work for

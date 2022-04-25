@@ -10,10 +10,13 @@ import (
 
 func TestResolveResourceTypes(t *testing.T) {
 	cases := []struct {
-		base    types.Collection
-		include []types.Collection
-		exclude []types.Collection
-		result  types.Collection
+		name         string
+		base         types.Collection
+		mapping      map[string]string
+		include      []types.Collection
+		exclude      []types.Collection
+		cloudControl []types.Collection
+		result       types.Collection
 	}{
 		{
 			base:    types.Collection{"a", "b", "c", "d"},
@@ -41,11 +44,24 @@ func TestResolveResourceTypes(t *testing.T) {
 			exclude: []types.Collection{{"a"}},
 			result:  types.Collection{"b", "c"},
 		},
+		{
+			name:         "CloudControlAdd",
+			base:         types.Collection{"a", "b"},
+			cloudControl: []types.Collection{{"x"}},
+			result:       types.Collection{"a", "b", "x"},
+		},
+		{
+			name:         "CloudControlReplaceOldStyle",
+			base:         types.Collection{"a", "b", "c"},
+			mapping:      map[string]string{"z": "b"},
+			cloudControl: []types.Collection{{"z"}},
+			result:       types.Collection{"a", "z", "c"},
+		},
 	}
 
-	for i, tc := range cases {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			r := ResolveResourceTypes(tc.base, tc.include, tc.exclude)
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			r := ResolveResourceTypes(tc.base, tc.mapping, tc.include, tc.exclude, tc.cloudControl)
 
 			sort.Strings(r)
 			sort.Strings(tc.result)

@@ -156,6 +156,12 @@ func NewRootCommand() *cobra.Command {
 		&params.Excludes, "exclude", "e", []string{},
 		"Prevent nuking of certain resource types (eg IAMServerCertificate). "+
 			"This flag can be used multiple times.")
+	command.PersistentFlags().StringSliceVar(
+		&params.CloudControl, "cloud-control", []string{},
+		"Nuke given resource via Cloud Control API. "+
+			"If there is an old-style method for the same resource, the old-style one will not be executed. "+
+			"Note that old-style and cloud-control filters are not compatible! "+
+			"This flag can be used multiple times.")
 	command.PersistentFlags().BoolVar(
 		&params.NoDryRun, "no-dry-run", false,
 		"If specified, it actually deletes found resources. "+
