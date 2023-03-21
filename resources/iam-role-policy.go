@@ -3,16 +3,13 @@ package resources
 import (
 	"fmt"
 	"strings"
-	"time"
-
-	"github.com/sirupsen/logrus"
 
 	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
-	"github.com/rebuy-de/aws-nuke/pkg/types"
+	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
 )
 
 type IAMRolePolicy struct {

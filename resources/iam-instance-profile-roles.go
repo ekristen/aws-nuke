@@ -2,6 +2,8 @@ package resources
 
 import (
 	"fmt"
+	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+	"github.com/sirupsen/logrus"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -11,8 +13,8 @@ import (
 
 type IAMInstanceProfileRole struct {
 	svc     iamiface.IAMAPI
-	role    string
-	profile string
+	role    *iam.Role
+	profile *iam.InstanceProfile
 }
 
 func init() {

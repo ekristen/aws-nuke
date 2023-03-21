@@ -2,6 +2,7 @@ package resources
 
 import (
 	"fmt"
+	"github.com/rebuy-de/aws-nuke/resources"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -80,7 +81,7 @@ func GetLister(name string) ResourceLister {
 
 func GetListerNames() []string {
 	names := []string{}
-	for resourceType := range GetListers() {
+	for resourceType := range resources.GetListers() {
 		names = append(names, resourceType)
 	}
 
