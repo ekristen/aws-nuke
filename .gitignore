@@ -5,5 +5,7 @@
 /releases
 /mocks
 .envrc
+.idea
 config.yaml
 cosign.key
+*-config.yaml
