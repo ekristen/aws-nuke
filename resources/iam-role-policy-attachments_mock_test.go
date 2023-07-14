@@ -21,11 +21,13 @@ func Test_Mock_IAMRolePolicyAttachment_Remove(t *testing.T) {
 		svc:        mockIAM,
 		policyArn:  "arn:foobar",
 		policyName: "foobar",
-		roleName:   "role:foobar",
+		role: &iam.Role{
+			RoleName: aws.String("foo"),
+		},
 	}
 
 	mockIAM.EXPECT().DetachRolePolicy(gomock.Eq(&iam.DetachRolePolicyInput{
-		RoleName:  aws.String(iamRolePolicyAttachment.roleName),
+		RoleName:  iamRolePolicyAttachment.role.RoleName,
 		PolicyArn: aws.String(iamRolePolicyAttachment.policyArn),
 	})).Return(&iam.DetachRolePolicyOutput{}, nil)
 
