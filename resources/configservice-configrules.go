@@ -1,6 +1,8 @@
 package resources
 
 import (
+	"fmt"
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/configservice"
 )
@@ -8,6 +10,7 @@ import (
 type ConfigServiceConfigRule struct {
 	svc            *configservice.ConfigService
 	configRuleName *string
+	createdBy      *string
 }
 
 func init() {
@@ -16,7 +19,7 @@ func init() {
 
 func ListConfigServiceConfigRules(sess *session.Session) ([]Resource, error) {
 	svc := configservice.New(sess)
-	resources := []Resource{}
+	var resources []Resource
 
 	params := &configservice.DescribeConfigRulesInput{}
 
@@ -30,6 +33,7 @@ func ListConfigServiceConfigRules(sess *session.Session) ([]Resource, error) {
 			resources = append(resources, &ConfigServiceConfigRule{
 				svc:            svc,
 				configRuleName: configRule.ConfigRuleName,
+				createdBy:      configRule.CreatedBy,
 			})
 		}
 
@@ -41,6 +45,14 @@ func ListConfigServiceConfigRules(sess *session.Session) ([]Resource, error) {
 	}
 
 	return resources, nil
+}
+
+func (f *ConfigServiceConfigRule) Filter() error {
+	if aws.StringValue(f.createdBy) == "securityhub.amazonaws.com" {
+		return fmt.Errorf("cannot remove rule owned by securityhub.amazonaws.com")
+	}
+
+	return nil
 }
 
 func (f *ConfigServiceConfigRule) Remove() error {
