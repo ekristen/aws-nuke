@@ -28,7 +28,7 @@ func GetIAMUser(svc *iam.IAM, userName *string) (*iam.User, error) {
 
 func ListIAMUsers(sess *session.Session) ([]Resource, error) {
 	svc := iam.New(sess)
-	resources := []Resource{}
+	var resources []Resource
 
 	err := svc.ListUsersPages(nil, func(page *iam.ListUsersOutput, lastPage bool) bool {
 		for _, out := range page.Users {

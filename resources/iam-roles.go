@@ -92,9 +92,9 @@ func (e *IAMRole) Remove() error {
 	return nil
 }
 
-func (role *IAMRole) Properties() types.Properties {
+func (e *IAMRole) Properties() types.Properties {
 	properties := types.NewProperties()
-	for _, tagValue := range role.tags {
+	for _, tagValue := range e.tags {
 		properties.SetTag(tagValue.Key, tagValue.Value)
 	}
 

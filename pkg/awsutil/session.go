@@ -83,7 +83,7 @@ func (c *Credentials) rootSession() (*session.Session, error) {
 				},
 			}
 		case c.HasProfile() && c.HasKeys():
-			return nil, fmt.Errorf("You have to specify a profile or credentials for at least one region.")
+			return nil, fmt.Errorf("you have to specify a profile or credentials for at least one region")
 
 		case c.HasKeys():
 			opts = session.Options{
