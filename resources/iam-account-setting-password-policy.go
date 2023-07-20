@@ -30,10 +30,10 @@ func ListIAMAccountSettingPasswordPolicy(sess *session.Session) ([]Resource, err
 				return nil, nil
 			case iam.ErrCodeServiceFailureException:
 				return nil, aerr
-			default:
-				return nil, aerr
 			}
 		}
+
+		return nil, err
 	}
 
 	resources = append(resources, &IAMAccountSettingPasswordPolicy{
