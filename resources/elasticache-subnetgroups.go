@@ -2,6 +2,8 @@ package resources
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/elasticache"
@@ -48,6 +50,13 @@ func (l *ElasticacheSubnetGroupLister) List(_ context.Context, o interface{}) ([
 type ElasticacheSubnetGroup struct {
 	svc  *elasticache.ElastiCache
 	name *string
+}
+
+func (i *ElasticacheSubnetGroup) Filter() error {
+	if strings.HasPrefix(*i.name, "default") {
+		return fmt.Errorf("cannot delete default subnet group")
+	}
+	return nil
 }
 
 func (i *ElasticacheSubnetGroup) Remove(_ context.Context) error {
