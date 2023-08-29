@@ -37,6 +37,11 @@ func (l *ComprehendDominantLanguageDetectionJobLister) List(_ context.Context, o
 			return nil, err
 		}
 		for _, dominantLanguageDetectionJob := range resp.DominantLanguageDetectionJobPropertiesList {
+			switch *dominantLanguageDetectionJob.JobStatus {
+			case "STOPPED", "FAILED", "COMPLETED":
+				// if the job has already been stopped, failed, or completed; do not try to stop it again
+				continue
+			}
 			resources = append(resources, &ComprehendDominantLanguageDetectionJob{
 				svc:                          svc,
 				dominantLanguageDetectionJob: dominantLanguageDetectionJob,
