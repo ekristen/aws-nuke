@@ -2,6 +2,7 @@ package resources
 
 import (
 	"fmt"
+	"github.com/aws/smithy-go/ptr"
 
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/route53resolver"
@@ -100,7 +101,7 @@ func resolverRulesToVpcIDs(svc *route53resolver.Route53Resolver) (map[string][]*
 
 // Filter removes resources automatically from being nuked
 func (r *Route53ResolverRule) Filter() error {
-	if *r.domainName == "." {
+	if r.domainName != nil && ptr.ToString(r.domainName) == "." {
 		return fmt.Errorf(`Filtering DomainName "."`)
 	}
 
