@@ -3,6 +3,7 @@ package resources
 import (
 	"fmt"
 	"github.com/aws/smithy-go/ptr"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/route53resolver"
@@ -103,6 +104,10 @@ func resolverRulesToVpcIDs(svc *route53resolver.Route53Resolver) (map[string][]*
 func (r *Route53ResolverRule) Filter() error {
 	if r.domainName != nil && ptr.ToString(r.domainName) == "." {
 		return fmt.Errorf(`Filtering DomainName "."`)
+	}
+
+	if r.id != nil && strings.HasPrefix(ptr.ToString(r.id), "rslvr-autodefined-rr") {
+		return fmt.Errorf("cannot delete system defined rules")
 	}
 
 	return nil
