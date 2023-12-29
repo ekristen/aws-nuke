@@ -2,6 +2,8 @@ package resources
 
 import (
 	"errors"
+	"fmt"
+	"github.com/aws/smithy-go/ptr"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -12,6 +14,8 @@ import (
 
 type IAMVirtualMFADevice struct {
 	svc          iamiface.IAMAPI
+	userId       *string
+	userArn      *string
 	userName     string
 	serialNumber string
 }
@@ -32,6 +36,8 @@ func ListIAMVirtualMFADevices(sess *session.Session) ([]Resource, error) {
 	for _, out := range resp.VirtualMFADevices {
 		resources = append(resources, &IAMVirtualMFADevice{
 			svc:          svc,
+			userId:       out.User.UserId,
+			userArn:      out.User.Arn,
 			userName:     *out.User.UserName,
 			serialNumber: *out.SerialNumber,
 		})
@@ -41,9 +47,18 @@ func ListIAMVirtualMFADevices(sess *session.Session) ([]Resource, error) {
 }
 
 func (v *IAMVirtualMFADevice) Filter() error {
+	isRoot := false
+	if ptr.ToString(v.userArn) == fmt.Sprintf("arn:aws:iam::%s:root", ptr.ToString(v.userId)) {
+		isRoot = true
+	}
 	if strings.HasSuffix(v.serialNumber, "/root-account-mfa-device") {
+		isRoot = true
+	}
+
+	if isRoot {
 		return errors.New("cannot delete root mfa device")
 	}
+
 	return nil
 }
 
