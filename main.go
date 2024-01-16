@@ -1,11 +1,9 @@
 package main
 
 import (
-	"os"
-	"path"
-
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
+	"os"
 
 	"github.com/ekristen/aws-nuke/pkg/common"
 
@@ -27,7 +25,7 @@ func main() {
 	}()
 
 	app := cli.NewApp()
-	app.Name = path.Base(os.Args[0])
+	app.Name = common.AppVersion.Name
 	app.Usage = "remove everything from an aws account"
 	app.Version = common.AppVersion.Summary
 	app.Authors = []*cli.Author{

@@ -1,10 +1,10 @@
 package common
 
 // NAME of the App
-var NAME = "azure-nuke"
+var NAME = "aws-nuke"
 
 // SUMMARY of the Version
-var SUMMARY = "1.0.0-dev"
+var SUMMARY = "3.0.0-beta.1"
 
 // BRANCH of the Version
 var BRANCH = "dev"
