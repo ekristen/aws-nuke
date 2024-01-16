@@ -20,27 +20,27 @@ jobs:
   goreleaser:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         if: github.event_name == 'pull_request'
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.ref }}
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         if: github.event_name == 'push'
         with:
           fetch-depth: 0
       - name: setup-go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version: 1.21.x
       - name: setup qemu
         id: qemu
-        uses: docker/setup-qemu-action@v2
+        uses: docker/setup-qemu-action@v3
       - name: setup docker buildx
         id: buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -67,7 +67,7 @@ jobs:
         run: |
           echo "GORELEASER_ARGS=--snapshot --skip-publish" >> $GITHUB_ENV
       - name: run goreleaser
-        uses: goreleaser/goreleaser-action@v4
+        uses: goreleaser/goreleaser-action@v5
         with:
           distribution: goreleaser
           version: latest
@@ -81,7 +81,7 @@ jobs:
           docker images --format "{{.Repository}}:{{.Tag}}" | grep "ekristen/aws-nuke" | xargs -L1 docker push
       - name: upload artifacts
         if: github.event.pull_request.base.ref == 'main'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: binaries
           path: releases/*.tar.gz
