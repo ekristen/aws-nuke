@@ -1,9 +1,14 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cloud9"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 type Cloud9Environment struct {
@@ -11,13 +16,23 @@ type Cloud9Environment struct {
 	environmentID *string
 }
 
+const Cloud9EnvironmentResource = "Cloud9Environment"
+
 func init() {
-	register("Cloud9Environment", ListCloud9Environments)
+	resource.Register(resource.Registration{
+		Name:   Cloud9EnvironmentResource,
+		Scope:  nuke.Account,
+		Lister: &Cloud9EnvironmentLister{},
+	})
 }
 
-func ListCloud9Environments(sess *session.Session) ([]Resource, error) {
-	svc := cloud9.New(sess)
-	resources := []Resource{}
+type Cloud9EnvironmentLister struct{}
+
+func (l *Cloud9EnvironmentLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := cloud9.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &cloud9.ListEnvironmentsInput{
 		MaxResults: aws.Int64(25),
@@ -46,8 +61,7 @@ func ListCloud9Environments(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *Cloud9Environment) Remove() error {
-
+func (f *Cloud9Environment) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteEnvironment(&cloud9.DeleteEnvironmentInput{
 		EnvironmentId: f.environmentID,
 	})

@@ -1,24 +1,35 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type EC2NATGateway struct {
-	svc   *ec2.EC2
-	natgw *ec2.NatGateway
-}
+const EC2NATGatewayResource = "EC2NATGateway"
 
 func init() {
-	register("EC2NATGateway", ListEC2NATGateways)
+	resource.Register(resource.Registration{
+		Name:   EC2NATGatewayResource,
+		Scope:  nuke.Account,
+		Lister: &EC2NATGatewayLister{},
+	})
 }
 
-func ListEC2NATGateways(sess *session.Session) ([]Resource, error) {
-	svc := ec2.New(sess)
+type EC2NATGatewayLister struct{}
+
+func (l *EC2NATGatewayLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+	svc := ec2.New(opts.Session)
 
 	params := &ec2.DescribeNatGatewaysInput{}
 	resp, err := svc.DescribeNatGateways(params)
@@ -26,7 +37,7 @@ func ListEC2NATGateways(sess *session.Session) ([]Resource, error) {
 		return nil, err
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for _, natgw := range resp.NatGateways {
 		resources = append(resources, &EC2NATGateway{
 			svc:   svc,
@@ -37,6 +48,11 @@ func ListEC2NATGateways(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
+type EC2NATGateway struct {
+	svc   *ec2.EC2
+	natgw *ec2.NatGateway
+}
+
 func (n *EC2NATGateway) Filter() error {
 	if *n.natgw.State == "deleted" {
 		return fmt.Errorf("already deleted")
@@ -44,7 +60,7 @@ func (n *EC2NATGateway) Filter() error {
 	return nil
 }
 
-func (n *EC2NATGateway) Remove() error {
+func (n *EC2NATGateway) Remove(_ context.Context) error {
 	params := &ec2.DeleteNatGatewayInput{
 		NatGatewayId: n.natgw.NatGatewayId,
 	}
@@ -66,5 +82,5 @@ func (n *EC2NATGateway) Properties() types.Properties {
 }
 
 func (n *EC2NATGateway) String() string {
-	return *n.natgw.NatGatewayId
+	return ptr.ToString(n.natgw.NatGatewayId)
 }

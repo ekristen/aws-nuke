@@ -1,24 +1,34 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type CloudWatchLogsResourcePolicy struct {
-	svc        *cloudwatchlogs.CloudWatchLogs
-	policyName *string
-}
+const CloudWatchLogsResourcePolicyResource = "CloudWatchLogsResourcePolicy"
 
 func init() {
-	register("CloudWatchLogsResourcePolicy", ListCloudWatchLogsResourcePolicies)
+	resource.Register(resource.Registration{
+		Name:   CloudWatchLogsResourcePolicyResource,
+		Scope:  nuke.Account,
+		Lister: &CloudWatchLogsResourcePolicyLister{},
+	})
 }
 
-func ListCloudWatchLogsResourcePolicies(sess *session.Session) ([]Resource, error) {
-	svc := cloudwatchlogs.New(sess)
-	resources := []Resource{}
+type CloudWatchLogsResourcePolicyLister struct{}
+
+func (l *CloudWatchLogsResourcePolicyLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := cloudwatchlogs.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &cloudwatchlogs.DescribeResourcePoliciesInput{
 		Limit: aws.Int64(50),
@@ -47,8 +57,12 @@ func ListCloudWatchLogsResourcePolicies(sess *session.Session) ([]Resource, erro
 	return resources, nil
 }
 
-func (p *CloudWatchLogsResourcePolicy) Remove() error {
+type CloudWatchLogsResourcePolicy struct {
+	svc        *cloudwatchlogs.CloudWatchLogs
+	policyName *string
+}
 
+func (p *CloudWatchLogsResourcePolicy) Remove(_ context.Context) error {
 	_, err := p.svc.DeleteResourcePolicy(&cloudwatchlogs.DeleteResourcePolicyInput{
 		PolicyName: p.policyName,
 	})

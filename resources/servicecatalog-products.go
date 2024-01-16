@@ -1,25 +1,34 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/servicecatalog"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type ServiceCatalogProduct struct {
-	svc  *servicecatalog.ServiceCatalog
-	ID   *string
-	name *string
-}
+const ServiceCatalogProductResource = "ServiceCatalogProduct"
 
 func init() {
-	register("ServiceCatalogProduct", ListServiceCatalogProducts)
+	resource.Register(resource.Registration{
+		Name:   ServiceCatalogProductResource,
+		Scope:  nuke.Account,
+		Lister: &ServiceCatalogProductLister{},
+	})
 }
 
-func ListServiceCatalogProducts(sess *session.Session) ([]Resource, error) {
-	svc := servicecatalog.New(sess)
-	resources := []Resource{}
+type ServiceCatalogProductLister struct{}
+
+func (l *ServiceCatalogProductLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := servicecatalog.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &servicecatalog.SearchProductsAsAdminInput{
 		PageSize: aws.Int64(20),
@@ -49,8 +58,13 @@ func ListServiceCatalogProducts(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *ServiceCatalogProduct) Remove() error {
+type ServiceCatalogProduct struct {
+	svc  *servicecatalog.ServiceCatalog
+	ID   *string
+	name *string
+}
 
+func (f *ServiceCatalogProduct) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteProduct(&servicecatalog.DeleteProductInput{
 		Id: f.ID,
 	})

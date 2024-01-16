@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/codestar"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type CodeStarProject struct {
-	svc *codestar.CodeStar
-	id  *string
-}
+const CodeStarProjectResource = "CodeStarProject"
 
 func init() {
-	register("CodeStarProject", ListCodeStarProjects)
+	resource.Register(resource.Registration{
+		Name:   CodeStarProjectResource,
+		Scope:  nuke.Account,
+		Lister: &CodeStarProjectLister{},
+	})
 }
 
-func ListCodeStarProjects(sess *session.Session) ([]Resource, error) {
-	svc := codestar.New(sess)
-	resources := []Resource{}
+type CodeStarProjectLister struct{}
+
+func (l *CodeStarProjectLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := codestar.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &codestar.ListProjectsInput{
 		MaxResults: aws.Int64(100),
@@ -46,8 +56,12 @@ func ListCodeStarProjects(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *CodeStarProject) Remove() error {
+type CodeStarProject struct {
+	svc *codestar.CodeStar
+	id  *string
+}
 
+func (f *CodeStarProject) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteProject(&codestar.DeleteProjectInput{
 		Id: f.id,
 	})

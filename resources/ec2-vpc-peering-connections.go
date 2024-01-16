@@ -1,27 +1,36 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type EC2VPCPeeringConnection struct {
-	svc    *ec2.EC2
-	id     *string
-	status *string
-}
+const EC2VPCPeeringConnectionResource = "EC2VPCPeeringConnection"
 
 func init() {
-	register("EC2VPCPeeringConnection", ListEC2VPCPeeringConnections)
+	resource.Register(resource.Registration{
+		Name:   EC2VPCPeeringConnectionResource,
+		Scope:  nuke.Account,
+		Lister: &EC2VPCPeeringConnectionLister{},
+	})
 }
 
-func ListEC2VPCPeeringConnections(sess *session.Session) ([]Resource, error) {
-	svc := ec2.New(sess)
-	resources := make([]Resource, 0)
+type EC2VPCPeeringConnectionLister struct{}
 
-	// filter should be set as deleted vpc connetions are returned
+func (l *EC2VPCPeeringConnectionLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := ec2.New(opts.Session)
+	resources := make([]resource.Resource, 0)
+
+	// filter should be set as deleted vpc connections are returned
 	params := &ec2.DescribeVpcPeeringConnectionsInput{}
 
 	resp, err := svc.DescribeVpcPeeringConnections(params)
@@ -40,6 +49,12 @@ func ListEC2VPCPeeringConnections(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
+type EC2VPCPeeringConnection struct {
+	svc    *ec2.EC2
+	id     *string
+	status *string
+}
+
 func (p *EC2VPCPeeringConnection) Filter() error {
 	if *p.status == "deleting" || *p.status == "deleted" {
 		return fmt.Errorf("already deleted")
@@ -47,7 +62,7 @@ func (p *EC2VPCPeeringConnection) Filter() error {
 	return nil
 }
 
-func (p *EC2VPCPeeringConnection) Remove() error {
+func (p *EC2VPCPeeringConnection) Remove(_ context.Context) error {
 	params := &ec2.DeleteVpcPeeringConnectionInput{
 		VpcPeeringConnectionId: p.id,
 	}

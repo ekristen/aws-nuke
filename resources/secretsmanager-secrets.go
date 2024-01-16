@@ -1,25 +1,34 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/secretsmanager"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type SecretsManagerSecret struct {
-	svc  *secretsmanager.SecretsManager
-	ARN  *string
-	tags []*secretsmanager.Tag
-}
+const SecretsManagerSecretResource = "SecretsManagerSecret"
 
 func init() {
-	register("SecretsManagerSecret", ListSecretsManagerSecrets)
+	resource.Register(resource.Registration{
+		Name:   SecretsManagerSecretResource,
+		Scope:  nuke.Account,
+		Lister: &SecretsManagerSecretLister{},
+	})
 }
 
-func ListSecretsManagerSecrets(sess *session.Session) ([]Resource, error) {
-	svc := secretsmanager.New(sess)
-	resources := []Resource{}
+type SecretsManagerSecretLister struct{}
+
+func (l *SecretsManagerSecretLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := secretsmanager.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &secretsmanager.ListSecretsInput{
 		MaxResults: aws.Int64(100),
@@ -49,8 +58,13 @@ func ListSecretsManagerSecrets(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *SecretsManagerSecret) Remove() error {
+type SecretsManagerSecret struct {
+	svc  *secretsmanager.SecretsManager
+	ARN  *string
+	tags []*secretsmanager.Tag
+}
 
+func (f *SecretsManagerSecret) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteSecret(&secretsmanager.DeleteSecretInput{
 		SecretId:                   f.ARN,
 		ForceDeleteWithoutRecovery: aws.Bool(true),

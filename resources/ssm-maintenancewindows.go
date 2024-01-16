@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ssm"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type SSMMaintenanceWindow struct {
-	svc *ssm.SSM
-	ID  *string
-}
+const SSMMaintenanceWindowResource = "SSMMaintenanceWindow"
 
 func init() {
-	register("SSMMaintenanceWindow", ListSSMMaintenanceWindows)
+	resource.Register(resource.Registration{
+		Name:   SSMMaintenanceWindowResource,
+		Scope:  nuke.Account,
+		Lister: &SSMMaintenanceWindowLister{},
+	})
 }
 
-func ListSSMMaintenanceWindows(sess *session.Session) ([]Resource, error) {
-	svc := ssm.New(sess)
-	resources := []Resource{}
+type SSMMaintenanceWindowLister struct{}
+
+func (l *SSMMaintenanceWindowLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := ssm.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &ssm.DescribeMaintenanceWindowsInput{
 		MaxResults: aws.Int64(50),
@@ -46,8 +56,12 @@ func ListSSMMaintenanceWindows(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *SSMMaintenanceWindow) Remove() error {
+type SSMMaintenanceWindow struct {
+	svc *ssm.SSM
+	ID  *string
+}
 
+func (f *SSMMaintenanceWindow) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteMaintenanceWindow(&ssm.DeleteMaintenanceWindowInput{
 		WindowId: f.ID,
 	})

@@ -1,24 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/appmesh"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type AppMeshMesh struct {
-	svc      *appmesh.AppMesh
-	meshName *string
-}
+const AppMeshMeshResource = "AppMeshMesh"
 
 func init() {
-	register("AppMeshMesh", ListAppMeshMeshes)
+	resource.Register(resource.Registration{
+		Name:   AppMeshMeshResource,
+		Scope:  nuke.Account,
+		Lister: &AppMeshMeshLister{},
+	})
 }
 
-func ListAppMeshMeshes(sess *session.Session) ([]Resource, error) {
-	svc := appmesh.New(sess)
-	resources := []Resource{}
+type AppMeshMeshLister struct{}
+
+func (l *AppMeshMeshLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+	svc := appmesh.New(opts.Session)
+	var resources []resource.Resource
 
 	params := &appmesh.ListMeshesInput{
 		Limit: aws.Int64(100),
@@ -47,7 +56,12 @@ func ListAppMeshMeshes(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *AppMeshMesh) Remove() error {
+type AppMeshMesh struct {
+	svc      *appmesh.AppMesh
+	meshName *string
+}
+
+func (f *AppMeshMesh) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteMesh(&appmesh.DeleteMeshInput{
 		MeshName: f.meshName,
 	})

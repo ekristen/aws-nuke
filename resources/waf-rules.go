@@ -1,25 +1,34 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/waf"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type WAFRule struct {
-	svc  *waf.WAF
-	ID   *string
-	rule *waf.Rule
-}
+const WAFRuleResource = "WAFRule"
 
 func init() {
-	register("WAFRule", ListWAFRules)
+	resource.Register(resource.Registration{
+		Name:   WAFRuleResource,
+		Scope:  nuke.Account,
+		Lister: &WAFRuleLister{},
+	})
 }
 
-func ListWAFRules(sess *session.Session) ([]Resource, error) {
-	svc := waf.New(sess)
-	resources := []Resource{}
+type WAFRuleLister struct{}
+
+func (l *WAFRuleLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := waf.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &waf.ListRulesInput{
 		Limit: aws.Int64(50),
@@ -52,14 +61,19 @@ func ListWAFRules(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *WAFRule) Remove() error {
+type WAFRule struct {
+	svc  *waf.WAF
+	ID   *string
+	rule *waf.Rule
+}
 
+func (f *WAFRule) Remove(_ context.Context) error {
 	tokenOutput, err := f.svc.GetChangeToken(&waf.GetChangeTokenInput{})
 	if err != nil {
 		return err
 	}
 
-	ruleUpdates := []*waf.RuleUpdate{}
+	var ruleUpdates []*waf.RuleUpdate
 	for _, predicate := range f.rule.Predicates {
 		ruleUpdates = append(ruleUpdates, &waf.RuleUpdate{
 			Action:    aws.String(waf.ChangeActionDelete),

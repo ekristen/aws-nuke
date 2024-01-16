@@ -1,29 +1,37 @@
 package resources
 
 import (
+	"context"
+
 	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type CloudWatchLogsLogGroup struct {
-	svc       *cloudwatchlogs.CloudWatchLogs
-	logGroup  *cloudwatchlogs.LogGroup
-	lastEvent string
-	tags      map[string]*string
-}
+const CloudWatchLogsLogGroupResource = "CloudWatchLogsLogGroup"
 
 func init() {
-	register("CloudWatchLogsLogGroup", ListCloudWatchLogsLogGroups)
+	resource.Register(resource.Registration{
+		Name:   CloudWatchLogsLogGroupResource,
+		Scope:  nuke.Account,
+		Lister: &CloudWatchLogsLogGroupLister{},
+	})
 }
 
-func ListCloudWatchLogsLogGroups(sess *session.Session) ([]Resource, error) {
-	svc := cloudwatchlogs.New(sess)
-	resources := []Resource{}
+type CloudWatchLogsLogGroupLister struct{}
+
+func (l *CloudWatchLogsLogGroupLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := cloudwatchlogs.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &cloudwatchlogs.DescribeLogGroupsInput{
 		Limit: aws.Int64(50),
@@ -80,8 +88,14 @@ func ListCloudWatchLogsLogGroups(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *CloudWatchLogsLogGroup) Remove() error {
+type CloudWatchLogsLogGroup struct {
+	svc       *cloudwatchlogs.CloudWatchLogs
+	logGroup  *cloudwatchlogs.LogGroup
+	lastEvent string
+	tags      map[string]*string
+}
 
+func (f *CloudWatchLogsLogGroup) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteLogGroup(&cloudwatchlogs.DeleteLogGroupInput{
 		LogGroupName: f.logGroup.LogGroupName,
 	})

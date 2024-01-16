@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/storagegateway"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type StorageGatewayGateway struct {
-	svc *storagegateway.StorageGateway
-	ARN *string
-}
+const StorageGatewayGatewayResource = "StorageGatewayGateway"
 
 func init() {
-	register("StorageGatewayGateway", ListStorageGatewayGateways)
+	resource.Register(resource.Registration{
+		Name:   StorageGatewayGatewayResource,
+		Scope:  nuke.Account,
+		Lister: &StorageGatewayGatewayLister{},
+	})
 }
 
-func ListStorageGatewayGateways(sess *session.Session) ([]Resource, error) {
-	svc := storagegateway.New(sess)
-	resources := []Resource{}
+type StorageGatewayGatewayLister struct{}
+
+func (l *StorageGatewayGatewayLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := storagegateway.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &storagegateway.ListGatewaysInput{
 		Limit: aws.Int64(25),
@@ -46,8 +56,12 @@ func ListStorageGatewayGateways(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *StorageGatewayGateway) Remove() error {
+type StorageGatewayGateway struct {
+	svc *storagegateway.StorageGateway
+	ARN *string
+}
 
+func (f *StorageGatewayGateway) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteGateway(&storagegateway.DeleteGatewayInput{
 		GatewayARN: f.ARN,
 	})

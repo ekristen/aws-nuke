@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/databasemigrationservice"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type DatabaseMigrationServiceCertificate struct {
-	svc *databasemigrationservice.DatabaseMigrationService
-	ARN *string
-}
+const DatabaseMigrationServiceCertificateResource = "DatabaseMigrationServiceCertificate"
 
 func init() {
-	register("DatabaseMigrationServiceCertificate", ListDatabaseMigrationServiceCertificates)
+	resource.Register(resource.Registration{
+		Name:   DatabaseMigrationServiceCertificateResource,
+		Scope:  nuke.Account,
+		Lister: &DatabaseMigrationServiceCertificateLister{},
+	})
 }
 
-func ListDatabaseMigrationServiceCertificates(sess *session.Session) ([]Resource, error) {
-	svc := databasemigrationservice.New(sess)
-	resources := []Resource{}
+type DatabaseMigrationServiceCertificateLister struct{}
+
+func (l *DatabaseMigrationServiceCertificateLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := databasemigrationservice.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &databasemigrationservice.DescribeCertificatesInput{
 		MaxRecords: aws.Int64(100),
@@ -46,8 +56,12 @@ func ListDatabaseMigrationServiceCertificates(sess *session.Session) ([]Resource
 	return resources, nil
 }
 
-func (f *DatabaseMigrationServiceCertificate) Remove() error {
+type DatabaseMigrationServiceCertificate struct {
+	svc *databasemigrationservice.DatabaseMigrationService
+	ARN *string
+}
 
+func (f *DatabaseMigrationServiceCertificate) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteEndpoint(&databasemigrationservice.DeleteEndpointInput{
 		EndpointArn: f.ARN,
 	})

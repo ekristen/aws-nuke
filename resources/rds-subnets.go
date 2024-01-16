@@ -1,11 +1,28 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/rds"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
+
+const RDSDBSubnetGroupResource = "RDSDBSubnetGroup"
+
+func init() {
+	resource.Register(resource.Registration{
+		Name:   RDSDBSubnetGroupResource,
+		Scope:  nuke.Account,
+		Lister: &RDSDBSubnetGroupLister{},
+	})
+}
+
+type RDSDBSubnetGroupLister struct{}
 
 type RDSDBSubnetGroup struct {
 	svc  *rds.RDS
@@ -13,27 +30,24 @@ type RDSDBSubnetGroup struct {
 	tags []*rds.Tag
 }
 
-func init() {
-	register("RDSDBSubnetGroup", ListRDSSubnetGroups)
-}
-
-func ListRDSSubnetGroups(sess *session.Session) ([]Resource, error) {
-	svc := rds.New(sess)
+func (l *RDSDBSubnetGroupLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+	svc := rds.New(opts.Session)
 
 	params := &rds.DescribeDBSubnetGroupsInput{MaxRecords: aws.Int64(100)}
 	resp, err := svc.DescribeDBSubnetGroups(params)
 	if err != nil {
 		return nil, err
 	}
-	var resources []Resource
+	var resources []resource.Resource
 	for _, subnetGroup := range resp.DBSubnetGroups {
 		tags, err := svc.ListTagsForResource(&rds.ListTagsForResourceInput{
-                        ResourceName: subnetGroup.DBSubnetGroupArn,
-                })
+			ResourceName: subnetGroup.DBSubnetGroupArn,
+		})
 
-                if err != nil {
-                        continue
-                }
+		if err != nil {
+			continue
+		}
 
 		resources = append(resources, &RDSDBSubnetGroup{
 			svc:  svc,
@@ -46,7 +60,7 @@ func ListRDSSubnetGroups(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (i *RDSDBSubnetGroup) Remove() error {
+func (i *RDSDBSubnetGroup) Remove(_ context.Context) error {
 	params := &rds.DeleteDBSubnetGroupInput{
 		DBSubnetGroupName: i.name,
 	}
@@ -64,12 +78,12 @@ func (i *RDSDBSubnetGroup) String() string {
 }
 
 func (i *RDSDBSubnetGroup) Properties() types.Properties {
-        properties := types.NewProperties()
-        properties.Set("Name", i.name)
+	properties := types.NewProperties()
+	properties.Set("Name", i.name)
 
-        for _, tag := range i.tags {
-                properties.SetTag(tag.Key, tag.Value)
-        }
+	for _, tag := range i.tags {
+		properties.SetTag(tag.Key, tag.Value)
+	}
 
-        return properties
+	return properties
 }

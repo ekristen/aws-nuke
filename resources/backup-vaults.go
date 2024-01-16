@@ -1,10 +1,16 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws/session"
+
 	"github.com/aws/aws-sdk-go/service/backup"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 type BackupVault struct {
@@ -14,22 +20,32 @@ type BackupVault struct {
 	tags map[string]*string
 }
 
+const AWSBackupVaultResource = "AWSBackupVault"
+
 func init() {
-	register("AWSBackupVault", ListBackupVaults)
+	resource.Register(resource.Registration{
+		Name:   AWSBackupVaultResource,
+		Scope:  nuke.Account,
+		Lister: &AWSBackupVaultLister{},
+	})
 }
 
-func ListBackupVaults(sess *session.Session) ([]Resource, error) {
-	svc := backup.New(sess)
-	max_vaults_len := int64(100)
+type AWSBackupVaultLister struct{}
+
+func (l *AWSBackupVaultLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := backup.New(opts.Session)
+	maxVaultsLen := int64(100)
 	params := &backup.ListBackupVaultsInput{
-		MaxResults: &max_vaults_len, // aws default limit on number of backup vaults per account
+		MaxResults: &maxVaultsLen, // aws default limit on number of backup vaults per account
 	}
 	resp, err := svc.ListBackupVaults(params)
 	if err != nil {
 		return nil, err
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for _, out := range resp.BackupVaultList {
 		tagsOutput, _ := svc.ListTags(&backup.ListTagsInput{ResourceArn: out.BackupVaultArn})
 		resources = append(resources, &BackupVault{
@@ -52,7 +68,7 @@ func (b *BackupVault) Properties() types.Properties {
 	return properties
 }
 
-func (b *BackupVault) Remove() error {
+func (b *BackupVault) Remove(_ context.Context) error {
 	_, err := b.svc.DeleteBackupVault(&backup.DeleteBackupVaultInput{
 		BackupVaultName: &b.name,
 	})

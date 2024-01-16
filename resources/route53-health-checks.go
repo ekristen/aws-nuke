@@ -1,22 +1,37 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/route53"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
+const Route53HealthCheckResource = "Route53HealthCheck"
+
 func init() {
-	register("Route53HealthCheck", ListRoute53HealthChecks)
+	resource.Register(resource.Registration{
+		Name:   Route53HealthCheckResource,
+		Scope:  nuke.Account,
+		Lister: &Route53HealthCheckLister{},
+	})
 }
 
-func ListRoute53HealthChecks(sess *session.Session) ([]Resource, error) {
-	svc := route53.New(sess)
+type Route53HealthCheckLister struct{}
+
+func (l *Route53HealthCheckLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := route53.New(opts.Session)
 	params := &route53.ListHealthChecksInput{}
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 
 	for {
 		resp, err := svc.ListHealthChecks(params)
@@ -44,7 +59,7 @@ type Route53HealthCheck struct {
 	id  *string
 }
 
-func (hz *Route53HealthCheck) Remove() error {
+func (hz *Route53HealthCheck) Remove(_ context.Context) error {
 	params := &route53.DeleteHealthCheckInput{
 		HealthCheckId: hz.id,
 	}

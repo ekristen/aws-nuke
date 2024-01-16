@@ -1,31 +1,39 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/efs"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type EFSFileSystem struct {
-	svc     *efs.EFS
-	id      string
-	name    string
-	tagList []*efs.Tag
-}
+const EFSFileSystemResource = "EFSFileSystem"
 
 func init() {
-	register("EFSFileSystem", ListEFSFileSystems)
+	resource.Register(resource.Registration{
+		Name:   EFSFileSystemResource,
+		Scope:  nuke.Account,
+		Lister: &EFSFileSystemLister{},
+	})
 }
 
-func ListEFSFileSystems(sess *session.Session) ([]Resource, error) {
-	svc := efs.New(sess)
+type EFSFileSystemLister struct{}
+
+func (l *EFSFileSystemLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := efs.New(opts.Session)
 
 	resp, err := svc.DescribeFileSystems(nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for _, fs := range resp.FileSystems {
 		lto, err := svc.ListTagsForResource(&efs.ListTagsForResourceInput{ResourceId: fs.FileSystemId})
 		if err != nil {
@@ -43,7 +51,14 @@ func ListEFSFileSystems(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (e *EFSFileSystem) Remove() error {
+type EFSFileSystem struct {
+	svc     *efs.EFS
+	id      string
+	name    string
+	tagList []*efs.Tag
+}
+
+func (e *EFSFileSystem) Remove(_ context.Context) error {
 	_, err := e.svc.DeleteFileSystem(&efs.DeleteFileSystemInput{
 		FileSystemId: &e.id,
 	})

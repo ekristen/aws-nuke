@@ -1,24 +1,32 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/appmesh"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type AppMeshVirtualGateway struct {
-	svc                *appmesh.AppMesh
-	meshName           *string
-	virtualGatewayName *string
-}
+const AppMeshVirtualGatewayResource = "AppMeshVirtualGateway"
 
 func init() {
-	register("AppMeshVirtualGateway", ListAppMeshVirtualGateways)
+	resource.Register(resource.Registration{
+		Name:   AppMeshVirtualGatewayResource,
+		Scope:  nuke.Account,
+		Lister: &AppMeshVirtualGatewayLister{},
+	})
 }
 
-func ListAppMeshVirtualGateways(sess *session.Session) ([]Resource, error) {
-	svc := appmesh.New(sess)
-	resources := []Resource{}
+type AppMeshVirtualGatewayLister struct{}
+
+func (l *AppMeshVirtualGatewayLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+	svc := appmesh.New(opts.Session)
+	var resources []resource.Resource
 
 	// Get Meshes
 	var meshNames []*string
@@ -66,7 +74,13 @@ func ListAppMeshVirtualGateways(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *AppMeshVirtualGateway) Remove() error {
+type AppMeshVirtualGateway struct {
+	svc                *appmesh.AppMesh
+	meshName           *string
+	virtualGatewayName *string
+}
+
+func (f *AppMeshVirtualGateway) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteVirtualGateway(&appmesh.DeleteVirtualGatewayInput{
 		MeshName:           f.meshName,
 		VirtualGatewayName: f.virtualGatewayName,

@@ -1,27 +1,34 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/servicecatalog"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type ServiceCatalogProvisionedProduct struct {
-	svc            *servicecatalog.ServiceCatalog
-	ID             *string
-	terminateToken *string
-	name           *string
-	productID      *string
-}
+const ServiceCatalogProvisionedProductResource = "ServiceCatalogProvisionedProduct"
 
 func init() {
-	register("ServiceCatalogProvisionedProduct", ListServiceCatalogProvisionedProducts)
+	resource.Register(resource.Registration{
+		Name:   ServiceCatalogProvisionedProductResource,
+		Scope:  nuke.Account,
+		Lister: &ServiceCatalogProvisionedProductLister{},
+	})
 }
 
-func ListServiceCatalogProvisionedProducts(sess *session.Session) ([]Resource, error) {
-	svc := servicecatalog.New(sess)
-	resources := []Resource{}
+type ServiceCatalogProvisionedProductLister struct{}
+
+func (l *ServiceCatalogProvisionedProductLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := servicecatalog.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &servicecatalog.ScanProvisionedProductsInput{
 		PageSize: aws.Int64(20),
@@ -57,8 +64,15 @@ func ListServiceCatalogProvisionedProducts(sess *session.Session) ([]Resource, e
 	return resources, nil
 }
 
-func (f *ServiceCatalogProvisionedProduct) Remove() error {
+type ServiceCatalogProvisionedProduct struct {
+	svc            *servicecatalog.ServiceCatalog
+	ID             *string
+	terminateToken *string
+	name           *string
+	productID      *string
+}
 
+func (f *ServiceCatalogProvisionedProduct) Remove(_ context.Context) error {
 	_, err := f.svc.TerminateProvisionedProduct(&servicecatalog.TerminateProvisionedProductInput{
 		ProvisionedProductId: f.ID,
 		IgnoreErrors:         aws.Bool(true),

@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iot"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type IoTRoleAlias struct {
-	svc       *iot.IoT
-	roleAlias *string
-}
+const IoTRoleAliasResource = "IoTRoleAlias"
 
 func init() {
-	register("IoTRoleAlias", ListIoTRoleAliases)
+	resource.Register(resource.Registration{
+		Name:   IoTRoleAliasResource,
+		Scope:  nuke.Account,
+		Lister: &IoTRoleAliasLister{},
+	})
 }
 
-func ListIoTRoleAliases(sess *session.Session) ([]Resource, error) {
-	svc := iot.New(sess)
-	resources := []Resource{}
+type IoTRoleAliasLister struct{}
+
+func (l *IoTRoleAliasLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := iot.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &iot.ListRoleAliasesInput{
 		PageSize: aws.Int64(25),
@@ -44,8 +54,12 @@ func ListIoTRoleAliases(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *IoTRoleAlias) Remove() error {
+type IoTRoleAlias struct {
+	svc       *iot.IoT
+	roleAlias *string
+}
 
+func (f *IoTRoleAlias) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteRoleAlias(&iot.DeleteRoleAliasInput{
 		RoleAlias: f.roleAlias,
 	})

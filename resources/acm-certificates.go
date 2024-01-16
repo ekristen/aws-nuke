@@ -1,26 +1,34 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/acm"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type ACMCertificate struct {
-	svc               *acm.ACM
-	certificateARN    *string
-	certificateDetail *acm.CertificateDetail
-	tags              []*acm.Tag
-}
+const ACMCertificateResource = "ACMCertificate"
 
 func init() {
-	register("ACMCertificate", ListACMCertificates)
+	resource.Register(resource.Registration{
+		Name:   ACMCertificateResource,
+		Scope:  nuke.Account,
+		Lister: &ACMCertificateLister{},
+	})
 }
 
-func ListACMCertificates(sess *session.Session) ([]Resource, error) {
-	svc := acm.New(sess)
-	resources := []Resource{}
+type ACMCertificateLister struct{}
+
+func (l *ACMCertificateLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := acm.New(opts.Session)
+	var resources []resource.Resource
 
 	params := &acm.ListCertificatesInput{
 		MaxItems: aws.Int64(100),
@@ -78,8 +86,14 @@ func ListACMCertificates(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *ACMCertificate) Remove() error {
+type ACMCertificate struct {
+	svc               *acm.ACM
+	certificateARN    *string
+	certificateDetail *acm.CertificateDetail
+	tags              []*acm.Tag
+}
 
+func (f *ACMCertificate) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteCertificate(&acm.DeleteCertificateInput{
 		CertificateArn: f.certificateARN,
 	})

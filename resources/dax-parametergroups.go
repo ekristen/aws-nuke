@@ -1,11 +1,16 @@
 package resources
 
 import (
+	"context"
+
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dax"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 type DAXParameterGroup struct {
@@ -13,13 +18,23 @@ type DAXParameterGroup struct {
 	parameterGroupName *string
 }
 
+const DAXParameterGroupResource = "DAXParameterGroup"
+
 func init() {
-	register("DAXParameterGroup", ListDAXParameterGroups)
+	resource.Register(resource.Registration{
+		Name:   DAXParameterGroupResource,
+		Scope:  nuke.Account,
+		Lister: &DAXParameterGroupLister{},
+	})
 }
 
-func ListDAXParameterGroups(sess *session.Session) ([]Resource, error) {
-	svc := dax.New(sess)
-	resources := []Resource{}
+type DAXParameterGroupLister struct{}
+
+func (l *DAXParameterGroupLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := dax.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &dax.DescribeParameterGroupsInput{
 		MaxResults: aws.Int64(100),
@@ -51,8 +66,7 @@ func ListDAXParameterGroups(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *DAXParameterGroup) Remove() error {
-
+func (f *DAXParameterGroup) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteParameterGroup(&dax.DeleteParameterGroupInput{
 		ParameterGroupName: f.parameterGroupName,
 	})

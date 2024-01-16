@@ -1,26 +1,37 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type EC2TGWAttachment struct {
-	svc  *ec2.EC2
-	tgwa *ec2.TransitGatewayAttachment
-}
+const EC2TGWAttachmentResource = "EC2TGWAttachment"
 
 func init() {
-	register("EC2TGWAttachment", ListEC2TGWAttachments)
+	resource.Register(resource.Registration{
+		Name:   EC2TGWAttachmentResource,
+		Scope:  nuke.Account,
+		Lister: &EC2TGWAttachmentLister{},
+	})
 }
 
-func ListEC2TGWAttachments(sess *session.Session) ([]Resource, error) {
-	svc := ec2.New(sess)
+type EC2TGWAttachmentLister struct{}
+
+func (l *EC2TGWAttachmentLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := ec2.New(opts.Session)
+
 	params := &ec2.DescribeTransitGatewayAttachmentsInput{}
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for {
 		resp, err := svc.DescribeTransitGatewayAttachments(params)
 		if err != nil {
@@ -46,7 +57,12 @@ func ListEC2TGWAttachments(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (e *EC2TGWAttachment) Remove() error {
+type EC2TGWAttachment struct {
+	svc  *ec2.EC2
+	tgwa *ec2.TransitGatewayAttachment
+}
+
+func (e *EC2TGWAttachment) Remove(_ context.Context) error {
 	if *e.tgwa.ResourceType == "VPN" {
 		// This will get deleted as part of EC2VPNConnection, there is no API
 		// as part of TGW to delete VPN attachments.

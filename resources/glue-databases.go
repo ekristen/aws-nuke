@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/glue"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type GlueDatabase struct {
-	svc  *glue.Glue
-	name *string
-}
+const GlueDatabaseResource = "GlueDatabase"
 
 func init() {
-	register("GlueDatabase", ListGlueDatabases)
+	resource.Register(resource.Registration{
+		Name:   GlueDatabaseResource,
+		Scope:  nuke.Account,
+		Lister: &GlueDatabaseLister{},
+	})
 }
 
-func ListGlueDatabases(sess *session.Session) ([]Resource, error) {
-	svc := glue.New(sess)
-	resources := []Resource{}
+type GlueDatabaseLister struct{}
+
+func (l *GlueDatabaseLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := glue.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &glue.GetDatabasesInput{
 		MaxResults: aws.Int64(100),
@@ -46,8 +56,12 @@ func ListGlueDatabases(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *GlueDatabase) Remove() error {
+type GlueDatabase struct {
+	svc  *glue.Glue
+	name *string
+}
 
+func (f *GlueDatabase) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteDatabase(&glue.DeleteDatabaseInput{
 		Name: f.name,
 	})

@@ -1,23 +1,40 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws/session"
+
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/cloudformation/cloudformationiface"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
-	"github.com/sirupsen/logrus"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
+const CloudFormationTypeResource = "CloudFormationType"
+
 func init() {
-	register("CloudFormationType", ListCloudFormationTypes)
+	resource.Register(resource.Registration{
+		Name:   CloudFormationTypeResource,
+		Scope:  nuke.Account,
+		Lister: &CloudFormationTypeLister{},
+	})
 }
 
-func ListCloudFormationTypes(sess *session.Session) ([]Resource, error) {
-	svc := cloudformation.New(sess)
+type CloudFormationTypeLister struct{}
+
+func (l *CloudFormationTypeLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := cloudformation.New(opts.Session)
 
 	params := &cloudformation.ListTypesInput{}
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 
 	for {
 		resp, err := svc.ListTypes(params)
@@ -67,7 +84,7 @@ func (cfs *CloudFormationType) findAllVersionSummaries() ([]*cloudformation.Type
 	}
 }
 
-func (cfs *CloudFormationType) Remove() error {
+func (cfs *CloudFormationType) Remove(_ context.Context) error {
 	typeVersionSummaries, loadErr := cfs.findAllVersionSummaries()
 	if loadErr != nil {
 		return loadErr
@@ -91,7 +108,7 @@ func (cfs *CloudFormationType) Remove() error {
 	}
 
 	if failed {
-		return fmt.Errorf("Unable to remove all CloudFormationType versions arn=%s", *cfs.typeSummary.TypeArn)
+		return fmt.Errorf("unable to remove all CloudFormationType versions arn=%s", *cfs.typeSummary.TypeArn)
 	}
 
 	_, err := cfs.svc.DeregisterType(&cloudformation.DeregisterTypeInput{

@@ -1,21 +1,31 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/cloudsearch"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type CloudSearchDomain struct {
-	svc        *cloudsearch.CloudSearch
-	domainName *string
-}
+const CloudSearchDomainResource = "CloudSearchDomain"
 
 func init() {
-	register("CloudSearchDomain", ListCloudSearchDomains)
+	resource.Register(resource.Registration{
+		Name:   CloudSearchDomainResource,
+		Scope:  nuke.Account,
+		Lister: &CloudSearchDomainLister{},
+	})
 }
 
-func ListCloudSearchDomains(sess *session.Session) ([]Resource, error) {
-	svc := cloudsearch.New(sess)
+type CloudSearchDomainLister struct{}
+
+func (l *CloudSearchDomainLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := cloudsearch.New(opts.Session)
 
 	params := &cloudsearch.DescribeDomainsInput{}
 
@@ -24,7 +34,7 @@ func ListCloudSearchDomains(sess *session.Session) ([]Resource, error) {
 		return nil, err
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for _, domain := range resp.DomainStatusList {
 		resources = append(resources, &CloudSearchDomain{
 			svc:        svc,
@@ -34,8 +44,12 @@ func ListCloudSearchDomains(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *CloudSearchDomain) Remove() error {
+type CloudSearchDomain struct {
+	svc        *cloudsearch.CloudSearch
+	domainName *string
+}
 
+func (f *CloudSearchDomain) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteDomain(&cloudsearch.DeleteDomainInput{
 		DomainName: f.domainName,
 	})

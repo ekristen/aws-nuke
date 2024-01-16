@@ -1,34 +1,43 @@
 package resources
 
 import (
+	"context"
+
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3control"
 	"github.com/aws/aws-sdk-go/service/sts"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
+const S3AccessPointResource = "S3AccessPoint"
+
 func init() {
-	register("S3AccessPoint", ListS3AccessPoints)
+	resource.Register(resource.Registration{
+		Name:   S3AccessPointResource,
+		Scope:  nuke.Account,
+		Lister: &S3AccessPointLister{},
+	})
 }
 
-type S3AccessPoint struct {
-	svc         *s3control.S3Control
-	accountId   *string
-	accessPoint *s3control.AccessPoint
-}
+type S3AccessPointLister struct{}
 
-func ListS3AccessPoints(s *session.Session) ([]Resource, error) {
-	// Lookup current account ID
-	stsSvc := sts.New(s)
+func (l *S3AccessPointLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+	stsSvc := sts.New(opts.Session)
 	callerID, err := stsSvc.GetCallerIdentity(&sts.GetCallerIdentityInput{})
 	if err != nil {
 		return nil, err
 	}
 	accountId := callerID.Account
 
-	resources := []Resource{}
-	svc := s3control.New(s)
+	var resources []resource.Resource
+	svc := s3control.New(opts.Session)
 	for {
 		params := &s3control.ListAccessPointsInput{
 			AccountId: accountId,
@@ -56,7 +65,13 @@ func ListS3AccessPoints(s *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (e *S3AccessPoint) Remove() error {
+type S3AccessPoint struct {
+	svc         *s3control.S3Control
+	accountId   *string
+	accessPoint *s3control.AccessPoint
+}
+
+func (e *S3AccessPoint) Remove(_ context.Context) error {
 	_, err := e.svc.DeleteAccessPoint(&s3control.DeleteAccessPointInput{
 		AccountId: e.accountId,
 		Name:      aws.String(*e.accessPoint.Name),
@@ -76,5 +91,5 @@ func (e *S3AccessPoint) Properties() types.Properties {
 }
 
 func (e *S3AccessPoint) String() string {
-	return *e.accessPoint.AccessPointArn
+	return ptr.ToString(e.accessPoint.AccessPointArn)
 }

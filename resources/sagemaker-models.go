@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sagemaker"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type SageMakerModel struct {
-	svc       *sagemaker.SageMaker
-	modelName *string
-}
+const SageMakerModelResource = "SageMakerModel"
 
 func init() {
-	register("SageMakerModel", ListSageMakerModels)
+	resource.Register(resource.Registration{
+		Name:   SageMakerModelResource,
+		Scope:  nuke.Account,
+		Lister: &SageMakerModelLister{},
+	})
 }
 
-func ListSageMakerModels(sess *session.Session) ([]Resource, error) {
-	svc := sagemaker.New(sess)
-	resources := []Resource{}
+type SageMakerModelLister struct{}
+
+func (l *SageMakerModelLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := sagemaker.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &sagemaker.ListModelsInput{
 		MaxResults: aws.Int64(30),
@@ -46,8 +56,12 @@ func ListSageMakerModels(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *SageMakerModel) Remove() error {
+type SageMakerModel struct {
+	svc       *sagemaker.SageMaker
+	modelName *string
+}
 
+func (f *SageMakerModel) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteModel(&sagemaker.DeleteModelInput{
 		ModelName: f.modelName,
 	})

@@ -1,23 +1,32 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/lambda"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type LambdaFunction struct {
-	svc          *lambda.Lambda
-	functionName *string
-	tags         map[string]*string
-}
+const LambdaFunctionResource = "LambdaFunction"
 
 func init() {
-	register("LambdaFunction", ListLambdaFunctions)
+	resource.Register(resource.Registration{
+		Name:   LambdaFunctionResource,
+		Scope:  nuke.Account,
+		Lister: &LambdaFunctionLister{},
+	})
 }
 
-func ListLambdaFunctions(sess *session.Session) ([]Resource, error) {
-	svc := lambda.New(sess)
+type LambdaFunctionLister struct{}
+
+func (l *LambdaFunctionLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := lambda.New(opts.Session)
 
 	functions := make([]*lambda.FunctionConfiguration, 0)
 
@@ -34,7 +43,7 @@ func ListLambdaFunctions(sess *session.Session) ([]Resource, error) {
 		return nil, err
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for _, function := range functions {
 		tags, err := svc.ListTags(&lambda.ListTagsInput{
 			Resource: function.FunctionArn,
@@ -54,6 +63,12 @@ func ListLambdaFunctions(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
+type LambdaFunction struct {
+	svc          *lambda.Lambda
+	functionName *string
+	tags         map[string]*string
+}
+
 func (f *LambdaFunction) Properties() types.Properties {
 	properties := types.NewProperties()
 	properties.Set("Name", f.functionName)
@@ -65,8 +80,7 @@ func (f *LambdaFunction) Properties() types.Properties {
 	return properties
 }
 
-func (f *LambdaFunction) Remove() error {
-
+func (f *LambdaFunction) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteFunction(&lambda.DeleteFunctionInput{
 		FunctionName: f.functionName,
 	})

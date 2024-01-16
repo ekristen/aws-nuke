@@ -1,27 +1,35 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/waf"
 	"github.com/aws/aws-sdk-go/service/wafregional"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type WAFRegionalRateBasedRulePredicate struct {
-	svc       *wafregional.WAFRegional
-	ruleID    *string
-	predicate *waf.Predicate
-	rateLimit *int64
-}
+const WAFRegionalRateBasedRulePredicateResource = "WAFRegionalRateBasedRulePredicate"
 
 func init() {
-	register("WAFRegionalRateBasedRulePredicate", ListWAFRegionalRateBasedRulePredicates)
+	resource.Register(resource.Registration{
+		Name:   WAFRegionalRateBasedRulePredicateResource,
+		Scope:  nuke.Account,
+		Lister: &WAFRegionalRateBasedRulePredicateLister{},
+	})
 }
 
-func ListWAFRegionalRateBasedRulePredicates(sess *session.Session) ([]Resource, error) {
-	svc := wafregional.New(sess)
-	resources := []Resource{}
+type WAFRegionalRateBasedRulePredicateLister struct{}
+
+func (l *WAFRegionalRateBasedRulePredicateLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := wafregional.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &waf.ListRateBasedRulesInput{
 		Limit: aws.Int64(50),
@@ -61,7 +69,14 @@ func ListWAFRegionalRateBasedRulePredicates(sess *session.Session) ([]Resource, 
 	return resources, nil
 }
 
-func (r *WAFRegionalRateBasedRulePredicate) Remove() error {
+type WAFRegionalRateBasedRulePredicate struct {
+	svc       *wafregional.WAFRegional
+	ruleID    *string
+	predicate *waf.Predicate
+	rateLimit *int64
+}
+
+func (r *WAFRegionalRateBasedRulePredicate) Remove(_ context.Context) error {
 	tokenOutput, err := r.svc.GetChangeToken(&waf.GetChangeTokenInput{})
 	if err != nil {
 		return err

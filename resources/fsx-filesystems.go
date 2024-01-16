@@ -1,24 +1,34 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/fsx"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type FSxFileSystem struct {
-	svc        *fsx.FSx
-	filesystem *fsx.FileSystem
-}
+const FSxFileSystemResource = "FSxFileSystem"
 
 func init() {
-	register("FSxFileSystem", ListFSxFileSystems)
+	resource.Register(resource.Registration{
+		Name:   FSxFileSystemResource,
+		Scope:  nuke.Account,
+		Lister: &FSxFileSystemLister{},
+	})
 }
 
-func ListFSxFileSystems(sess *session.Session) ([]Resource, error) {
-	svc := fsx.New(sess)
-	resources := []Resource{}
+type FSxFileSystemLister struct{}
+
+func (l *FSxFileSystemLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := fsx.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &fsx.DescribeFileSystemsInput{
 		MaxResults: aws.Int64(100),
@@ -45,7 +55,12 @@ func ListFSxFileSystems(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *FSxFileSystem) Remove() error {
+type FSxFileSystem struct {
+	svc        *fsx.FSx
+	filesystem *fsx.FileSystem
+}
+
+func (f *FSxFileSystem) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteFileSystem(&fsx.DeleteFileSystemInput{
 		FileSystemId: f.filesystem.FileSystemId,
 	})

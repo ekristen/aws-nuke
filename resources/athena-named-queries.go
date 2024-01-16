@@ -1,24 +1,38 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/athena"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
+const AthenaNamedQueryResource = "AthenaNamedQuery"
+
 func init() {
-	register("AthenaNamedQuery", ListAthenaNamedQueries,
-		mapCloudControl("AWS::Athena::NamedQuery"))
+	resource.Register(resource.Registration{
+		Name:   AthenaNamedQueryResource,
+		Scope:  nuke.Account,
+		Lister: &AthenaNamedQueryLister{},
+	})
 }
+
+type AthenaNamedQueryLister struct{}
 
 type AthenaNamedQuery struct {
 	svc *athena.Athena
 	id  *string
 }
 
-func ListAthenaNamedQueries(sess *session.Session) ([]Resource, error) {
-	svc := athena.New(sess)
-	resources := []Resource{}
+func (l *AthenaNamedQueryLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := athena.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	// List WorkGroup
 	var workgroupNames []*string
@@ -61,7 +75,7 @@ func ListAthenaNamedQueries(sess *session.Session) ([]Resource, error) {
 	return resources, err
 }
 
-func (a *AthenaNamedQuery) Remove() error {
+func (a *AthenaNamedQuery) Remove(_ context.Context) error {
 	_, err := a.svc.DeleteNamedQuery(&athena.DeleteNamedQueryInput{
 		NamedQueryId: a.id,
 	})

@@ -1,29 +1,37 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/acmpca"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type ACMPCACertificateAuthorityState struct {
-	svc    *acmpca.ACMPCA
-	ARN    *string
-	status *string
-	tags   []*acmpca.Tag
-}
+const ACMPCACertificateAuthorityStateResource = "ACMPCACertificateAuthorityState"
 
 func init() {
-	register("ACMPCACertificateAuthorityState", ListACMPCACertificateAuthorityStates)
+	resource.Register(resource.Registration{
+		Name:   ACMPCACertificateAuthorityStateResource,
+		Scope:  nuke.Account,
+		Lister: &ACMPCACertificateAuthorityStateLister{},
+	})
 }
 
-func ListACMPCACertificateAuthorityStates(sess *session.Session) ([]Resource, error) {
-	svc := acmpca.New(sess)
-	resources := []Resource{}
-	tags := []*acmpca.Tag{}
+type ACMPCACertificateAuthorityStateLister struct{}
+
+func (l *ACMPCACertificateAuthorityStateLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+	svc := acmpca.New(opts.Session)
+
+	var resources []resource.Resource
+	var tags []*acmpca.Tag
 
 	params := &acmpca.ListCertificateAuthoritiesInput{
 		MaxResults: aws.Int64(100),
@@ -71,7 +79,14 @@ func ListACMPCACertificateAuthorityStates(sess *session.Session) ([]Resource, er
 	return resources, nil
 }
 
-func (f *ACMPCACertificateAuthorityState) Remove() error {
+type ACMPCACertificateAuthorityState struct {
+	svc    *acmpca.ACMPCA
+	ARN    *string
+	status *string
+	tags   []*acmpca.Tag
+}
+
+func (f *ACMPCACertificateAuthorityState) Remove(_ context.Context) error {
 
 	_, err := f.svc.UpdateCertificateAuthority(&acmpca.UpdateCertificateAuthorityInput{
 		CertificateAuthorityArn: f.ARN,

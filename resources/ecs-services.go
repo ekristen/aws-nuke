@@ -1,26 +1,35 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ecs"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type ECSService struct {
-	svc        *ecs.ECS
-	serviceARN *string
-	clusterARN *string
-}
+const ECSServiceResource = "ECSService"
 
 func init() {
-	register("ECSService", ListECSServices)
+	resource.Register(resource.Registration{
+		Name:   ECSServiceResource,
+		Scope:  nuke.Account,
+		Lister: &ECSServiceLister{},
+	})
 }
 
-func ListECSServices(sess *session.Session) ([]Resource, error) {
-	svc := ecs.New(sess)
-	resources := []Resource{}
+type ECSServiceLister struct{}
+
+func (l *ECSServiceLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := ecs.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 	clusters := []*string{}
 
 	clusterParams := &ecs.ListClustersInput{
@@ -75,8 +84,13 @@ func ListECSServices(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *ECSService) Remove() error {
+type ECSService struct {
+	svc        *ecs.ECS
+	serviceARN *string
+	clusterARN *string
+}
 
+func (f *ECSService) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteService(&ecs.DeleteServiceInput{
 		Cluster: f.clusterARN,
 		Service: f.serviceARN,

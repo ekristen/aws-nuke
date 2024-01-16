@@ -1,16 +1,24 @@
 package resources
 
 import (
+	"context"
+
 	"encoding/json"
 	"fmt"
+	"github.com/aws/aws-sdk-go/aws/awserr"
+	sdkerrors "github.com/ekristen/libnuke/pkg/errors"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/cloudcontrolapi"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
 	"github.com/sirupsen/logrus"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/cloudcontrolapi"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 func init() {
@@ -20,13 +28,16 @@ func init() {
 	//
 	// To get an overview of available cloud control resource types run this
 	// command in the repo root:
-	//     go run ./dev/list-cloudcontrol
+	//     go run ./tools/list-cloudcontrol
+	//
+	// If there's a resource definition for the resource type, then there's no
+	// need to define it here as well, you should use the MapCloudControl func
+	// see ecr-public-repository.go for an example.
 	registerCloudControl("AWS::AppFlow::ConnectorProfile")
 	registerCloudControl("AWS::AppFlow::Flow")
 	registerCloudControl("AWS::AppRunner::Service")
 	registerCloudControl("AWS::ApplicationInsights::Application")
 	registerCloudControl("AWS::Backup::Framework")
-	registerCloudControl("AWS::ECR::PublicRepository")
 	registerCloudControl("AWS::ECR::PullThroughCacheRule")
 	registerCloudControl("AWS::ECR::RegistryPolicy")
 	registerCloudControl("AWS::ECR::ReplicationConfiguration")
@@ -41,50 +52,71 @@ func init() {
 	registerCloudControl("AWS::NetworkFirewall::RuleGroup")
 }
 
-func NewListCloudControlResource(typeName string) func(*session.Session) ([]Resource, error) {
-	return func(sess *session.Session) ([]Resource, error) {
-		svc := cloudcontrolapi.New(sess)
+func registerCloudControl(typeName string) {
+	resource.Register(resource.Registration{
+		Name:  typeName,
+		Scope: nuke.Account,
+		Lister: &CloudControlResourceLister{
+			TypeName: typeName,
+		},
+	}, nuke.MapCloudControl(typeName))
+}
 
-		params := &cloudcontrolapi.ListResourcesInput{
-			TypeName: aws.String(typeName),
-		}
-		resources := make([]Resource, 0)
-		err := svc.ListResourcesPages(params, func(page *cloudcontrolapi.ListResourcesOutput, lastPage bool) bool {
-			for _, desc := range page.ResourceDescriptions {
-				identifier := aws.StringValue(desc.Identifier)
+type CloudControlResourceLister struct {
+	TypeName string
+}
 
-				properties, err := cloudControlParseProperties(aws.StringValue(desc.Properties))
-				if err != nil {
-					logrus.
-						WithError(errors.WithStack(err)).
-						WithField("type-name", typeName).
-						WithField("identifier", identifier).
-						Error("failed to parse cloud control properties")
-					continue
-				}
-				properties = properties.Set("Identifier", identifier)
-				resources = append(resources, &CloudControlResource{
-					svc:         svc,
-					clientToken: uuid.New().String(),
-					typeName:    typeName,
-					identifier:  identifier,
-					properties:  properties,
-				})
-			}
+func (l *CloudControlResourceLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
 
-			return true
-		})
+	svc := cloudcontrolapi.New(opts.Session)
 
-		if err != nil {
-			return nil, err
-		}
-
-		return resources, nil
+	params := &cloudcontrolapi.ListResourcesInput{
+		TypeName: aws.String(l.TypeName),
 	}
+	resources := make([]resource.Resource, 0)
+	if err := svc.ListResourcesPages(params, func(page *cloudcontrolapi.ListResourcesOutput, lastPage bool) bool {
+		for _, desc := range page.ResourceDescriptions {
+			identifier := aws.StringValue(desc.Identifier)
+
+			properties, err := cloudControlParseProperties(aws.StringValue(desc.Properties))
+			if err != nil {
+				logrus.
+					WithError(errors.WithStack(err)).
+					WithField("type-name", l.TypeName).
+					WithField("identifier", identifier).
+					Error("failed to parse cloud control properties")
+				continue
+			}
+			properties = properties.Set("Identifier", identifier)
+			resources = append(resources, &CloudControlResource{
+				svc:         svc,
+				clientToken: uuid.New().String(),
+				typeName:    l.TypeName,
+				identifier:  identifier,
+				properties:  properties,
+			})
+		}
+
+		return true
+	}); err != nil {
+		// If a Type is not available in a region we shouldn't throw an error for it.
+		var awsError awserr.Error
+		if errors.As(err, &awsError) {
+			if awsError.Code() == "TypeNotFoundException" {
+				return nil, sdkerrors.ErrSkipRequest(
+					"cloudformation type not available in region: " + *opts.Session.Config.Region)
+			}
+		}
+
+		return nil, err
+	}
+
+	return resources, nil
 }
 
 func cloudControlParseProperties(payload string) (types.Properties, error) {
-	// Warning: The implementation of this function is not very straighforward,
+	// Warning: The implementation of this function is not very straightforward,
 	// because the aws-nuke filter functions expect a very rigid structure and
 	// the properties from the Cloud Control API are very dynamic.
 
@@ -152,11 +184,11 @@ func (r *CloudControlResource) String() string {
 	return r.identifier
 }
 
-func (i *CloudControlResource) Remove() error {
-	_, err := i.svc.DeleteResource(&cloudcontrolapi.DeleteResourceInput{
-		ClientToken: &i.clientToken,
-		Identifier:  &i.identifier,
-		TypeName:    &i.typeName,
+func (r *CloudControlResource) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteResource(&cloudcontrolapi.DeleteResourceInput{
+		ClientToken: &r.clientToken,
+		Identifier:  &r.identifier,
+		TypeName:    &r.typeName,
 	})
 	return err
 }

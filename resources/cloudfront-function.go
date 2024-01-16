@@ -1,24 +1,33 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/cloudfront"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type CloudFrontFunction struct {
-	svc   *cloudfront.CloudFront
-	name  *string
-	stage *string
-}
+const CloudFrontFunctionResource = "CloudFrontFunction"
 
 func init() {
-	register("CloudFrontFunction", ListCloudFrontFunctions)
+	resource.Register(resource.Registration{
+		Name:   CloudFrontFunctionResource,
+		Scope:  nuke.Account,
+		Lister: &CloudFrontFunctionLister{},
+	})
 }
 
-func ListCloudFrontFunctions(sess *session.Session) ([]Resource, error) {
-	svc := cloudfront.New(sess)
-	resources := []Resource{}
+type CloudFrontFunctionLister struct{}
+
+func (l *CloudFrontFunctionLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := cloudfront.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 	params := &cloudfront.ListFunctionsInput{}
 
 	for {
@@ -45,7 +54,13 @@ func ListCloudFrontFunctions(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *CloudFrontFunction) Remove() error {
+type CloudFrontFunction struct {
+	svc   *cloudfront.CloudFront
+	name  *string
+	stage *string
+}
+
+func (f *CloudFrontFunction) Remove(_ context.Context) error {
 	resp, err := f.svc.GetFunction(&cloudfront.GetFunctionInput{
 		Name:  f.name,
 		Stage: f.stage,

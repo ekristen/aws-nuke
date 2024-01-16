@@ -1,26 +1,35 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/waf"
 	"github.com/aws/aws-sdk-go/service/wafregional"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type WAFRegionalByteMatchSetIP struct {
-	svc        *wafregional.WAFRegional
-	matchSetid *string
-	tuple      *waf.ByteMatchTuple
-}
+const WAFRegionalByteMatchSetIPResource = "WAFRegionalByteMatchSetIP"
 
 func init() {
-	register("WAFRegionalByteMatchSetIP", ListWAFRegionalByteMatchSetIPs)
+	resource.Register(resource.Registration{
+		Name:   WAFRegionalByteMatchSetIPResource,
+		Scope:  nuke.Account,
+		Lister: &WAFRegionalByteMatchSetIPLister{},
+	})
 }
 
-func ListWAFRegionalByteMatchSetIPs(sess *session.Session) ([]Resource, error) {
-	svc := wafregional.New(sess)
-	resources := []Resource{}
+type WAFRegionalByteMatchSetIPLister struct{}
+
+func (l *WAFRegionalByteMatchSetIPLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := wafregional.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &waf.ListByteMatchSetsInput{
 		Limit: aws.Int64(50),
@@ -44,7 +53,7 @@ func ListWAFRegionalByteMatchSetIPs(sess *session.Session) ([]Resource, error) {
 			for _, tuple := range details.ByteMatchSet.ByteMatchTuples {
 				resources = append(resources, &WAFRegionalByteMatchSetIP{
 					svc:        svc,
-					matchSetid: set.ByteMatchSetId,
+					matchSetID: set.ByteMatchSetId,
 					tuple:      tuple,
 				})
 			}
@@ -60,7 +69,13 @@ func ListWAFRegionalByteMatchSetIPs(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (r *WAFRegionalByteMatchSetIP) Remove() error {
+type WAFRegionalByteMatchSetIP struct {
+	svc        *wafregional.WAFRegional
+	matchSetID *string
+	tuple      *waf.ByteMatchTuple
+}
+
+func (r *WAFRegionalByteMatchSetIP) Remove(_ context.Context) error {
 	tokenOutput, err := r.svc.GetChangeToken(&waf.GetChangeTokenInput{})
 	if err != nil {
 		return err
@@ -68,7 +83,7 @@ func (r *WAFRegionalByteMatchSetIP) Remove() error {
 
 	_, err = r.svc.UpdateByteMatchSet(&waf.UpdateByteMatchSetInput{
 		ChangeToken:    tokenOutput.ChangeToken,
-		ByteMatchSetId: r.matchSetid,
+		ByteMatchSetId: r.matchSetID,
 		Updates: []*waf.ByteMatchSetUpdate{
 			&waf.ByteMatchSetUpdate{
 				Action:         aws.String("DELETE"),
@@ -82,7 +97,7 @@ func (r *WAFRegionalByteMatchSetIP) Remove() error {
 
 func (r *WAFRegionalByteMatchSetIP) Properties() types.Properties {
 	return types.NewProperties().
-		Set("ByteMatchSetID", r.matchSetid).
+		Set("ByteMatchSetID", r.matchSetID).
 		Set("FieldToMatchType", r.tuple.FieldToMatch.Type).
 		Set("FieldToMatchData", r.tuple.FieldToMatch.Data).
 		Set("TargetString", r.tuple.TargetString)

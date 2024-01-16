@@ -2,11 +2,11 @@ package config
 
 import (
 	"fmt"
+	"github.com/ekristen/libnuke/pkg/filter"
+	"github.com/ekristen/libnuke/pkg/types"
 	"reflect"
 	"strings"
 	"testing"
-
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
 )
 
 func TestConfigBlocklist(t *testing.T) {
@@ -46,7 +46,7 @@ func TestConfigBlocklist(t *testing.T) {
 }
 
 func TestLoadExampleConfig(t *testing.T) {
-	config, err := Load("test-fixtures/example.yaml")
+	config, err := Load("testdata/example.yaml")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -57,12 +57,12 @@ func TestLoadExampleConfig(t *testing.T) {
 		Accounts: map[string]Account{
 			"555133742": {
 				Presets: []string{"terraform"},
-				Filters: Filters{
+				Filters: filter.Filters{
 					"IAMRole": {
-						NewExactFilter("uber.admin"),
+						filter.NewExactFilter("uber.admin"),
 					},
 					"IAMRolePolicyAttachment": {
-						NewExactFilter("uber.admin -> AdministratorAccess"),
+						filter.NewExactFilter("uber.admin -> AdministratorAccess"),
 					},
 				},
 				ResourceTypes: ResourceTypes{
@@ -76,10 +76,10 @@ func TestLoadExampleConfig(t *testing.T) {
 		},
 		Presets: map[string]PresetDefinitions{
 			"terraform": {
-				Filters: Filters{
+				Filters: filter.Filters{
 					"S3Bucket": {
-						Filter{
-							Type:  FilterTypeGlob,
+						filter.Filter{
+							Type:  filter.Glob,
 							Value: "my-statebucket-*",
 						},
 					},
@@ -118,24 +118,24 @@ func TestResolveDeprecations(t *testing.T) {
 		Regions:          []string{"eu-west-1"},
 		Accounts: map[string]Account{
 			"555133742": {
-				Filters: Filters{
+				Filters: filter.Filters{
 					"IamRole": {
-						NewExactFilter("uber.admin"),
-						NewExactFilter("foo.bar"),
+						filter.NewExactFilter("uber.admin"),
+						filter.NewExactFilter("foo.bar"),
 					},
 					"IAMRolePolicyAttachment": {
-						NewExactFilter("uber.admin -> AdministratorAccess"),
+						filter.NewExactFilter("uber.admin -> AdministratorAccess"),
 					},
 				},
 			},
 			"2345678901": {
-				Filters: Filters{
+				Filters: filter.Filters{
 					"ECRrepository": {
-						NewExactFilter("foo:bar"),
-						NewExactFilter("bar:foo"),
+						filter.NewExactFilter("foo:bar"),
+						filter.NewExactFilter("bar:foo"),
 					},
 					"IAMRolePolicyAttachment": {
-						NewExactFilter("uber.admin -> AdministratorAccess"),
+						filter.NewExactFilter("uber.admin -> AdministratorAccess"),
 					},
 				},
 			},
@@ -144,30 +144,30 @@ func TestResolveDeprecations(t *testing.T) {
 
 	expect := map[string]Account{
 		"555133742": {
-			Filters: Filters{
+			Filters: filter.Filters{
 				"IAMRole": {
-					NewExactFilter("uber.admin"),
-					NewExactFilter("foo.bar"),
+					filter.NewExactFilter("uber.admin"),
+					filter.NewExactFilter("foo.bar"),
 				},
 				"IAMRolePolicyAttachment": {
-					NewExactFilter("uber.admin -> AdministratorAccess"),
+					filter.NewExactFilter("uber.admin -> AdministratorAccess"),
 				},
 			},
 		},
 		"2345678901": {
-			Filters: Filters{
+			Filters: filter.Filters{
 				"ECRRepository": {
-					NewExactFilter("foo:bar"),
-					NewExactFilter("bar:foo"),
+					filter.NewExactFilter("foo:bar"),
+					filter.NewExactFilter("bar:foo"),
 				},
 				"IAMRolePolicyAttachment": {
-					NewExactFilter("uber.admin -> AdministratorAccess"),
+					filter.NewExactFilter("uber.admin -> AdministratorAccess"),
 				},
 			},
 		},
 	}
 
-	err := config.resolveDeprecations()
+	err := config.ResolveDeprecations()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -182,24 +182,24 @@ func TestResolveDeprecations(t *testing.T) {
 		Regions:          []string{"eu-west-1"},
 		Accounts: map[string]Account{
 			"555133742": {
-				Filters: Filters{
+				Filters: filter.Filters{
 					"IamUserAccessKeys": {
-						NewExactFilter("X")},
+						filter.NewExactFilter("X")},
 					"IAMUserAccessKey": {
-						NewExactFilter("Y")},
+						filter.NewExactFilter("Y")},
 				},
 			},
 		},
 	}
 
-	err = invalidConfig.resolveDeprecations()
+	err = invalidConfig.ResolveDeprecations()
 	if err == nil || !strings.Contains(err.Error(), "using deprecated resource type and replacement") {
 		t.Fatal("invalid config did not cause correct error")
 	}
 }
 
 func TestConfigValidation(t *testing.T) {
-	config, err := Load("test-fixtures/example.yaml")
+	config, err := Load("testdata/example.yaml")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -232,7 +232,7 @@ func TestConfigValidation(t *testing.T) {
 }
 
 func TestDeprecatedConfigKeys(t *testing.T) {
-	config, err := Load("test-fixtures/deprecated-keys-config.yaml")
+	config, err := Load("testdata/deprecated-keys-config.yaml")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -243,7 +243,7 @@ func TestDeprecatedConfigKeys(t *testing.T) {
 }
 
 func TestFilterMerge(t *testing.T) {
-	config, err := Load("test-fixtures/example.yaml")
+	config, err := Load("testdata/example.yaml")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -253,19 +253,19 @@ func TestFilterMerge(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	expect := Filters{
-		"S3Bucket": []Filter{
+	expect := filter.Filters{
+		"S3Bucket": []filter.Filter{
 			{
 				Type: "glob", Value: "my-statebucket-*",
 			},
 		},
-		"IAMRole": []Filter{
+		"IAMRole": []filter.Filter{
 			{
 				Type:  "exact",
 				Value: "uber.admin",
 			},
 		},
-		"IAMRolePolicyAttachment": []Filter{
+		"IAMRolePolicyAttachment": []filter.Filter{
 			{
 				Type:  "exact",
 				Value: "uber.admin -> AdministratorAccess",
@@ -281,7 +281,7 @@ func TestFilterMerge(t *testing.T) {
 }
 
 func TestGetCustomRegion(t *testing.T) {
-	config, err := Load("test-fixtures/example.yaml")
+	config, err := Load("testdata/example.yaml")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -303,6 +303,5 @@ func TestGetCustomRegion(t *testing.T) {
 		if rdsService != nil {
 			t.Fatal("Expected to not find a custom rds service for region10")
 		}
-
 	})
 }

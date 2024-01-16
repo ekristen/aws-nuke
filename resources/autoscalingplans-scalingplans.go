@@ -1,25 +1,34 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscalingplans"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type AutoScalingPlansScalingPlan struct {
-	svc                *autoscalingplans.AutoScalingPlans
-	scalingPlanName    *string
-	scalingPlanVersion *int64
-}
+const AutoScalingPlansScalingPlanResource = "AutoScalingPlansScalingPlan"
 
 func init() {
-	register("AutoScalingPlansScalingPlan", ListAutoScalingPlansScalingPlans)
+	resource.Register(resource.Registration{
+		Name:   AutoScalingPlansScalingPlanResource,
+		Scope:  nuke.Account,
+		Lister: &AutoScalingPlansScalingPlanLister{},
+	})
 }
 
-func ListAutoScalingPlansScalingPlans(sess *session.Session) ([]Resource, error) {
-	svc := autoscalingplans.New(sess)
+type AutoScalingPlansScalingPlanLister struct{}
+
+func (l *AutoScalingPlansScalingPlanLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := autoscalingplans.New(opts.Session)
 	svc.ClientInfo.SigningName = "autoscaling-plans"
-	resources := []Resource{}
+	resources := make([]resource.Resource, 0)
 
 	params := &autoscalingplans.DescribeScalingPlansInput{
 		MaxResults: aws.Int64(50),
@@ -49,8 +58,13 @@ func ListAutoScalingPlansScalingPlans(sess *session.Session) ([]Resource, error)
 	return resources, nil
 }
 
-func (f *AutoScalingPlansScalingPlan) Remove() error {
+type AutoScalingPlansScalingPlan struct {
+	svc                *autoscalingplans.AutoScalingPlans
+	scalingPlanName    *string
+	scalingPlanVersion *int64
+}
 
+func (f *AutoScalingPlansScalingPlan) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteScalingPlan(&autoscalingplans.DeleteScalingPlanInput{
 		ScalingPlanName:    f.scalingPlanName,
 		ScalingPlanVersion: f.scalingPlanVersion,

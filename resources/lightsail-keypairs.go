@@ -1,22 +1,32 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/lightsail"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type LightsailKeyPair struct {
-	svc         *lightsail.Lightsail
-	keyPairName *string
-}
+const LightsailKeyPairResource = "LightsailKeyPair"
 
 func init() {
-	register("LightsailKeyPair", ListLightsailKeyPairs)
+	resource.Register(resource.Registration{
+		Name:   LightsailKeyPairResource,
+		Scope:  nuke.Account,
+		Lister: &LightsailKeyPairLister{},
+	})
 }
 
-func ListLightsailKeyPairs(sess *session.Session) ([]Resource, error) {
-	svc := lightsail.New(sess)
-	resources := []Resource{}
+type LightsailKeyPairLister struct{}
+
+func (l *LightsailKeyPairLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := lightsail.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &lightsail.GetKeyPairsInput{}
 
@@ -43,8 +53,12 @@ func ListLightsailKeyPairs(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *LightsailKeyPair) Remove() error {
+type LightsailKeyPair struct {
+	svc         *lightsail.Lightsail
+	keyPairName *string
+}
 
+func (f *LightsailKeyPair) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteKeyPair(&lightsail.DeleteKeyPairInput{
 		KeyPairName: f.keyPairName,
 	})

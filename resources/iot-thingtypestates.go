@@ -1,28 +1,36 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iot"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type IoTThingTypeState struct {
-	svc             *iot.IoT
-	name            *string
-	deprecated      *bool
-	deprecatedEpoch *time.Time
-}
+const IoTThingTypeStateResource = "IoTThingTypeState"
 
 func init() {
-	register("IoTThingTypeState", ListIoTThingTypeStates)
+	resource.Register(resource.Registration{
+		Name:   IoTThingTypeStateResource,
+		Scope:  nuke.Account,
+		Lister: &IoTThingTypeStateLister{},
+	})
 }
 
-func ListIoTThingTypeStates(sess *session.Session) ([]Resource, error) {
-	svc := iot.New(sess)
-	resources := []Resource{}
+type IoTThingTypeStateLister struct{}
+
+func (l *IoTThingTypeStateLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := iot.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &iot.ListThingTypesInput{
 		MaxResults: aws.Int64(100),
@@ -51,17 +59,11 @@ func ListIoTThingTypeStates(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *IoTThingTypeState) Remove() error {
-
-	_, err := f.svc.DeprecateThingType(&iot.DeprecateThingTypeInput{
-		ThingTypeName: f.name,
-	})
-
-	return err
-}
-
-func (f *IoTThingTypeState) String() string {
-	return *f.name
+type IoTThingTypeState struct {
+	svc             *iot.IoT
+	name            *string
+	deprecated      *bool
+	deprecatedEpoch *time.Time
 }
 
 func (f *IoTThingTypeState) Filter() error {
@@ -76,4 +78,16 @@ func (f *IoTThingTypeState) Filter() error {
 		}
 	}
 	return nil
+}
+
+func (f *IoTThingTypeState) Remove(_ context.Context) error {
+	_, err := f.svc.DeprecateThingType(&iot.DeprecateThingTypeInput{
+		ThingTypeName: f.name,
+	})
+
+	return err
+}
+
+func (f *IoTThingTypeState) String() string {
+	return *f.name
 }

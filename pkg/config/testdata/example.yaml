@@ -1,0 +1,45 @@
+---
+regions:
+  - "eu-west-1"
+  - stratoscale
+
+account-blocklist:
+  - 1234567890
+
+endpoints:
+  - region: stratoscale
+    tls_insecure_skip_verify: true
+    services:
+      - service: ec2
+        url: https://stratoscale.cloud.internal/api/v2/aws/ec2
+      - service: s3
+        url: https://stratoscale.cloud.internal:1060
+        tls_insecure_skip_verify: true
+
+resource-types:
+  targets:
+    - DynamoDBTable
+    - S3Bucket
+    - S3Object
+  excludes:
+    - IAMRole
+
+accounts:
+  555133742:
+    presets:
+      - "terraform"
+    resource-types:
+      targets:
+        - S3Bucket
+    filters:
+      IAMRole:
+        - "uber.admin"
+      IAMRolePolicyAttachment:
+        - "uber.admin -> AdministratorAccess"
+
+presets:
+  terraform:
+    filters:
+      S3Bucket:
+        - type: glob
+          value: "my-statebucket-*"

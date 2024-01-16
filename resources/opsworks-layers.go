@@ -1,22 +1,32 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/opsworks"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type OpsWorksLayer struct {
-	svc *opsworks.OpsWorks
-	ID  *string
-}
+const OpsWorksLayerResource = "OpsWorksLayer"
 
 func init() {
-	register("OpsWorksLayer", ListOpsWorksLayers)
+	resource.Register(resource.Registration{
+		Name:   OpsWorksLayerResource,
+		Scope:  nuke.Account,
+		Lister: &OpsWorksLayerLister{},
+	})
 }
 
-func ListOpsWorksLayers(sess *session.Session) ([]Resource, error) {
-	svc := opsworks.New(sess)
-	resources := []Resource{}
+type OpsWorksLayerLister struct{}
+
+func (l *OpsWorksLayerLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := opsworks.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	stackParams := &opsworks.DescribeStacksInput{}
 
@@ -45,8 +55,12 @@ func ListOpsWorksLayers(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *OpsWorksLayer) Remove() error {
+type OpsWorksLayer struct {
+	svc *opsworks.OpsWorks
+	ID  *string
+}
 
+func (f *OpsWorksLayer) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteLayer(&opsworks.DeleteLayerInput{
 		LayerId: f.ID,
 	})

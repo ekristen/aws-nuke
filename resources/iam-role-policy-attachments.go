@@ -1,16 +1,32 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
-	"github.com/sirupsen/logrus"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
+
+const IAMRolePolicyAttachmentResource = "IAMRolePolicyAttachment"
+
+func init() {
+	resource.Register(resource.Registration{
+		Name:   IAMRolePolicyAttachmentResource,
+		Scope:  nuke.Account,
+		Lister: &IAMRolePolicyAttachmentLister{},
+	})
+}
 
 type IAMRolePolicyAttachment struct {
 	svc        iamiface.IAMAPI
@@ -19,14 +35,58 @@ type IAMRolePolicyAttachment struct {
 	role       *iam.Role
 }
 
-func init() {
-	register("IAMRolePolicyAttachment", ListIAMRolePolicyAttachments)
+func (e *IAMRolePolicyAttachment) Filter() error {
+	if strings.Contains(e.policyArn, ":iam::aws:policy/aws-service-role/") {
+		return fmt.Errorf("cannot detach from service roles")
+	}
+	if strings.HasPrefix(*e.role.Path, "/aws-reserved/sso.amazonaws.com/") {
+		return fmt.Errorf("cannot detach from SSO roles")
+	}
+	return nil
 }
 
-func ListIAMRolePolicyAttachments(sess *session.Session) ([]Resource, error) {
-	svc := iam.New(sess)
+func (e *IAMRolePolicyAttachment) Remove(_ context.Context) error {
+	_, err := e.svc.DetachRolePolicy(
+		&iam.DetachRolePolicyInput{
+			PolicyArn: &e.policyArn,
+			RoleName:  e.role.RoleName,
+		})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (e *IAMRolePolicyAttachment) Properties() types.Properties {
+	properties := types.NewProperties().
+		Set("RoleName", e.role.RoleName).
+		Set("RolePath", e.role.Path).
+		Set("RoleLastUsed", getLastUsedDate(e.role, time.RFC3339)).
+		Set("RoleCreateDate", e.role.CreateDate.Format(time.RFC3339)).
+		Set("PolicyName", e.policyName).
+		Set("PolicyArn", e.policyArn)
+
+	for _, tag := range e.role.Tags {
+		properties.SetTagWithPrefix("role", tag.Key, tag.Value)
+	}
+	return properties
+}
+
+func (e *IAMRolePolicyAttachment) String() string {
+	return fmt.Sprintf("%s -> %s", *e.role.RoleName, e.policyName)
+}
+
+// -----------------------
+
+type IAMRolePolicyAttachmentLister struct{}
+
+func (l *IAMRolePolicyAttachmentLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := iam.New(opts.Session)
 	roleParams := &iam.ListRolesInput{}
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 
 	for {
 		roleResp, err := svc.ListRoles(roleParams)
@@ -77,46 +137,4 @@ func ListIAMRolePolicyAttachments(sess *session.Session) ([]Resource, error) {
 	}
 
 	return resources, nil
-}
-
-func (e *IAMRolePolicyAttachment) Filter() error {
-	if strings.Contains(e.policyArn, ":iam::aws:policy/aws-service-role/") {
-		return fmt.Errorf("cannot detach from service roles")
-	}
-	if strings.HasPrefix(*e.role.Path, "/aws-reserved/sso.amazonaws.com/") {
-		return fmt.Errorf("cannot detach from SSO roles")
-	}
-	return nil
-}
-
-func (e *IAMRolePolicyAttachment) Remove() error {
-	_, err := e.svc.DetachRolePolicy(
-		&iam.DetachRolePolicyInput{
-			PolicyArn: &e.policyArn,
-			RoleName:  e.role.RoleName,
-		})
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (e *IAMRolePolicyAttachment) Properties() types.Properties {
-	properties := types.NewProperties().
-		Set("RoleName", e.role.RoleName).
-		Set("RolePath", e.role.Path).
-		Set("RoleLastUsed", getLastUsedDate(e.role, time.RFC3339)).
-		Set("RoleCreateDate", e.role.CreateDate.Format(time.RFC3339)).
-		Set("PolicyName", e.policyName).
-		Set("PolicyArn", e.policyArn)
-
-	for _, tag := range e.role.Tags {
-		properties.SetTagWithPrefix("role", tag.Key, tag.Value)
-	}
-	return properties
-}
-
-func (e *IAMRolePolicyAttachment) String() string {
-	return fmt.Sprintf("%s -> %s", *e.role.RoleName, e.policyName)
 }

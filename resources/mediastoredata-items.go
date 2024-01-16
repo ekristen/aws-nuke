@@ -1,27 +1,38 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/mediastore"
 	"github.com/aws/aws-sdk-go/service/mediastoredata"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type MediaStoreDataItems struct {
-	svc  *mediastoredata.MediaStoreData
-	path *string
-}
+const MediaStoreDataItemsResource = "MediaStoreDataItems"
 
 func init() {
-	register("MediaStoreDataItems", ListMediaStoreDataItems)
+	resource.Register(resource.Registration{
+		Name:   MediaStoreDataItemsResource,
+		Scope:  nuke.Account,
+		Lister: &MediaStoreDataItemsLister{},
+	})
 }
 
-func ListMediaStoreDataItems(sess *session.Session) ([]Resource, error) {
-	containerSvc := mediastore.New(sess)
-	svc := mediastoredata.New(sess)
+type MediaStoreDataItemsLister struct{}
+
+func (l *MediaStoreDataItemsLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	containerSvc := mediastore.New(opts.Session)
+	svc := mediastoredata.New(opts.Session)
 	svc.ClientInfo.SigningName = "mediastore"
-	resources := []Resource{}
-	containers := []*mediastore.Container{}
+
+	resources := make([]resource.Resource, 0)
+	var containers []*mediastore.Container
 
 	//List all containers
 	containerParams := &mediastore.ListContainersInput{
@@ -77,8 +88,12 @@ func ListMediaStoreDataItems(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *MediaStoreDataItems) Remove() error {
+type MediaStoreDataItems struct {
+	svc  *mediastoredata.MediaStoreData
+	path *string
+}
 
+func (f *MediaStoreDataItems) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteObject(&mediastoredata.DeleteObjectInput{
 		Path: f.path,
 	})

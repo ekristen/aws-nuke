@@ -1,12 +1,27 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
+
+const IAMUserPolicyResource = "IAMUserPolicy"
+
+func init() {
+	resource.Register(resource.Registration{
+		Name:   IAMUserPolicyResource,
+		Scope:  nuke.Account,
+		Lister: &IAMUserPolicyLister{},
+	})
+}
 
 type IAMUserPolicy struct {
 	svc        iamiface.IAMAPI
@@ -14,19 +29,38 @@ type IAMUserPolicy struct {
 	policyName string
 }
 
-func init() {
-	register("IAMUserPolicy", ListIAMUserPolicies)
+func (e *IAMUserPolicy) Remove(_ context.Context) error {
+	_, err := e.svc.DeleteUserPolicy(
+		&iam.DeleteUserPolicyInput{
+			UserName:   &e.userName,
+			PolicyName: &e.policyName,
+		})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func ListIAMUserPolicies(sess *session.Session) ([]Resource, error) {
-	svc := iam.New(sess)
+func (e *IAMUserPolicy) String() string {
+	return fmt.Sprintf("%s -> %s", e.userName, e.policyName)
+}
+
+// ----------------
+
+type IAMUserPolicyLister struct{}
+
+func (l *IAMUserPolicyLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := iam.New(opts.Session)
 
 	users, err := svc.ListUsers(nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for _, user := range users.Users {
 		policies, err := svc.ListUserPolicies(&iam.ListUserPoliciesInput{
 			UserName: user.UserName,
@@ -45,21 +79,4 @@ func ListIAMUserPolicies(sess *session.Session) ([]Resource, error) {
 	}
 
 	return resources, nil
-}
-
-func (e *IAMUserPolicy) Remove() error {
-	_, err := e.svc.DeleteUserPolicy(
-		&iam.DeleteUserPolicyInput{
-			UserName:   &e.userName,
-			PolicyName: &e.policyName,
-		})
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (e *IAMUserPolicy) String() string {
-	return fmt.Sprintf("%s -> %s", e.userName, e.policyName)
 }

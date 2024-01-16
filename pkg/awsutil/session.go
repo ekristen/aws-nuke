@@ -14,7 +14,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3control"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/config"
+	"github.com/ekristen/aws-nuke/pkg/config"
+	sdkerrors "github.com/ekristen/libnuke/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -101,7 +102,6 @@ func (c *Credentials) rootSession() (*session.Session, error) {
 				Profile:                 c.Profile,
 				AssumeRoleTokenProvider: stscreds.StdinTokenProvider,
 			}
-
 		}
 
 		opts.Config.Region = aws.String(region)
@@ -149,7 +149,7 @@ func (c *Credentials) NewSession(region, serviceType string) (*session.Session, 
 	if customRegion := c.CustomEndpoints.GetRegion(region); customRegion != nil {
 		customService := customRegion.Services.GetService(serviceType)
 		if customService == nil {
-			return nil, ErrSkipRequest(fmt.Sprintf(
+			return nil, sdkerrors.ErrSkipRequest(fmt.Sprintf(
 				".service '%s' is not available in region '%s'",
 				serviceType, region))
 		}
@@ -185,11 +185,11 @@ func (c *Credentials) NewSession(region, serviceType string) (*session.Session, 
 	}
 
 	sess.Handlers.Send.PushFront(func(r *request.Request) {
-		log.Debugf("sending AWS request:\n%s", DumpRequest(r.HTTPRequest))
+		log.Tracef("sending AWS request:\n%s", DumpRequest(r.HTTPRequest))
 	})
 
 	sess.Handlers.ValidateResponse.PushFront(func(r *request.Request) {
-		log.Debugf("received AWS response:\n%s", DumpResponse(r.HTTPResponse))
+		log.Tracef("received AWS response:\n%s", DumpResponse(r.HTTPResponse))
 	})
 
 	if !isCustom {
@@ -216,7 +216,7 @@ func skipMissingServiceInRegionHandler(r *request.Request) {
 
 	_, ok = rs[region]
 	if !ok {
-		r.Error = ErrSkipRequest(fmt.Sprintf(
+		r.Error = sdkerrors.ErrSkipRequest(fmt.Sprintf(
 			"service '%s' is not available in region '%s'",
 			service, region))
 	}
@@ -234,25 +234,25 @@ func skipGlobalHandler(global bool) func(r *request.Request) {
 		if !ok {
 			// This means that the service does not exist in the endpoints list.
 			if global {
-				r.Error = ErrSkipRequest(fmt.Sprintf("service '%s' is was not found in the endpoint list; assuming it is not global", service))
+				r.Error = sdkerrors.ErrSkipRequest(fmt.Sprintf("service '%s' is was not found in the endpoint list; assuming it is not global", service))
 			} else {
 				host := r.HTTPRequest.URL.Hostname()
 				_, err := net.LookupHost(host)
 				if err != nil {
 					log.Debug(err)
-					r.Error = ErrUnknownEndpoint(fmt.Sprintf("DNS lookup failed for %s; assuming it does not exist in this region", host))
+					r.Error = sdkerrors.ErrUnknownEndpoint(fmt.Sprintf("DNS lookup failed for %s; assuming it does not exist in this region", host))
 				}
 			}
 			return
 		}
 
 		if len(rs) == 0 && !global {
-			r.Error = ErrSkipRequest(fmt.Sprintf("service '%s' is global, but the session is not", service))
+			r.Error = sdkerrors.ErrSkipRequest(fmt.Sprintf("service '%s' is global, but the session is not", service))
 			return
 		}
 
 		if (len(rs) > 0 && global) && service != "sts" {
-			r.Error = ErrSkipRequest(fmt.Sprintf("service '%s' is not global, but the session is", service))
+			r.Error = sdkerrors.ErrSkipRequest(fmt.Sprintf("service '%s' is not global, but the session is", service))
 			return
 		}
 	}

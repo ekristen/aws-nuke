@@ -1,28 +1,38 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/inspector"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type InspectorAssessmentTarget struct {
-	svc *inspector.Inspector
-	arn string
-}
+const InspectorAssessmentTargetResource = "InspectorAssessmentTarget"
 
 func init() {
-	register("InspectorAssessmentTarget", ListInspectorAssessmentTargets)
+	resource.Register(resource.Registration{
+		Name:   InspectorAssessmentTargetResource,
+		Scope:  nuke.Account,
+		Lister: &InspectorAssessmentTargetLister{},
+	})
 }
 
-func ListInspectorAssessmentTargets(sess *session.Session) ([]Resource, error) {
-	svc := inspector.New(sess)
+type InspectorAssessmentTargetLister struct{}
+
+func (l *InspectorAssessmentTargetLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := inspector.New(opts.Session)
 
 	resp, err := svc.ListAssessmentTargets(nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for _, out := range resp.AssessmentTargetArns {
 		resources = append(resources, &InspectorAssessmentTarget{
 			svc: svc,
@@ -33,7 +43,12 @@ func ListInspectorAssessmentTargets(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (e *InspectorAssessmentTarget) Remove() error {
+type InspectorAssessmentTarget struct {
+	svc *inspector.Inspector
+	arn string
+}
+
+func (e *InspectorAssessmentTarget) Remove(_ context.Context) error {
 	_, err := e.svc.DeleteAssessmentTarget(&inspector.DeleteAssessmentTargetInput{
 		AssessmentTargetArn: &e.arn,
 	})

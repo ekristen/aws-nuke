@@ -1,28 +1,37 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/waf"
 	"github.com/aws/aws-sdk-go/service/wafregional"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type WAFRegionalWebACLRuleAttachment struct {
-	svc           *wafregional.WAFRegional
-	webACLID      *string
-	activatedRule *waf.ActivatedRule
-}
+const WAFRegionalWebACLRuleAttachmentResource = "WAFRegionalWebACLRuleAttachment"
 
 func init() {
-	register("WAFRegionalWebACLRuleAttachment", ListWAFRegionalWebACLRuleAttachments)
+	resource.Register(resource.Registration{
+		Name:   WAFRegionalWebACLRuleAttachmentResource,
+		Scope:  nuke.Account,
+		Lister: &WAFRegionalWebACLRuleAttachmentLister{},
+	})
 }
 
-func ListWAFRegionalWebACLRuleAttachments(sess *session.Session) ([]Resource, error) {
-	svc := wafregional.New(sess)
-	resources := []Resource{}
-	webACLs := []*waf.WebACLSummary{}
+type WAFRegionalWebACLRuleAttachmentLister struct{}
+
+func (l *WAFRegionalWebACLRuleAttachmentLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := wafregional.New(opts.Session)
+	resources := make([]resource.Resource, 0)
+	var webACLs []*waf.WebACLSummary
 
 	params := &waf.ListWebACLsInput{
 		Limit: aws.Int64(50),
@@ -59,7 +68,7 @@ func ListWAFRegionalWebACLRuleAttachments(sess *session.Session) ([]Resource, er
 		for _, webACLRule := range resp.WebACL.Rules {
 			resources = append(resources, &WAFRegionalWebACLRuleAttachment{
 				svc:           svc,
-				webACLID:      webACL.WebACLId,
+				webAclID:      webACL.WebACLId,
 				activatedRule: webACLRule,
 			})
 		}
@@ -69,7 +78,13 @@ func ListWAFRegionalWebACLRuleAttachments(sess *session.Session) ([]Resource, er
 	return resources, nil
 }
 
-func (f *WAFRegionalWebACLRuleAttachment) Remove() error {
+type WAFRegionalWebACLRuleAttachment struct {
+	svc           *wafregional.WAFRegional
+	webAclID      *string
+	activatedRule *waf.ActivatedRule
+}
+
+func (f *WAFRegionalWebACLRuleAttachment) Remove(_ context.Context) error {
 
 	tokenOutput, err := f.svc.GetChangeToken(&waf.GetChangeTokenInput{})
 	if err != nil {
@@ -82,7 +97,7 @@ func (f *WAFRegionalWebACLRuleAttachment) Remove() error {
 	}
 
 	_, err = f.svc.UpdateWebACL(&waf.UpdateWebACLInput{
-		WebACLId:    f.webACLID,
+		WebACLId:    f.webAclID,
 		ChangeToken: tokenOutput.ChangeToken,
 		Updates:     []*waf.WebACLUpdate{webACLUpdate},
 	})
@@ -91,5 +106,5 @@ func (f *WAFRegionalWebACLRuleAttachment) Remove() error {
 }
 
 func (f *WAFRegionalWebACLRuleAttachment) String() string {
-	return fmt.Sprintf("%s -> %s", *f.webACLID, *f.activatedRule.RuleId)
+	return fmt.Sprintf("%s -> %s", *f.webAclID, *f.activatedRule.RuleId)
 }

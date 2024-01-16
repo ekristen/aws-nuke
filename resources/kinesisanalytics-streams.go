@@ -1,23 +1,35 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/kinesisanalyticsv2"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type KinesisAnalyticsApplication struct {
-	svc             *kinesisanalyticsv2.KinesisAnalyticsV2
-	applicationName *string
-}
+const KinesisAnalyticsApplicationResource = "KinesisAnalyticsApplication"
 
 func init() {
-	register("KinesisAnalyticsApplication", ListKinesisAnalyticsApplications)
+	resource.Register(resource.Registration{
+		Name:   KinesisAnalyticsApplicationResource,
+		Scope:  nuke.Account,
+		Lister: &KinesisAnalyticsApplicationLister{},
+	})
 }
 
-func ListKinesisAnalyticsApplications(sess *session.Session) ([]Resource, error) {
-	svc := kinesisanalyticsv2.New(sess)
-	resources := []Resource{}
+type KinesisAnalyticsApplicationLister struct{}
+
+func (l *KinesisAnalyticsApplicationLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := kinesisanalyticsv2.New(opts.Session)
+
+	resources := make([]resource.Resource, 0)
+
 	params := &kinesisanalyticsv2.ListApplicationsInput{
 		Limit: aws.Int64(25),
 	}
@@ -45,8 +57,12 @@ func ListKinesisAnalyticsApplications(sess *session.Session) ([]Resource, error)
 	return resources, nil
 }
 
-func (f *KinesisAnalyticsApplication) Remove() error {
+type KinesisAnalyticsApplication struct {
+	svc             *kinesisanalyticsv2.KinesisAnalyticsV2
+	applicationName *string
+}
 
+func (f *KinesisAnalyticsApplication) Remove(_ context.Context) error {
 	output, err := f.svc.DescribeApplication(&kinesisanalyticsv2.DescribeApplicationInput{
 		ApplicationName: f.applicationName,
 	})

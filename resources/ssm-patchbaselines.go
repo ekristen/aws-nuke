@@ -1,26 +1,35 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ssm"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type SSMPatchBaseline struct {
-	svc             *ssm.SSM
-	ID              *string
-	defaultBaseline *bool
-}
+const SSMPatchBaselineResource = "SSMPatchBaseline"
 
 func init() {
-	register("SSMPatchBaseline", ListSSMPatchBaselines)
+	resource.Register(resource.Registration{
+		Name:   SSMPatchBaselineResource,
+		Scope:  nuke.Account,
+		Lister: &SSMPatchBaselineLister{},
+	})
 }
 
-func ListSSMPatchBaselines(sess *session.Session) ([]Resource, error) {
-	svc := ssm.New(sess)
-	resources := []Resource{}
+type SSMPatchBaselineLister struct{}
+
+func (l *SSMPatchBaselineLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := ssm.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	patchBaselineFilter := []*ssm.PatchOrchestratorFilter{
 		{
@@ -58,7 +67,13 @@ func ListSSMPatchBaselines(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *SSMPatchBaseline) Remove() error {
+type SSMPatchBaseline struct {
+	svc             *ssm.SSM
+	ID              *string
+	defaultBaseline *bool
+}
+
+func (f *SSMPatchBaseline) Remove(_ context.Context) error {
 	err := f.DeregisterFromPatchGroups()
 	if err != nil {
 		return err

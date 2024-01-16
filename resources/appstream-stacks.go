@@ -1,8 +1,12 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/appstream"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
+	"github.com/ekristen/libnuke/pkg/resource"
 )
 
 type AppStreamStack struct {
@@ -10,13 +14,23 @@ type AppStreamStack struct {
 	name *string
 }
 
+const AppStreamStackResource = "AppStreamStack"
+
 func init() {
-	register("AppStreamStack", ListAppStreamStacks)
+	resource.Register(resource.Registration{
+		Name:   AppStreamStackResource,
+		Scope:  nuke.Account,
+		Lister: &AppStreamStackLister{},
+	})
 }
 
-func ListAppStreamStacks(sess *session.Session) ([]Resource, error) {
-	svc := appstream.New(sess)
-	resources := []Resource{}
+type AppStreamStackLister struct{}
+
+func (l *AppStreamStackLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := appstream.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &appstream.DescribeStacksInput{}
 
@@ -43,8 +57,7 @@ func ListAppStreamStacks(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *AppStreamStack) Remove() error {
-
+func (f *AppStreamStack) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteStack(&appstream.DeleteStackInput{
 		Name: f.name,
 	})

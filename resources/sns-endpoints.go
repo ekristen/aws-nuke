@@ -1,31 +1,43 @@
 package resources
 
 import (
+	"context"
+
+	"errors"
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sns"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type SNSEndpoint struct {
-	svc *sns.SNS
-	ARN *string
-}
+const SNSEndpointResource = "SNSEndpoint"
 
 func init() {
-	register("SNSEndpoint", ListSNSEndpoints)
+	resource.Register(resource.Registration{
+		Name:   SNSEndpointResource,
+		Scope:  nuke.Account,
+		Lister: &SNSEndpointLister{},
+	})
 }
 
-func ListSNSEndpoints(sess *session.Session) ([]Resource, error) {
-	svc := sns.New(sess)
-	resources := []Resource{}
-	platformApplications := []*sns.PlatformApplication{}
+type SNSEndpointLister struct{}
+
+func (l *SNSEndpointLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := sns.New(opts.Session)
+	resources := make([]resource.Resource, 0)
+	var platformApplications []*sns.PlatformApplication
 
 	platformParams := &sns.ListPlatformApplicationsInput{}
 
 	for {
 		resp, err := svc.ListPlatformApplications(platformParams)
 		if err != nil {
-			awsErr, ok := err.(awserr.Error)
+			var awsErr awserr.Error
+			ok := errors.As(err, &awsErr)
 			if ok && awsErr.Code() == "InvalidAction" && awsErr.Message() == "Operation (ListPlatformApplications) is not supported in this region" {
 				// AWS answers with InvalidAction on regions that do not
 				// support ListPlatformApplications.
@@ -72,8 +84,12 @@ func ListSNSEndpoints(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *SNSEndpoint) Remove() error {
+type SNSEndpoint struct {
+	svc *sns.SNS
+	ARN *string
+}
 
+func (f *SNSEndpoint) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteEndpoint(&sns.DeleteEndpointInput{
 		EndpointArn: f.ARN,
 	})

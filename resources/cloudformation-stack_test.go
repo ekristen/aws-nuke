@@ -1,14 +1,20 @@
 package resources
 
 import (
+	"context"
 	"testing"
+
+	"github.com/golang/mock/gomock"
+	"github.com/gotidy/ptr"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
-	"github.com/golang/mock/gomock"
-	"github.com/rebuy-de/aws-nuke/v2/mocks/mock_cloudformationiface"
-	"github.com/stretchr/testify/assert"
+
+	"github.com/ekristen/libnuke/pkg/featureflag"
+
+	"github.com/ekristen/aws-nuke/mocks/mock_cloudformationiface"
 )
 
 func TestCloudformationStack_Remove_StackAlreadyDeleted(t *testing.T) {
@@ -23,7 +29,10 @@ func TestCloudformationStack_Remove_StackAlreadyDeleted(t *testing.T) {
 		stack: &cloudformation.Stack{
 			StackName: aws.String("foobar"),
 		},
+		featureFlags: &featureflag.FeatureFlags{},
 	}
+
+	stack.featureFlags.New("DisableDeletionProtection_CloudformationStack", ptr.Bool(true), ptr.Bool(true))
 
 	mockCloudformation.EXPECT().DescribeStacks(gomock.Eq(&cloudformation.DescribeStacksInput{
 		StackName: aws.String("foobar"),
@@ -35,7 +44,7 @@ func TestCloudformationStack_Remove_StackAlreadyDeleted(t *testing.T) {
 		},
 	}, nil)
 
-	err := stack.Remove()
+	err := stack.Remove(context.TODO())
 	a.Nil(err)
 }
 
@@ -50,14 +59,16 @@ func TestCloudformationStack_Remove_StackDoesNotExist(t *testing.T) {
 		svc: mockCloudformation,
 		stack: &cloudformation.Stack{
 			StackName: aws.String("foobar"),
-		},
+		}, featureFlags: &featureflag.FeatureFlags{},
 	}
+
+	stack.featureFlags.New("DisableDeletionProtection_CloudformationStack", ptr.Bool(true), ptr.Bool(true))
 
 	mockCloudformation.EXPECT().DescribeStacks(gomock.Eq(&cloudformation.DescribeStacksInput{
 		StackName: aws.String("foobar"),
 	})).Return(nil, awserr.New("ValidationFailed", "Stack with id foobar does not exist", nil))
 
-	err := stack.Remove()
+	err := stack.Remove(context.TODO())
 	a.Nil(err)
 }
 
@@ -73,7 +84,10 @@ func TestCloudformationStack_Remove_DeleteFailed(t *testing.T) {
 		stack: &cloudformation.Stack{
 			StackName: aws.String("foobar"),
 		},
+		featureFlags: &featureflag.FeatureFlags{},
 	}
+
+	stack.featureFlags.New("DisableDeletionProtection_CloudformationStack", ptr.Bool(true), ptr.Bool(true))
 
 	gomock.InOrder(
 		mockCloudformation.EXPECT().DescribeStacks(gomock.Eq(&cloudformation.DescribeStacksInput{
@@ -110,7 +124,7 @@ func TestCloudformationStack_Remove_DeleteFailed(t *testing.T) {
 		})).Return(nil),
 	)
 
-	err := stack.Remove()
+	err := stack.Remove(context.TODO())
 	a.Nil(err)
 }
 
@@ -127,7 +141,10 @@ func TestCloudformationStack_Remove_DeleteInProgress(t *testing.T) {
 		stack: &cloudformation.Stack{
 			StackName: aws.String("foobar"),
 		},
+		featureFlags: &featureflag.FeatureFlags{},
 	}
+
+	stack.featureFlags.New("DisableDeletionProtection_CloudformationStack", ptr.Bool(true), ptr.Bool(true))
 
 	gomock.InOrder(
 		mockCloudformation.EXPECT().DescribeStacks(gomock.Eq(&cloudformation.DescribeStacksInput{
@@ -145,7 +162,7 @@ func TestCloudformationStack_Remove_DeleteInProgress(t *testing.T) {
 		})).Return(nil),
 	)
 
-	err := stack.Remove()
+	err := stack.Remove(context.TODO())
 	a.Nil(err)
 }
 
@@ -174,7 +191,10 @@ func TestCloudformationStack_Remove_Stack_InCompletedStatus(t *testing.T) {
 				stack: &cloudformation.Stack{
 					StackName: aws.String("foobar"),
 				},
+				featureFlags: &featureflag.FeatureFlags{},
 			}
+
+			stack.featureFlags.New("DisableDeletionProtection_CloudformationStack", ptr.Bool(true), ptr.Bool(true))
 
 			gomock.InOrder(
 				mockCloudformation.EXPECT().DescribeStacks(gomock.Eq(&cloudformation.DescribeStacksInput{
@@ -196,7 +216,7 @@ func TestCloudformationStack_Remove_Stack_InCompletedStatus(t *testing.T) {
 				})).Return(nil),
 			)
 
-			err := stack.Remove()
+			err := stack.Remove(context.TODO())
 			a.Nil(err)
 		})
 	}
@@ -221,7 +241,10 @@ func TestCloudformationStack_Remove_Stack_CreateInProgress(t *testing.T) {
 				stack: &cloudformation.Stack{
 					StackName: aws.String("foobar"),
 				},
+				featureFlags: &featureflag.FeatureFlags{},
 			}
+
+			stack.featureFlags.New("DisableDeletionProtection_CloudformationStack", ptr.Bool(true), ptr.Bool(true))
 
 			gomock.InOrder(
 				mockCloudformation.EXPECT().DescribeStacks(gomock.Eq(&cloudformation.DescribeStacksInput{
@@ -247,7 +270,7 @@ func TestCloudformationStack_Remove_Stack_CreateInProgress(t *testing.T) {
 				})).Return(nil),
 			)
 
-			err := stack.Remove()
+			err := stack.Remove(context.TODO())
 			a.Nil(err)
 		})
 	}
@@ -273,7 +296,10 @@ func TestCloudformationStack_Remove_Stack_UpdateInProgress(t *testing.T) {
 				stack: &cloudformation.Stack{
 					StackName: aws.String("foobar"),
 				},
+				featureFlags: &featureflag.FeatureFlags{},
 			}
+
+			stack.featureFlags.New("DisableDeletionProtection_CloudformationStack", ptr.Bool(true), ptr.Bool(true))
 
 			gomock.InOrder(
 				mockCloudformation.EXPECT().DescribeStacks(gomock.Eq(&cloudformation.DescribeStacksInput{
@@ -299,7 +325,7 @@ func TestCloudformationStack_Remove_Stack_UpdateInProgress(t *testing.T) {
 				})).Return(nil),
 			)
 
-			err := stack.Remove()
+			err := stack.Remove(context.TODO())
 			a.Nil(err)
 		})
 	}

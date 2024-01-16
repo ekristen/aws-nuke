@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/glue"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type GlueDevEndpoint struct {
-	svc          *glue.Glue
-	endpointName *string
-}
+const GlueDevEndpointResource = "GlueDevEndpoint"
 
 func init() {
-	register("GlueDevEndpoint", ListGlueDevEndpoints)
+	resource.Register(resource.Registration{
+		Name:   GlueDevEndpointResource,
+		Scope:  nuke.Account,
+		Lister: &GlueDevEndpointLister{},
+	})
 }
 
-func ListGlueDevEndpoints(sess *session.Session) ([]Resource, error) {
-	svc := glue.New(sess)
-	resources := []Resource{}
+type GlueDevEndpointLister struct{}
+
+func (l *GlueDevEndpointLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := glue.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &glue.GetDevEndpointsInput{
 		MaxResults: aws.Int64(100),
@@ -47,8 +57,12 @@ func ListGlueDevEndpoints(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *GlueDevEndpoint) Remove() error {
+type GlueDevEndpoint struct {
+	svc          *glue.Glue
+	endpointName *string
+}
 
+func (f *GlueDevEndpoint) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteDevEndpoint(&glue.DeleteDevEndpointInput{
 		EndpointName: f.endpointName,
 	})

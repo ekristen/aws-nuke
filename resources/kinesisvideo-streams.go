@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/kinesisvideo"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type KinesisVideoProject struct {
-	svc       *kinesisvideo.KinesisVideo
-	streamARN *string
-}
+const KinesisVideoProjectResource = "KinesisVideoProject"
 
 func init() {
-	register("KinesisVideoProject", ListKinesisVideoProjects)
+	resource.Register(resource.Registration{
+		Name:   KinesisVideoProjectResource,
+		Scope:  nuke.Account,
+		Lister: &KinesisVideoProjectLister{},
+	})
 }
 
-func ListKinesisVideoProjects(sess *session.Session) ([]Resource, error) {
-	svc := kinesisvideo.New(sess)
-	resources := []Resource{}
+type KinesisVideoProjectLister struct{}
+
+func (l *KinesisVideoProjectLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := kinesisvideo.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &kinesisvideo.ListStreamsInput{
 		MaxResults: aws.Int64(100),
@@ -46,8 +56,12 @@ func ListKinesisVideoProjects(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *KinesisVideoProject) Remove() error {
+type KinesisVideoProject struct {
+	svc       *kinesisvideo.KinesisVideo
+	streamARN *string
+}
 
+func (f *KinesisVideoProject) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteStream(&kinesisvideo.DeleteStreamInput{
 		StreamARN: f.streamARN,
 	})

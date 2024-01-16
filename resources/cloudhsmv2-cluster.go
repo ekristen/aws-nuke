@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cloudhsmv2"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type CloudHSMV2Cluster struct {
-	svc       *cloudhsmv2.CloudHSMV2
-	clusterID *string
-}
+const CloudHSMV2ClusterResource = "CloudHSMV2Cluster"
 
 func init() {
-	register("CloudHSMV2Cluster", ListCloudHSMV2Clusters)
+	resource.Register(resource.Registration{
+		Name:   CloudHSMV2ClusterResource,
+		Scope:  nuke.Account,
+		Lister: &CloudHSMV2ClusterLister{},
+	})
 }
 
-func ListCloudHSMV2Clusters(sess *session.Session) ([]Resource, error) {
-	svc := cloudhsmv2.New(sess)
-	resources := []Resource{}
+type CloudHSMV2ClusterLister struct{}
+
+func (l *CloudHSMV2ClusterLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := cloudhsmv2.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &cloudhsmv2.DescribeClustersInput{
 		MaxResults: aws.Int64(25),
@@ -46,8 +56,12 @@ func ListCloudHSMV2Clusters(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *CloudHSMV2Cluster) Remove() error {
+type CloudHSMV2Cluster struct {
+	svc       *cloudhsmv2.CloudHSMV2
+	clusterID *string
+}
 
+func (f *CloudHSMV2Cluster) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteCluster(&cloudhsmv2.DeleteClusterInput{
 		ClusterId: f.clusterID,
 	})

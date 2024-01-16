@@ -1,26 +1,35 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/waf"
 	"github.com/aws/aws-sdk-go/service/wafregional"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type WAFRegionalByteMatchSet struct {
-	svc  *wafregional.WAFRegional
-	id   *string
-	name *string
-}
+const WAFRegionalByteMatchSetResource = "WAFRegionalByteMatchSet"
 
 func init() {
-	register("WAFRegionalByteMatchSet", ListWAFRegionalByteMatchSets)
+	resource.Register(resource.Registration{
+		Name:   WAFRegionalByteMatchSetResource,
+		Scope:  nuke.Account,
+		Lister: &WAFRegionalByteMatchSetLister{},
+	})
 }
 
-func ListWAFRegionalByteMatchSets(sess *session.Session) ([]Resource, error) {
-	svc := wafregional.New(sess)
-	resources := []Resource{}
+type WAFRegionalByteMatchSetLister struct{}
+
+func (l *WAFRegionalByteMatchSetLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := wafregional.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &waf.ListByteMatchSetsInput{
 		Limit: aws.Int64(50),
@@ -50,7 +59,13 @@ func ListWAFRegionalByteMatchSets(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (r *WAFRegionalByteMatchSet) Remove() error {
+type WAFRegionalByteMatchSet struct {
+	svc  *wafregional.WAFRegional
+	id   *string
+	name *string
+}
+
+func (r *WAFRegionalByteMatchSet) Remove(_ context.Context) error {
 	tokenOutput, err := r.svc.GetChangeToken(&waf.GetChangeTokenInput{})
 	if err != nil {
 		return err

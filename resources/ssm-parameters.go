@@ -1,25 +1,34 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ssm"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type SSMParameter struct {
-	svc  *ssm.SSM
-	name *string
-	tags []*ssm.Tag
-}
+const SSMParameterResource = "SSMParameter"
 
 func init() {
-	register("SSMParameter", ListSSMParameters)
+	resource.Register(resource.Registration{
+		Name:   SSMParameterResource,
+		Scope:  nuke.Account,
+		Lister: &SSMParameterLister{},
+	})
 }
 
-func ListSSMParameters(sess *session.Session) ([]Resource, error) {
-	svc := ssm.New(sess)
-	resources := []Resource{}
+type SSMParameterLister struct{}
+
+func (l *SSMParameterLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := ssm.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &ssm.DescribeParametersInput{
 		MaxResults: aws.Int64(50),
@@ -59,8 +68,13 @@ func ListSSMParameters(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *SSMParameter) Remove() error {
+type SSMParameter struct {
+	svc  *ssm.SSM
+	name *string
+	tags []*ssm.Tag
+}
 
+func (f *SSMParameter) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteParameter(&ssm.DeleteParameterInput{
 		Name: f.name,
 	})

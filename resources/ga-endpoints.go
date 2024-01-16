@@ -1,30 +1,39 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/globalaccelerator"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-// GlobalAcceleratorEndpointGroup model
-type GlobalAcceleratorEndpointGroup struct {
-	svc *globalaccelerator.GlobalAccelerator
-	ARN *string
-}
+const GlobalAcceleratorEndpointGroupResource = "GlobalAcceleratorEndpointGroup"
 
 func init() {
-	register("GlobalAcceleratorEndpointGroup", ListGlobalAcceleratorEndpointGroups)
+	resource.Register(resource.Registration{
+		Name:   GlobalAcceleratorEndpointGroupResource,
+		Scope:  nuke.Account,
+		Lister: &GlobalAcceleratorEndpointGroupLister{},
+	})
 }
 
-// ListGlobalAcceleratorEndpointGroups enumerates all available accelerators
-func ListGlobalAcceleratorEndpointGroups(sess *session.Session) ([]Resource, error) {
-	svc := globalaccelerator.New(sess)
-	acceleratorARNs := []*string{}
-	listenerARNs := []*string{}
-	resources := []Resource{}
+type GlobalAcceleratorEndpointGroupLister struct{}
 
-	// get all accelerator arns
+// List enumerates all available accelerators
+func (l *GlobalAcceleratorEndpointGroupLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := globalaccelerator.New(opts.Session)
+	var acceleratorARNs []*string
+	var listenerARNs []*string
+	resources := make([]resource.Resource, 0)
+
+	// get all accelerator ARNs
 	acceleratorParams := &globalaccelerator.ListAcceleratorsInput{
 		MaxResults: aws.Int64(100),
 	}
@@ -46,7 +55,7 @@ func ListGlobalAcceleratorEndpointGroups(sess *session.Session) ([]Resource, err
 		acceleratorParams.NextToken = output.NextToken
 	}
 
-	// get all listerners arns of all accelerators
+	// get all listeners ARNs of all accelerators
 	for _, acceleratorARN := range acceleratorARNs {
 		listenerParams := &globalaccelerator.ListListenersInput{
 			MaxResults:     aws.Int64(100),
@@ -102,23 +111,29 @@ func ListGlobalAcceleratorEndpointGroups(sess *session.Session) ([]Resource, err
 	return resources, nil
 }
 
+// GlobalAcceleratorEndpointGroup model
+type GlobalAcceleratorEndpointGroup struct {
+	svc *globalaccelerator.GlobalAccelerator
+	ARN *string
+}
+
 // Remove resource
-func (gaeg *GlobalAcceleratorEndpointGroup) Remove() error {
-	_, err := gaeg.svc.DeleteEndpointGroup(&globalaccelerator.DeleteEndpointGroupInput{
-		EndpointGroupArn: gaeg.ARN,
+func (g *GlobalAcceleratorEndpointGroup) Remove(_ context.Context) error {
+	_, err := g.svc.DeleteEndpointGroup(&globalaccelerator.DeleteEndpointGroupInput{
+		EndpointGroupArn: g.ARN,
 	})
 
 	return err
 }
 
 // Properties definition
-func (gaeg *GlobalAcceleratorEndpointGroup) Properties() types.Properties {
+func (g *GlobalAcceleratorEndpointGroup) Properties() types.Properties {
 	properties := types.NewProperties()
-	properties.Set("ARN", gaeg.ARN)
+	properties.Set("ARN", g.ARN)
 	return properties
 }
 
 // String representation
-func (gaeg *GlobalAcceleratorEndpointGroup) String() string {
-	return *gaeg.ARN
+func (g *GlobalAcceleratorEndpointGroup) String() string {
+	return *g.ARN
 }

@@ -1,25 +1,34 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iot"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type IoTThingGroup struct {
-	svc     *iot.IoT
-	name    *string
-	version *int64
-}
+const IoTThingGroupResource = "IoTThingGroup"
 
 func init() {
-	register("IoTThingGroup", ListIoTThingGroups)
+	resource.Register(resource.Registration{
+		Name:   IoTThingGroupResource,
+		Scope:  nuke.Account,
+		Lister: &IoTThingGroupLister{},
+	})
 }
 
-func ListIoTThingGroups(sess *session.Session) ([]Resource, error) {
-	svc := iot.New(sess)
-	resources := []Resource{}
-	thingGroups := []*iot.GroupNameAndArn{}
+type IoTThingGroupLister struct{}
+
+func (l *IoTThingGroupLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := iot.New(opts.Session)
+	resources := make([]resource.Resource, 0)
+	var thingGroups []*iot.GroupNameAndArn
 
 	params := &iot.ListThingGroupsInput{
 		MaxResults: aws.Int64(100),
@@ -58,8 +67,13 @@ func ListIoTThingGroups(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *IoTThingGroup) Remove() error {
+type IoTThingGroup struct {
+	svc     *iot.IoT
+	name    *string
+	version *int64
+}
 
+func (f *IoTThingGroup) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteThingGroup(&iot.DeleteThingGroupInput{
 		ThingGroupName:  f.name,
 		ExpectedVersion: f.version,

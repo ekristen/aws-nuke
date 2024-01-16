@@ -1,31 +1,39 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/route53resolver"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-// Route53ResolverEndpoint is the resource type for nuking
-type Route53ResolverEndpoint struct {
-	svc  *route53resolver.Route53Resolver
-	id   *string
-	name *string
-}
+const Route53ResolverEndpointResource = "Route53ResolverEndpoint"
 
 func init() {
-	register("Route53ResolverEndpoint", ListRoute53ResolverEndpoints)
+	resource.Register(resource.Registration{
+		Name:   Route53ResolverEndpointResource,
+		Scope:  nuke.Account,
+		Lister: &Route53ResolverEndpointLister{},
+	})
 }
 
-// ListRoute53ResolverEndpoints produces the resources to be nuked
-func ListRoute53ResolverEndpoints(sess *session.Session) ([]Resource, error) {
-	svc := route53resolver.New(sess)
+type Route53ResolverEndpointLister struct{}
+
+// List produces the raw list of Route53 Resolver Endpoints to be nuked before filtering
+func (l *Route53ResolverEndpointLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := route53resolver.New(opts.Session)
 
 	params := &route53resolver.ListResolverEndpointsInput{}
 
-	var resources []Resource
+	var resources []resource.Resource
 
 	for {
 		resp, err := svc.ListResolverEndpoints(params)
@@ -54,8 +62,15 @@ func ListRoute53ResolverEndpoints(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
+// Route53ResolverEndpoint is the resource type for nuking
+type Route53ResolverEndpoint struct {
+	svc  *route53resolver.Route53Resolver
+	id   *string
+	name *string
+}
+
 // Remove implements Resource
-func (r *Route53ResolverEndpoint) Remove() error {
+func (r *Route53ResolverEndpoint) Remove(_ context.Context) error {
 	_, err := r.svc.DeleteResolverEndpoint(
 		&route53resolver.DeleteResolverEndpointInput{
 			ResolverEndpointId: r.id,

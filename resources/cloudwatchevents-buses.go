@@ -1,23 +1,38 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/cloudwatchevents"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
+const CloudWatchEventsBusesResource = "CloudWatchEventsBuses"
+
 func init() {
-	register("CloudWatchEventsBuses", ListCloudWatchEventsBuses)
+	resource.Register(resource.Registration{
+		Name:   CloudWatchEventsBusesResource,
+		Scope:  nuke.Account,
+		Lister: &CloudWatchEventsBusesLister{},
+	})
 }
 
-func ListCloudWatchEventsBuses(sess *session.Session) ([]Resource, error) {
-	svc := cloudwatchevents.New(sess)
+type CloudWatchEventsBusesLister struct{}
+
+func (l *CloudWatchEventsBusesLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := cloudwatchevents.New(opts.Session)
 
 	resp, err := svc.ListEventBuses(nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for _, bus := range resp.EventBuses {
 		if *bus.Name == "default" {
 			continue
@@ -36,7 +51,7 @@ type CloudWatchEventsBus struct {
 	name *string
 }
 
-func (bus *CloudWatchEventsBus) Remove() error {
+func (bus *CloudWatchEventsBus) Remove(_ context.Context) error {
 	_, err := bus.svc.DeleteEventBus(&cloudwatchevents.DeleteEventBusInput{
 		Name: bus.name,
 	})

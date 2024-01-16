@@ -1,25 +1,34 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sagemaker"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type SageMakerUserProfile struct {
-	svc             *sagemaker.SageMaker
-	domainID        *string
-	userProfileName *string
-}
+const SageMakerUserProfilesResource = "SageMakerUserProfiles"
 
 func init() {
-	register("SageMakerUserProfiles", ListSageMakerUserProfiles)
+	resource.Register(resource.Registration{
+		Name:   SageMakerUserProfilesResource,
+		Scope:  nuke.Account,
+		Lister: &SageMakerUserProfilesLister{},
+	})
 }
 
-func ListSageMakerUserProfiles(sess *session.Session) ([]Resource, error) {
-	svc := sagemaker.New(sess)
-	resources := []Resource{}
+type SageMakerUserProfilesLister struct{}
+
+func (l *SageMakerUserProfilesLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := sagemaker.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &sagemaker.ListUserProfilesInput{
 		MaxResults: aws.Int64(30),
@@ -49,7 +58,13 @@ func ListSageMakerUserProfiles(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *SageMakerUserProfile) Remove() error {
+type SageMakerUserProfile struct {
+	svc             *sagemaker.SageMaker
+	domainID        *string
+	userProfileName *string
+}
+
+func (f *SageMakerUserProfile) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteUserProfile(&sagemaker.DeleteUserProfileInput{
 		DomainId:        f.domainID,
 		UserProfileName: f.userProfileName,
@@ -62,10 +77,10 @@ func (f *SageMakerUserProfile) String() string {
 	return *f.userProfileName
 }
 
-func (i *SageMakerUserProfile) Properties() types.Properties {
+func (f *SageMakerUserProfile) Properties() types.Properties {
 	properties := types.NewProperties()
 	properties.
-		Set("DomainID", i.domainID).
-		Set("UserProfileName", i.userProfileName)
+		Set("DomainID", f.domainID).
+		Set("UserProfileName", f.userProfileName)
 	return properties
 }

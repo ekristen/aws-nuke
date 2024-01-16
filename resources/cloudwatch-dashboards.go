@@ -1,22 +1,32 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type CloudWatchDashboard struct {
-	svc           *cloudwatch.CloudWatch
-	dashboardName *string
-}
+const CloudWatchDashboardResource = "CloudWatchDashboard"
 
 func init() {
-	register("CloudWatchDashboard", ListCloudWatchDashboards)
+	resource.Register(resource.Registration{
+		Name:   CloudWatchDashboardResource,
+		Scope:  nuke.Account,
+		Lister: &CloudWatchDashboardLister{},
+	})
 }
 
-func ListCloudWatchDashboards(sess *session.Session) ([]Resource, error) {
-	svc := cloudwatch.New(sess)
-	resources := []Resource{}
+type CloudWatchDashboardLister struct{}
+
+func (l *CloudWatchDashboardLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := cloudwatch.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &cloudwatch.ListDashboardsInput{}
 
@@ -43,8 +53,12 @@ func ListCloudWatchDashboards(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *CloudWatchDashboard) Remove() error {
+type CloudWatchDashboard struct {
+	svc           *cloudwatch.CloudWatch
+	dashboardName *string
+}
 
+func (f *CloudWatchDashboard) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteDashboards(&cloudwatch.DeleteDashboardsInput{
 		DashboardNames: []*string{f.dashboardName},
 	})

@@ -1,0 +1,68 @@
+site_name: AWS Nuke
+site_url: https://ekristen.github.io/aws-nuke
+repo_name: ekristen/aws-nuke
+repo_url: https://github.com/ekristen/aws-nuke
+edit_uri: ""
+
+site_dir: public
+
+# Configuration
+theme:
+  name: material
+  language: en
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/link
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: indigo
+      toggle:
+        icon: material/toggle-switch-off
+        name: Switch to system preference
+  features:
+    - navigation.sections
+    #- navigation.tabs
+    - toc.integrate
+    - navigation.path
+
+# Plugins
+plugins:
+  - search
+
+# Extensions
+markdown_extensions:
+  - admonition
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - toc:
+      permalink: true
+
+# Page tree
+nav:
+  - Getting Started:
+    - Introduction: index.md
+    - Warning: warning.md
+    - Install: installation.md
+    - Authentication: auth.md
+    - Quick Start: quick-start.md
+  - Config:
+    - Filtering: filtering.md
+    - Custom Endpoints: custom-endpoints.md
+  - Development:
+    - Overview: development.md
+    - Resources: resources.md
+    - Releases: releases.md
+    - Testing: testing.md
+

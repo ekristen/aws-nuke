@@ -1,11 +1,8 @@
-/vendor
-/aws-nuke
-/aws-nuke-*
-/dist
-/releases
-/mocks
+releases
 .envrc
 .idea
-config.yaml
 cosign.key
+config*.yaml
 *-config.yaml
+config.*.yaml
+

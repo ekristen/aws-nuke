@@ -1,13 +1,16 @@
 package resources
 
 import (
+	"context"
 	"testing"
+
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/iam"
-	"github.com/golang/mock/gomock"
-	"github.com/rebuy-de/aws-nuke/v2/mocks/mock_iamiface"
-	"github.com/stretchr/testify/assert"
+
+	"github.com/ekristen/aws-nuke/mocks/mock_iamiface"
 )
 
 func Test_Mock_IAMUserPolicy_Remove(t *testing.T) {
@@ -28,6 +31,6 @@ func Test_Mock_IAMUserPolicy_Remove(t *testing.T) {
 		PolicyName: aws.String(iamUserPolicy.policyName),
 	})).Return(&iam.DeleteUserPolicyOutput{}, nil)
 
-	err := iamUserPolicy.Remove()
+	err := iamUserPolicy.Remove(context.TODO())
 	a.Nil(err)
 }

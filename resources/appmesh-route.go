@@ -1,25 +1,32 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/appmesh"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type AppMeshRoute struct {
-	svc               *appmesh.AppMesh
-	routeName         *string
-	meshName          *string
-	virtualRouterName *string
-}
+const AppMeshRouteResource = "AppMeshRoute"
 
 func init() {
-	register("AppMeshRoute", ListAppMeshRoutes)
+	resource.Register(resource.Registration{
+		Name:   AppMeshRouteResource,
+		Scope:  nuke.Account,
+		Lister: &AppMeshRouteLister{},
+	})
 }
 
-func ListAppMeshRoutes(sess *session.Session) ([]Resource, error) {
-	svc := appmesh.New(sess)
-	resources := []Resource{}
+type AppMeshRouteLister struct{}
+
+func (l *AppMeshRouteLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+	svc := appmesh.New(opts.Session)
+	var resources []resource.Resource
 
 	// Get Meshes
 	var meshNames []*string
@@ -86,7 +93,14 @@ func ListAppMeshRoutes(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *AppMeshRoute) Remove() error {
+type AppMeshRoute struct {
+	svc               *appmesh.AppMesh
+	routeName         *string
+	meshName          *string
+	virtualRouterName *string
+}
+
+func (f *AppMeshRoute) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteRoute(&appmesh.DeleteRouteInput{
 		MeshName:          f.meshName,
 		RouteName:         f.routeName,

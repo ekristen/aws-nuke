@@ -1,8 +1,12 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/appstream"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
+	"github.com/ekristen/libnuke/pkg/resource"
 )
 
 type AppStreamFleet struct {
@@ -10,13 +14,23 @@ type AppStreamFleet struct {
 	name *string
 }
 
+const AppStreamFleetResource = "AppStreamFleet"
+
 func init() {
-	register("AppStreamFleet", ListAppStreamFleets)
+	resource.Register(resource.Registration{
+		Name:   AppStreamFleetResource,
+		Scope:  nuke.Account,
+		Lister: &AppStreamFleetLister{},
+	})
 }
 
-func ListAppStreamFleets(sess *session.Session) ([]Resource, error) {
-	svc := appstream.New(sess)
-	resources := []Resource{}
+type AppStreamFleetLister struct{}
+
+func (l *AppStreamFleetLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := appstream.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &appstream.DescribeFleetsInput{}
 
@@ -43,8 +57,7 @@ func ListAppStreamFleets(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *AppStreamFleet) Remove() error {
-
+func (f *AppStreamFleet) Remove(_ context.Context) error {
 	_, err := f.svc.StopFleet(&appstream.StopFleetInput{
 		Name: f.name,
 	})

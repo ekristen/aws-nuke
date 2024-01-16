@@ -1,11 +1,17 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/backup"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
 	"strings"
+
+	"github.com/aws/aws-sdk-go/service/backup"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 type BackupSelection struct {
@@ -15,19 +21,29 @@ type BackupSelection struct {
 	selectionName string
 }
 
+const AWSBackupSelectionResource = "AWSBackupSelection"
+
 func init() {
-	register("AWSBackupSelection", ListBackupSelections)
+	resource.Register(resource.Registration{
+		Name:   AWSBackupSelectionResource,
+		Scope:  nuke.Account,
+		Lister: &AWSBackupSelectionLister{},
+	})
 }
 
-func ListBackupSelections(sess *session.Session) ([]Resource, error) {
-	svc := backup.New(sess)
-	false_value := false
-	max_backups_len := int64(100)
+type AWSBackupSelectionLister struct{}
+
+func (l *AWSBackupSelectionLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := backup.New(opts.Session)
+	falseValue := false
+	maxBackupsLen := int64(100)
 	params := &backup.ListBackupPlansInput{
-		IncludeDeleted: &false_value,
-		MaxResults:     &max_backups_len, // aws default limit on number of backup plans per account
+		IncludeDeleted: &falseValue,
+		MaxResults:     &maxBackupsLen, // aws default limit on number of backup plans per account
 	}
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 
 	for {
 		output, err := svc.ListBackupPlans(params)
@@ -65,7 +81,7 @@ func (b *BackupSelection) Properties() types.Properties {
 	return properties
 }
 
-func (b *BackupSelection) Remove() error {
+func (b *BackupSelection) Remove(_ context.Context) error {
 	_, err := b.svc.DeleteBackupSelection(&backup.DeleteBackupSelectionInput{
 		BackupPlanId: &b.planId,
 		SelectionId:  &b.selectionId,

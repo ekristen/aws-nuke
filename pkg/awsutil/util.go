@@ -2,11 +2,13 @@ package awsutil
 
 import (
 	"bytes"
+	"errors"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"net/http"
 	"net/http/httputil"
 	"regexp"
 
-	"github.com/rebuy-de/aws-nuke/v2/pkg/util"
+	"github.com/ekristen/libnuke/pkg/utils"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -28,7 +30,7 @@ func DumpRequest(r *http.Request) string {
 
 	dump = bytes.TrimSpace(dump)
 	dump = HideSecureHeaders(dump)
-	dump = util.IndentBytes(dump, []byte("    > "))
+	dump = utils.IndentBytes(dump, []byte("    > "))
 	return string(dump)
 }
 
@@ -41,6 +43,16 @@ func DumpResponse(r *http.Response) string {
 	}
 
 	dump = bytes.TrimSpace(dump)
-	dump = util.IndentBytes(dump, []byte("    < "))
+	dump = utils.IndentBytes(dump, []byte("    < "))
 	return string(dump)
+}
+
+func IsAWSError(err error, code string) bool {
+	var aerr awserr.Error
+	ok := errors.As(err, &aerr)
+	if !ok {
+		return false
+	}
+
+	return aerr.Code() == code
 }

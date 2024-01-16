@@ -1,26 +1,35 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/waf"
 	"github.com/aws/aws-sdk-go/service/wafregional"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type WAFRegionalRulePredicate struct {
-	svc       *wafregional.WAFRegional
-	ruleID    *string
-	predicate *waf.Predicate
-}
+const WAFRegionalRulePredicateResource = "WAFRegionalRulePredicate"
 
 func init() {
-	register("WAFRegionalRulePredicate", ListWAFRegionalRulePredicates)
+	resource.Register(resource.Registration{
+		Name:   WAFRegionalRulePredicateResource,
+		Scope:  nuke.Account,
+		Lister: &WAFRegionalRulePredicateLister{},
+	})
 }
 
-func ListWAFRegionalRulePredicates(sess *session.Session) ([]Resource, error) {
-	svc := wafregional.New(sess)
-	resources := []Resource{}
+type WAFRegionalRulePredicateLister struct{}
+
+func (l *WAFRegionalRulePredicateLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := wafregional.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &waf.ListRulesInput{
 		Limit: aws.Int64(50),
@@ -59,7 +68,13 @@ func ListWAFRegionalRulePredicates(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (r *WAFRegionalRulePredicate) Remove() error {
+type WAFRegionalRulePredicate struct {
+	svc       *wafregional.WAFRegional
+	ruleID    *string
+	predicate *waf.Predicate
+}
+
+func (r *WAFRegionalRulePredicate) Remove(_ context.Context) error {
 	tokenOutput, err := r.svc.GetChangeToken(&waf.GetChangeTokenInput{})
 	if err != nil {
 		return err

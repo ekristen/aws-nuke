@@ -1,24 +1,34 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/mobile"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type MobileProject struct {
-	svc       *mobile.Mobile
-	projectID *string
-}
+const MobileProjectResource = "MobileProject"
 
 func init() {
-	register("MobileProject", ListMobileProjects)
+	resource.Register(resource.Registration{
+		Name:   MobileProjectResource,
+		Scope:  nuke.Account,
+		Lister: &MobileProjectLister{},
+	})
 }
 
-func ListMobileProjects(sess *session.Session) ([]Resource, error) {
-	svc := mobile.New(sess)
+type MobileProjectLister struct{}
+
+func (l *MobileProjectLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := mobile.New(opts.Session)
 	svc.ClientInfo.SigningName = "AWSMobileHubService"
-	resources := []Resource{}
+	resources := make([]resource.Resource, 0)
 
 	params := &mobile.ListProjectsInput{
 		MaxResults: aws.Int64(100),
@@ -47,8 +57,12 @@ func ListMobileProjects(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *MobileProject) Remove() error {
+type MobileProject struct {
+	svc       *mobile.Mobile
+	projectID *string
+}
 
+func (f *MobileProject) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteProject(&mobile.DeleteProjectInput{
 		ProjectId: f.projectID,
 	})

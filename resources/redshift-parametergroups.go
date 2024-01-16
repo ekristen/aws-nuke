@@ -1,25 +1,35 @@
 package resources
 
 import (
+	"context"
+
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/redshift"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type RedshiftParameterGroup struct {
-	svc                *redshift.Redshift
-	parameterGroupName *string
-}
+const RedshiftParameterGroupResource = "RedshiftParameterGroup"
 
 func init() {
-	register("RedshiftParameterGroup", ListRedshiftParameterGroup)
+	resource.Register(resource.Registration{
+		Name:   RedshiftParameterGroupResource,
+		Scope:  nuke.Account,
+		Lister: &RedshiftParameterGroupLister{},
+	})
 }
 
-func ListRedshiftParameterGroup(sess *session.Session) ([]Resource, error) {
-	svc := redshift.New(sess)
-	resources := []Resource{}
+type RedshiftParameterGroupLister struct{}
+
+func (l *RedshiftParameterGroupLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := redshift.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &redshift.DescribeClusterParameterGroupsInput{
 		MaxRecords: aws.Int64(100),
@@ -50,8 +60,12 @@ func ListRedshiftParameterGroup(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *RedshiftParameterGroup) Remove() error {
+type RedshiftParameterGroup struct {
+	svc                *redshift.Redshift
+	parameterGroupName *string
+}
 
+func (f *RedshiftParameterGroup) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteClusterParameterGroup(&redshift.DeleteClusterParameterGroupInput{
 		ParameterGroupName: f.parameterGroupName,
 	})

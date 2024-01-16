@@ -1,11 +1,28 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/rds"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
+
+const RDSEventSubscriptionResource = "RDSEventSubscription"
+
+func init() {
+	resource.Register(resource.Registration{
+		Name:   RDSEventSubscriptionResource,
+		Scope:  nuke.Account,
+		Lister: &RDSEventSubscriptionLister{},
+	})
+}
+
+type RDSEventSubscriptionLister struct{}
 
 type RDSEventSubscription struct {
 	svc     *rds.RDS
@@ -14,12 +31,9 @@ type RDSEventSubscription struct {
 	tags    []*rds.Tag
 }
 
-func init() {
-	register("RDSEventSubscription", ListRDSEventSubscriptions)
-}
-
-func ListRDSEventSubscriptions(sess *session.Session) ([]Resource, error) {
-	svc := rds.New(sess)
+func (l *RDSEventSubscriptionLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+	svc := rds.New(opts.Session)
 
 	params := &rds.DescribeEventSubscriptionsInput{
 		MaxRecords: aws.Int64(100),
@@ -28,7 +42,7 @@ func ListRDSEventSubscriptions(sess *session.Session) ([]Resource, error) {
 	if err != nil {
 		return nil, err
 	}
-	var resources []Resource
+	var resources []resource.Resource
 	for _, eventSubscription := range resp.EventSubscriptionsList {
 		tags, err := svc.ListTagsForResource(&rds.ListTagsForResourceInput{
 			ResourceName: eventSubscription.EventSubscriptionArn,
@@ -50,7 +64,7 @@ func ListRDSEventSubscriptions(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (i *RDSEventSubscription) Remove() error {
+func (i *RDSEventSubscription) Remove(_ context.Context) error {
 	params := &rds.DeleteEventSubscriptionInput{
 		SubscriptionName: i.id,
 	}

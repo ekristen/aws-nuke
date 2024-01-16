@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/glue"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type GlueJob struct {
-	svc     *glue.Glue
-	jobName *string
-}
+const GlueJobResource = "GlueJob"
 
 func init() {
-	register("GlueJob", ListGlueJobs)
+	resource.Register(resource.Registration{
+		Name:   GlueJobResource,
+		Scope:  nuke.Account,
+		Lister: &GlueJobLister{},
+	})
 }
 
-func ListGlueJobs(sess *session.Session) ([]Resource, error) {
-	svc := glue.New(sess)
-	resources := []Resource{}
+type GlueJobLister struct{}
+
+func (l *GlueJobLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := glue.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &glue.GetJobsInput{
 		MaxResults: aws.Int64(100),
@@ -46,8 +56,12 @@ func ListGlueJobs(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *GlueJob) Remove() error {
+type GlueJob struct {
+	svc     *glue.Glue
+	jobName *string
+}
 
+func (f *GlueJob) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteJob(&glue.DeleteJobInput{
 		JobName: f.jobName,
 	})

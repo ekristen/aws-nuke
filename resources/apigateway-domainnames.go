@@ -1,23 +1,32 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/apigateway"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type APIGatewayDomainName struct {
-	svc        *apigateway.APIGateway
-	domainName *string
-}
+const APIGatewayDomainNameResource = "APIGatewayDomainName"
 
 func init() {
-	register("APIGatewayDomainName", ListAPIGatewayDomainNames)
+	resource.Register(resource.Registration{
+		Name:   APIGatewayDomainNameResource,
+		Scope:  nuke.Account,
+		Lister: &APIGatewayDomainNameLister{},
+	})
 }
 
-func ListAPIGatewayDomainNames(sess *session.Session) ([]Resource, error) {
-	svc := apigateway.New(sess)
-	resources := []Resource{}
+type APIGatewayDomainNameLister struct{}
+
+func (l *APIGatewayDomainNameLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+	svc := apigateway.New(opts.Session)
+	var resources []resource.Resource
 
 	params := &apigateway.GetDomainNamesInput{
 		Limit: aws.Int64(100),
@@ -46,8 +55,12 @@ func ListAPIGatewayDomainNames(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *APIGatewayDomainName) Remove() error {
+type APIGatewayDomainName struct {
+	svc        *apigateway.APIGateway
+	domainName *string
+}
 
+func (f *APIGatewayDomainName) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteDomainName(&apigateway.DeleteDomainNameInput{
 		DomainName: f.domainName,
 	})

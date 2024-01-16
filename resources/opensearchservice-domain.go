@@ -1,26 +1,34 @@
 package resources
 
 import (
+	"context"
+
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/opensearchservice"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type OSDomain struct {
-	svc             *opensearchservice.OpenSearchService
-	domainName      *string
-	lastUpdatedTime *time.Time
-	tagList         []*opensearchservice.Tag
-}
+const OSDomainResource = "OSDomain"
 
 func init() {
-	register("OSDomain", ListOSDomains)
+	resource.Register(resource.Registration{
+		Name:   OSDomainResource,
+		Scope:  nuke.Account,
+		Lister: &OSDomainLister{},
+	})
 }
 
-func ListOSDomains(sess *session.Session) ([]Resource, error) {
-	svc := opensearchservice.New(sess)
+type OSDomainLister struct{}
+
+func (l *OSDomainLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := opensearchservice.New(opts.Session)
 
 	listResp, err := svc.ListDomainNames(&opensearchservice.ListDomainNamesInput{})
 	if err != nil {
@@ -31,7 +39,7 @@ func ListOSDomains(sess *session.Session) ([]Resource, error) {
 		domainNames = append(domainNames, domain.DomainName)
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 
 	// early return to prevent the `missing required field, DescribeDomainsInput.DomainNames.` error
 	if len(domainNames) == 0 {
@@ -68,7 +76,14 @@ func ListOSDomains(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (o *OSDomain) Remove() error {
+type OSDomain struct {
+	svc             *opensearchservice.OpenSearchService
+	domainName      *string
+	lastUpdatedTime *time.Time
+	tagList         []*opensearchservice.Tag
+}
+
+func (o *OSDomain) Remove(_ context.Context) error {
 	_, err := o.svc.DeleteDomain(&opensearchservice.DeleteDomainInput{
 		DomainName: o.domainName,
 	})

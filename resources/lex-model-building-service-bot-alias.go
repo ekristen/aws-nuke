@@ -1,26 +1,34 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/lexmodelbuildingservice"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type LexModelBuildingServiceBotAlias struct {
-	svc      *lexmodelbuildingservice.LexModelBuildingService
-	name     *string
-	checksum *string
-	botName  *string
-}
+const LexModelBuildingServiceBotAliasResource = "LexModelBuildingServiceBotAlias"
 
 func init() {
-	register("LexModelBuildingServiceBotAlias", ListLexModelBuildingServiceBotAliases)
+	resource.Register(resource.Registration{
+		Name:   LexModelBuildingServiceBotAliasResource,
+		Scope:  nuke.Account,
+		Lister: &LexModelBuildingServiceBotAliasLister{},
+	})
 }
 
-func ListLexModelBuildingServiceBotAliases(sess *session.Session) ([]Resource, error) {
-	svc := lexmodelbuildingservice.New(sess)
-	resources := []Resource{}
+type LexModelBuildingServiceBotAliasLister struct{}
+
+func (l *LexModelBuildingServiceBotAliasLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := lexmodelbuildingservice.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	botParams := &lexmodelbuildingservice.GetBotsInput{
 		MaxResults: aws.Int64(10),
@@ -69,7 +77,14 @@ func ListLexModelBuildingServiceBotAliases(sess *session.Session) ([]Resource, e
 	return resources, nil
 }
 
-func (f *LexModelBuildingServiceBotAlias) Remove() error {
+type LexModelBuildingServiceBotAlias struct {
+	svc      *lexmodelbuildingservice.LexModelBuildingService
+	name     *string
+	checksum *string
+	botName  *string
+}
+
+func (f *LexModelBuildingServiceBotAlias) Remove(_ context.Context) error {
 	params := &lexmodelbuildingservice.DeleteBotAliasInput{
 		BotName: f.botName,
 		Name:    f.name,

@@ -1,24 +1,35 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/dax"
+	"context"
+
 	"fmt"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/dax"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type DAXSubnetGroup struct {
-	svc             *dax.DAX
-	subnetGroupName *string
-}
+const DAXSubnetGroupResource = "DAXSubnetGroup"
 
 func init() {
-	register("DAXSubnetGroup", ListDAXSubnetGroups)
+	resource.Register(resource.Registration{
+		Name:   DAXSubnetGroupResource,
+		Scope:  nuke.Account,
+		Lister: &DAXSubnetGroupLister{},
+	})
 }
 
-func ListDAXSubnetGroups(sess *session.Session) ([]Resource, error) {
-	svc := dax.New(sess)
-	resources := []Resource{}
+type DAXSubnetGroupLister struct{}
+
+func (l *DAXSubnetGroupLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := dax.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &dax.DescribeSubnetGroupsInput{
 		MaxResults: aws.Int64(100),
@@ -47,15 +58,19 @@ func ListDAXSubnetGroups(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
+type DAXSubnetGroup struct {
+	svc             *dax.DAX
+	subnetGroupName *string
+}
+
 func (f *DAXSubnetGroup) Filter() error {
 	if *f.subnetGroupName == "default" {
-		return fmt.Errorf("Cannot delete default DAX Subnet group")
+		return fmt.Errorf("cannot delete default DAX Subnet group")
 	}
 	return nil
 }
 
-func (f *DAXSubnetGroup) Remove() error {
-
+func (f *DAXSubnetGroup) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteSubnetGroup(&dax.DeleteSubnetGroupInput{
 		SubnetGroupName: f.subnetGroupName,
 	})

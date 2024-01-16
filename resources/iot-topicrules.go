@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iot"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type IoTTopicRule struct {
-	svc  *iot.IoT
-	name *string
-}
+const IoTTopicRuleResource = "IoTTopicRule"
 
 func init() {
-	register("IoTTopicRule", ListIoTTopicRules)
+	resource.Register(resource.Registration{
+		Name:   IoTTopicRuleResource,
+		Scope:  nuke.Account,
+		Lister: &IoTTopicRuleLister{},
+	})
 }
 
-func ListIoTTopicRules(sess *session.Session) ([]Resource, error) {
-	svc := iot.New(sess)
-	resources := []Resource{}
+type IoTTopicRuleLister struct{}
+
+func (l *IoTTopicRuleLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := iot.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &iot.ListTopicRulesInput{
 		MaxResults: aws.Int64(100),
@@ -44,8 +54,12 @@ func ListIoTTopicRules(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *IoTTopicRule) Remove() error {
+type IoTTopicRule struct {
+	svc  *iot.IoT
+	name *string
+}
 
+func (f *IoTTopicRule) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteTopicRule(&iot.DeleteTopicRuleInput{
 		RuleName: f.name,
 	})

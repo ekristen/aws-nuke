@@ -1,29 +1,44 @@
 package resources
 
 import (
+	"context"
+
+	"github.com/ekristen/libnuke/pkg/featureflag"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/rds"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/config"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
+
+const RDSInstanceResource = "RDSInstance"
+
+func init() {
+	resource.Register(resource.Registration{
+		Name:   RDSInstanceResource,
+		Scope:  nuke.Account,
+		Lister: &RDSInstanceLister{},
+	})
+}
 
 type RDSInstance struct {
 	svc      *rds.RDS
 	instance *rds.DBInstance
 	tags     []*rds.Tag
 
-	featureFlags config.FeatureFlags
+	featureFlags *featureflag.FeatureFlags
 }
 
-func init() {
-	register("RDSInstance", ListRDSInstances)
-}
+type RDSInstanceLister struct{}
 
-func ListRDSInstances(sess *session.Session) ([]Resource, error) {
-	svc := rds.New(sess)
+func (l *RDSInstanceLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := rds.New(opts.Session)
 
 	params := &rds.DescribeDBInstancesInput{}
 	resp, err := svc.DescribeDBInstances(params)
@@ -31,7 +46,7 @@ func ListRDSInstances(sess *session.Session) ([]Resource, error) {
 		return nil, err
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for _, instance := range resp.DBInstances {
 		tags, err := svc.ListTagsForResource(&rds.ListTagsForResourceInput{
 			ResourceName: instance.DBInstanceArn,
@@ -51,18 +66,22 @@ func ListRDSInstances(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (i *RDSInstance) FeatureFlags(ff config.FeatureFlags) {
+func (i *RDSInstance) FeatureFlags(ff *featureflag.FeatureFlags) {
 	i.featureFlags = ff
 }
 
-func (i *RDSInstance) Remove() error {
-	if aws.BoolValue(i.instance.DeletionProtection) && i.featureFlags.DisableDeletionProtection.RDSInstance {
+func (i *RDSInstance) Remove(_ context.Context) error {
+	ffddpRDSInstance, err := i.featureFlags.Get("DisableDeletionProtection_RDSInstance")
+	if err != nil {
+		return err
+	}
+
+	if aws.BoolValue(i.instance.DeletionProtection) && ffddpRDSInstance.Enabled() {
 		modifyParams := &rds.ModifyDBInstanceInput{
 			DBInstanceIdentifier: i.instance.DBInstanceIdentifier,
 			DeletionProtection:   aws.Bool(false),
 		}
-		_, err := i.svc.ModifyDBInstance(modifyParams)
-		if err != nil {
+		if _, err := i.svc.ModifyDBInstance(modifyParams); err != nil {
 			return err
 		}
 	}
@@ -72,8 +91,7 @@ func (i *RDSInstance) Remove() error {
 		SkipFinalSnapshot:    aws.Bool(true),
 	}
 
-	_, err := i.svc.DeleteDBInstance(params)
-	if err != nil {
+	if _, err := i.svc.DeleteDBInstance(params); err != nil {
 		return err
 	}
 

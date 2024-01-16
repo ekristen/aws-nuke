@@ -1,24 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iot"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type IoTJob struct {
-	svc    *iot.IoT
-	ID     *string
-	status *string
-}
+const IoTJobResource = "IoTJob"
 
 func init() {
-	register("IoTJob", ListIoTJobs)
+	resource.Register(resource.Registration{
+		Name:   IoTJobResource,
+		Scope:  nuke.Account,
+		Lister: &IoTJobLister{},
+	})
 }
 
-func ListIoTJobs(sess *session.Session) ([]Resource, error) {
-	svc := iot.New(sess)
-	resources := []Resource{}
+type IoTJobLister struct{}
+
+func (l *IoTJobLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := iot.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &iot.ListJobsInput{
 		MaxResults: aws.Int64(100),
@@ -47,7 +56,13 @@ func ListIoTJobs(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *IoTJob) Remove() error {
+type IoTJob struct {
+	svc    *iot.IoT
+	ID     *string
+	status *string
+}
+
+func (f *IoTJob) Remove(_ context.Context) error {
 
 	_, err := f.svc.CancelJob(&iot.CancelJobInput{
 		JobId: f.ID,

@@ -1,30 +1,39 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/kafka"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type MSKConfiguration struct {
-	svc  *kafka.Kafka
-	arn  string
-	name string
-}
+const MSKConfigurationResource = "MSKConfiguration"
 
 func init() {
-	register("MSKConfiguration", ListMSKConfigurations)
+	resource.Register(resource.Registration{
+		Name:   MSKConfigurationResource,
+		Scope:  nuke.Account,
+		Lister: &MSKConfigurationLister{},
+	})
 }
 
-func ListMSKConfigurations(sess *session.Session) ([]Resource, error) {
-	svc := kafka.New(sess)
+type MSKConfigurationLister struct{}
+
+func (l *MSKConfigurationLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := kafka.New(opts.Session)
 	params := &kafka.ListConfigurationsInput{}
 	resp, err := svc.ListConfigurations(params)
 	if err != nil {
 		return nil, err
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for _, configuration := range resp.Configurations {
 		resources = append(resources, &MSKConfiguration{
 			svc:  svc,
@@ -36,7 +45,13 @@ func ListMSKConfigurations(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (m *MSKConfiguration) Remove() error {
+type MSKConfiguration struct {
+	svc  *kafka.Kafka
+	arn  string
+	name string
+}
+
+func (m *MSKConfiguration) Remove(_ context.Context) error {
 	params := &kafka.DeleteConfigurationInput{
 		Arn: &m.arn,
 	}

@@ -1,23 +1,32 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/opsworkscm"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type OpsWorksCMServer struct {
-	svc    *opsworkscm.OpsWorksCM
-	name   *string
-	status *string
-}
+const OpsWorksCMServerResource = "OpsWorksCMServer"
 
 func init() {
-	register("OpsWorksCMServer", ListOpsWorksCMServers)
+	resource.Register(resource.Registration{
+		Name:   OpsWorksCMServerResource,
+		Scope:  nuke.Account,
+		Lister: &OpsWorksCMServerLister{},
+	})
 }
 
-func ListOpsWorksCMServers(sess *session.Session) ([]Resource, error) {
-	svc := opsworkscm.New(sess)
-	resources := []Resource{}
+type OpsWorksCMServerLister struct{}
+
+func (l *OpsWorksCMServerLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := opsworkscm.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &opsworkscm.DescribeServersInput{}
 
@@ -36,8 +45,13 @@ func ListOpsWorksCMServers(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *OpsWorksCMServer) Remove() error {
+type OpsWorksCMServer struct {
+	svc    *opsworkscm.OpsWorksCM
+	name   *string
+	status *string
+}
 
+func (f *OpsWorksCMServer) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteServer(&opsworkscm.DeleteServerInput{
 		ServerName: f.name,
 	})

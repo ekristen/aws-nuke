@@ -1,26 +1,35 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/waf"
 	"github.com/aws/aws-sdk-go/service/wafregional"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type WAFRegionalIPSet struct {
-	svc  *wafregional.WAFRegional
-	id   *string
-	name *string
-}
+const WAFRegionalIPSetResource = "WAFRegionalIPSet"
 
 func init() {
-	register("WAFRegionalIPSet", ListWAFRegionalIPSets)
+	resource.Register(resource.Registration{
+		Name:   WAFRegionalIPSetResource,
+		Scope:  nuke.Account,
+		Lister: &WAFRegionalIPSetLister{},
+	})
 }
 
-func ListWAFRegionalIPSets(sess *session.Session) ([]Resource, error) {
-	svc := wafregional.New(sess)
-	resources := []Resource{}
+type WAFRegionalIPSetLister struct{}
+
+func (l *WAFRegionalIPSetLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := wafregional.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &waf.ListIPSetsInput{
 		Limit: aws.Int64(50),
@@ -50,7 +59,13 @@ func ListWAFRegionalIPSets(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (r *WAFRegionalIPSet) Remove() error {
+type WAFRegionalIPSet struct {
+	svc  *wafregional.WAFRegional
+	id   *string
+	name *string
+}
+
+func (r *WAFRegionalIPSet) Remove(_ context.Context) error {
 	tokenOutput, err := r.svc.GetChangeToken(&waf.GetChangeTokenInput{})
 	if err != nil {
 		return err

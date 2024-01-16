@@ -1,22 +1,32 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/emr"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type EMRSecurityConfiguration struct {
-	svc  *emr.EMR
-	name *string
-}
+const EMRSecurityConfigurationResource = "EMRSecurityConfiguration"
 
 func init() {
-	register("EMRSecurityConfiguration", ListEMRSecurityConfiguration)
+	resource.Register(resource.Registration{
+		Name:   EMRSecurityConfigurationResource,
+		Scope:  nuke.Account,
+		Lister: &EMRSecurityConfigurationLister{},
+	})
 }
 
-func ListEMRSecurityConfiguration(sess *session.Session) ([]Resource, error) {
-	svc := emr.New(sess)
-	resources := []Resource{}
+type EMRSecurityConfigurationLister struct{}
+
+func (l *EMRSecurityConfigurationLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := emr.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &emr.ListSecurityConfigurationsInput{}
 
@@ -43,9 +53,13 @@ func ListEMRSecurityConfiguration(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *EMRSecurityConfiguration) Remove() error {
+type EMRSecurityConfiguration struct {
+	svc  *emr.EMR
+	name *string
+}
 
-	//Call names are inconsistent in the SDK
+func (f *EMRSecurityConfiguration) Remove(_ context.Context) error {
+	// Note: Call names are inconsistent in the SDK
 	_, err := f.svc.DeleteSecurityConfiguration(&emr.DeleteSecurityConfigurationInput{
 		Name: f.name,
 	})

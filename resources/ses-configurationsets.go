@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ses"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type SESConfigurationSet struct {
-	svc  *ses.SES
-	name *string
-}
+const SESConfigurationSetResource = "SESConfigurationSet"
 
 func init() {
-	register("SESConfigurationSet", ListSESConfigurationSets)
+	resource.Register(resource.Registration{
+		Name:   SESConfigurationSetResource,
+		Scope:  nuke.Account,
+		Lister: &SESConfigurationSetLister{},
+	})
 }
 
-func ListSESConfigurationSets(sess *session.Session) ([]Resource, error) {
-	svc := ses.New(sess)
-	resources := []Resource{}
+type SESConfigurationSetLister struct{}
+
+func (l *SESConfigurationSetLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := ses.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &ses.ListConfigurationSetsInput{
 		MaxItems: aws.Int64(100),
@@ -46,8 +56,12 @@ func ListSESConfigurationSets(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *SESConfigurationSet) Remove() error {
+type SESConfigurationSet struct {
+	svc  *ses.SES
+	name *string
+}
 
+func (f *SESConfigurationSet) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteConfigurationSet(&ses.DeleteConfigurationSetInput{
 		ConfigurationSetName: f.name,
 	})

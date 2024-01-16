@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/mediastore"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type MediaStoreContainer struct {
-	svc  *mediastore.MediaStore
-	name *string
-}
+const MediaStoreContainerResource = "MediaStoreContainer"
 
 func init() {
-	register("MediaStoreContainer", ListMediaStoreContainers)
+	resource.Register(resource.Registration{
+		Name:   MediaStoreContainerResource,
+		Scope:  nuke.Account,
+		Lister: &MediaStoreContainerLister{},
+	})
 }
 
-func ListMediaStoreContainers(sess *session.Session) ([]Resource, error) {
-	svc := mediastore.New(sess)
-	resources := []Resource{}
+type MediaStoreContainerLister struct{}
+
+func (l *MediaStoreContainerLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := mediastore.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &mediastore.ListContainersInput{
 		MaxResults: aws.Int64(100),
@@ -46,8 +56,12 @@ func ListMediaStoreContainers(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *MediaStoreContainer) Remove() error {
+type MediaStoreContainer struct {
+	svc  *mediastore.MediaStore
+	name *string
+}
 
+func (f *MediaStoreContainer) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteContainer(&mediastore.DeleteContainerInput{
 		ContainerName: f.name,
 	})

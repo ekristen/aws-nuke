@@ -1,28 +1,36 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/transfer"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type TransferServerUser struct {
-	svc      *transfer.Transfer
-	username *string
-	serverID *string
-	tags     []*transfer.Tag
-}
+const TransferServerUserResource = "TransferServerUser"
 
 func init() {
-	register("TransferServerUser", ListTransferServerUsers)
+	resource.Register(resource.Registration{
+		Name:   TransferServerUserResource,
+		Scope:  nuke.Account,
+		Lister: &TransferServerUserLister{},
+	})
 }
 
-func ListTransferServerUsers(sess *session.Session) ([]Resource, error) {
-	svc := transfer.New(sess)
-	resources := []Resource{}
+type TransferServerUserLister struct{}
+
+func (l *TransferServerUserLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := transfer.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &transfer.ListServersInput{
 		MaxResults: aws.Int64(50),
@@ -82,8 +90,14 @@ func ListTransferServerUsers(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (ts *TransferServerUser) Remove() error {
+type TransferServerUser struct {
+	svc      *transfer.Transfer
+	username *string
+	serverID *string
+	tags     []*transfer.Tag
+}
 
+func (ts *TransferServerUser) Remove(_ context.Context) error {
 	_, err := ts.svc.DeleteUser(&transfer.DeleteUserInput{
 		ServerId: ts.serverID,
 		UserName: ts.username,

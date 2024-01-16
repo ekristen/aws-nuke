@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/mediapackage"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type MediaPackageChannel struct {
-	svc *mediapackage.MediaPackage
-	ID  *string
-}
+const MediaPackageChannelResource = "MediaPackageChannel"
 
 func init() {
-	register("MediaPackageChannel", ListMediaPackageChannels)
+	resource.Register(resource.Registration{
+		Name:   MediaPackageChannelResource,
+		Scope:  nuke.Account,
+		Lister: &MediaPackageChannelLister{},
+	})
 }
 
-func ListMediaPackageChannels(sess *session.Session) ([]Resource, error) {
-	svc := mediapackage.New(sess)
-	resources := []Resource{}
+type MediaPackageChannelLister struct{}
+
+func (l *MediaPackageChannelLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := mediapackage.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &mediapackage.ListChannelsInput{
 		MaxResults: aws.Int64(50),
@@ -46,8 +56,12 @@ func ListMediaPackageChannels(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *MediaPackageChannel) Remove() error {
+type MediaPackageChannel struct {
+	svc *mediapackage.MediaPackage
+	ID  *string
+}
 
+func (f *MediaPackageChannel) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteChannel(&mediapackage.DeleteChannelInput{
 		Id: f.ID,
 	})

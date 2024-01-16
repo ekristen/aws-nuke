@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/servicediscovery"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type ServiceDiscoveryService struct {
-	svc *servicediscovery.ServiceDiscovery
-	ID  *string
-}
+const ServiceDiscoveryServiceResource = "ServiceDiscoveryService"
 
 func init() {
-	register("ServiceDiscoveryService", ListServiceDiscoveryServices)
+	resource.Register(resource.Registration{
+		Name:   ServiceDiscoveryServiceResource,
+		Scope:  nuke.Account,
+		Lister: &ServiceDiscoveryServiceLister{},
+	})
 }
 
-func ListServiceDiscoveryServices(sess *session.Session) ([]Resource, error) {
-	svc := servicediscovery.New(sess)
-	resources := []Resource{}
+type ServiceDiscoveryServiceLister struct{}
+
+func (l *ServiceDiscoveryServiceLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := servicediscovery.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &servicediscovery.ListServicesInput{
 		MaxResults: aws.Int64(100),
@@ -48,8 +58,12 @@ func ListServiceDiscoveryServices(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *ServiceDiscoveryService) Remove() error {
+type ServiceDiscoveryService struct {
+	svc *servicediscovery.ServiceDiscovery
+	ID  *string
+}
 
+func (f *ServiceDiscoveryService) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteService(&servicediscovery.DeleteServiceInput{
 		Id: f.ID,
 	})

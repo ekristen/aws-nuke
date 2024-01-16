@@ -1,24 +1,34 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/fsx"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type FSxBackup struct {
-	svc    *fsx.FSx
-	backup *fsx.Backup
-}
+const FSxBackupResource = "FSxBackup"
 
 func init() {
-	register("FSxBackup", ListFSxBackups)
+	resource.Register(resource.Registration{
+		Name:   FSxBackupResource,
+		Scope:  nuke.Account,
+		Lister: &FSxBackupLister{},
+	})
 }
 
-func ListFSxBackups(sess *session.Session) ([]Resource, error) {
-	svc := fsx.New(sess)
-	resources := []Resource{}
+type FSxBackupLister struct{}
+
+func (l *FSxBackupLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := fsx.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &fsx.DescribeBackupsInput{
 		MaxResults: aws.Int64(100),
@@ -45,7 +55,12 @@ func ListFSxBackups(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *FSxBackup) Remove() error {
+type FSxBackup struct {
+	svc    *fsx.FSx
+	backup *fsx.Backup
+}
+
+func (f *FSxBackup) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteBackup(&fsx.DeleteBackupInput{
 		BackupId: f.backup.BackupId,
 	})

@@ -1,26 +1,35 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/waf"
 	"github.com/aws/aws-sdk-go/service/wafregional"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type WAFRegionalRuleGroup struct {
-	svc  *wafregional.WAFRegional
-	ID   *string
-	name *string
-}
+const WAFRegionalRuleGroupResource = "WAFRegionalRuleGroup"
 
 func init() {
-	register("WAFRegionalRuleGroup", ListWAFRegionalRuleGroups)
+	resource.Register(resource.Registration{
+		Name:   WAFRegionalRuleGroupResource,
+		Scope:  nuke.Account,
+		Lister: &WAFRegionalRuleGroupLister{},
+	})
 }
 
-func ListWAFRegionalRuleGroups(sess *session.Session) ([]Resource, error) {
-	svc := wafregional.New(sess)
-	resources := []Resource{}
+type WAFRegionalRuleGroupLister struct{}
+
+func (l *WAFRegionalRuleGroupLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := wafregional.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &waf.ListRuleGroupsInput{
 		Limit: aws.Int64(50),
@@ -50,8 +59,13 @@ func ListWAFRegionalRuleGroups(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *WAFRegionalRuleGroup) Remove() error {
+type WAFRegionalRuleGroup struct {
+	svc  *wafregional.WAFRegional
+	ID   *string
+	name *string
+}
 
+func (f *WAFRegionalRuleGroup) Remove(_ context.Context) error {
 	tokenOutput, err := f.svc.GetChangeToken(&waf.GetChangeTokenInput{})
 	if err != nil {
 		return err

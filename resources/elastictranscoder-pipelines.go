@@ -1,22 +1,32 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/elastictranscoder"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type ElasticTranscoderPipeline struct {
-	svc        *elastictranscoder.ElasticTranscoder
-	pipelineID *string
-}
+const ElasticTranscoderPipelineResource = "ElasticTranscoderPipeline"
 
 func init() {
-	register("ElasticTranscoderPipeline", ListElasticTranscoderPipelines)
+	resource.Register(resource.Registration{
+		Name:   ElasticTranscoderPipelineResource,
+		Scope:  nuke.Account,
+		Lister: &ElasticTranscoderPipelineLister{},
+	})
 }
 
-func ListElasticTranscoderPipelines(sess *session.Session) ([]Resource, error) {
-	svc := elastictranscoder.New(sess)
-	resources := []Resource{}
+type ElasticTranscoderPipelineLister struct{}
+
+func (l *ElasticTranscoderPipelineLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := elastictranscoder.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &elastictranscoder.ListPipelinesInput{}
 
@@ -43,8 +53,12 @@ func ListElasticTranscoderPipelines(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *ElasticTranscoderPipeline) Remove() error {
+type ElasticTranscoderPipeline struct {
+	svc        *elastictranscoder.ElasticTranscoder
+	pipelineID *string
+}
 
+func (f *ElasticTranscoderPipeline) Remove(_ context.Context) error {
 	_, err := f.svc.DeletePipeline(&elastictranscoder.DeletePipelineInput{
 		Id: f.pipelineID,
 	})

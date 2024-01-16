@@ -1,24 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type EC2VPNConnection struct {
-	svc   *ec2.EC2
-	conn  *ec2.VpnConnection
-}
+const EC2VPNConnectionResource = "EC2VPNConnection"
 
 func init() {
-	register("EC2VPNConnection", ListEC2VPNConnections)
+	resource.Register(resource.Registration{
+		Name:   EC2VPNConnectionResource,
+		Scope:  nuke.Account,
+		Lister: &EC2VPNConnectionLister{},
+	})
 }
 
-func ListEC2VPNConnections(sess *session.Session) ([]Resource, error) {
-	svc := ec2.New(sess)
+type EC2VPNConnectionLister struct{}
+
+func (l *EC2VPNConnectionLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+	svc := ec2.New(opts.Session)
 
 	params := &ec2.DescribeVpnConnectionsInput{}
 	resp, err := svc.DescribeVpnConnections(params)
@@ -26,15 +35,20 @@ func ListEC2VPNConnections(sess *session.Session) ([]Resource, error) {
 		return nil, err
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for _, out := range resp.VpnConnections {
 		resources = append(resources, &EC2VPNConnection{
-			svc:   svc,
-			conn:  out,
+			svc:  svc,
+			conn: out,
 		})
 	}
 
 	return resources, nil
+}
+
+type EC2VPNConnection struct {
+	svc  *ec2.EC2
+	conn *ec2.VpnConnection
 }
 
 func (v *EC2VPNConnection) Filter() error {
@@ -44,7 +58,7 @@ func (v *EC2VPNConnection) Filter() error {
 	return nil
 }
 
-func (v *EC2VPNConnection) Remove() error {
+func (v *EC2VPNConnection) Remove(_ context.Context) error {
 	params := &ec2.DeleteVpnConnectionInput{
 		VpnConnectionId: v.conn.VpnConnectionId,
 	}

@@ -1,11 +1,17 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/backup"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
 	"strings"
+
+	"github.com/aws/aws-sdk-go/service/backup"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 type BackupPlan struct {
@@ -16,19 +22,29 @@ type BackupPlan struct {
 	tags map[string]*string
 }
 
+const AWSBackupPlanResource = "AWSBackupPlan"
+
 func init() {
-	register("AWSBackupPlan", ListBackupPlans)
+	resource.Register(resource.Registration{
+		Name:   AWSBackupPlanResource,
+		Scope:  nuke.Account,
+		Lister: &AWSBackupPlanLister{},
+	})
 }
 
-func ListBackupPlans(sess *session.Session) ([]Resource, error) {
-	svc := backup.New(sess)
+type AWSBackupPlanLister struct{}
+
+func (l *AWSBackupPlanLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := backup.New(opts.Session)
 	falseValue := false
 	maxBackupsLen := int64(100)
 	params := &backup.ListBackupPlansInput{
 		IncludeDeleted: &falseValue,
 		MaxResults:     &maxBackupsLen, // aws default limit on number of backup plans per account
 	}
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 
 	for {
 		output, err := svc.ListBackupPlans(params)
@@ -67,7 +83,7 @@ func (b *BackupPlan) Properties() types.Properties {
 	return properties
 }
 
-func (b *BackupPlan) Remove() error {
+func (b *BackupPlan) Remove(_ context.Context) error {
 	_, err := b.svc.DeleteBackupPlan(&backup.DeleteBackupPlanInput{
 		BackupPlanId: &b.id,
 	})

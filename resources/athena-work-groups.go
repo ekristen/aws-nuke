@@ -1,21 +1,34 @@
 package resources
 
 import (
+	"context"
+
 	"errors"
 	"fmt"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/athena"
 	"github.com/aws/aws-sdk-go/service/sts"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
-	"github.com/sirupsen/logrus"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
+const AthenaWorkGroupResource = "AthenaWorkGroup"
+
 func init() {
-	register("AthenaWorkGroup", ListAthenaWorkGroups,
-		mapCloudControl("AWS::Athena::WorkGroup"))
+	resource.Register(resource.Registration{
+		Name:   AthenaWorkGroupResource,
+		Scope:  nuke.Account,
+		Lister: &AthenaWorkGroupLister{},
+	})
 }
+
+type AthenaWorkGroupLister struct{}
 
 type AthenaWorkGroup struct {
 	svc  *athena.Athena
@@ -23,12 +36,14 @@ type AthenaWorkGroup struct {
 	arn  *string
 }
 
-func ListAthenaWorkGroups(sess *session.Session) ([]Resource, error) {
-	svc := athena.New(sess)
-	resources := []Resource{}
+func (l *AthenaWorkGroupLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := athena.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	// Lookup current account ID
-	stsSvc := sts.New(sess)
+	stsSvc := sts.New(opts.Session)
 	callerID, err := stsSvc.GetCallerIdentity(&sts.GetCallerIdentityInput{})
 	if err != nil {
 		return nil, err
@@ -68,10 +83,11 @@ func ListAthenaWorkGroups(sess *session.Session) ([]Resource, error) {
 	return resources, err
 }
 
-func (a *AthenaWorkGroup) Remove() error {
+func (a *AthenaWorkGroup) Remove(_ context.Context) error {
 	// Primary WorkGroup cannot be deleted,
 	// but we can reset it to a clean state
 	if *a.name == "primary" {
+		// TODO: pass logger via ListerOpts instead of using global
 		logrus.Info("Primary Athena WorkGroup may not be deleted. Resetting configuration only.")
 
 		// Reset the configuration to its default state

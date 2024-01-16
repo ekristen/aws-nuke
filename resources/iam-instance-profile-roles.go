@@ -1,30 +1,41 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
-	"github.com/sirupsen/logrus"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/gotidy/ptr"
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type IAMInstanceProfileRole struct {
-	svc     iamiface.IAMAPI
-	role    *iam.Role
-	profile *iam.InstanceProfile
-}
+const IAMInstanceProfileRoleResource = "IAMInstanceProfileRole"
 
 func init() {
-	register("IAMInstanceProfileRole", ListIAMInstanceProfileRoles)
+	resource.Register(resource.Registration{
+		Name:   IAMInstanceProfileRoleResource,
+		Scope:  nuke.Account,
+		Lister: &IAMInstanceProfileRoleLister{},
+	})
 }
 
-func ListIAMInstanceProfileRoles(sess *session.Session) ([]Resource, error) {
-	svc := iam.New(sess)
+type IAMInstanceProfileRoleLister struct{}
+
+func (l *IAMInstanceProfileRoleLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := iam.New(opts.Session)
 	params := &iam.ListInstanceProfilesInput{}
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 
 	for {
 		resp, err := svc.ListInstanceProfiles(params)
@@ -61,7 +72,13 @@ func ListIAMInstanceProfileRoles(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (e *IAMInstanceProfileRole) Remove() error {
+type IAMInstanceProfileRole struct {
+	svc     iamiface.IAMAPI
+	role    *iam.Role
+	profile *iam.InstanceProfile
+}
+
+func (e *IAMInstanceProfileRole) Remove(_ context.Context) error {
 	_, err := e.svc.RemoveRoleFromInstanceProfile(
 		&iam.RemoveRoleFromInstanceProfileInput{
 			InstanceProfileName: e.profile.InstanceProfileName,
@@ -75,7 +92,7 @@ func (e *IAMInstanceProfileRole) Remove() error {
 }
 
 func (e *IAMInstanceProfileRole) String() string {
-	return fmt.Sprintf("%s -> %s", *e.profile.InstanceProfileName, e.role)
+	return fmt.Sprintf("%s -> %s", ptr.ToString(e.profile.InstanceProfileName), ptr.ToString(e.role.RoleName))
 }
 
 func (e *IAMInstanceProfileRole) Properties() types.Properties {
@@ -95,5 +112,6 @@ func (e *IAMInstanceProfileRole) Properties() types.Properties {
 	for _, tagValue := range e.role.Tags {
 		properties.SetTagWithPrefix("role", tagValue.Key, tagValue.Value)
 	}
+
 	return properties
 }

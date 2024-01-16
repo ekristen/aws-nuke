@@ -1,24 +1,34 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/imagebuilder"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type ImageBuilderPipeline struct {
-	svc *imagebuilder.Imagebuilder
-	arn string
-}
+const ImageBuilderPipelineResource = "ImageBuilderPipeline"
 
 func init() {
-	register("ImageBuilderPipeline", ListImageBuilderPipelines)
+	resource.Register(resource.Registration{
+		Name:   ImageBuilderPipelineResource,
+		Scope:  nuke.Account,
+		Lister: &ImageBuilderPipelineLister{},
+	})
 }
 
-func ListImageBuilderPipelines(sess *session.Session) ([]Resource, error) {
-	svc := imagebuilder.New(sess)
+type ImageBuilderPipelineLister struct{}
+
+func (l *ImageBuilderPipelineLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := imagebuilder.New(opts.Session)
 	params := &imagebuilder.ListImagePipelinesInput{}
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 
 	for {
 		resp, err := svc.ListImagePipelines(params)
@@ -45,7 +55,12 @@ func ListImageBuilderPipelines(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (e *ImageBuilderPipeline) Remove() error {
+type ImageBuilderPipeline struct {
+	svc *imagebuilder.Imagebuilder
+	arn string
+}
+
+func (e *ImageBuilderPipeline) Remove(_ context.Context) error {
 	_, err := e.svc.DeleteImagePipeline(&imagebuilder.DeleteImagePipelineInput{
 		ImagePipelineArn: &e.arn,
 	})

@@ -1,11 +1,16 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/appstream"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 type AppStreamImage struct {
@@ -14,13 +19,23 @@ type AppStreamImage struct {
 	visibility *string
 }
 
+const AppStreamImageResource = "AppStreamImage"
+
 func init() {
-	register("AppStreamImage", ListAppStreamImages)
+	resource.Register(resource.Registration{
+		Name:   AppStreamImageResource,
+		Scope:  nuke.Account,
+		Lister: &AppStreamImageLister{},
+	})
 }
 
-func ListAppStreamImages(sess *session.Session) ([]Resource, error) {
-	svc := appstream.New(sess)
-	resources := []Resource{}
+type AppStreamImageLister struct{}
+
+func (l *AppStreamImageLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := appstream.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &appstream.DescribeImagesInput{}
 
@@ -40,8 +55,7 @@ func ListAppStreamImages(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *AppStreamImage) Remove() error {
-
+func (f *AppStreamImage) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteImage(&appstream.DeleteImageInput{
 		Name: f.name,
 	})

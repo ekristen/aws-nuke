@@ -1,24 +1,36 @@
 package resources
 
 import (
+	"context"
+
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type EC2EgressOnlyInternetGateway struct {
-	svc *ec2.EC2
-	igw *ec2.EgressOnlyInternetGateway
-}
+const EC2EgressOnlyInternetGatewayResource = "EC2EgressOnlyInternetGateway"
 
 func init() {
-	register("EC2EgressOnlyInternetGateway", ListEC2EgressOnlyInternetGateways)
+	resource.Register(resource.Registration{
+		Name:   EC2EgressOnlyInternetGatewayResource,
+		Scope:  nuke.Account,
+		Lister: &EC2EgressOnlyInternetGatewayLister{},
+	})
 }
 
-func ListEC2EgressOnlyInternetGateways(sess *session.Session) ([]Resource, error) {
-	svc := ec2.New(sess)
-	resources := make([]Resource, 0)
+type EC2EgressOnlyInternetGatewayLister struct{}
+
+func (l *EC2EgressOnlyInternetGatewayLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := ec2.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 	igwInputParams := &ec2.DescribeEgressOnlyInternetGatewaysInput{
 		MaxResults: aws.Int64(255),
 	}
@@ -46,7 +58,12 @@ func ListEC2EgressOnlyInternetGateways(sess *session.Session) ([]Resource, error
 	return resources, nil
 }
 
-func (e *EC2EgressOnlyInternetGateway) Remove() error {
+type EC2EgressOnlyInternetGateway struct {
+	svc *ec2.EC2
+	igw *ec2.EgressOnlyInternetGateway
+}
+
+func (e *EC2EgressOnlyInternetGateway) Remove(_ context.Context) error {
 	params := &ec2.DeleteEgressOnlyInternetGatewayInput{
 		EgressOnlyInternetGatewayId: e.igw.EgressOnlyInternetGatewayId,
 	}
@@ -68,5 +85,5 @@ func (e *EC2EgressOnlyInternetGateway) Properties() types.Properties {
 }
 
 func (e *EC2EgressOnlyInternetGateway) String() string {
-	return *e.igw.EgressOnlyInternetGatewayId
+	return ptr.ToString(e.igw.EgressOnlyInternetGatewayId)
 }

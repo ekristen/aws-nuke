@@ -1,30 +1,44 @@
 package resources
 
 import (
+	"context"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
+	"github.com/ekristen/libnuke/pkg/resource"
+
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
+
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/cloudformation/cloudformationiface"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+	"github.com/ekristen/libnuke/pkg/types"
 	"github.com/sirupsen/logrus"
 )
 
+const CloudFormationStackSetResource = "CloudFormationStackSet"
+
 func init() {
-	register("CloudFormationStackSet", ListCloudFormationStackSets,
-		mapCloudControl("AWS::CloudFormation::StackSet"))
+	resource.Register(resource.Registration{
+		Name:   CloudFormationStackSetResource,
+		Scope:  nuke.Account,
+		Lister: &CloudFormationStackSetLister{},
+	})
 }
 
-func ListCloudFormationStackSets(sess *session.Session) ([]Resource, error) {
-	svc := cloudformation.New(sess)
+type CloudFormationStackSetLister struct{}
+
+func (l *CloudFormationStackSetLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := cloudformation.New(opts.Session)
 
 	params := &cloudformation.ListStackSetsInput{
 		Status: aws.String(cloudformation.StackSetStatusActive),
 	}
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 
 	for {
 		resp, err := svc.ListStackSets(params)
@@ -132,7 +146,7 @@ func (cfs *CloudFormationStackSet) deleteStackInstances(accountId string, region
 	return cfs.waitForStackSetOperation(*result.OperationId)
 }
 
-func (cfs *CloudFormationStackSet) Remove() error {
+func (cfs *CloudFormationStackSet) Remove(_ context.Context) error {
 	accounts, err := cfs.findStackInstances()
 	if err != nil {
 		return err

@@ -1,16 +1,31 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 	"strings"
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
+
+const IAMRolePolicyResource = "IAMRolePolicy"
+
+func init() {
+	resource.Register(resource.Registration{
+		Name:   IAMRolePolicyResource,
+		Scope:  nuke.Account,
+		Lister: &IAMRolePolicyLister{},
+	})
+}
 
 type IAMRolePolicy struct {
 	svc        iamiface.IAMAPI
@@ -21,14 +36,53 @@ type IAMRolePolicy struct {
 	roleTags   []*iam.Tag
 }
 
-func init() {
-	register("IAMRolePolicy", ListIAMRolePolicies)
+func (e *IAMRolePolicy) Filter() error {
+	if strings.HasPrefix(e.rolePath, "/aws-service-role/") {
+		return fmt.Errorf("cannot alter service roles")
+	}
+	return nil
 }
 
-func ListIAMRolePolicies(sess *session.Session) ([]Resource, error) {
-	svc := iam.New(sess)
+func (e *IAMRolePolicy) Remove(_ context.Context) error {
+	_, err := e.svc.DeleteRolePolicy(
+		&iam.DeleteRolePolicyInput{
+			RoleName:   &e.roleName,
+			PolicyName: &e.policyName,
+		})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (e *IAMRolePolicy) Properties() types.Properties {
+	properties := types.NewProperties()
+	properties.Set("PolicyName", e.policyName)
+	properties.Set("role:RoleName", e.roleName)
+	properties.Set("role:RoleID", e.roleId)
+	properties.Set("role:Path", e.rolePath)
+
+	for _, tagValue := range e.roleTags {
+		properties.SetTagWithPrefix("role", tagValue.Key, tagValue.Value)
+	}
+	return properties
+}
+
+func (e *IAMRolePolicy) String() string {
+	return fmt.Sprintf("%s -> %s", e.roleName, e.policyName)
+}
+
+// ----------------------
+
+type IAMRolePolicyLister struct{}
+
+func (l *IAMRolePolicyLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := iam.New(opts.Session)
 	roleParams := &iam.ListRolesInput{}
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 
 	for {
 		roles, err := svc.ListRoles(roleParams)
@@ -84,41 +138,4 @@ func ListIAMRolePolicies(sess *session.Session) ([]Resource, error) {
 	}
 
 	return resources, nil
-}
-
-func (e *IAMRolePolicy) Filter() error {
-	if strings.HasPrefix(e.rolePath, "/aws-service-role/") {
-		return fmt.Errorf("cannot alter service roles")
-	}
-	return nil
-}
-
-func (e *IAMRolePolicy) Remove() error {
-	_, err := e.svc.DeleteRolePolicy(
-		&iam.DeleteRolePolicyInput{
-			RoleName:   &e.roleName,
-			PolicyName: &e.policyName,
-		})
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (e *IAMRolePolicy) Properties() types.Properties {
-	properties := types.NewProperties()
-	properties.Set("PolicyName", e.policyName)
-	properties.Set("role:RoleName", e.roleName)
-	properties.Set("role:RoleID", e.roleId)
-	properties.Set("role:Path", e.rolePath)
-
-	for _, tagValue := range e.roleTags {
-		properties.SetTagWithPrefix("role", tagValue.Key, tagValue.Value)
-	}
-	return properties
-}
-
-func (e *IAMRolePolicy) String() string {
-	return fmt.Sprintf("%s -> %s", e.roleName, e.policyName)
 }
