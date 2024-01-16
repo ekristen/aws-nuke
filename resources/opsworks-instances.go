@@ -1,22 +1,32 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/opsworks"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type OpsWorksInstance struct {
-	svc *opsworks.OpsWorks
-	ID  *string
-}
+const OpsWorksInstanceResource = "OpsWorksInstance"
 
 func init() {
-	register("OpsWorksInstance", ListOpsWorksInstances)
+	resource.Register(resource.Registration{
+		Name:   OpsWorksInstanceResource,
+		Scope:  nuke.Account,
+		Lister: &OpsWorksInstanceLister{},
+	})
 }
 
-func ListOpsWorksInstances(sess *session.Session) ([]Resource, error) {
-	svc := opsworks.New(sess)
-	resources := []Resource{}
+type OpsWorksInstanceLister struct{}
+
+func (l *OpsWorksInstanceLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := opsworks.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	stackParams := &opsworks.DescribeStacksInput{}
 
@@ -44,8 +54,12 @@ func ListOpsWorksInstances(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *OpsWorksInstance) Remove() error {
+type OpsWorksInstance struct {
+	svc *opsworks.OpsWorks
+	ID  *string
+}
 
+func (f *OpsWorksInstance) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteInstance(&opsworks.DeleteInstanceInput{
 		InstanceId: f.ID,
 	})

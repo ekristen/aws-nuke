@@ -1,34 +1,43 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type EC2NetworkACL struct {
-	svc       *ec2.EC2
-	id        *string
-	isDefault *bool
-	tags      []*ec2.Tag
-	ownerID   *string
-}
+const EC2NetworkACLResource = "EC2NetworkACL"
 
 func init() {
-	register("EC2NetworkACL", ListEC2NetworkACLs)
+	resource.Register(resource.Registration{
+		Name:   EC2NetworkACLResource,
+		Scope:  nuke.Account,
+		Lister: &EC2NetworkACLLister{},
+	})
 }
 
-func ListEC2NetworkACLs(sess *session.Session) ([]Resource, error) {
-	svc := ec2.New(sess)
+type EC2NetworkACLLister struct{}
+
+func (l *EC2NetworkACLLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := ec2.New(opts.Session)
 
 	resp, err := svc.DescribeNetworkAcls(nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for _, out := range resp.NetworkAcls {
 
 		resources = append(resources, &EC2NetworkACL{
@@ -43,15 +52,23 @@ func ListEC2NetworkACLs(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
+type EC2NetworkACL struct {
+	svc       *ec2.EC2
+	id        *string
+	isDefault *bool
+	tags      []*ec2.Tag
+	ownerID   *string
+}
+
 func (e *EC2NetworkACL) Filter() error {
-	if *e.isDefault {
+	if ptr.ToBool(e.isDefault) {
 		return fmt.Errorf("cannot delete default VPC")
 	}
 
 	return nil
 }
 
-func (e *EC2NetworkACL) Remove() error {
+func (e *EC2NetworkACL) Remove(_ context.Context) error {
 	params := &ec2.DeleteNetworkAclInput{
 		NetworkAclId: e.id,
 	}
@@ -64,16 +81,16 @@ func (e *EC2NetworkACL) Remove() error {
 	return nil
 }
 
-func (f *EC2NetworkACL) Properties() types.Properties {
+func (e *EC2NetworkACL) Properties() types.Properties {
 	properties := types.NewProperties()
-	for _, tag := range f.tags {
+	for _, tag := range e.tags {
 		properties.SetTag(tag.Key, tag.Value)
 	}
-	properties.Set("ID", f.id)
-	properties.Set("OwnerID", f.ownerID)
+	properties.Set("ID", e.id)
+	properties.Set("OwnerID", e.ownerID)
 	return properties
 }
 
 func (e *EC2NetworkACL) String() string {
-	return *e.id
+	return ptr.ToString(e.id)
 }

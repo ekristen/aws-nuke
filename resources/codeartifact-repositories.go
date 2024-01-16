@@ -1,25 +1,33 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/codeartifact"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type CodeArtifactRepository struct {
-	svc    *codeartifact.CodeArtifact
-	name   *string
-	domain *string
-	tags   map[string]*string
-}
+const CodeArtifactRepositoryResource = "CodeArtifactRepository"
 
 func init() {
-	register("CodeArtifactRepository", ListCodeArtifactRepositories)
+	resource.Register(resource.Registration{
+		Name:   CodeArtifactRepositoryResource,
+		Scope:  nuke.Account,
+		Lister: &CodeArtifactRepositoryLister{},
+	})
 }
 
-func ListCodeArtifactRepositories(sess *session.Session) ([]Resource, error) {
-	svc := codeartifact.New(sess)
-	resources := []Resource{}
+type CodeArtifactRepositoryLister struct{}
+
+func (l *CodeArtifactRepositoryLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := codeartifact.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &codeartifact.ListRepositoriesInput{}
 
@@ -61,7 +69,14 @@ func GetRepositoryTags(svc *codeartifact.CodeArtifact, arn *string) map[string]*
 	return tags
 }
 
-func (r *CodeArtifactRepository) Remove() error {
+type CodeArtifactRepository struct {
+	svc    *codeartifact.CodeArtifact
+	name   *string
+	domain *string
+	tags   map[string]*string
+}
+
+func (r *CodeArtifactRepository) Remove(_ context.Context) error {
 	_, err := r.svc.DeleteRepository(&codeartifact.DeleteRepositoryInput{
 		Repository: r.name,
 		Domain:     r.domain,

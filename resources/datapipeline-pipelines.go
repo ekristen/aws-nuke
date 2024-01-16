@@ -1,22 +1,32 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/datapipeline"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type DataPipelinePipeline struct {
-	svc        *datapipeline.DataPipeline
-	pipelineID *string
-}
+const DataPipelinePipelineResource = "DataPipelinePipeline"
 
 func init() {
-	register("DataPipelinePipeline", ListDataPipelinePipelines)
+	resource.Register(resource.Registration{
+		Name:   DataPipelinePipelineResource,
+		Scope:  nuke.Account,
+		Lister: &DataPipelinePipelineLister{},
+	})
 }
 
-func ListDataPipelinePipelines(sess *session.Session) ([]Resource, error) {
-	svc := datapipeline.New(sess)
-	resources := []Resource{}
+type DataPipelinePipelineLister struct{}
+
+func (l *DataPipelinePipelineLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := datapipeline.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &datapipeline.ListPipelinesInput{}
 
@@ -43,8 +53,12 @@ func ListDataPipelinePipelines(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *DataPipelinePipeline) Remove() error {
+type DataPipelinePipeline struct {
+	svc        *datapipeline.DataPipeline
+	pipelineID *string
+}
 
+func (f *DataPipelinePipeline) Remove(_ context.Context) error {
 	_, err := f.svc.DeletePipeline(&datapipeline.DeletePipelineInput{
 		PipelineId: f.pipelineID,
 	})

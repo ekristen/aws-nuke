@@ -1,36 +1,45 @@
 package resources
 
 import (
+	"context"
+
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
 	"github.com/sirupsen/logrus"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type DynamoDBTableItem struct {
-	svc      *dynamodb.DynamoDB
-	id       map[string]*dynamodb.AttributeValue
-	table    *DynamoDBTable
-	keyName  string
-	keyValue string
-}
+const DynamoDBTableItemResource = "DynamoDBTableItem"
 
 func init() {
-	register("DynamoDBTableItem", ListDynamoDBItems)
+	resource.Register(resource.Registration{
+		Name:   DynamoDBTableItemResource,
+		Scope:  nuke.Account,
+		Lister: &DynamoDBTableItemLister{},
+	})
 }
 
-func ListDynamoDBItems(sess *session.Session) ([]Resource, error) {
-	svc := dynamodb.New(sess)
+type DynamoDBTableItemLister struct{}
 
-	tables, tablesErr := ListDynamoDBTables(sess)
+func (l *DynamoDBTableItemLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := dynamodb.New(opts.Session)
+
+	tableLister := &DynamoDBTableLister{}
+	tables, tablesErr := tableLister.List(ctx, o)
 	if tablesErr != nil {
 		return nil, tablesErr
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for _, dynamoTableResource := range tables {
 		dynamoTable, ok := dynamoTableResource.(*DynamoDBTable)
 		if !ok {
@@ -83,7 +92,15 @@ func ListDynamoDBItems(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (i *DynamoDBTableItem) Remove() error {
+type DynamoDBTableItem struct {
+	svc      *dynamodb.DynamoDB
+	id       map[string]*dynamodb.AttributeValue
+	table    *DynamoDBTable
+	keyName  string
+	keyValue string
+}
+
+func (i *DynamoDBTableItem) Remove(_ context.Context) error {
 	params := &dynamodb.DeleteItemInput{
 		Key:       i.id,
 		TableName: &i.table.id,

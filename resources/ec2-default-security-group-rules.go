@@ -1,26 +1,34 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type EC2DefaultSecurityGroupRule struct {
-	svc      *ec2.EC2
-	id       *string
-	groupId  *string
-	isEgress *bool
-}
+const EC2DefaultSecurityGroupRuleResource = "EC2DefaultSecurityGroupRule"
 
 func init() {
-	register("EC2DefaultSecurityGroupRule", ListEC2SecurityGroupRules)
+	resource.Register(resource.Registration{
+		Name:   EC2DefaultSecurityGroupRuleResource,
+		Scope:  nuke.Account,
+		Lister: &EC2DefaultSecurityGroupRuleLister{},
+	})
 }
 
-func ListEC2SecurityGroupRules(sess *session.Session) ([]Resource, error) {
-	svc := ec2.New(sess)
-	resources := make([]Resource, 0)
+type EC2DefaultSecurityGroupRuleLister struct{}
+
+func (l *EC2DefaultSecurityGroupRuleLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := ec2.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	sgFilters := []*ec2.Filter{
 		{
@@ -73,7 +81,14 @@ func ListEC2SecurityGroupRules(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (r *EC2DefaultSecurityGroupRule) Remove() error {
+type EC2DefaultSecurityGroupRule struct {
+	svc      *ec2.EC2
+	id       *string
+	groupId  *string
+	isEgress *bool
+}
+
+func (r *EC2DefaultSecurityGroupRule) Remove(_ context.Context) error {
 	rules := make([]*string, 1)
 	rules[0] = r.id
 	if *r.isEgress {

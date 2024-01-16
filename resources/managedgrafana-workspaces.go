@@ -1,24 +1,33 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/managedgrafana"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type AMGWorkspace struct {
-	svc  *managedgrafana.ManagedGrafana
-	id   *string
-	name *string
-}
+const AMGWorkspaceResource = "AMGWorkspace"
 
 func init() {
-	register("AMGWorkspace", ListAMGWorkspaces)
+	resource.Register(resource.Registration{
+		Name:   AMGWorkspaceResource,
+		Scope:  nuke.Account,
+		Lister: &AMGWorkspaceLister{},
+	})
 }
 
-func ListAMGWorkspaces(sess *session.Session) ([]Resource, error) {
-	svc := managedgrafana.New(sess)
-	resources := []Resource{}
+type AMGWorkspaceLister struct{}
+
+func (l *AMGWorkspaceLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := managedgrafana.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	var amgWorkspaces []*managedgrafana.WorkspaceSummary
 	err := svc.ListWorkspacesPages(
@@ -43,7 +52,13 @@ func ListAMGWorkspaces(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *AMGWorkspace) Remove() error {
+type AMGWorkspace struct {
+	svc  *managedgrafana.ManagedGrafana
+	id   *string
+	name *string
+}
+
+func (f *AMGWorkspace) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteWorkspace(&managedgrafana.DeleteWorkspaceInput{
 		WorkspaceId: f.id,
 	})

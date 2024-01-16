@@ -1,10 +1,16 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws/session"
+
 	"github.com/aws/aws-sdk-go/service/backup"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 type BackupRecoveryPoint struct {
@@ -13,22 +19,32 @@ type BackupRecoveryPoint struct {
 	backupVaultName string
 }
 
+const AWSBackupRecoveryPointResource = "AWSBackupRecoveryPoint"
+
 func init() {
-	register("AWSBackupRecoveryPoint", ListBackupRecoveryPoints)
+	resource.Register(resource.Registration{
+		Name:   AWSBackupRecoveryPointResource,
+		Scope:  nuke.Account,
+		Lister: &AWSBackupRecoveryPointLister{},
+	})
 }
 
-func ListBackupRecoveryPoints(sess *session.Session) ([]Resource, error) {
-	svc := backup.New(sess)
-	max_vaults_len := int64(100)
+type AWSBackupRecoveryPointLister struct{}
+
+func (l *AWSBackupRecoveryPointLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := backup.New(opts.Session)
+	maxVaultsLen := int64(100)
 	params := &backup.ListBackupVaultsInput{
-		MaxResults: &max_vaults_len, // aws default limit on number of backup vaults per account
+		MaxResults: &maxVaultsLen, // aws default limit on number of backup vaults per account
 	}
 	resp, err := svc.ListBackupVaults(params)
 	if err != nil {
 		return nil, err
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for _, out := range resp.BackupVaultList {
 		recoveryPointsOutput, _ := svc.ListRecoveryPointsByBackupVault(&backup.ListRecoveryPointsByBackupVaultInput{BackupVaultName: out.BackupVaultName})
 		for _, rp := range recoveryPointsOutput.RecoveryPoints {
@@ -49,7 +65,7 @@ func (b *BackupRecoveryPoint) Properties() types.Properties {
 	return properties
 }
 
-func (b *BackupRecoveryPoint) Remove() error {
+func (b *BackupRecoveryPoint) Remove(_ context.Context) error {
 	_, err := b.svc.DeleteRecoveryPoint(&backup.DeleteRecoveryPointInput{
 		BackupVaultName:  &b.backupVaultName,
 		RecoveryPointArn: &b.arn,

@@ -1,29 +1,39 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type IAMServerCertificate struct {
-	svc  iamiface.IAMAPI
-	name string
-}
+const IAMServerCertificateResource = "IAMServerCertificate"
 
 func init() {
-	register("IAMServerCertificate", ListIAMServerCertificates)
+	resource.Register(resource.Registration{
+		Name:   IAMServerCertificateResource,
+		Scope:  nuke.Account,
+		Lister: &IAMServerCertificateLister{},
+	})
 }
 
-func ListIAMServerCertificates(sess *session.Session) ([]Resource, error) {
-	svc := iam.New(sess)
+type IAMServerCertificateLister struct{}
+
+func (l *IAMServerCertificateLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := iam.New(opts.Session)
 
 	resp, err := svc.ListServerCertificates(nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for _, meta := range resp.ServerCertificateMetadataList {
 		resources = append(resources, &IAMServerCertificate{
 			svc:  svc,
@@ -34,7 +44,12 @@ func ListIAMServerCertificates(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (e *IAMServerCertificate) Remove() error {
+type IAMServerCertificate struct {
+	svc  iamiface.IAMAPI
+	name string
+}
+
+func (e *IAMServerCertificate) Remove(_ context.Context) error {
 	_, err := e.svc.DeleteServerCertificate(&iam.DeleteServerCertificateInput{
 		ServerCertificateName: &e.name,
 	})

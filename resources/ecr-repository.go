@@ -1,30 +1,37 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ecr"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type ECRRepository struct {
-	svc         *ecr.ECR
-	name        *string
-	createdTime *time.Time
-	tags        []*ecr.Tag
-}
+const ECRRepositoryResource = "ECRRepository"
+const ECRRepositoryCloudControlResource = "AWS::ECR::Repository"
 
 func init() {
-	register("ECRRepository", ListECRRepositories,
-		mapCloudControl("AWS::ECR::Repository"))
+	resource.Register(resource.Registration{
+		Name:   ECRRepositoryResource,
+		Scope:  nuke.Account,
+		Lister: &ECRRepositoryLister{},
+	}, nuke.MapCloudControl(ECRRepositoryCloudControlResource))
 }
 
-func ListECRRepositories(sess *session.Session) ([]Resource, error) {
-	svc := ecr.New(sess)
-	resources := []Resource{}
+type ECRRepositoryLister struct{}
+
+func (l *ECRRepositoryLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+	svc := ecr.New(opts.Session)
+	var resources []resource.Resource
 
 	input := &ecr.DescribeRepositoriesInput{
 		MaxResults: aws.Int64(100),
@@ -61,6 +68,13 @@ func ListECRRepositories(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
+type ECRRepository struct {
+	svc         *ecr.ECR
+	name        *string
+	createdTime *time.Time
+	tags        []*ecr.Tag
+}
+
 func (r *ECRRepository) Filter() error {
 	return nil
 }
@@ -75,7 +89,7 @@ func (r *ECRRepository) Properties() types.Properties {
 	return properties
 }
 
-func (r *ECRRepository) Remove() error {
+func (r *ECRRepository) Remove(_ context.Context) error {
 	params := &ecr.DeleteRepositoryInput{
 		RepositoryName: r.name,
 		Force:          aws.Bool(true),

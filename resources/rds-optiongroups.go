@@ -1,34 +1,42 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/rds"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type RDSOptionGroup struct {
-	svc  *rds.RDS
-	name *string
-	tags []*rds.Tag
-}
+const RDSOptionGroupResource = "RDSOptionGroup"
 
 func init() {
-	register("RDSOptionGroup", ListRDSOptionGroups)
+	resource.Register(resource.Registration{
+		Name:   RDSOptionGroupResource,
+		Scope:  nuke.Account,
+		Lister: &RDSOptionGroupLister{},
+	})
 }
 
-func ListRDSOptionGroups(sess *session.Session) ([]Resource, error) {
-	svc := rds.New(sess)
+type RDSOptionGroupLister struct{}
+
+func (l *RDSOptionGroupLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+	svc := rds.New(opts.Session)
 
 	params := &rds.DescribeOptionGroupsInput{MaxRecords: aws.Int64(100)}
 	resp, err := svc.DescribeOptionGroups(params)
 	if err != nil {
 		return nil, err
 	}
-	var resources []Resource
+	var resources []resource.Resource
 	for _, optionGroup := range resp.OptionGroupsList {
 		tags, err := svc.ListTagsForResource(&rds.ListTagsForResourceInput{
 			ResourceName: optionGroup.OptionGroupArn,
@@ -49,6 +57,12 @@ func ListRDSOptionGroups(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
+type RDSOptionGroup struct {
+	svc  *rds.RDS
+	name *string
+	tags []*rds.Tag
+}
+
 func (i *RDSOptionGroup) Filter() error {
 	if strings.HasPrefix(*i.name, "default:") {
 		return fmt.Errorf("cannot delete default Option group")
@@ -56,7 +70,7 @@ func (i *RDSOptionGroup) Filter() error {
 	return nil
 }
 
-func (i *RDSOptionGroup) Remove() error {
+func (i *RDSOptionGroup) Remove(_ context.Context) error {
 	params := &rds.DeleteOptionGroupInput{
 		OptionGroupName: i.name,
 	}

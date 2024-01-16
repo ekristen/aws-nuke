@@ -1,20 +1,35 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/route53"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
+const Route53HostedZoneResource = "Route53HostedZone"
+
 func init() {
-	register("Route53HostedZone", ListRoute53HostedZones)
+	resource.Register(resource.Registration{
+		Name:   Route53HostedZoneResource,
+		Scope:  nuke.Account,
+		Lister: &Route53HostedZoneLister{},
+	})
 }
 
-func ListRoute53HostedZones(sess *session.Session) ([]Resource, error) {
-	svc := route53.New(sess)
+type Route53HostedZoneLister struct{}
+
+func (l *Route53HostedZoneLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := route53.New(opts.Session)
 
 	var hostedZones []*route53.HostedZone
 	params := &route53.ListHostedZonesInput{}
@@ -33,7 +48,7 @@ func ListRoute53HostedZones(sess *session.Session) ([]Resource, error) {
 		}
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for _, hz := range hostedZones {
 		tags, err := svc.ListTagsForResource(&route53.ListTagsForResourceInput{
 			ResourceId:   hz.Id,
@@ -61,7 +76,7 @@ type Route53HostedZone struct {
 	tags []*route53.Tag
 }
 
-func (hz *Route53HostedZone) Remove() error {
+func (hz *Route53HostedZone) Remove(_ context.Context) error {
 	params := &route53.DeleteHostedZoneInput{
 		Id: hz.id,
 	}

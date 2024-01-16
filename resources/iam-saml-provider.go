@@ -1,24 +1,32 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
+	"github.com/ekristen/aws-nuke/pkg/nuke"
+	"github.com/ekristen/libnuke/pkg/resource"
 )
 
-type IAMSAMLProvider struct {
-	svc iamiface.IAMAPI
-	arn string
-}
+const IAMSAMLProviderResource = "IAMSAMLProvider"
 
 func init() {
-	register("IAMSAMLProvider", ListIAMSAMLProvider)
+	resource.Register(resource.Registration{
+		Name:   IAMSAMLProviderResource,
+		Scope:  nuke.Account,
+		Lister: &IAMSAMLProviderLister{},
+	})
 }
 
-func ListIAMSAMLProvider(sess *session.Session) ([]Resource, error) {
-	svc := iam.New(sess)
+type IAMSAMLProviderLister struct{}
+
+func (l *IAMSAMLProviderLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := iam.New(opts.Session)
 	params := &iam.ListSAMLProvidersInput{}
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 
 	resp, err := svc.ListSAMLProviders(params)
 	if err != nil {
@@ -35,7 +43,12 @@ func ListIAMSAMLProvider(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (e *IAMSAMLProvider) Remove() error {
+type IAMSAMLProvider struct {
+	svc iamiface.IAMAPI
+	arn string
+}
+
+func (e *IAMSAMLProvider) Remove(_ context.Context) error {
 	_, err := e.svc.DeleteSAMLProvider(&iam.DeleteSAMLProviderInput{
 		SAMLProviderArn: &e.arn,
 	})

@@ -1,11 +1,28 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/apigateway"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
+
+const APIGatewayRestAPIResource = "APIGatewayRestAPI"
+
+func init() {
+	resource.Register(resource.Registration{
+		Name:   APIGatewayRestAPIResource,
+		Scope:  nuke.Account,
+		Lister: &APIGatewayRestAPILister{},
+	})
+}
+
+type APIGatewayRestAPILister struct{}
 
 type APIGatewayRestAPI struct {
 	svc       *apigateway.APIGateway
@@ -15,13 +32,11 @@ type APIGatewayRestAPI struct {
 	tags      map[string]*string
 }
 
-func init() {
-	register("APIGatewayRestAPI", ListAPIGatewayRestApis)
-}
+func (l *APIGatewayRestAPILister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+	svc := apigateway.New(opts.Session)
 
-func ListAPIGatewayRestApis(sess *session.Session) ([]Resource, error) {
-	svc := apigateway.New(sess)
-	resources := []Resource{}
+	var resources []resource.Resource
 
 	params := &apigateway.GetRestApisInput{
 		Limit: aws.Int64(100),
@@ -53,8 +68,7 @@ func ListAPIGatewayRestApis(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *APIGatewayRestAPI) Remove() error {
-
+func (f *APIGatewayRestAPI) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteRestApi(&apigateway.DeleteRestApiInput{
 		RestApiId: f.restAPIID,
 	})

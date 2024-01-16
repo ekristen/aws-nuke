@@ -1,33 +1,41 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/efs"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type EFSMountTarget struct {
-	svc    *efs.EFS
-	id     string
-	fsid   string
-	fsTags []*efs.Tag
-}
+const EFSMountTargetResource = "EFSMountTarget"
 
 func init() {
-	register("EFSMountTarget", ListEFSMountTargets)
+	resource.Register(resource.Registration{
+		Name:   EFSMountTargetResource,
+		Scope:  nuke.Account,
+		Lister: &EFSMountTargetLister{},
+	})
 }
 
-func ListEFSMountTargets(sess *session.Session) ([]Resource, error) {
-	svc := efs.New(sess)
+type EFSMountTargetLister struct{}
+
+func (l *EFSMountTargetLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := efs.New(opts.Session)
 
 	resp, err := svc.DescribeFileSystems(nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for _, fs := range resp.FileSystems {
 		mt, err := svc.DescribeMountTargets(&efs.DescribeMountTargetsInput{
 			FileSystemId: fs.FileSystemId,
@@ -45,7 +53,7 @@ func ListEFSMountTargets(sess *session.Session) ([]Resource, error) {
 			resources = append(resources, &EFSMountTarget{
 				svc:    svc,
 				id:     *t.MountTargetId,
-				fsid:   *t.FileSystemId,
+				fsID:   *t.FileSystemId,
 				fsTags: lto.Tags,
 			})
 
@@ -55,7 +63,14 @@ func ListEFSMountTargets(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (e *EFSMountTarget) Remove() error {
+type EFSMountTarget struct {
+	svc    *efs.EFS
+	id     string
+	fsID   string
+	fsTags []*efs.Tag
+}
+
+func (e *EFSMountTarget) Remove(_ context.Context) error {
 	_, err := e.svc.DeleteMountTarget(&efs.DeleteMountTargetInput{
 		MountTargetId: &e.id,
 	})
@@ -69,10 +84,10 @@ func (e *EFSMountTarget) Properties() types.Properties {
 		properties.SetTagWithPrefix("efs", tagValue.Key, tagValue.Value)
 	}
 	properties.Set("Name", e.id)
-	properties.Set("ID", e.fsid)
+	properties.Set("ID", e.fsID)
 	return properties
 }
 
 func (e *EFSMountTarget) String() string {
-	return fmt.Sprintf("%s:%s", e.fsid, e.id)
+	return fmt.Sprintf("%s:%s", e.fsID, e.id)
 }

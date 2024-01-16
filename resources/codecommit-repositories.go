@@ -1,22 +1,33 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/codecommit"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type CodeCommitRepository struct {
-	svc            *codecommit.CodeCommit
-	repositoryName *string
-}
+const CodeCommitRepositoryResource = "CodeCommitRepository"
 
 func init() {
-	register("CodeCommitRepository", ListCodeCommitRepositories)
+	resource.Register(resource.Registration{
+		Name:   CodeCommitRepositoryResource,
+		Scope:  nuke.Account,
+		Lister: &CodeCommitRepositoryLister{},
+	})
 }
 
-func ListCodeCommitRepositories(sess *session.Session) ([]Resource, error) {
-	svc := codecommit.New(sess)
-	resources := []Resource{}
+type CodeCommitRepositoryLister struct{}
+
+// List - Return a list of all CodeCommit Repositories as Resources
+func (l *CodeCommitRepositoryLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := codecommit.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &codecommit.ListRepositoriesInput{}
 
@@ -43,8 +54,13 @@ func ListCodeCommitRepositories(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *CodeCommitRepository) Remove() error {
+type CodeCommitRepository struct {
+	svc            *codecommit.CodeCommit
+	repositoryName *string
+}
 
+// Remove - Removes the CodeCommit Repository
+func (f *CodeCommitRepository) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteRepository(&codecommit.DeleteRepositoryInput{
 		RepositoryName: f.repositoryName,
 	})

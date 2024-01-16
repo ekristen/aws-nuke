@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/storagegateway"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type StorageGatewayFileShare struct {
-	svc *storagegateway.StorageGateway
-	ARN *string
-}
+const StorageGatewayFileShareResource = "StorageGatewayFileShare"
 
 func init() {
-	register("StorageGatewayFileShare", ListStorageGatewayFileShares)
+	resource.Register(resource.Registration{
+		Name:   StorageGatewayFileShareResource,
+		Scope:  nuke.Account,
+		Lister: &StorageGatewayFileShareLister{},
+	})
 }
 
-func ListStorageGatewayFileShares(sess *session.Session) ([]Resource, error) {
-	svc := storagegateway.New(sess)
-	resources := []Resource{}
+type StorageGatewayFileShareLister struct{}
+
+func (l *StorageGatewayFileShareLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := storagegateway.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &storagegateway.ListFileSharesInput{
 		Limit: aws.Int64(25),
@@ -46,8 +56,12 @@ func ListStorageGatewayFileShares(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *StorageGatewayFileShare) Remove() error {
+type StorageGatewayFileShare struct {
+	svc *storagegateway.StorageGateway
+	ARN *string
+}
 
+func (f *StorageGatewayFileShare) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteFileShare(&storagegateway.DeleteFileShareInput{
 		FileShareARN: f.ARN,
 		ForceDelete:  aws.Bool(true),

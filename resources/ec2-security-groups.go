@@ -1,12 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
 )
+
+const EC2SecurityGroupResource = "EC2SecurityGroup"
+
+func init() {
+	resource.Register(resource.Registration{
+		Name:   EC2SecurityGroupResource,
+		Scope:  nuke.Account,
+		Lister: &EC2SecurityGroupLister{},
+		DependsOn: []string{
+			ELBv2Resource,
+			EC2DefaultSecurityGroupRuleResource,
+		},
+	})
+}
 
 type EC2SecurityGroup struct {
 	svc     *ec2.EC2
@@ -18,16 +39,16 @@ type EC2SecurityGroup struct {
 	ownerID *string
 }
 
-func init() {
-	register("EC2SecurityGroup", ListEC2SecurityGroups)
-}
+type EC2SecurityGroupLister struct{}
 
-func ListEC2SecurityGroups(sess *session.Session) ([]Resource, error) {
-	svc := ec2.New(sess)
-	resources := make([]Resource, 0)
+func (l *EC2SecurityGroupLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := ec2.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &ec2.DescribeSecurityGroupsInput{}
-	err := svc.DescribeSecurityGroupsPages(params,
+	if err := svc.DescribeSecurityGroupsPages(params,
 		func(page *ec2.DescribeSecurityGroupsOutput, lastPage bool) bool {
 			for _, group := range page.SecurityGroups {
 				resources = append(resources, &EC2SecurityGroup{
@@ -41,9 +62,7 @@ func ListEC2SecurityGroups(sess *session.Session) ([]Resource, error) {
 				})
 			}
 			return !lastPage
-		})
-
-	if err != nil {
+		}); err != nil {
 		return nil, err
 	}
 
@@ -51,14 +70,14 @@ func ListEC2SecurityGroups(sess *session.Session) ([]Resource, error) {
 }
 
 func (sg *EC2SecurityGroup) Filter() error {
-	if *sg.name == "default" {
+	if ptr.ToString(sg.name) == "default" {
 		return fmt.Errorf("cannot delete group 'default'")
 	}
 
 	return nil
 }
 
-func (sg *EC2SecurityGroup) Remove() error {
+func (sg *EC2SecurityGroup) Remove(_ context.Context) error {
 	if len(sg.egress) > 0 {
 		egressParams := &ec2.RevokeSecurityGroupEgressInput{
 			GroupId:       sg.id,
@@ -100,5 +119,5 @@ func (sg *EC2SecurityGroup) Properties() types.Properties {
 }
 
 func (sg *EC2SecurityGroup) String() string {
-	return *sg.id
+	return ptr.ToString(sg.id)
 }

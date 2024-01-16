@@ -1,32 +1,42 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/kms"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type KMSKey struct {
-	svc     *kms.KMS
-	id      string
-	state   string
-	manager *string
-	tags    []*kms.Tag
-}
+const KMSKeyResource = "KMSKey"
 
 func init() {
-	register("KMSKey", ListKMSKeys)
+	resource.Register(resource.Registration{
+		Name:   KMSKeyResource,
+		Scope:  nuke.Account,
+		Lister: &KMSKeyLister{},
+		DependsOn: []string{
+			KMSAliasResource,
+		},
+	})
 }
 
-func ListKMSKeys(sess *session.Session) ([]Resource, error) {
-	svc := kms.New(sess)
-	resources := make([]Resource, 0)
+type KMSKeyLister struct{}
+
+func (l *KMSKeyLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := kms.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	var innerErr error
-	err := svc.ListKeysPages(nil, func(resp *kms.ListKeysOutput, lastPage bool) bool {
+	if err := svc.ListKeysPages(nil, func(resp *kms.ListKeysOutput, lastPage bool) bool {
 		for _, key := range resp.Keys {
 			resp, err := svc.DescribeKey(&kms.DescribeKeyInput{
 				KeyId: key.KeyId,
@@ -68,17 +78,23 @@ func ListKMSKeys(sess *session.Session) ([]Resource, error) {
 		}
 
 		return true
-	})
-
-	if err != nil {
+	}); err != nil {
 		return nil, err
 	}
 
 	if innerErr != nil {
-		return nil, err
+		return nil, innerErr
 	}
 
 	return resources, nil
+}
+
+type KMSKey struct {
+	svc     *kms.KMS
+	id      string
+	state   string
+	manager *string
+	tags    []*kms.Tag
 }
 
 func (e *KMSKey) Filter() error {
@@ -93,7 +109,7 @@ func (e *KMSKey) Filter() error {
 	return nil
 }
 
-func (e *KMSKey) Remove() error {
+func (e *KMSKey) Remove(_ context.Context) error {
 	_, err := e.svc.ScheduleKeyDeletion(&kms.ScheduleKeyDeletionInput{
 		KeyId:               &e.id,
 		PendingWindowInDays: aws.Int64(7),
@@ -105,12 +121,12 @@ func (e *KMSKey) String() string {
 	return e.id
 }
 
-func (i *KMSKey) Properties() types.Properties {
+func (e *KMSKey) Properties() types.Properties {
 	properties := types.NewProperties()
 	properties.
-		Set("ID", i.id)
+		Set("ID", e.id)
 
-	for _, tag := range i.tags {
+	for _, tag := range e.tags {
 		properties.SetTag(tag.TagKey, tag.TagValue)
 	}
 

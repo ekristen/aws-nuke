@@ -1,28 +1,35 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/lightsail"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/config"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/featureflag"
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type LightsailInstance struct {
-	svc          *lightsail.Lightsail
-	instanceName *string
-	tags         []*lightsail.Tag
-
-	featureFlags config.FeatureFlags
-}
+const LightsailInstanceResource = "LightsailInstance"
 
 func init() {
-	register("LightsailInstance", ListLightsailInstances)
+	resource.Register(resource.Registration{
+		Name:   LightsailInstanceResource,
+		Scope:  nuke.Account,
+		Lister: &LightsailInstanceLister{},
+	})
 }
 
-func ListLightsailInstances(sess *session.Session) ([]Resource, error) {
-	svc := lightsail.New(sess)
-	resources := []Resource{}
+type LightsailInstanceLister struct{}
+
+func (l *LightsailInstanceLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := lightsail.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &lightsail.GetInstancesInput{}
 
@@ -50,15 +57,27 @@ func ListLightsailInstances(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *LightsailInstance) FeatureFlags(ff config.FeatureFlags) {
+type LightsailInstance struct {
+	svc          *lightsail.Lightsail
+	instanceName *string
+	tags         []*lightsail.Tag
+
+	featureFlags *featureflag.FeatureFlags
+}
+
+func (f *LightsailInstance) FeatureFlags(ff *featureflag.FeatureFlags) {
 	f.featureFlags = ff
 }
 
-func (f *LightsailInstance) Remove() error {
+func (f *LightsailInstance) Remove(_ context.Context) error {
+	ffDLA, ffErr := f.featureFlags.Get("ForceDeleteLightsailAddOns")
+	if ffErr != nil {
+		return ffErr
+	}
 
 	_, err := f.svc.DeleteInstance(&lightsail.DeleteInstanceInput{
 		InstanceName:      f.instanceName,
-		ForceDeleteAddOns: aws.Bool(f.featureFlags.ForceDeleteLightsailAddOns),
+		ForceDeleteAddOns: aws.Bool(ffDLA.Enabled()),
 	})
 
 	return err

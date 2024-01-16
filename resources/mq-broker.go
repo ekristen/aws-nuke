@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/mq"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type MQBroker struct {
-	svc      *mq.MQ
-	brokerID *string
-}
+const MQBrokerResource = "MQBroker"
 
 func init() {
-	register("MQBroker", ListMQBrokers)
+	resource.Register(resource.Registration{
+		Name:   MQBrokerResource,
+		Scope:  nuke.Account,
+		Lister: &MQBrokerLister{},
+	})
 }
 
-func ListMQBrokers(sess *session.Session) ([]Resource, error) {
-	svc := mq.New(sess)
-	resources := []Resource{}
+type MQBrokerLister struct{}
+
+func (l *MQBrokerLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := mq.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &mq.ListBrokersInput{
 		MaxResults: aws.Int64(100),
@@ -44,8 +54,12 @@ func ListMQBrokers(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *MQBroker) Remove() error {
+type MQBroker struct {
+	svc      *mq.MQ
+	brokerID *string
+}
 
+func (f *MQBroker) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteBroker(&mq.DeleteBrokerInput{
 		BrokerId: f.brokerID,
 	})

@@ -1,24 +1,36 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type EC2ClientVpnEndpoint struct {
-	svc     *ec2.EC2
-	id      string
-	cveTags []*ec2.Tag
-}
+const EC2ClientVpnEndpointResource = "EC2ClientVpnEndpoint"
 
 func init() {
-	register("EC2ClientVpnEndpoint", ListEC2ClientVpnEndoint)
+	resource.Register(resource.Registration{
+		Name:   EC2ClientVpnEndpointResource,
+		Scope:  nuke.Account,
+		Lister: &EC2ClientVpnEndpointLister{},
+		DependsOn: []string{
+			EC2ClientVpnEndpointAttachmentResource,
+		},
+	})
 }
 
-func ListEC2ClientVpnEndoint(sess *session.Session) ([]Resource, error) {
-	svc := ec2.New(sess)
-	resources := make([]Resource, 0)
+type EC2ClientVpnEndpointLister struct{}
+
+func (l *EC2ClientVpnEndpointLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := ec2.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 	params := &ec2.DescribeClientVpnEndpointsInput{}
 
 	err := svc.DescribeClientVpnEndpointsPages(params,
@@ -39,7 +51,13 @@ func ListEC2ClientVpnEndoint(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (c *EC2ClientVpnEndpoint) Remove() error {
+type EC2ClientVpnEndpoint struct {
+	svc     *ec2.EC2
+	id      string
+	cveTags []*ec2.Tag
+}
+
+func (c *EC2ClientVpnEndpoint) Remove(_ context.Context) error {
 	params := &ec2.DeleteClientVpnEndpointInput{
 		ClientVpnEndpointId: &c.id,
 	}

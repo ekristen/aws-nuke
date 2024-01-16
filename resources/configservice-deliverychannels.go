@@ -1,21 +1,31 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/configservice"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type ConfigServiceDeliveryChannel struct {
-	svc                 *configservice.ConfigService
-	deliveryChannelName *string
-}
+const ConfigServiceDeliveryChannelResource = "ConfigServiceDeliveryChannel"
 
 func init() {
-	register("ConfigServiceDeliveryChannel", ListConfigServiceDeliveryChannels)
+	resource.Register(resource.Registration{
+		Name:   ConfigServiceDeliveryChannelResource,
+		Scope:  nuke.Account,
+		Lister: &ConfigServiceDeliveryChannelLister{},
+	})
 }
 
-func ListConfigServiceDeliveryChannels(sess *session.Session) ([]Resource, error) {
-	svc := configservice.New(sess)
+type ConfigServiceDeliveryChannelLister struct{}
+
+func (l *ConfigServiceDeliveryChannelLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := configservice.New(opts.Session)
 
 	params := &configservice.DescribeDeliveryChannelsInput{}
 	resp, err := svc.DescribeDeliveryChannels(params)
@@ -23,7 +33,7 @@ func ListConfigServiceDeliveryChannels(sess *session.Session) ([]Resource, error
 		return nil, err
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for _, deliveryChannel := range resp.DeliveryChannels {
 		resources = append(resources, &ConfigServiceDeliveryChannel{
 			svc:                 svc,
@@ -34,8 +44,12 @@ func ListConfigServiceDeliveryChannels(sess *session.Session) ([]Resource, error
 	return resources, nil
 }
 
-func (f *ConfigServiceDeliveryChannel) Remove() error {
+type ConfigServiceDeliveryChannel struct {
+	svc                 *configservice.ConfigService
+	deliveryChannelName *string
+}
 
+func (f *ConfigServiceDeliveryChannel) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteDeliveryChannel(&configservice.DeleteDeliveryChannelInput{
 		DeliveryChannelName: f.deliveryChannelName,
 	})

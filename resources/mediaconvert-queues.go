@@ -1,26 +1,36 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/mediaconvert"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type MediaConvertQueue struct {
-	svc  *mediaconvert.MediaConvert
-	name *string
-}
+const MediaConvertQueueResource = "MediaConvertQueue"
 
 func init() {
-	register("MediaConvertQueue", ListMediaConvertQueues)
+	resource.Register(resource.Registration{
+		Name:   MediaConvertQueueResource,
+		Scope:  nuke.Account,
+		Lister: &MediaConvertQueueLister{},
+	})
 }
 
-func ListMediaConvertQueues(sess *session.Session) ([]Resource, error) {
-	svc := mediaconvert.New(sess)
-	resources := []Resource{}
+type MediaConvertQueueLister struct{}
+
+func (l *MediaConvertQueueLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := mediaconvert.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 	var mediaEndpoint *string
 
 	output, err := svc.DescribeEndpoints(&mediaconvert.DescribeEndpointsInput{})
@@ -28,8 +38,8 @@ func ListMediaConvertQueues(sess *session.Session) ([]Resource, error) {
 		return nil, err
 	}
 
-	for _, mediaconvert := range output.Endpoints {
-		mediaEndpoint = mediaconvert.Url
+	for _, endpoint := range output.Endpoints {
+		mediaEndpoint = endpoint.Url
 	}
 
 	// Update svc to use custom media endpoint
@@ -62,8 +72,12 @@ func ListMediaConvertQueues(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *MediaConvertQueue) Remove() error {
+type MediaConvertQueue struct {
+	svc  *mediaconvert.MediaConvert
+	name *string
+}
 
+func (f *MediaConvertQueue) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteQueue(&mediaconvert.DeleteQueueInput{
 		Name: f.name,
 	})

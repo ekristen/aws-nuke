@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/neptune"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type NeptuneInstance struct {
-	svc *neptune.Neptune
-	ID  *string
-}
+const NeptuneInstanceResource = "NeptuneInstance"
 
 func init() {
-	register("NeptuneInstance", ListNeptuneInstances)
+	resource.Register(resource.Registration{
+		Name:   NeptuneInstanceResource,
+		Scope:  nuke.Account,
+		Lister: &NeptuneInstanceLister{},
+	})
 }
 
-func ListNeptuneInstances(sess *session.Session) ([]Resource, error) {
-	svc := neptune.New(sess)
-	resources := []Resource{}
+type NeptuneInstanceLister struct{}
+
+func (l *NeptuneInstanceLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := neptune.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &neptune.DescribeDBInstancesInput{
 		MaxRecords: aws.Int64(100),
@@ -46,8 +56,12 @@ func ListNeptuneInstances(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *NeptuneInstance) Remove() error {
+type NeptuneInstance struct {
+	svc *neptune.Neptune
+	ID  *string
+}
 
+func (f *NeptuneInstance) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteDBInstance(&neptune.DeleteDBInstanceInput{
 		DBInstanceIdentifier: f.ID,
 		SkipFinalSnapshot:    aws.Bool(true),

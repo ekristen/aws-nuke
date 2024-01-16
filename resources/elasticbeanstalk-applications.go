@@ -1,22 +1,32 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/elasticbeanstalk"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type ElasticBeanstalkApplication struct {
-	svc  *elasticbeanstalk.ElasticBeanstalk
-	name *string
-}
+const ElasticBeanstalkApplicationResource = "ElasticBeanstalkApplication"
 
 func init() {
-	register("ElasticBeanstalkApplication", ListElasticBeanstalkApplications)
+	resource.Register(resource.Registration{
+		Name:   ElasticBeanstalkApplicationResource,
+		Scope:  nuke.Account,
+		Lister: &ElasticBeanstalkApplicationLister{},
+	})
 }
 
-func ListElasticBeanstalkApplications(sess *session.Session) ([]Resource, error) {
-	svc := elasticbeanstalk.New(sess)
-	resources := []Resource{}
+type ElasticBeanstalkApplicationLister struct{}
+
+func (l *ElasticBeanstalkApplicationLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := elasticbeanstalk.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &elasticbeanstalk.DescribeApplicationsInput{}
 
@@ -35,8 +45,12 @@ func ListElasticBeanstalkApplications(sess *session.Session) ([]Resource, error)
 	return resources, nil
 }
 
-func (f *ElasticBeanstalkApplication) Remove() error {
+type ElasticBeanstalkApplication struct {
+	svc  *elasticbeanstalk.ElasticBeanstalk
+	name *string
+}
 
+func (f *ElasticBeanstalkApplication) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteApplication(&elasticbeanstalk.DeleteApplicationInput{
 		ApplicationName: f.name,
 	})

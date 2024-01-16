@@ -1,33 +1,41 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type IAMUserSSHKey struct {
-	svc      iamiface.IAMAPI
-	userName string
-	sshKeyID string
-}
+const IAMUserSSHPublicKeyResource = "IAMUserSSHPublicKey"
 
 func init() {
-	register("IAMUserSSHPublicKey", ListIAMUserSSHPublicKeys)
+	resource.Register(resource.Registration{
+		Name:   IAMUserSSHPublicKeyResource,
+		Scope:  nuke.Account,
+		Lister: &IAMUserSSHPublicKeyLister{},
+	})
 }
 
-func ListIAMUserSSHPublicKeys(sess *session.Session) ([]Resource, error) {
-	svc := iam.New(sess)
+type IAMUserSSHPublicKeyLister struct{}
+
+func (l *IAMUserSSHPublicKeyLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+	svc := iam.New(opts.Session)
 
 	usersOutput, err := svc.ListUsers(nil)
 	if err != nil {
 		return nil, err
 	}
 
-	var resources []Resource
+	var resources []resource.Resource
 	for _, user := range usersOutput.Users {
 		listOutput, err := svc.ListSSHPublicKeys(&iam.ListSSHPublicKeysInput{
 			UserName: user.UserName,
@@ -49,6 +57,12 @@ func ListIAMUserSSHPublicKeys(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
+type IAMUserSSHKey struct {
+	svc      iamiface.IAMAPI
+	userName string
+	sshKeyID string
+}
+
 func (u *IAMUserSSHKey) Properties() types.Properties {
 	return types.NewProperties().
 		Set("UserName", u.userName).
@@ -59,7 +73,7 @@ func (u *IAMUserSSHKey) String() string {
 	return fmt.Sprintf("%s -> %s", u.userName, u.sshKeyID)
 }
 
-func (u *IAMUserSSHKey) Remove() error {
+func (u *IAMUserSSHKey) Remove(_ context.Context) error {
 	_, err := u.svc.DeleteSSHPublicKey(&iam.DeleteSSHPublicKeyInput{
 		UserName:       &u.userName,
 		SSHPublicKeyId: &u.sshKeyID,

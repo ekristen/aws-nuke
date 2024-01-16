@@ -1,34 +1,43 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/cognitoidentityprovider"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+	"context"
+
 	"github.com/sirupsen/logrus"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/cognitoidentityprovider"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type CognitoUserPoolClient struct {
-	svc          *cognitoidentityprovider.CognitoIdentityProvider
-	name         *string
-	id           *string
-	userPoolName *string
-	userPoolId   *string
-}
+const CognitoUserPoolClientResource = "CognitoUserPoolClient"
 
 func init() {
-	register("CognitoUserPoolClient", ListCognitoUserPoolClients)
+	resource.Register(resource.Registration{
+		Name:   CognitoUserPoolClientResource,
+		Scope:  nuke.Account,
+		Lister: &CognitoUserPoolClientLister{},
+	})
 }
 
-func ListCognitoUserPoolClients(sess *session.Session) ([]Resource, error) {
-	svc := cognitoidentityprovider.New(sess)
+type CognitoUserPoolClientLister struct{}
 
-	userPools, poolErr := ListCognitoUserPools(sess)
+func (l *CognitoUserPoolClientLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := cognitoidentityprovider.New(opts.Session)
+
+	userPoolsLister := &CognitoUserPoolLister{}
+	userPools, poolErr := userPoolsLister.List(ctx, o)
 	if poolErr != nil {
 		return nil, poolErr
 	}
 
-	resources := []Resource{}
+	resources := make([]resource.Resource, 0)
 
 	for _, userPoolResource := range userPools {
 		userPool, ok := userPoolResource.(*CognitoUserPool)
@@ -69,8 +78,15 @@ func ListCognitoUserPoolClients(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (p *CognitoUserPoolClient) Remove() error {
+type CognitoUserPoolClient struct {
+	svc          *cognitoidentityprovider.CognitoIdentityProvider
+	name         *string
+	id           *string
+	userPoolName *string
+	userPoolId   *string
+}
 
+func (p *CognitoUserPoolClient) Remove(_ context.Context) error {
 	_, err := p.svc.DeleteUserPoolClient(&cognitoidentityprovider.DeleteUserPoolClientInput{
 		ClientId:   p.id,
 		UserPoolId: p.userPoolId,

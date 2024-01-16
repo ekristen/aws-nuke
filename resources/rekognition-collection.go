@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/rekognition"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type RekognitionCollection struct {
-	svc *rekognition.Rekognition
-	id  *string
-}
+const RekognitionCollectionResource = "RekognitionCollection"
 
 func init() {
-	register("RekognitionCollection", ListRekognitionCollections)
+	resource.Register(resource.Registration{
+		Name:   RekognitionCollectionResource,
+		Scope:  nuke.Account,
+		Lister: &RekognitionCollectionLister{},
+	})
 }
 
-func ListRekognitionCollections(sess *session.Session) ([]Resource, error) {
-	svc := rekognition.New(sess)
-	resources := []Resource{}
+type RekognitionCollectionLister struct{}
+
+func (l *RekognitionCollectionLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := rekognition.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &rekognition.ListCollectionsInput{
 		MaxResults: aws.Int64(100),
@@ -46,8 +56,12 @@ func ListRekognitionCollections(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *RekognitionCollection) Remove() error {
+type RekognitionCollection struct {
+	svc *rekognition.Rekognition
+	id  *string
+}
 
+func (f *RekognitionCollection) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteCollection(&rekognition.DeleteCollectionInput{
 		CollectionId: f.id,
 	})

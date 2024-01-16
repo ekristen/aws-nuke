@@ -1,30 +1,37 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/route53"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type Route53TrafficPolicy struct {
-	svc       *route53.Route53
-	id        *string
-	name      *string
-	version   *int64
-	instances []*route53.TrafficPolicyInstance
-}
+const Route53TrafficPolicyResource = "Route53TrafficPolicy"
 
 func init() {
-	register("Route53TrafficPolicy", ListRoute53TrafficPolicies)
+	resource.Register(resource.Registration{
+		Name:   Route53TrafficPolicyResource,
+		Scope:  nuke.Account,
+		Lister: &Route53TrafficPolicyLister{},
+	})
 }
 
-func ListRoute53TrafficPolicies(sess *session.Session) ([]Resource, error) {
-	svc := route53.New(sess)
+type Route53TrafficPolicyLister struct{}
+
+func (l *Route53TrafficPolicyLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := route53.New(opts.Session)
 	params := &route53.ListTrafficPoliciesInput{}
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 
 	for {
 		resp, err := svc.ListTrafficPolicies(params)
@@ -85,7 +92,15 @@ func instancesForPolicy(svc *route53.Route53, policyID *string, version *int64) 
 	return instances, nil
 }
 
-func (tp *Route53TrafficPolicy) Remove() error {
+type Route53TrafficPolicy struct {
+	svc       *route53.Route53
+	id        *string
+	name      *string
+	version   *int64
+	instances []*route53.TrafficPolicyInstance
+}
+
+func (tp *Route53TrafficPolicy) Remove(_ context.Context) error {
 	for _, instance := range tp.instances {
 		_, err := tp.svc.DeleteTrafficPolicyInstance(&route53.DeleteTrafficPolicyInstanceInput{
 			Id: instance.Id,

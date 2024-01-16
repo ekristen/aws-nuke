@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/medialive"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type MediaLiveChannel struct {
-	svc *medialive.MediaLive
-	ID  *string
-}
+const MediaLiveChannelResource = "MediaLiveChannel"
 
 func init() {
-	register("MediaLiveChannel", ListMediaLiveChannels)
+	resource.Register(resource.Registration{
+		Name:   MediaLiveChannelResource,
+		Scope:  nuke.Account,
+		Lister: &MediaLiveChannelLister{},
+	})
 }
 
-func ListMediaLiveChannels(sess *session.Session) ([]Resource, error) {
-	svc := medialive.New(sess)
-	resources := []Resource{}
+type MediaLiveChannelLister struct{}
+
+func (l *MediaLiveChannelLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := medialive.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &medialive.ListChannelsInput{
 		MaxResults: aws.Int64(20),
@@ -46,8 +56,12 @@ func ListMediaLiveChannels(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *MediaLiveChannel) Remove() error {
+type MediaLiveChannel struct {
+	svc *medialive.MediaLive
+	ID  *string
+}
 
+func (f *MediaLiveChannel) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteChannel(&medialive.DeleteChannelInput{
 		ChannelId: f.ID,
 	})

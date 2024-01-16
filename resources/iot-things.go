@@ -1,39 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iot"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type IoTThing struct {
-	svc        *iot.IoT
-	name       *string
-	version    *int64
-	principals []*string
-}
+const IoTThingResource = "IoTThing"
 
 func init() {
-	register("IoTThing", ListIoTThings)
+	resource.Register(resource.Registration{
+		Name:   IoTThingResource,
+		Scope:  nuke.Account,
+		Lister: &IoTThingLister{},
+	})
 }
 
-func listIoTThingPrincipals(f *IoTThing) (*IoTThing, error) {
-	params := &iot.ListThingPrincipalsInput{
-		ThingName: f.name,
-	}
+type IoTThingLister struct{}
 
-	output, err := f.svc.ListThingPrincipals(params)
-	if err != nil {
-		return nil, err
-	}
+func (l *IoTThingLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
 
-	f.principals = output.Principals
-	return f, nil
-}
-
-func ListIoTThings(sess *session.Session) ([]Resource, error) {
-	svc := iot.New(sess)
-	resources := []Resource{}
+	svc := iot.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &iot.ListThingsInput{
 		MaxResults: aws.Int64(100),
@@ -67,13 +61,38 @@ func ListIoTThings(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *IoTThing) Remove() error {
+// listIoTThingPrincipals lists the principals attached to a thing (helper function)
+func listIoTThingPrincipals(f *IoTThing) (*IoTThing, error) {
+	params := &iot.ListThingPrincipalsInput{
+		ThingName: f.name,
+	}
+
+	output, err := f.svc.ListThingPrincipals(params)
+	if err != nil {
+		return nil, err
+	}
+
+	f.principals = output.Principals
+	return f, nil
+}
+
+type IoTThing struct {
+	svc        *iot.IoT
+	name       *string
+	version    *int64
+	principals []*string
+}
+
+func (f *IoTThing) Remove(_ context.Context) error {
 	// detach attached principals first
 	for _, principal := range f.principals {
-		f.svc.DetachThingPrincipal(&iot.DetachThingPrincipalInput{
+		_, err := f.svc.DetachThingPrincipal(&iot.DetachThingPrincipalInput{
 			Principal: principal,
 			ThingName: f.name,
 		})
+		if err != nil {
+			return err
+		}
 	}
 
 	_, err := f.svc.DeleteThing(&iot.DeleteThingInput{

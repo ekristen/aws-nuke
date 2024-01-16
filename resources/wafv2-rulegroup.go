@@ -1,28 +1,34 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/wafv2"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type WAFv2RuleGroup struct {
-	svc       *wafv2.WAFV2
-	ID        *string
-	name      *string
-	lockToken *string
-	scope     *string
-}
+const WAFv2RuleGroupResource = "WAFv2RuleGroup"
 
 func init() {
-	register("WAFv2RuleGroup", ListWAFv2RuleGroups,
-		mapCloudControl("AWS::WAFv2::RuleGroup"))
+	resource.Register(resource.Registration{
+		Name:   WAFv2RuleGroupResource,
+		Scope:  nuke.Account,
+		Lister: &WAFv2RuleGroupLister{},
+	})
 }
 
-func ListWAFv2RuleGroups(sess *session.Session) ([]Resource, error) {
-	svc := wafv2.New(sess)
-	resources := []Resource{}
+type WAFv2RuleGroupLister struct{}
+
+func (l *WAFv2RuleGroupLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := wafv2.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &wafv2.ListRuleGroupsInput{
 		Limit: aws.Int64(50),
@@ -31,17 +37,17 @@ func ListWAFv2RuleGroups(sess *session.Session) ([]Resource, error) {
 
 	output, err := getRuleGroups(svc, params)
 	if err != nil {
-		return []Resource{}, err
+		return []resource.Resource{}, err
 	}
 
 	resources = append(resources, output...)
 
-	if *sess.Config.Region == "us-east-1" {
+	if *opts.Session.Config.Region == "us-east-1" {
 		params.Scope = aws.String("CLOUDFRONT")
 
 		output, err := getRuleGroups(svc, params)
 		if err != nil {
-			return []Resource{}, err
+			return []resource.Resource{}, err
 		}
 
 		resources = append(resources, output...)
@@ -50,8 +56,8 @@ func ListWAFv2RuleGroups(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func getRuleGroups(svc *wafv2.WAFV2, params *wafv2.ListRuleGroupsInput) ([]Resource, error) {
-	resources := []Resource{}
+func getRuleGroups(svc *wafv2.WAFV2, params *wafv2.ListRuleGroupsInput) ([]resource.Resource, error) {
+	resources := make([]resource.Resource, 0)
 	for {
 		resp, err := svc.ListRuleGroups(params)
 		if err != nil {
@@ -77,7 +83,15 @@ func getRuleGroups(svc *wafv2.WAFV2, params *wafv2.ListRuleGroupsInput) ([]Resou
 	return resources, nil
 }
 
-func (f *WAFv2RuleGroup) Remove() error {
+type WAFv2RuleGroup struct {
+	svc       *wafv2.WAFV2
+	ID        *string
+	name      *string
+	lockToken *string
+	scope     *string
+}
+
+func (f *WAFv2RuleGroup) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteRuleGroup(&wafv2.DeleteRuleGroupInput{
 		Id:        f.ID,
 		Name:      f.name,

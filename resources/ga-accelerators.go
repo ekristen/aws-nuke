@@ -1,10 +1,14 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/globalaccelerator"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 // GlobalAccelerator model
@@ -13,14 +17,24 @@ type GlobalAccelerator struct {
 	ARN *string
 }
 
+const GlobalAcceleratorResource = "GlobalAccelerator"
+
 func init() {
-	register("GlobalAccelerator", ListGlobalAccelerators)
+	resource.Register(resource.Registration{
+		Name:   GlobalAcceleratorResource,
+		Scope:  nuke.Account,
+		Lister: &GlobalAcceleratorLister{},
+	})
 }
 
-// ListGlobalAccelerators enumerates all available accelerators
-func ListGlobalAccelerators(sess *session.Session) ([]Resource, error) {
-	svc := globalaccelerator.New(sess)
-	resources := []Resource{}
+type GlobalAcceleratorLister struct{}
+
+// List enumerates all available accelerators
+func (l *GlobalAcceleratorLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := globalaccelerator.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &globalaccelerator.ListAcceleratorsInput{
 		MaxResults: aws.Int64(100),
@@ -50,7 +64,7 @@ func ListGlobalAccelerators(sess *session.Session) ([]Resource, error) {
 }
 
 // Remove resource
-func (ga *GlobalAccelerator) Remove() error {
+func (ga *GlobalAccelerator) Remove(_ context.Context) error {
 	accel, err := ga.svc.DescribeAccelerator(&globalaccelerator.DescribeAcceleratorInput{
 		AcceleratorArn: ga.ARN,
 	})

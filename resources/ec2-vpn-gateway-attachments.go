@@ -1,36 +1,41 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type EC2VPNGatewayAttachment struct {
-	svc     *ec2.EC2
-	vpcId   string
-	vpnId   string
-	state   string
-	vpcTags []*ec2.Tag
-	vgwTags []*ec2.Tag
-}
+const EC2VPNGatewayAttachmentResource = "EC2VPNGatewayAttachment"
 
 func init() {
-	register("EC2VPNGatewayAttachment", ListEC2VPNGatewayAttachments)
+	resource.Register(resource.Registration{
+		Name:   EC2VPNGatewayAttachmentResource,
+		Scope:  nuke.Account,
+		Lister: &EC2VPNGatewayAttachmentLister{},
+	})
 }
 
-func ListEC2VPNGatewayAttachments(sess *session.Session) ([]Resource, error) {
-	svc := ec2.New(sess)
+type EC2VPNGatewayAttachmentLister struct{}
+
+func (l *EC2VPNGatewayAttachmentLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+	svc := ec2.New(opts.Session)
 
 	resp, err := svc.DescribeVpcs(nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for _, vpc := range resp.Vpcs {
 		params := &ec2.DescribeVpnGatewaysInput{
 			Filters: []*ec2.Filter{
@@ -60,6 +65,15 @@ func ListEC2VPNGatewayAttachments(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
+type EC2VPNGatewayAttachment struct {
+	svc     *ec2.EC2
+	vpcId   string
+	vpnId   string
+	state   string
+	vpcTags []*ec2.Tag
+	vgwTags []*ec2.Tag
+}
+
 func (v *EC2VPNGatewayAttachment) Filter() error {
 	if v.state == "detached" {
 		return fmt.Errorf("already detached")
@@ -67,7 +81,7 @@ func (v *EC2VPNGatewayAttachment) Filter() error {
 	return nil
 }
 
-func (v *EC2VPNGatewayAttachment) Remove() error {
+func (v *EC2VPNGatewayAttachment) Remove(_ context.Context) error {
 	params := &ec2.DetachVpnGatewayInput{
 		VpcId:        &v.vpcId,
 		VpnGatewayId: &v.vpnId,

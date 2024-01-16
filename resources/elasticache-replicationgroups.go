@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/elasticache"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type ElasticacheReplicationGroup struct {
-	svc     *elasticache.ElastiCache
-	groupID *string
-}
+const ElasticacheReplicationGroupResource = "ElasticacheReplicationGroup"
 
 func init() {
-	register("ElasticacheReplicationGroup", ListElasticacheReplicationGroups)
+	resource.Register(resource.Registration{
+		Name:   ElasticacheReplicationGroupResource,
+		Scope:  nuke.Account,
+		Lister: &ElasticacheReplicationGroupLister{},
+	})
 }
 
-func ListElasticacheReplicationGroups(sess *session.Session) ([]Resource, error) {
-	svc := elasticache.New(sess)
-	var resources []Resource
+type ElasticacheReplicationGroupLister struct{}
+
+func (l *ElasticacheReplicationGroupLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := elasticache.New(opts.Session)
+	var resources []resource.Resource
 
 	params := &elasticache.DescribeReplicationGroupsInput{MaxRecords: aws.Int64(100)}
 
@@ -44,7 +54,12 @@ func ListElasticacheReplicationGroups(sess *session.Session) ([]Resource, error)
 	return resources, nil
 }
 
-func (i *ElasticacheReplicationGroup) Remove() error {
+type ElasticacheReplicationGroup struct {
+	svc     *elasticache.ElastiCache
+	groupID *string
+}
+
+func (i *ElasticacheReplicationGroup) Remove(_ context.Context) error {
 	params := &elasticache.DeleteReplicationGroupInput{
 		ReplicationGroupId: i.groupID,
 	}

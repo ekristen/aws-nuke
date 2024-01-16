@@ -1,34 +1,43 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
-	"github.com/sirupsen/logrus"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type IAMServiceSpecificCredential struct {
-	svc         iamiface.IAMAPI
-	name        string
-	serviceName string
-	id          string
-	userName    string
-}
+const IAMServiceSpecificCredentialResource = "IAMServiceSpecificCredential"
 
 func init() {
-	register("IAMServiceSpecificCredential", ListServiceSpecificCredentials)
+	resource.Register(resource.Registration{
+		Name:   IAMServiceSpecificCredentialResource,
+		Scope:  nuke.Account,
+		Lister: &IAMServiceSpecificCredentialLister{},
+	})
 }
 
-func ListServiceSpecificCredentials(sess *session.Session) ([]Resource, error) {
-	svc := iam.New(sess)
+type IAMServiceSpecificCredentialLister struct{}
 
-	users, usersErr := ListIAMUsers(sess)
+func (l *IAMServiceSpecificCredentialLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := iam.New(opts.Session)
+
+	userLister := &IAMUsersLister{}
+	users, usersErr := userLister.List(ctx, o)
 	if usersErr != nil {
 		return nil, usersErr
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for _, userResource := range users {
 		user, ok := userResource.(*IAMUser)
 		if !ok {
@@ -57,7 +66,15 @@ func ListServiceSpecificCredentials(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (e *IAMServiceSpecificCredential) Remove() error {
+type IAMServiceSpecificCredential struct {
+	svc         iamiface.IAMAPI
+	name        string
+	serviceName string
+	id          string
+	userName    string
+}
+
+func (e *IAMServiceSpecificCredential) Remove(_ context.Context) error {
 	params := &iam.DeleteServiceSpecificCredentialInput{
 		ServiceSpecificCredentialId: &e.id,
 		UserName:                    &e.userName,

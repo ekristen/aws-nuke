@@ -1,24 +1,34 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/imagebuilder"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type ImageBuilderInfrastructureConfiguration struct {
-	svc *imagebuilder.Imagebuilder
-	arn string
-}
+const ImageBuilderInfrastructureConfigurationResource = "ImageBuilderInfrastructureConfiguration"
 
 func init() {
-	register("ImageBuilderInfrastructureConfiguration", ListImageBuilderInfrastructureConfigurations)
+	resource.Register(resource.Registration{
+		Name:   ImageBuilderInfrastructureConfigurationResource,
+		Scope:  nuke.Account,
+		Lister: &ImageBuilderInfrastructureConfigurationLister{},
+	})
 }
 
-func ListImageBuilderInfrastructureConfigurations(sess *session.Session) ([]Resource, error) {
-	svc := imagebuilder.New(sess)
+type ImageBuilderInfrastructureConfigurationLister struct{}
+
+func (l *ImageBuilderInfrastructureConfigurationLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := imagebuilder.New(opts.Session)
 	params := &imagebuilder.ListInfrastructureConfigurationsInput{}
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 
 	for {
 		resp, err := svc.ListInfrastructureConfigurations(params)
@@ -45,7 +55,12 @@ func ListImageBuilderInfrastructureConfigurations(sess *session.Session) ([]Reso
 	return resources, nil
 }
 
-func (e *ImageBuilderInfrastructureConfiguration) Remove() error {
+type ImageBuilderInfrastructureConfiguration struct {
+	svc *imagebuilder.Imagebuilder
+	arn string
+}
+
+func (e *ImageBuilderInfrastructureConfiguration) Remove(_ context.Context) error {
 	_, err := e.svc.DeleteInfrastructureConfiguration(&imagebuilder.DeleteInfrastructureConfigurationInput{
 		InfrastructureConfigurationArn: &e.arn,
 	})

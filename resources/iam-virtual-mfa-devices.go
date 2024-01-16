@@ -1,38 +1,45 @@
 package resources
 
 import (
+	"context"
+
 	"errors"
 	"fmt"
-	"github.com/aws/smithy-go/ptr"
 	"strings"
 
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
+	"github.com/ekristen/libnuke/pkg/resource"
 )
 
-type IAMVirtualMFADevice struct {
-	svc          iamiface.IAMAPI
-	userId       *string
-	userArn      *string
-	userName     string
-	serialNumber string
-}
+const IAMVirtualMFADeviceResource = "IAMVirtualMFADevice"
 
 func init() {
-	register("IAMVirtualMFADevice", ListIAMVirtualMFADevices)
+	resource.Register(resource.Registration{
+		Name:   IAMVirtualMFADeviceResource,
+		Scope:  nuke.Account,
+		Lister: &IAMVirtualMFADeviceLister{},
+	})
 }
 
-func ListIAMVirtualMFADevices(sess *session.Session) ([]Resource, error) {
-	svc := iam.New(sess)
+type IAMVirtualMFADeviceLister struct{}
+
+func (l *IAMVirtualMFADeviceLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := iam.New(opts.Session)
 
 	resp, err := svc.ListVirtualMFADevices(&iam.ListVirtualMFADevicesInput{})
 	if err != nil {
 		return nil, err
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for _, out := range resp.VirtualMFADevices {
 		resources = append(resources, &IAMVirtualMFADevice{
 			svc:          svc,
@@ -44,6 +51,14 @@ func ListIAMVirtualMFADevices(sess *session.Session) ([]Resource, error) {
 	}
 
 	return resources, nil
+}
+
+type IAMVirtualMFADevice struct {
+	svc          iamiface.IAMAPI
+	userId       *string
+	userArn      *string
+	userName     string
+	serialNumber string
 }
 
 func (v *IAMVirtualMFADevice) Filter() error {
@@ -62,7 +77,7 @@ func (v *IAMVirtualMFADevice) Filter() error {
 	return nil
 }
 
-func (v *IAMVirtualMFADevice) Remove() error {
+func (v *IAMVirtualMFADevice) Remove(_ context.Context) error {
 	if _, err := v.svc.DeactivateMFADevice(&iam.DeactivateMFADeviceInput{
 		UserName:     aws.String(v.userName),
 		SerialNumber: aws.String(v.serialNumber),

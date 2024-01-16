@@ -1,31 +1,43 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type DynamoDBTable struct {
-	svc  *dynamodb.DynamoDB
-	id   string
-	tags []*dynamodb.Tag
-}
+const DynamoDBTableResource = "DynamoDBTable"
 
 func init() {
-	register("DynamoDBTable", ListDynamoDBTables)
+	resource.Register(resource.Registration{
+		Name:   DynamoDBTableResource,
+		Scope:  nuke.Account,
+		Lister: &DynamoDBTableLister{},
+		DependsOn: []string{
+			DynamoDBTableItemResource,
+		},
+	})
 }
 
-func ListDynamoDBTables(sess *session.Session) ([]Resource, error) {
-	svc := dynamodb.New(sess)
+type DynamoDBTableLister struct{}
+
+func (l *DynamoDBTableLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := dynamodb.New(opts.Session)
 
 	resp, err := svc.ListTables(&dynamodb.ListTablesInput{})
 	if err != nil {
 		return nil, err
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for _, tableName := range resp.TableNames {
 		tags, err := GetTableTags(svc, tableName)
 
@@ -34,8 +46,8 @@ func ListDynamoDBTables(sess *session.Session) ([]Resource, error) {
 		}
 
 		resources = append(resources, &DynamoDBTable{
-			svc: svc,
-			id:  *tableName,
+			svc:  svc,
+			id:   *tableName,
 			tags: tags,
 		})
 	}
@@ -43,7 +55,13 @@ func ListDynamoDBTables(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (i *DynamoDBTable) Remove() error {
+type DynamoDBTable struct {
+	svc  *dynamodb.DynamoDB
+	id   string
+	tags []*dynamodb.Tag
+}
+
+func (i *DynamoDBTable) Remove(_ context.Context) error {
 	params := &dynamodb.DeleteTableInput{
 		TableName: aws.String(i.id),
 	}
@@ -65,7 +83,7 @@ func GetTableTags(svc *dynamodb.DynamoDB, tableName *string) ([]*dynamodb.Tag, e
 		return make([]*dynamodb.Tag, 0), err
 	}
 
-	tags, err :=  svc.ListTagsOfResource(&dynamodb.ListTagsOfResourceInput{
+	tags, err := svc.ListTagsOfResource(&dynamodb.ListTagsOfResourceInput{
 		ResourceArn: result.Table.TableArn,
 	})
 
@@ -77,16 +95,15 @@ func GetTableTags(svc *dynamodb.DynamoDB, tableName *string) ([]*dynamodb.Tag, e
 }
 
 func (i *DynamoDBTable) Properties() types.Properties {
-        properties := types.NewProperties()
-        properties.Set("Identifier", i.id)
+	properties := types.NewProperties()
+	properties.Set("Identifier", i.id)
 
-        for _, tag := range i.tags {
-                properties.SetTag(tag.Key, tag.Value)
-        }
+	for _, tag := range i.tags {
+		properties.SetTag(tag.Key, tag.Value)
+	}
 
-        return properties
+	return properties
 }
-
 
 func (i *DynamoDBTable) String() string {
 	return i.id

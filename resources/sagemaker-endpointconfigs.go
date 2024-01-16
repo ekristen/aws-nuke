@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sagemaker"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type SageMakerEndpointConfig struct {
-	svc                *sagemaker.SageMaker
-	endpointConfigName *string
-}
+const SageMakerEndpointConfigResource = "SageMakerEndpointConfig"
 
 func init() {
-	register("SageMakerEndpointConfig", ListSageMakerEndpointConfigs)
+	resource.Register(resource.Registration{
+		Name:   SageMakerEndpointConfigResource,
+		Scope:  nuke.Account,
+		Lister: &SageMakerEndpointConfigLister{},
+	})
 }
 
-func ListSageMakerEndpointConfigs(sess *session.Session) ([]Resource, error) {
-	svc := sagemaker.New(sess)
-	resources := []Resource{}
+type SageMakerEndpointConfigLister struct{}
+
+func (l *SageMakerEndpointConfigLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := sagemaker.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &sagemaker.ListEndpointConfigsInput{
 		MaxResults: aws.Int64(30),
@@ -46,8 +56,12 @@ func ListSageMakerEndpointConfigs(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *SageMakerEndpointConfig) Remove() error {
+type SageMakerEndpointConfig struct {
+	svc                *sagemaker.SageMaker
+	endpointConfigName *string
+}
 
+func (f *SageMakerEndpointConfig) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteEndpointConfig(&sagemaker.DeleteEndpointConfigInput{
 		EndpointConfigName: f.endpointConfigName,
 	})

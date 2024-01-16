@@ -1,22 +1,32 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/devicefarm"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type DeviceFarmProject struct {
-	svc *devicefarm.DeviceFarm
-	ARN *string
-}
+const DeviceFarmProjectResource = "DeviceFarmProject"
 
 func init() {
-	register("DeviceFarmProject", ListDeviceFarmProjects)
+	resource.Register(resource.Registration{
+		Name:   DeviceFarmProjectResource,
+		Scope:  nuke.Account,
+		Lister: &DeviceFarmProjectLister{},
+	})
 }
 
-func ListDeviceFarmProjects(sess *session.Session) ([]Resource, error) {
-	svc := devicefarm.New(sess)
-	resources := []Resource{}
+type DeviceFarmProjectLister struct{}
+
+func (l *DeviceFarmProjectLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := devicefarm.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &devicefarm.ListProjectsInput{}
 
@@ -43,8 +53,12 @@ func ListDeviceFarmProjects(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *DeviceFarmProject) Remove() error {
+type DeviceFarmProject struct {
+	svc *devicefarm.DeviceFarm
+	ARN *string
+}
 
+func (f *DeviceFarmProject) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteProject(&devicefarm.DeleteProjectInput{
 		Arn: f.ARN,
 	})

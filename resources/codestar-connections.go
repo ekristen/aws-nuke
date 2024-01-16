@@ -1,26 +1,34 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/codestarconnections"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type CodeStarConnection struct {
-	svc              *codestarconnections.CodeStarConnections
-	connectionARN    *string
-	connectionName   *string
-	providerType     *string
-}
+const CodeStarConnectionResource = "CodeStarConnection"
 
 func init() {
-	register("CodeStarConnection", ListCodeStarConnections)
+	resource.Register(resource.Registration{
+		Name:   CodeStarConnectionResource,
+		Scope:  nuke.Account,
+		Lister: &CodeStarConnectionLister{},
+	})
 }
 
-func ListCodeStarConnections(sess *session.Session) ([]Resource, error) {
-	svc := codestarconnections.New(sess)
-	resources := []Resource{}
+type CodeStarConnectionLister struct{}
+
+func (l *CodeStarConnectionLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := codestarconnections.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &codestarconnections.ListConnectionsInput{
 		MaxResults: aws.Int64(100),
@@ -34,10 +42,10 @@ func ListCodeStarConnections(sess *session.Session) ([]Resource, error) {
 
 		for _, connection := range output.Connections {
 			resources = append(resources, &CodeStarConnection{
-				svc:              svc,
-				connectionARN:    connection.ConnectionArn,
-				connectionName:   connection.ConnectionName,
-				providerType:     connection.ProviderType,
+				svc:            svc,
+				connectionARN:  connection.ConnectionArn,
+				connectionName: connection.ConnectionName,
+				providerType:   connection.ProviderType,
 			})
 		}
 
@@ -51,8 +59,14 @@ func ListCodeStarConnections(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *CodeStarConnection) Remove() error {
+type CodeStarConnection struct {
+	svc            *codestarconnections.CodeStarConnections
+	connectionARN  *string
+	connectionName *string
+	providerType   *string
+}
 
+func (f *CodeStarConnection) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteConnection(&codestarconnections.DeleteConnectionInput{
 		ConnectionArn: f.connectionARN,
 	})
@@ -67,7 +81,6 @@ func (f *CodeStarConnection) Properties() types.Properties {
 		Set("ProviderType", f.providerType)
 	return properties
 }
-
 
 func (f *CodeStarConnection) String() string {
 	return *f.connectionName

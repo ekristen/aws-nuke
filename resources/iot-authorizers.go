@@ -1,22 +1,32 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/iot"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type IoTAuthorizer struct {
-	svc  *iot.IoT
-	name *string
-}
+const IoTAuthorizerResource = "IoTAuthorizer"
 
 func init() {
-	register("IoTAuthorizer", ListIoTAuthorizers)
+	resource.Register(resource.Registration{
+		Name:   IoTAuthorizerResource,
+		Scope:  nuke.Account,
+		Lister: &IoTAuthorizerLister{},
+	})
 }
 
-func ListIoTAuthorizers(sess *session.Session) ([]Resource, error) {
-	svc := iot.New(sess)
-	resources := []Resource{}
+type IoTAuthorizerLister struct{}
+
+func (l *IoTAuthorizerLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := iot.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &iot.ListAuthorizersInput{}
 
@@ -35,8 +45,12 @@ func ListIoTAuthorizers(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *IoTAuthorizer) Remove() error {
+type IoTAuthorizer struct {
+	svc  *iot.IoT
+	name *string
+}
 
+func (f *IoTAuthorizer) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteAuthorizer(&iot.DeleteAuthorizerInput{
 		AuthorizerName: f.name,
 	})

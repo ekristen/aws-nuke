@@ -1,24 +1,34 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/lexmodelbuildingservice"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type LexSlotType struct {
-	svc  *lexmodelbuildingservice.LexModelBuildingService
-	name *string
-}
+const LexSlotTypeResource = "LexSlotType"
 
 func init() {
-	register("LexSlotType", ListLexSlotTypes)
+	resource.Register(resource.Registration{
+		Name:   LexSlotTypeResource,
+		Scope:  nuke.Account,
+		Lister: &LexSlotTypeLister{},
+	})
 }
 
-func ListLexSlotTypes(sess *session.Session) ([]Resource, error) {
-	svc := lexmodelbuildingservice.New(sess)
-	resources := []Resource{}
+type LexSlotTypeLister struct{}
+
+func (l *LexSlotTypeLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := lexmodelbuildingservice.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &lexmodelbuildingservice.GetSlotTypesInput{
 		MaxResults: aws.Int64(20),
@@ -47,8 +57,12 @@ func ListLexSlotTypes(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *LexSlotType) Remove() error {
+type LexSlotType struct {
+	svc  *lexmodelbuildingservice.LexModelBuildingService
+	name *string
+}
 
+func (f *LexSlotType) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteSlotType(&lexmodelbuildingservice.DeleteSlotTypeInput{
 		Name: f.name,
 	})

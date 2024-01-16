@@ -1,21 +1,36 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sns"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
+const SNSSubscriptionResource = "SNSSubscription"
+
 func init() {
-	register("SNSSubscription", ListSNSSubscriptions)
+	resource.Register(resource.Registration{
+		Name:   SNSSubscriptionResource,
+		Scope:  nuke.Account,
+		Lister: &SNSSubscriptionLister{},
+	})
 }
 
-func ListSNSSubscriptions(sess *session.Session) ([]Resource, error) {
-	svc := sns.New(sess)
+type SNSSubscriptionLister struct{}
+
+func (l *SNSSubscriptionLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := sns.New(opts.Session)
 
 	params := &sns.ListSubscriptionsInput{}
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 
 	for {
 		resp, err := svc.ListSubscriptions(params)
@@ -49,7 +64,7 @@ type SNSSubscription struct {
 	name *string
 }
 
-func (subs *SNSSubscription) Remove() error {
+func (subs *SNSSubscription) Remove(_ context.Context) error {
 	_, err := subs.svc.Unsubscribe(&sns.UnsubscribeInput{
 		SubscriptionArn: subs.id,
 	})

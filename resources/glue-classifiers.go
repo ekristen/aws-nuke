@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/glue"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type GlueClassifier struct {
-	svc  *glue.Glue
-	name *string
-}
+const GlueClassifierResource = "GlueClassifier"
 
 func init() {
-	register("GlueClassifier", ListGlueClassifiers)
+	resource.Register(resource.Registration{
+		Name:   GlueClassifierResource,
+		Scope:  nuke.Account,
+		Lister: &GlueClassifierLister{},
+	})
 }
 
-func ListGlueClassifiers(sess *session.Session) ([]Resource, error) {
-	svc := glue.New(sess)
-	resources := []Resource{}
+type GlueClassifierLister struct{}
+
+func (l *GlueClassifierLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := glue.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &glue.GetClassifiersInput{
 		MaxResults: aws.Int64(100),
@@ -58,8 +68,12 @@ func ListGlueClassifiers(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *GlueClassifier) Remove() error {
+type GlueClassifier struct {
+	svc  *glue.Glue
+	name *string
+}
 
+func (f *GlueClassifier) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteClassifier(&glue.DeleteClassifierInput{
 		Name: f.name,
 	})

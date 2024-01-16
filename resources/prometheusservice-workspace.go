@@ -1,26 +1,33 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/prometheusservice"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type AMPWorkspace struct {
-	svc            *prometheusservice.PrometheusService
-	workspaceAlias *string
-	workspaceARN   *string
-	workspaceId    *string
-}
+const AMPWorkspaceResource = "AMPWorkspace"
 
 func init() {
-	register("AMPWorkspace", ListAMPWorkspaces,
-		mapCloudControl("AWS::APS::Workspace"))
+	resource.Register(resource.Registration{
+		Name:   AMPWorkspaceResource,
+		Scope:  nuke.Account,
+		Lister: &AMPWorkspaceLister{},
+	})
 }
 
-func ListAMPWorkspaces(sess *session.Session) ([]Resource, error) {
-	svc := prometheusservice.New(sess)
-	resources := []Resource{}
+type AMPWorkspaceLister struct{}
+
+func (l *AMPWorkspaceLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := prometheusservice.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	var ampWorkspaces []*prometheusservice.WorkspaceSummary
 	err := svc.ListWorkspacesPages(
@@ -46,7 +53,14 @@ func ListAMPWorkspaces(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *AMPWorkspace) Remove() error {
+type AMPWorkspace struct {
+	svc            *prometheusservice.PrometheusService
+	workspaceAlias *string
+	workspaceARN   *string
+	workspaceId    *string
+}
+
+func (f *AMPWorkspace) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteWorkspace(&prometheusservice.DeleteWorkspaceInput{
 		WorkspaceId: f.workspaceId,
 	})

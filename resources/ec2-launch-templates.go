@@ -1,30 +1,41 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type EC2LaunchTemplate struct {
-	svc  *ec2.EC2
-	name *string
-	tag  []*ec2.Tag
-}
+const EC2LaunchTemplateResource = "EC2LaunchTemplate"
 
 func init() {
-	register("EC2LaunchTemplate", ListEC2LaunchTemplates)
+	resource.Register(resource.Registration{
+		Name:   EC2LaunchTemplateResource,
+		Scope:  nuke.Account,
+		Lister: &EC2LaunchTemplateLister{},
+	})
 }
 
-func ListEC2LaunchTemplates(sess *session.Session) ([]Resource, error) {
-	svc := ec2.New(sess)
+type EC2LaunchTemplateLister struct{}
+
+func (l *EC2LaunchTemplateLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := ec2.New(opts.Session)
 
 	resp, err := svc.DescribeLaunchTemplates(nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for _, template := range resp.LaunchTemplates {
 		resources = append(resources, &EC2LaunchTemplate{
 			svc:  svc,
@@ -35,7 +46,13 @@ func ListEC2LaunchTemplates(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (template *EC2LaunchTemplate) Remove() error {
+type EC2LaunchTemplate struct {
+	svc  *ec2.EC2
+	name *string
+	tag  []*ec2.Tag
+}
+
+func (template *EC2LaunchTemplate) Remove(_ context.Context) error {
 	_, err := template.svc.DeleteLaunchTemplate(&ec2.DeleteLaunchTemplateInput{
 		LaunchTemplateName: template.name,
 	})
@@ -52,5 +69,5 @@ func (template *EC2LaunchTemplate) Properties() types.Properties {
 }
 
 func (template *EC2LaunchTemplate) String() string {
-	return *template.name
+	return ptr.ToString(template.name)
 }

@@ -1,34 +1,43 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type IAMOpenIDConnectProvider struct {
-	svc  iamiface.IAMAPI
-	arn  string
-	tags []*iam.Tag
-}
+const IAMOpenIDConnectProviderResource = "IAMOpenIDConnectProvider"
 
 func init() {
-	register("IAMOpenIDConnectProvider", ListIAMOpenIDConnectProvider)
+	resource.Register(resource.Registration{
+		Name:   IAMOpenIDConnectProviderResource,
+		Scope:  nuke.Account,
+		Lister: &IAMOpenIDConnectProviderLister{},
+	})
 }
 
-func ListIAMOpenIDConnectProvider(sess *session.Session) ([]Resource, error) {
-	svc := iam.New(sess)
-	params := &iam.ListOpenIDConnectProvidersInput{}
-	resources := make([]Resource, 0)
+type IAMOpenIDConnectProviderLister struct{}
 
-	resp, err := svc.ListOpenIDConnectProviders(params)
+func (l *IAMOpenIDConnectProviderLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := iam.New(opts.Session)
+
+	listParams := &iam.ListOpenIDConnectProvidersInput{}
+	resources := make([]resource.Resource, 0)
+
+	resp, err := svc.ListOpenIDConnectProviders(listParams)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, out := range resp.OpenIDConnectProviderList {
-
 		params := &iam.GetOpenIDConnectProviderInput{
 			OpenIDConnectProviderArn: out.Arn,
 		}
@@ -48,7 +57,13 @@ func ListIAMOpenIDConnectProvider(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (e *IAMOpenIDConnectProvider) Remove() error {
+type IAMOpenIDConnectProvider struct {
+	svc  iamiface.IAMAPI
+	arn  string
+	tags []*iam.Tag
+}
+
+func (e *IAMOpenIDConnectProvider) Remove(_ context.Context) error {
 	_, err := e.svc.DeleteOpenIDConnectProvider(&iam.DeleteOpenIDConnectProviderInput{
 		OpenIDConnectProviderArn: &e.arn,
 	})

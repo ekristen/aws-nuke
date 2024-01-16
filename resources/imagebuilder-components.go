@@ -1,24 +1,34 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/imagebuilder"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type ImageBuilderComponent struct {
-	svc *imagebuilder.Imagebuilder
-	arn string
-}
+const ImageBuilderComponentResource = "ImageBuilderComponent"
 
 func init() {
-	register("ImageBuilderComponent", ListImageBuilderComponents)
+	resource.Register(resource.Registration{
+		Name:   ImageBuilderComponentResource,
+		Scope:  nuke.Account,
+		Lister: &ImageBuilderComponentLister{},
+	})
 }
 
-func ListImageBuilderComponents(sess *session.Session) ([]Resource, error) {
-	svc := imagebuilder.New(sess)
+type ImageBuilderComponentLister struct{}
+
+func (l *ImageBuilderComponentLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := imagebuilder.New(opts.Session)
 	params := &imagebuilder.ListComponentsInput{}
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 
 	for {
 		resp, err := svc.ListComponents(params)
@@ -45,7 +55,7 @@ func ListImageBuilderComponents(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func ListImageBuilderComponentVersions(svc *imagebuilder.Imagebuilder, componentVersionArn *string, resources []Resource) ([]Resource, error) {
+func ListImageBuilderComponentVersions(svc *imagebuilder.Imagebuilder, componentVersionArn *string, resources []resource.Resource) ([]resource.Resource, error) {
 	params := &imagebuilder.ListComponentBuildVersionsInput{
 		ComponentVersionArn: componentVersionArn,
 	}
@@ -75,7 +85,12 @@ func ListImageBuilderComponentVersions(svc *imagebuilder.Imagebuilder, component
 	return resources, nil
 }
 
-func (e *ImageBuilderComponent) Remove() error {
+type ImageBuilderComponent struct {
+	svc *imagebuilder.Imagebuilder
+	arn string
+}
+
+func (e *ImageBuilderComponent) Remove(_ context.Context) error {
 	_, err := e.svc.DeleteComponent(&imagebuilder.DeleteComponentInput{
 		ComponentBuildVersionArn: &e.arn,
 	})

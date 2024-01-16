@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/redshift"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type RedshiftSubnetGroup struct {
-	svc                    *redshift.Redshift
-	clusterSubnetGroupName *string
-}
+const RedshiftSubnetGroupResource = "RedshiftSubnetGroup"
 
 func init() {
-	register("RedshiftSubnetGroup", ListRedshiftSubnetGroups)
+	resource.Register(resource.Registration{
+		Name:   RedshiftSubnetGroupResource,
+		Scope:  nuke.Account,
+		Lister: &RedshiftSubnetGroupLister{},
+	})
 }
 
-func ListRedshiftSubnetGroups(sess *session.Session) ([]Resource, error) {
-	svc := redshift.New(sess)
-	resources := []Resource{}
+type RedshiftSubnetGroupLister struct{}
+
+func (l *RedshiftSubnetGroupLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := redshift.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &redshift.DescribeClusterSubnetGroupsInput{
 		MaxRecords: aws.Int64(100),
@@ -31,7 +41,7 @@ func ListRedshiftSubnetGroups(sess *session.Session) ([]Resource, error) {
 
 		for _, subnetGroup := range output.ClusterSubnetGroups {
 			resources = append(resources, &RedshiftSubnetGroup{
-				svc: svc,
+				svc:                    svc,
 				clusterSubnetGroupName: subnetGroup.ClusterSubnetGroupName,
 			})
 		}
@@ -46,8 +56,12 @@ func ListRedshiftSubnetGroups(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *RedshiftSubnetGroup) Remove() error {
+type RedshiftSubnetGroup struct {
+	svc                    *redshift.Redshift
+	clusterSubnetGroupName *string
+}
 
+func (f *RedshiftSubnetGroup) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteClusterSubnetGroup(&redshift.DeleteClusterSubnetGroupInput{
 		ClusterSubnetGroupName: f.clusterSubnetGroupName,
 	})

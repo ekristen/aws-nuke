@@ -1,28 +1,34 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/wafv2"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type WAFv2WebACL struct {
-	svc       *wafv2.WAFV2
-	ID        *string
-	name      *string
-	lockToken *string
-	scope     *string
-}
+const WAFv2WebACLResource = "WAFv2WebACL"
 
 func init() {
-	register("WAFv2WebACL", ListWAFv2WebACLs,
-		mapCloudControl("AWS::WAFv2::WebACL"))
+	resource.Register(resource.Registration{
+		Name:   WAFv2WebACLResource,
+		Scope:  nuke.Account,
+		Lister: &WAFv2WebACLLister{},
+	})
 }
 
-func ListWAFv2WebACLs(sess *session.Session) ([]Resource, error) {
-	svc := wafv2.New(sess)
-	resources := []Resource{}
+type WAFv2WebACLLister struct{}
+
+func (l *WAFv2WebACLLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := wafv2.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &wafv2.ListWebACLsInput{
 		Limit: aws.Int64(50),
@@ -31,17 +37,17 @@ func ListWAFv2WebACLs(sess *session.Session) ([]Resource, error) {
 
 	output, err := getWebACLs(svc, params)
 	if err != nil {
-		return []Resource{}, err
+		return []resource.Resource{}, err
 	}
 
 	resources = append(resources, output...)
 
-	if *sess.Config.Region == "us-east-1" {
+	if *opts.Session.Config.Region == "us-east-1" {
 		params.Scope = aws.String("CLOUDFRONT")
 
 		output, err := getWebACLs(svc, params)
 		if err != nil {
-			return []Resource{}, err
+			return []resource.Resource{}, err
 		}
 
 		resources = append(resources, output...)
@@ -50,8 +56,8 @@ func ListWAFv2WebACLs(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func getWebACLs(svc *wafv2.WAFV2, params *wafv2.ListWebACLsInput) ([]Resource, error) {
-	resources := []Resource{}
+func getWebACLs(svc *wafv2.WAFV2, params *wafv2.ListWebACLsInput) ([]resource.Resource, error) {
+	resources := make([]resource.Resource, 0)
 	for {
 		resp, err := svc.ListWebACLs(params)
 		if err != nil {
@@ -77,7 +83,15 @@ func getWebACLs(svc *wafv2.WAFV2, params *wafv2.ListWebACLsInput) ([]Resource, e
 	return resources, nil
 }
 
-func (f *WAFv2WebACL) Remove() error {
+type WAFv2WebACL struct {
+	svc       *wafv2.WAFV2
+	ID        *string
+	name      *string
+	lockToken *string
+	scope     *string
+}
+
+func (f *WAFv2WebACL) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteWebACL(&wafv2.DeleteWebACLInput{
 		Id:        f.ID,
 		Name:      f.name,

@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/waf"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type WAFWebACL struct {
-	svc *waf.WAF
-	ID  *string
-}
+const WAFWebACLResource = "WAFWebACL"
 
 func init() {
-	register("WAFWebACL", ListWAFWebACLs)
+	resource.Register(resource.Registration{
+		Name:   WAFWebACLResource,
+		Scope:  nuke.Account,
+		Lister: &WAFWebACLLister{},
+	})
 }
 
-func ListWAFWebACLs(sess *session.Session) ([]Resource, error) {
-	svc := waf.New(sess)
-	resources := []Resource{}
+type WAFWebACLLister struct{}
+
+func (l *WAFWebACLLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := waf.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &waf.ListWebACLsInput{
 		Limit: aws.Int64(50),
@@ -46,8 +56,12 @@ func ListWAFWebACLs(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *WAFWebACL) Remove() error {
+type WAFWebACL struct {
+	svc *waf.WAF
+	ID  *string
+}
 
+func (f *WAFWebACL) Remove(_ context.Context) error {
 	tokenOutput, err := f.svc.GetChangeToken(&waf.GetChangeTokenInput{})
 	if err != nil {
 		return err

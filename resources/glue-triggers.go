@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/glue"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type GlueTrigger struct {
-	svc  *glue.Glue
-	name *string
-}
+const GlueTriggerResource = "GlueTrigger"
 
 func init() {
-	register("GlueTrigger", ListGlueTriggers)
+	resource.Register(resource.Registration{
+		Name:   GlueTriggerResource,
+		Scope:  nuke.Account,
+		Lister: &GlueTriggerLister{},
+	})
 }
 
-func ListGlueTriggers(sess *session.Session) ([]Resource, error) {
-	svc := glue.New(sess)
-	resources := []Resource{}
+type GlueTriggerLister struct{}
+
+func (l *GlueTriggerLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := glue.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &glue.GetTriggersInput{
 		MaxResults: aws.Int64(100),
@@ -46,7 +56,12 @@ func ListGlueTriggers(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *GlueTrigger) Remove() error {
+type GlueTrigger struct {
+	svc  *glue.Glue
+	name *string
+}
+
+func (f *GlueTrigger) Remove(_ context.Context) error {
 
 	_, err := f.svc.DeleteTrigger(&glue.DeleteTriggerInput{
 		Name: f.name,

@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/clouddirectory"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type CloudDirectoryDirectory struct {
-	svc          *clouddirectory.CloudDirectory
-	directoryARN *string
-}
+const CloudDirectoryDirectoryResource = "CloudDirectoryDirectory"
 
 func init() {
-	register("CloudDirectoryDirectory", ListCloudDirectoryDirectories)
+	resource.Register(resource.Registration{
+		Name:   CloudDirectoryDirectoryResource,
+		Scope:  nuke.Account,
+		Lister: &CloudDirectoryDirectoryLister{},
+	})
 }
 
-func ListCloudDirectoryDirectories(sess *session.Session) ([]Resource, error) {
-	svc := clouddirectory.New(sess)
-	resources := []Resource{}
+type CloudDirectoryDirectoryLister struct{}
+
+func (l *CloudDirectoryDirectoryLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := clouddirectory.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &clouddirectory.ListDirectoriesInput{
 		MaxResults: aws.Int64(30),
@@ -47,7 +57,12 @@ func ListCloudDirectoryDirectories(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *CloudDirectoryDirectory) Remove() error {
+type CloudDirectoryDirectory struct {
+	svc          *clouddirectory.CloudDirectory
+	directoryARN *string
+}
+
+func (f *CloudDirectoryDirectory) Remove(_ context.Context) error {
 
 	_, err := f.svc.DisableDirectory(&clouddirectory.DisableDirectoryInput{
 		DirectoryArn: f.directoryARN,

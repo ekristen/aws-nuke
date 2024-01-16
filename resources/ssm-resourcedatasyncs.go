@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ssm"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type SSMResourceDataSync struct {
-	svc  *ssm.SSM
-	name *string
-}
+const SSMResourceDataSyncResource = "SSMResourceDataSync"
 
 func init() {
-	register("SSMResourceDataSync", ListSSMResourceDataSyncs)
+	resource.Register(resource.Registration{
+		Name:   SSMResourceDataSyncResource,
+		Scope:  nuke.Account,
+		Lister: &SSMResourceDataSyncLister{},
+	})
 }
 
-func ListSSMResourceDataSyncs(sess *session.Session) ([]Resource, error) {
-	svc := ssm.New(sess)
-	resources := []Resource{}
+type SSMResourceDataSyncLister struct{}
+
+func (l *SSMResourceDataSyncLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := ssm.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &ssm.ListResourceDataSyncInput{
 		MaxResults: aws.Int64(50),
@@ -46,8 +56,12 @@ func ListSSMResourceDataSyncs(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *SSMResourceDataSync) Remove() error {
+type SSMResourceDataSync struct {
+	svc  *ssm.SSM
+	name *string
+}
 
+func (f *SSMResourceDataSync) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteResourceDataSync(&ssm.DeleteResourceDataSyncInput{
 		SyncName: f.name,
 	})

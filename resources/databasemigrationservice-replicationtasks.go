@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/databasemigrationservice"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type DatabaseMigrationServiceReplicationTask struct {
-	svc *databasemigrationservice.DatabaseMigrationService
-	ARN *string
-}
+const DatabaseMigrationServiceReplicationTaskResource = "DatabaseMigrationServiceReplicationTask"
 
 func init() {
-	register("DatabaseMigrationServiceReplicationTask", ListDatabaseMigrationServiceReplicationTasks)
+	resource.Register(resource.Registration{
+		Name:   DatabaseMigrationServiceReplicationTaskResource,
+		Scope:  nuke.Account,
+		Lister: &DatabaseMigrationServiceReplicationTaskLister{},
+	})
 }
 
-func ListDatabaseMigrationServiceReplicationTasks(sess *session.Session) ([]Resource, error) {
-	svc := databasemigrationservice.New(sess)
-	resources := []Resource{}
+type DatabaseMigrationServiceReplicationTaskLister struct{}
+
+func (l *DatabaseMigrationServiceReplicationTaskLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := databasemigrationservice.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &databasemigrationservice.DescribeReplicationTasksInput{
 		MaxRecords: aws.Int64(100),
@@ -46,8 +56,12 @@ func ListDatabaseMigrationServiceReplicationTasks(sess *session.Session) ([]Reso
 	return resources, nil
 }
 
-func (f *DatabaseMigrationServiceReplicationTask) Remove() error {
+type DatabaseMigrationServiceReplicationTask struct {
+	svc *databasemigrationservice.DatabaseMigrationService
+	ARN *string
+}
 
+func (f *DatabaseMigrationServiceReplicationTask) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteReplicationTask(&databasemigrationservice.DeleteReplicationTaskInput{
 		ReplicationTaskArn: f.ARN,
 	})

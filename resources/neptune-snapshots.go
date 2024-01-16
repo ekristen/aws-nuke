@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/neptune"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type NetpuneSnapshot struct {
-	svc *neptune.Neptune
-	ID  *string
-}
+const NeptuneSnapshotResource = "NeptuneSnapshot"
 
 func init() {
-	register("NetpuneSnapshot", ListNetpuneSnapshots)
+	resource.Register(resource.Registration{
+		Name:   NeptuneSnapshotResource,
+		Scope:  nuke.Account,
+		Lister: &NeptuneSnapshotLister{},
+	})
 }
 
-func ListNetpuneSnapshots(sess *session.Session) ([]Resource, error) {
-	svc := neptune.New(sess)
-	resources := []Resource{}
+type NeptuneSnapshotLister struct{}
+
+func (l *NeptuneSnapshotLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := neptune.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &neptune.DescribeDBClusterSnapshotsInput{
 		MaxRecords: aws.Int64(100),
@@ -30,7 +40,7 @@ func ListNetpuneSnapshots(sess *session.Session) ([]Resource, error) {
 		}
 
 		for _, dbClusterSnapshot := range output.DBClusterSnapshots {
-			resources = append(resources, &NetpuneSnapshot{
+			resources = append(resources, &NeptuneSnapshot{
 				svc: svc,
 				ID:  dbClusterSnapshot.DBClusterSnapshotIdentifier,
 			})
@@ -46,8 +56,12 @@ func ListNetpuneSnapshots(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *NetpuneSnapshot) Remove() error {
+type NeptuneSnapshot struct {
+	svc *neptune.Neptune
+	ID  *string
+}
 
+func (f *NeptuneSnapshot) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteDBClusterSnapshot(&neptune.DeleteDBClusterSnapshotInput{
 		DBClusterSnapshotIdentifier: f.ID,
 	})
@@ -55,6 +69,6 @@ func (f *NetpuneSnapshot) Remove() error {
 	return err
 }
 
-func (f *NetpuneSnapshot) String() string {
+func (f *NeptuneSnapshot) String() string {
 	return *f.ID
 }

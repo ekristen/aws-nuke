@@ -1,24 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/apigateway"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type APIGatewayAPIKey struct {
-	svc    *apigateway.APIGateway
-	APIKey *string
-}
+const APIGatewayAPIKeyResource = "APIGatewayAPIKey"
 
 func init() {
-	register("APIGatewayAPIKey", ListAPIGatewayAPIKeys,
-		mapCloudControl("AWS::ApiGateway::ApiKey"))
+	resource.Register(resource.Registration{
+		Name:   APIGatewayAPIKeyResource,
+		Scope:  nuke.Account,
+		Lister: &APIGatewayAPIKeyLister{},
+	}, nuke.MapCloudControl("AWS::ApiGateway::ApiKey"))
 }
 
-func ListAPIGatewayAPIKeys(sess *session.Session) ([]Resource, error) {
-	svc := apigateway.New(sess)
-	resources := []Resource{}
+type APIGatewayAPIKeyLister struct{}
+
+func (l *APIGatewayAPIKeyLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+	svc := apigateway.New(opts.Session)
+
+	var resources []resource.Resource
 
 	params := &apigateway.GetApiKeysInput{
 		Limit: aws.Int64(100),
@@ -47,7 +56,12 @@ func ListAPIGatewayAPIKeys(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *APIGatewayAPIKey) Remove() error {
+type APIGatewayAPIKey struct {
+	svc    *apigateway.APIGateway
+	APIKey *string
+}
+
+func (f *APIGatewayAPIKey) Remove(_ context.Context) error {
 
 	_, err := f.svc.DeleteApiKey(&apigateway.DeleteApiKeyInput{
 		ApiKey: f.APIKey,

@@ -1,24 +1,34 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/waf"
 	"github.com/aws/aws-sdk-go/service/wafregional"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type WAFRegionalRateBasedRule struct {
-	svc *wafregional.WAFRegional
-	ID  *string
-}
+const WAFRegionalRateBasedRuleResource = "WAFRegionalRateBasedRule"
 
 func init() {
-	register("WAFRegionalRateBasedRule", ListWAFRegionalRateBasedRules)
+	resource.Register(resource.Registration{
+		Name:   WAFRegionalRateBasedRuleResource,
+		Scope:  nuke.Account,
+		Lister: &WAFRegionalRateBasedRuleLister{},
+	})
 }
 
-func ListWAFRegionalRateBasedRules(sess *session.Session) ([]Resource, error) {
-	svc := wafregional.New(sess)
-	resources := []Resource{}
+type WAFRegionalRateBasedRuleLister struct{}
+
+func (l *WAFRegionalRateBasedRuleLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := wafregional.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &waf.ListRateBasedRulesInput{
 		Limit: aws.Int64(50),
@@ -47,8 +57,12 @@ func ListWAFRegionalRateBasedRules(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *WAFRegionalRateBasedRule) Remove() error {
+type WAFRegionalRateBasedRule struct {
+	svc *wafregional.WAFRegional
+	ID  *string
+}
 
+func (f *WAFRegionalRateBasedRule) Remove(_ context.Context) error {
 	tokenOutput, err := f.svc.GetChangeToken(&waf.GetChangeTokenInput{})
 	if err != nil {
 		return err

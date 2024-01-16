@@ -1,46 +1,54 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/rds"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type RDSDBClusterParameterGroup struct {
-	svc  *rds.RDS
-	name *string
-	tags []*rds.Tag
-}
+const RDSDBClusterParameterGroupResource = "RDSDBClusterParameterGroup"
 
 func init() {
-	register("RDSDBClusterParameterGroup", ListRDSClusterParameterGroups)
+	resource.Register(resource.Registration{
+		Name:   RDSDBClusterParameterGroupResource,
+		Scope:  nuke.Account,
+		Lister: &RDSDBClusterParameterGroupLister{},
+	})
 }
 
-func ListRDSClusterParameterGroups(sess *session.Session) ([]Resource, error) {
-	svc := rds.New(sess)
+type RDSDBClusterParameterGroupLister struct{}
+
+func (l *RDSDBClusterParameterGroupLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+	svc := rds.New(opts.Session)
 
 	params := &rds.DescribeDBClusterParameterGroupsInput{MaxRecords: aws.Int64(100)}
 	resp, err := svc.DescribeDBClusterParameterGroups(params)
 	if err != nil {
 		return nil, err
 	}
-	var resources []Resource
-	for _, parametergroup := range resp.DBClusterParameterGroups {
+	var resources []resource.Resource
+	for _, group := range resp.DBClusterParameterGroups {
 		tags, err := svc.ListTagsForResource(&rds.ListTagsForResourceInput{
-                        ResourceName: parametergroup.DBClusterParameterGroupArn,
-                })
+			ResourceName: group.DBClusterParameterGroupArn,
+		})
 
-                if err != nil {
-                        continue
-                }
+		if err != nil {
+			continue
+		}
 
 		resources = append(resources, &RDSDBClusterParameterGroup{
 			svc:  svc,
-			name: parametergroup.DBClusterParameterGroupName,
+			name: group.DBClusterParameterGroupName,
 			tags: tags.TagList,
 		})
 
@@ -49,14 +57,20 @@ func ListRDSClusterParameterGroups(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
+type RDSDBClusterParameterGroup struct {
+	svc  *rds.RDS
+	name *string
+	tags []*rds.Tag
+}
+
 func (i *RDSDBClusterParameterGroup) Filter() error {
 	if strings.HasPrefix(*i.name, "default.") {
-		return fmt.Errorf("Cannot delete default parameter group")
+		return fmt.Errorf("cannot delete default parameter group")
 	}
 	return nil
 }
 
-func (i *RDSDBClusterParameterGroup) Remove() error {
+func (i *RDSDBClusterParameterGroup) Remove(_ context.Context) error {
 	params := &rds.DeleteDBClusterParameterGroupInput{
 		DBClusterParameterGroupName: i.name,
 	}

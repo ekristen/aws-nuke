@@ -1,24 +1,34 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/redshift"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type RedshiftCluster struct {
-	svc     *redshift.Redshift
-	cluster *redshift.Cluster
-}
+const RedshiftClusterResource = "RedshiftCluster"
 
 func init() {
-	register("RedshiftCluster", ListRedshiftClusters)
+	resource.Register(resource.Registration{
+		Name:   RedshiftClusterResource,
+		Scope:  nuke.Account,
+		Lister: &RedshiftClusterLister{},
+	})
 }
 
-func ListRedshiftClusters(sess *session.Session) ([]Resource, error) {
-	svc := redshift.New(sess)
-	resources := []Resource{}
+type RedshiftClusterLister struct{}
+
+func (l *RedshiftClusterLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := redshift.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &redshift.DescribeClustersInput{
 		MaxRecords: aws.Int64(100),
@@ -47,6 +57,11 @@ func ListRedshiftClusters(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
+type RedshiftCluster struct {
+	svc     *redshift.Redshift
+	cluster *redshift.Cluster
+}
+
 func (f *RedshiftCluster) Properties() types.Properties {
 	properties := types.NewProperties().
 		Set("CreatedTime", f.cluster.ClusterCreateTime)
@@ -58,7 +73,7 @@ func (f *RedshiftCluster) Properties() types.Properties {
 	return properties
 }
 
-func (f *RedshiftCluster) Remove() error {
+func (f *RedshiftCluster) Remove(_ context.Context) error {
 
 	_, err := f.svc.DeleteCluster(&redshift.DeleteClusterInput{
 		ClusterIdentifier:        f.cluster.ClusterIdentifier,

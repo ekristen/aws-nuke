@@ -1,29 +1,39 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/elasticache"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type ElasticacheSubnetGroup struct {
-	svc  *elasticache.ElastiCache
-	name *string
-}
+const ElasticacheSubnetGroupResource = "ElasticacheSubnetGroup"
 
 func init() {
-	register("ElasticacheSubnetGroup", ListElasticacheSubnetGroups)
+	resource.Register(resource.Registration{
+		Name:   ElasticacheSubnetGroupResource,
+		Scope:  nuke.Account,
+		Lister: &ElasticacheSubnetGroupLister{},
+	})
 }
 
-func ListElasticacheSubnetGroups(sess *session.Session) ([]Resource, error) {
-	svc := elasticache.New(sess)
+type ElasticacheSubnetGroupLister struct{}
+
+func (l *ElasticacheSubnetGroupLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := elasticache.New(opts.Session)
 
 	params := &elasticache.DescribeCacheSubnetGroupsInput{MaxRecords: aws.Int64(100)}
 	resp, err := svc.DescribeCacheSubnetGroups(params)
 	if err != nil {
 		return nil, err
 	}
-	var resources []Resource
+	var resources []resource.Resource
 	for _, subnetGroup := range resp.CacheSubnetGroups {
 		resources = append(resources, &ElasticacheSubnetGroup{
 			svc:  svc,
@@ -35,7 +45,12 @@ func ListElasticacheSubnetGroups(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (i *ElasticacheSubnetGroup) Remove() error {
+type ElasticacheSubnetGroup struct {
+	svc  *elasticache.ElastiCache
+	name *string
+}
+
+func (i *ElasticacheSubnetGroup) Remove(_ context.Context) error {
 	params := &elasticache.DeleteCacheSubnetGroupInput{
 		CacheSubnetGroupName: i.name,
 	}

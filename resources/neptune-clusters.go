@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/neptune"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type NeptuneCluster struct {
-	svc *neptune.Neptune
-	ID  *string
-}
+const NeptuneClusterResource = "NeptuneCluster"
 
 func init() {
-	register("NeptuneCluster", ListNeptuneClusters)
+	resource.Register(resource.Registration{
+		Name:   NeptuneClusterResource,
+		Scope:  nuke.Account,
+		Lister: &NeptuneClusterLister{},
+	})
 }
 
-func ListNeptuneClusters(sess *session.Session) ([]Resource, error) {
-	svc := neptune.New(sess)
-	resources := []Resource{}
+type NeptuneClusterLister struct{}
+
+func (l *NeptuneClusterLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := neptune.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &neptune.DescribeDBClustersInput{
 		MaxRecords: aws.Int64(100),
@@ -46,8 +56,12 @@ func ListNeptuneClusters(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *NeptuneCluster) Remove() error {
+type NeptuneCluster struct {
+	svc *neptune.Neptune
+	ID  *string
+}
 
+func (f *NeptuneCluster) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteDBCluster(&neptune.DeleteDBClusterInput{
 		DBClusterIdentifier: f.ID,
 		SkipFinalSnapshot:   aws.Bool(true),

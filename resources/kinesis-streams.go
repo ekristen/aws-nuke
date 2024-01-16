@@ -1,24 +1,36 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/kinesis"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type KinesisStream struct {
-	svc        *kinesis.Kinesis
-	streamName *string
-}
+const KinesisStreamResource = "KinesisStream"
 
 func init() {
-	register("KinesisStream", ListKinesisStreams)
+	resource.Register(resource.Registration{
+		Name:   KinesisStreamResource,
+		Scope:  nuke.Account,
+		Lister: &KinesisStreamLister{},
+	})
 }
 
-func ListKinesisStreams(sess *session.Session) ([]Resource, error) {
-	svc := kinesis.New(sess)
-	resources := []Resource{}
+type KinesisStreamLister struct{}
+
+func (l *KinesisStreamLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := kinesis.New(opts.Session)
+
+	resources := make([]resource.Resource, 0)
 	var lastStreamName *string
+
 	params := &kinesis.ListStreamsInput{
 		Limit: aws.Int64(25),
 	}
@@ -47,8 +59,12 @@ func ListKinesisStreams(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *KinesisStream) Remove() error {
+type KinesisStream struct {
+	svc        *kinesis.Kinesis
+	streamName *string
+}
 
+func (f *KinesisStream) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteStream(&kinesis.DeleteStreamInput{
 		StreamName: f.streamName,
 	})

@@ -1,58 +1,73 @@
 package resources
 
 import (
-    "github.com/aws/aws-sdk-go/aws/session"
-    "github.com/aws/aws-sdk-go/service/cloudfront"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+	"context"
+
+	"github.com/aws/aws-sdk-go/service/cloudfront"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type CloudFrontOriginAccessIdentity struct {
-    svc *cloudfront.CloudFront
-    ID  *string
-}
+const CloudFrontOriginAccessIdentityResource = "CloudFrontOriginAccessIdentity"
 
 func init() {
-    register("CloudFrontOriginAccessIdentity", ListCloudFrontOriginAccessIdentities)
+	resource.Register(resource.Registration{
+		Name:   CloudFrontOriginAccessIdentityResource,
+		Scope:  nuke.Account,
+		Lister: &CloudFrontOriginAccessIdentityLister{},
+	})
 }
 
-func ListCloudFrontOriginAccessIdentities(sess *session.Session) ([]Resource, error) {
-  svc := cloudfront.New(sess)
-  resources := []Resource{}
+type CloudFrontOriginAccessIdentityLister struct{}
 
-  for {
-    resp, err := svc.ListCloudFrontOriginAccessIdentities(nil)
-    if err != nil {
-        return nil, err
-    }
+func (l *CloudFrontOriginAccessIdentityLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
 
-    for _, item := range resp.CloudFrontOriginAccessIdentityList.Items {
-      resources = append(resources,&CloudFrontOriginAccessIdentity{
-        svc: svc,
-        ID:  item.Id,
-      })
-    }
-    return resources, nil
-  }
+	svc := cloudfront.New(opts.Session)
+	resources := make([]resource.Resource, 0)
+
+	for {
+		resp, err := svc.ListCloudFrontOriginAccessIdentities(nil)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, item := range resp.CloudFrontOriginAccessIdentityList.Items {
+			resources = append(resources, &CloudFrontOriginAccessIdentity{
+				svc: svc,
+				ID:  item.Id,
+			})
+		}
+		return resources, nil
+	}
 }
 
-func (f *CloudFrontOriginAccessIdentity) Remove() error {
-  resp, err := f.svc.GetCloudFrontOriginAccessIdentity(&cloudfront.GetCloudFrontOriginAccessIdentityInput{
-    Id: f.ID,
-  })
-  if err != nil {
-    return err
-  }
+type CloudFrontOriginAccessIdentity struct {
+	svc *cloudfront.CloudFront
+	ID  *string
+}
 
-  _, err = f.svc.DeleteCloudFrontOriginAccessIdentity(&cloudfront.DeleteCloudFrontOriginAccessIdentityInput{
-    Id: f.ID,
-    IfMatch: resp.ETag,
-  })
+func (f *CloudFrontOriginAccessIdentity) Remove(_ context.Context) error {
+	resp, err := f.svc.GetCloudFrontOriginAccessIdentity(&cloudfront.GetCloudFrontOriginAccessIdentityInput{
+		Id: f.ID,
+	})
+	if err != nil {
+		return err
+	}
 
-  return err
+	_, err = f.svc.DeleteCloudFrontOriginAccessIdentity(&cloudfront.DeleteCloudFrontOriginAccessIdentityInput{
+		Id:      f.ID,
+		IfMatch: resp.ETag,
+	})
+
+	return err
 }
 
 func (f *CloudFrontOriginAccessIdentity) Properties() types.Properties {
-  properties := types.NewProperties()
-  properties.Set("ID", f.ID)
-  return properties
+	properties := types.NewProperties()
+	properties.Set("ID", f.ID)
+	return properties
 }

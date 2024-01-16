@@ -1,36 +1,43 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
+	"github.com/gotidy/ptr"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type EC2InternetGatewayAttachment struct {
-	svc        *ec2.EC2
-	vpcId      *string
-	vpcTags    []*ec2.Tag
-	igwId      *string
-	igwTags    []*ec2.Tag
-	defaultVPC bool
-}
+const EC2InternetGatewayAttachmentResource = "EC2InternetGatewayAttachment"
 
 func init() {
-	register("EC2InternetGatewayAttachment", ListEC2InternetGatewayAttachments)
+	resource.Register(resource.Registration{
+		Name:   EC2InternetGatewayAttachmentResource,
+		Scope:  nuke.Account,
+		Lister: &EC2InternetGatewayAttachmentLister{},
+	})
 }
 
-func ListEC2InternetGatewayAttachments(sess *session.Session) ([]Resource, error) {
-	svc := ec2.New(sess)
+type EC2InternetGatewayAttachmentLister struct{}
+
+func (l *EC2InternetGatewayAttachmentLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := ec2.New(opts.Session)
 
 	resp, err := svc.DescribeVpcs(nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for _, vpc := range resp.Vpcs {
 		params := &ec2.DescribeInternetGatewaysInput{
 			Filters: []*ec2.Filter{
@@ -61,7 +68,16 @@ func ListEC2InternetGatewayAttachments(sess *session.Session) ([]Resource, error
 	return resources, nil
 }
 
-func (e *EC2InternetGatewayAttachment) Remove() error {
+type EC2InternetGatewayAttachment struct {
+	svc        *ec2.EC2
+	vpcId      *string
+	vpcTags    []*ec2.Tag
+	igwId      *string
+	igwTags    []*ec2.Tag
+	defaultVPC bool
+}
+
+func (e *EC2InternetGatewayAttachment) Remove(_ context.Context) error {
 	params := &ec2.DetachInternetGatewayInput{
 		VpcId:             e.vpcId,
 		InternetGatewayId: e.igwId,
@@ -88,5 +104,5 @@ func (e *EC2InternetGatewayAttachment) Properties() types.Properties {
 }
 
 func (e *EC2InternetGatewayAttachment) String() string {
-	return fmt.Sprintf("%s -> %s", *e.igwId, *e.vpcId)
+	return fmt.Sprintf("%s -> %s", ptr.ToString(e.igwId), ptr.ToString(e.vpcId))
 }

@@ -1,14 +1,31 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/rds"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
+
+const RDSDBParameterGroupResource = "RDSDBParameterGroup"
+
+func init() {
+	resource.Register(resource.Registration{
+		Name:   RDSDBParameterGroupResource,
+		Scope:  nuke.Account,
+		Lister: &RDSDBParameterGroupLister{},
+	})
+}
+
+type RDSDBParameterGroupLister struct{}
 
 type RDSDBParameterGroup struct {
 	svc  *rds.RDS
@@ -16,22 +33,19 @@ type RDSDBParameterGroup struct {
 	tags []*rds.Tag
 }
 
-func init() {
-	register("RDSDBParameterGroup", ListRDSParameterGroups)
-}
-
-func ListRDSParameterGroups(sess *session.Session) ([]Resource, error) {
-	svc := rds.New(sess)
+func (l *RDSDBParameterGroupLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+	svc := rds.New(opts.Session)
 
 	params := &rds.DescribeDBParameterGroupsInput{MaxRecords: aws.Int64(100)}
 	resp, err := svc.DescribeDBParameterGroups(params)
 	if err != nil {
 		return nil, err
 	}
-	var resources []Resource
-	for _, parametergroup := range resp.DBParameterGroups {
+	var resources []resource.Resource
+	for _, group := range resp.DBParameterGroups {
 		tags, err := svc.ListTagsForResource(&rds.ListTagsForResourceInput{
-			ResourceName: parametergroup.DBParameterGroupArn,
+			ResourceName: group.DBParameterGroupArn,
 		})
 
 		if err != nil {
@@ -40,7 +54,7 @@ func ListRDSParameterGroups(sess *session.Session) ([]Resource, error) {
 
 		resources = append(resources, &RDSDBParameterGroup{
 			svc:  svc,
-			name: parametergroup.DBParameterGroupName,
+			name: group.DBParameterGroupName,
 			tags: tags.TagList,
 		})
 
@@ -51,12 +65,12 @@ func ListRDSParameterGroups(sess *session.Session) ([]Resource, error) {
 
 func (i *RDSDBParameterGroup) Filter() error {
 	if strings.HasPrefix(*i.name, "default.") {
-		return fmt.Errorf("Cannot delete default parameter group")
+		return fmt.Errorf("cannot delete default parameter group")
 	}
 	return nil
 }
 
-func (i *RDSDBParameterGroup) Remove() error {
+func (i *RDSDBParameterGroup) Remove(_ context.Context) error {
 	params := &rds.DeleteDBParameterGroupInput{
 		DBParameterGroupName: i.name,
 	}

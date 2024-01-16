@@ -3,25 +3,27 @@ package config
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strings"
 
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+	yaml "gopkg.in/yaml.v3"
 
-	log "github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v3"
+	"github.com/sirupsen/logrus"
+
+	"github.com/ekristen/libnuke/pkg/filter"
+	"github.com/ekristen/libnuke/pkg/types"
 )
+
+type Account struct {
+	Filters       filter.Filters `yaml:"filters"`
+	ResourceTypes ResourceTypes  `yaml:"resource-types"`
+	Presets       []string       `yaml:"presets"`
+}
 
 type ResourceTypes struct {
 	Targets      types.Collection `yaml:"targets"`
 	Excludes     types.Collection `yaml:"excludes"`
 	CloudControl types.Collection `yaml:"cloud-control"`
-}
-
-type Account struct {
-	Filters       Filters       `yaml:"filters"`
-	ResourceTypes ResourceTypes `yaml:"resource-types"`
-	Presets       []string      `yaml:"presets"`
 }
 
 type Nuke struct {
@@ -51,7 +53,7 @@ type DisableDeletionProtection struct {
 }
 
 type PresetDefinitions struct {
-	Filters Filters `yaml:"filters"`
+	Filters filter.Filters `yaml:"filters"`
 }
 
 type CustomService struct {
@@ -73,24 +75,24 @@ type CustomEndpoints []*CustomRegion
 func Load(path string) (*Nuke, error) {
 	var err error
 
-	raw, err := ioutil.ReadFile(path)
+	raw, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
 
-	config := new(Nuke)
+	cfg := new(Nuke)
 	dec := yaml.NewDecoder(bytes.NewReader(raw))
 	dec.KnownFields(true)
-	err = dec.Decode(&config)
+	err = dec.Decode(&cfg)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := config.resolveDeprecations(); err != nil {
+	if err := cfg.ResolveDeprecations(); err != nil {
 		return nil, err
 	}
 
-	return config, nil
+	return cfg, nil
 }
 
 func (c *Nuke) ResolveBlocklist() []string {
@@ -98,7 +100,7 @@ func (c *Nuke) ResolveBlocklist() []string {
 		return c.AccountBlocklist
 	}
 
-	log.Warn("deprecated configuration key 'account-blacklist' - please use 'account-blocklist' instead")
+	logrus.Warn("deprecated configuration key 'account-blacklist' - please use 'account-blocklist' instead")
 	return c.AccountBlacklist
 }
 
@@ -115,6 +117,10 @@ func (c *Nuke) InBlocklist(searchID string) bool {
 	}
 
 	return false
+}
+
+func (c *Nuke) Validate(accountID string) error {
+	return nil
 }
 
 func (c *Nuke) ValidateAccount(accountID string, aliases []string) error {
@@ -150,12 +156,12 @@ func (c *Nuke) ValidateAccount(accountID string, aliases []string) error {
 	return nil
 }
 
-func (c *Nuke) Filters(accountID string) (Filters, error) {
+func (c *Nuke) Filters(accountID string) (filter.Filters, error) {
 	account := c.Accounts[accountID]
 	filters := account.Filters
 
 	if filters == nil {
-		filters = Filters{}
+		filters = filter.Filters{}
 	}
 
 	if account.Presets == nil {
@@ -163,7 +169,7 @@ func (c *Nuke) Filters(accountID string) (Filters, error) {
 	}
 
 	for _, presetName := range account.Presets {
-		notFound := fmt.Errorf("Could not find filter preset '%s'", presetName)
+		notFound := fmt.Errorf("could not find filter preset '%s'", presetName)
 		if c.Presets == nil {
 			return nil, notFound
 		}
@@ -179,7 +185,19 @@ func (c *Nuke) Filters(accountID string) (Filters, error) {
 	return filters, nil
 }
 
-func (c *Nuke) resolveDeprecations() error {
+func (c *Nuke) GetFeatureFlags() FeatureFlags {
+	return c.FeatureFlags
+}
+
+func (c *Nuke) GetPresets() map[string]PresetDefinitions {
+	return c.Presets
+}
+
+func (c *Nuke) GetResourceTypes() ResourceTypes {
+	return c.ResourceTypes
+}
+
+func (c *Nuke) ResolveDeprecations() error {
 	deprecations := map[string]string{
 		"EC2DhcpOptions":                "EC2DHCPOptions",
 		"EC2InternetGatewayAttachement": "EC2InternetGatewayAttachment",
@@ -203,6 +221,9 @@ func (c *Nuke) resolveDeprecations() error {
 		"IamUserGroupAttachement":       "IAMUserGroupAttachment",
 		"IamUserPolicyAttachement":      "IAMUserPolicyAttachment",
 		"RDSCluster":                    "RDSDBCluster",
+		"EKSFargateProfiles":            "EKSFargateProfile",
+		"EKSNodegroups":                 "EKSNodegroup",
+		"NetpuneSnapshot":               "NeptuneSnapshot",
 	}
 
 	for _, a := range c.Accounts {
@@ -211,7 +232,7 @@ func (c *Nuke) resolveDeprecations() error {
 			if !ok {
 				continue
 			}
-			log.Warnf("deprecated resource type '%s' - converting to '%s'\n", resourceType, replacement)
+			logrus.Warnf("deprecated resource type '%s' - converting to '%s'\n", resourceType, replacement)
 
 			if _, ok := a.Filters[replacement]; ok {
 				return fmt.Errorf("using deprecated resource type and replacement: '%s','%s'", resourceType, replacement)

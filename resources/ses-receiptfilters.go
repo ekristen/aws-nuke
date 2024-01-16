@@ -1,27 +1,52 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
+	"errors"
+
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ses"
+
+	sdkerrors "github.com/ekristen/libnuke/pkg/errors"
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type SESReceiptFilter struct {
-	svc  *ses.SES
-	name *string
-}
+const SESReceiptFilterResource = "SESReceiptFilter"
 
 func init() {
-	register("SESReceiptFilter", ListSESReceiptFilters)
+	resource.Register(resource.Registration{
+		Name:   SESReceiptFilterResource,
+		Scope:  nuke.Account,
+		Lister: &SESReceiptFilterLister{},
+	})
 }
 
-func ListSESReceiptFilters(sess *session.Session) ([]Resource, error) {
-	svc := ses.New(sess)
-	resources := []Resource{}
+type SESReceiptFilterLister struct{}
+
+func (l *SESReceiptFilterLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := ses.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &ses.ListReceiptFiltersInput{}
 
 	output, err := svc.ListReceiptFilters(params)
 	if err != nil {
+		// SES capabilities aren't the same in all regions, for example us-west-1 will throw InvalidAction
+		// errors, but other regions work, this allows us to safely ignore these and yet log them in debug logs
+		// should we need to troubleshoot.
+		var awsError awserr.Error
+		if errors.As(err, &awsError) {
+			if awsError.Code() == "InvalidAction" {
+				return nil, sdkerrors.ErrSkipRequest(
+					"Listing of SESReceiptFilter not supported in this region: " + *opts.Session.Config.Region)
+			}
+		}
+
 		return nil, err
 	}
 
@@ -35,8 +60,12 @@ func ListSESReceiptFilters(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *SESReceiptFilter) Remove() error {
+type SESReceiptFilter struct {
+	svc  *ses.SES
+	name *string
+}
 
+func (f *SESReceiptFilter) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteReceiptFilter(&ses.DeleteReceiptFilterInput{
 		FilterName: f.name,
 	})

@@ -1,29 +1,36 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type S3MultipartUpload struct {
-	svc      *s3.S3
-	bucket   string
-	key      string
-	uploadID string
-}
+const S3MultipartUploadResource = "S3MultipartUpload"
 
 func init() {
-	register("S3MultipartUpload", ListS3MultipartUpload)
+	resource.Register(resource.Registration{
+		Name:   S3MultipartUploadResource,
+		Scope:  nuke.Account,
+		Lister: &S3MultipartUploadLister{},
+	})
 }
 
-func ListS3MultipartUpload(sess *session.Session) ([]Resource, error) {
-	svc := s3.New(sess)
+type S3MultipartUploadLister struct{}
 
-	resources := make([]Resource, 0)
+func (l *S3MultipartUploadLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+	svc := s3.New(opts.Session)
+
+	resources := make([]resource.Resource, 0)
 
 	buckets, err := DescribeS3Buckets(svc)
 	if err != nil {
@@ -66,7 +73,14 @@ func ListS3MultipartUpload(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (e *S3MultipartUpload) Remove() error {
+type S3MultipartUpload struct {
+	svc      *s3.S3
+	bucket   string
+	key      string
+	uploadID string
+}
+
+func (e *S3MultipartUpload) Remove(_ context.Context) error {
 	params := &s3.AbortMultipartUploadInput{
 		Bucket:   &e.bucket,
 		Key:      &e.key,

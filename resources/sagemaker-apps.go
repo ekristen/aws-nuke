@@ -1,30 +1,36 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sagemaker"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type SageMakerApp struct {
-	svc             *sagemaker.SageMaker
-	domainID        *string
-	appName         *string
-	appType         *string
-	userProfileName *string
-	status          *string
-}
+const SageMakerAppResource = "SageMakerApp"
 
 func init() {
-	register("SageMakerApp", ListSageMakerApps)
+	resource.Register(resource.Registration{
+		Name:   SageMakerAppResource,
+		Scope:  nuke.Account,
+		Lister: &SageMakerAppLister{},
+	})
 }
 
-func ListSageMakerApps(sess *session.Session) ([]Resource, error) {
-	svc := sagemaker.New(sess)
-	resources := []Resource{}
+type SageMakerAppLister struct{}
+
+func (l *SageMakerAppLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := sagemaker.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &sagemaker.ListAppsInput{
 		MaxResults: aws.Int64(30),
@@ -57,7 +63,16 @@ func ListSageMakerApps(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *SageMakerApp) Remove() error {
+type SageMakerApp struct {
+	svc             *sagemaker.SageMaker
+	domainID        *string
+	appName         *string
+	appType         *string
+	userProfileName *string
+	status          *string
+}
+
+func (f *SageMakerApp) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteApp(&sagemaker.DeleteAppInput{
 		DomainId:        f.domainID,
 		AppName:         f.appName,
@@ -72,13 +87,13 @@ func (f *SageMakerApp) String() string {
 	return *f.appName
 }
 
-func (i *SageMakerApp) Properties() types.Properties {
+func (f *SageMakerApp) Properties() types.Properties {
 	properties := types.NewProperties()
 	properties.
-		Set("DomainID", i.domainID).
-		Set("AppName", i.appName).
-		Set("AppType", i.appType).
-		Set("UserProfileName", i.userProfileName)
+		Set("DomainID", f.domainID).
+		Set("AppName", f.appName).
+		Set("AppType", f.appType).
+		Set("UserProfileName", f.userProfileName)
 	return properties
 }
 

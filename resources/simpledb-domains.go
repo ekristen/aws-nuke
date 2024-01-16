@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/simpledb"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type SimpleDBDomain struct {
-	svc        *simpledb.SimpleDB
-	domainName *string
-}
+const SimpleDBDomainResource = "SimpleDBDomain"
 
 func init() {
-	register("SimpleDBDomain", ListSimpleDBDomains)
+	resource.Register(resource.Registration{
+		Name:   SimpleDBDomainResource,
+		Scope:  nuke.Account,
+		Lister: &SimpleDBDomainLister{},
+	})
 }
 
-func ListSimpleDBDomains(sess *session.Session) ([]Resource, error) {
-	svc := simpledb.New(sess)
-	resources := []Resource{}
+type SimpleDBDomainLister struct{}
+
+func (l *SimpleDBDomainLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := simpledb.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &simpledb.ListDomainsInput{
 		MaxNumberOfDomains: aws.Int64(100),
@@ -46,8 +56,12 @@ func ListSimpleDBDomains(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *SimpleDBDomain) Remove() error {
+type SimpleDBDomain struct {
+	svc        *simpledb.SimpleDB
+	domainName *string
+}
 
+func (f *SimpleDBDomain) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteDomain(&simpledb.DeleteDomainInput{
 		DomainName: f.domainName,
 	})

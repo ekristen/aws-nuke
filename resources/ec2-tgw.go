@@ -1,26 +1,40 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type EC2TGW struct {
-	svc *ec2.EC2
-	tgw *ec2.TransitGateway
-}
+const EC2TGWResource = "EC2TGW"
 
 func init() {
-	register("EC2TGW", ListEC2TGWs)
+	resource.Register(resource.Registration{
+		Name:   EC2TGWResource,
+		Scope:  nuke.Account,
+		Lister: &EC2TGWLister{},
+		DependsOn: []string{
+			EC2TGWAttachmentResource,
+		},
+	})
 }
 
-func ListEC2TGWs(sess *session.Session) ([]Resource, error) {
-	svc := ec2.New(sess)
+type EC2TGWLister struct{}
+
+func (l *EC2TGWLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := ec2.New(opts.Session)
+
 	params := &ec2.DescribeTransitGatewaysInput{}
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for {
 		resp, err := svc.DescribeTransitGateways(params)
 		if err != nil {
@@ -46,7 +60,12 @@ func ListEC2TGWs(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (e *EC2TGW) Remove() error {
+type EC2TGW struct {
+	svc *ec2.EC2
+	tgw *ec2.TransitGateway
+}
+
+func (e *EC2TGW) Remove(_ context.Context) error {
 	params := &ec2.DeleteTransitGatewayInput{
 		TransitGatewayId: e.tgw.TransitGatewayId,
 	}

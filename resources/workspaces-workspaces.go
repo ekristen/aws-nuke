@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/workspaces"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type WorkSpacesWorkspace struct {
-	svc         *workspaces.WorkSpaces
-	workspaceID *string
-}
+const WorkSpacesWorkspaceResource = "WorkSpacesWorkspace"
 
 func init() {
-	register("WorkSpacesWorkspace", ListWorkSpacesWorkspaces)
+	resource.Register(resource.Registration{
+		Name:   WorkSpacesWorkspaceResource,
+		Scope:  nuke.Account,
+		Lister: &WorkSpacesWorkspaceLister{},
+	})
 }
 
-func ListWorkSpacesWorkspaces(sess *session.Session) ([]Resource, error) {
-	svc := workspaces.New(sess)
-	resources := []Resource{}
+type WorkSpacesWorkspaceLister struct{}
+
+func (l *WorkSpacesWorkspaceLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := workspaces.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &workspaces.DescribeWorkspacesInput{
 		Limit: aws.Int64(25),
@@ -46,20 +56,26 @@ func ListWorkSpacesWorkspaces(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *WorkSpacesWorkspace) Remove() error {
+type WorkSpacesWorkspace struct {
+	svc         *workspaces.WorkSpaces
+	workspaceID *string
+}
 
+func (f *WorkSpacesWorkspace) Remove(_ context.Context) error {
 	stopRequest := &workspaces.StopRequest{
 		WorkspaceId: f.workspaceID,
 	}
 	terminateRequest := &workspaces.TerminateRequest{
 		WorkspaceId: f.workspaceID,
 	}
+
 	_, err := f.svc.StopWorkspaces(&workspaces.StopWorkspacesInput{
 		StopWorkspaceRequests: []*workspaces.StopRequest{stopRequest},
 	})
 	if err != nil {
 		return err
 	}
+
 	_, err = f.svc.TerminateWorkspaces(&workspaces.TerminateWorkspacesInput{
 		TerminateWorkspaceRequests: []*workspaces.TerminateRequest{terminateRequest},
 	})

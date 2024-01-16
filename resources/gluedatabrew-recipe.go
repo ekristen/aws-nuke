@@ -1,24 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/gluedatabrew"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type GlueDataBrewRecipe struct {
-	svc           *gluedatabrew.GlueDataBrew
-	name          *string
-	recipeversion *string
-}
+const GlueDataBrewRecipeResource = "GlueDataBrewRecipe"
 
 func init() {
-	register("GlueDataBrewRecipe", ListGlueDataBrewRecipe)
+	resource.Register(resource.Registration{
+		Name:   GlueDataBrewRecipeResource,
+		Scope:  nuke.Account,
+		Lister: &GlueDataBrewRecipeLister{},
+	})
 }
 
-func ListGlueDataBrewRecipe(sess *session.Session) ([]Resource, error) {
-	svc := gluedatabrew.New(sess)
-	resources := []Resource{}
+type GlueDataBrewRecipeLister struct{}
+
+func (l *GlueDataBrewRecipeLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := gluedatabrew.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &gluedatabrew.ListRecipesInput{
 		MaxResults: aws.Int64(100),
@@ -34,7 +43,7 @@ func ListGlueDataBrewRecipe(sess *session.Session) ([]Resource, error) {
 			resources = append(resources, &GlueDataBrewRecipe{
 				svc:           svc,
 				name:          recipe.Name,
-				recipeversion: recipe.RecipeVersion,
+				recipeVersion: recipe.RecipeVersion,
 			})
 		}
 
@@ -48,10 +57,16 @@ func ListGlueDataBrewRecipe(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *GlueDataBrewRecipe) Remove() error {
+type GlueDataBrewRecipe struct {
+	svc           *gluedatabrew.GlueDataBrew
+	name          *string
+	recipeVersion *string
+}
+
+func (f *GlueDataBrewRecipe) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteRecipeVersion(&gluedatabrew.DeleteRecipeVersionInput{
 		Name:          f.name,
-		RecipeVersion: f.recipeversion,
+		RecipeVersion: f.recipeVersion,
 	})
 
 	return err

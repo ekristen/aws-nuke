@@ -1,20 +1,27 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/codebuild"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type CodeBuildProject struct {
-	svc         *codebuild.CodeBuild
-	projectName *string
-	tags        map[string]*string
-}
+const CodeBuildProjectResource = "CodeBuildProject"
 
 func init() {
-	register("CodeBuildProject", ListCodeBuildProjects)
+	resource.Register(resource.Registration{
+		Name:   CodeBuildProjectResource,
+		Scope:  nuke.Account,
+		Lister: &CodeBuildProjectLister{},
+	})
 }
+
+type CodeBuildProjectLister struct{}
 
 func GetTags(svc *codebuild.CodeBuild, project *string) map[string]*string {
 	tags := make(map[string]*string)
@@ -34,9 +41,11 @@ func GetTags(svc *codebuild.CodeBuild, project *string) map[string]*string {
 	return nil
 }
 
-func ListCodeBuildProjects(sess *session.Session) ([]Resource, error) {
-	svc := codebuild.New(sess)
-	resources := []Resource{}
+func (l *CodeBuildProjectLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := codebuild.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &codebuild.ListProjectsInput{}
 
@@ -64,8 +73,13 @@ func ListCodeBuildProjects(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *CodeBuildProject) Remove() error {
+type CodeBuildProject struct {
+	svc         *codebuild.CodeBuild
+	projectName *string
+	tags        map[string]*string
+}
 
+func (f *CodeBuildProject) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteProject(&codebuild.DeleteProjectInput{
 		Name: f.projectName,
 	})

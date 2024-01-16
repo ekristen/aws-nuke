@@ -1,24 +1,34 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/imagebuilder"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type ImageBuilderRecipe struct {
-	svc *imagebuilder.Imagebuilder
-	arn string
-}
+const ImageBuilderRecipeResource = "ImageBuilderRecipe"
 
 func init() {
-	register("ImageBuilderRecipe", ListImageBuilderRecipes)
+	resource.Register(resource.Registration{
+		Name:   ImageBuilderRecipeResource,
+		Scope:  nuke.Account,
+		Lister: &ImageBuilderRecipeLister{},
+	})
 }
 
-func ListImageBuilderRecipes(sess *session.Session) ([]Resource, error) {
-	svc := imagebuilder.New(sess)
+type ImageBuilderRecipeLister struct{}
+
+func (l *ImageBuilderRecipeLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := imagebuilder.New(opts.Session)
 	params := &imagebuilder.ListImageRecipesInput{}
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 
 	for {
 		resp, err := svc.ListImageRecipes(params)
@@ -45,7 +55,12 @@ func ListImageBuilderRecipes(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (e *ImageBuilderRecipe) Remove() error {
+type ImageBuilderRecipe struct {
+	svc *imagebuilder.Imagebuilder
+	arn string
+}
+
+func (e *ImageBuilderRecipe) Remove(_ context.Context) error {
 	_, err := e.svc.DeleteImageRecipe(&imagebuilder.DeleteImageRecipeInput{
 		ImageRecipeArn: &e.arn,
 	})

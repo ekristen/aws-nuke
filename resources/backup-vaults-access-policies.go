@@ -1,7 +1,11 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
+	"github.com/ekristen/libnuke/pkg/resource"
+
 	"github.com/aws/aws-sdk-go/service/backup"
 )
 
@@ -10,12 +14,22 @@ type BackupVaultAccessPolicy struct {
 	backupVaultName string
 }
 
+const AWSBackupVaultAccessPolicyResource = "AWSBackupVaultAccessPolicy"
+
 func init() {
-	register("AWSBackupVaultAccessPolicy", ListBackupVaultAccessPolicies)
+	resource.Register(resource.Registration{
+		Name:   AWSBackupVaultAccessPolicyResource,
+		Scope:  nuke.Account,
+		Lister: &AWSBackupVaultAccessPolicyLister{},
+	})
 }
 
-func ListBackupVaultAccessPolicies(sess *session.Session) ([]Resource, error) {
-	svc := backup.New(sess)
+type AWSBackupVaultAccessPolicyLister struct{}
+
+func (l *AWSBackupVaultAccessPolicyLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := backup.New(opts.Session)
 	maxVaultsLen := int64(100)
 	params := &backup.ListBackupVaultsInput{
 		MaxResults: &maxVaultsLen, // aws default limit on number of backup vaults per account
@@ -26,7 +40,7 @@ func ListBackupVaultAccessPolicies(sess *session.Session) ([]Resource, error) {
 	}
 
 	// Iterate over backup vaults and add vault policies that exist.
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for _, out := range resp.BackupVaultList {
 		// Check if the Backup Vault has an Access Policy set
 		resp, err := svc.GetBackupVaultAccessPolicy(&backup.GetBackupVaultAccessPolicyInput{
@@ -57,7 +71,7 @@ func ListBackupVaultAccessPolicies(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (b *BackupVaultAccessPolicy) Remove() error {
+func (b *BackupVaultAccessPolicy) Remove(_ context.Context) error {
 	// Set the policy to a policy that allows deletion before removal.
 	//
 	// This is required to delete the policy for the automagically created vaults

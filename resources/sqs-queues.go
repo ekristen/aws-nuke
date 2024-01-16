@@ -1,21 +1,33 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go/service/sqs"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type SQSQueue struct {
-	svc      *sqs.SQS
-	queueURL *string
-}
+const SQSQueueResource = "SQSQueue"
 
 func init() {
-	register("SQSQueue", ListSQSQueues)
+	resource.Register(resource.Registration{
+		Name:   SQSQueueResource,
+		Scope:  nuke.Account,
+		Lister: &SQSQueueLister{},
+	})
 }
 
-func ListSQSQueues(sess *session.Session) ([]Resource, error) {
-	svc := sqs.New(sess)
+type SQSQueueLister struct{}
+
+func (l *SQSQueueLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := sqs.New(opts.Session)
 
 	params := &sqs.ListQueuesInput{}
 	resp, err := svc.ListQueues(params)
@@ -23,7 +35,7 @@ func ListSQSQueues(sess *session.Session) ([]Resource, error) {
 		return nil, err
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for _, queue := range resp.QueueUrls {
 		resources = append(resources, &SQSQueue{
 			svc:      svc,
@@ -34,8 +46,12 @@ func ListSQSQueues(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *SQSQueue) Remove() error {
+type SQSQueue struct {
+	svc      *sqs.SQS
+	queueURL *string
+}
 
+func (f *SQSQueue) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteQueue(&sqs.DeleteQueueInput{
 		QueueUrl: f.queueURL,
 	})
@@ -44,5 +60,5 @@ func (f *SQSQueue) Remove() error {
 }
 
 func (f *SQSQueue) String() string {
-	return *f.queueURL
+	return ptr.ToString(f.queueURL)
 }

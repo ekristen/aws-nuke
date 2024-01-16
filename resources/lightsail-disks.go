@@ -1,22 +1,32 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/lightsail"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type LightsailDisk struct {
-	svc      *lightsail.Lightsail
-	diskName *string
-}
+const LightsailDiskResource = "LightsailDisk"
 
 func init() {
-	register("LightsailDisk", ListLightsailDisks)
+	resource.Register(resource.Registration{
+		Name:   LightsailDiskResource,
+		Scope:  nuke.Account,
+		Lister: &LightsailDiskLister{},
+	})
 }
 
-func ListLightsailDisks(sess *session.Session) ([]Resource, error) {
-	svc := lightsail.New(sess)
-	resources := []Resource{}
+type LightsailDiskLister struct{}
+
+func (l *LightsailDiskLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := lightsail.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &lightsail.GetDisksInput{}
 
@@ -43,8 +53,12 @@ func ListLightsailDisks(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *LightsailDisk) Remove() error {
+type LightsailDisk struct {
+	svc      *lightsail.Lightsail
+	diskName *string
+}
 
+func (f *LightsailDisk) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteDisk(&lightsail.DeleteDiskInput{
 		DiskName: f.diskName,
 	})

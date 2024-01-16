@@ -1,25 +1,37 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws/endpoints"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/lightsail"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type LightsailDomain struct {
-	svc        *lightsail.Lightsail
-	domainName *string
-}
+// TODO: implement region hints when we know certain things will never be in other regions
+
+const LightsailDomainResource = "LightsailDomain"
 
 func init() {
-	register("LightsailDomain", ListLightsailDomains)
+	resource.Register(resource.Registration{
+		Name:   LightsailDomainResource,
+		Scope:  nuke.Account,
+		Lister: &LightsailDomainLister{},
+	})
 }
 
-func ListLightsailDomains(sess *session.Session) ([]Resource, error) {
-	svc := lightsail.New(sess)
-	resources := []Resource{}
+type LightsailDomainLister struct{}
 
-	if sess.Config.Region == nil || *sess.Config.Region != endpoints.UsEast1RegionID {
+func (l *LightsailDomainLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := lightsail.New(opts.Session)
+	resources := make([]resource.Resource, 0)
+
+	if opts.Session.Config.Region == nil || *opts.Session.Config.Region != endpoints.UsEast1RegionID {
 		// LightsailDomain only supports us-east-1
 		return resources, nil
 	}
@@ -49,8 +61,12 @@ func ListLightsailDomains(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *LightsailDomain) Remove() error {
+type LightsailDomain struct {
+	svc        *lightsail.Lightsail
+	domainName *string
+}
 
+func (f *LightsailDomain) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteDomain(&lightsail.DeleteDomainInput{
 		DomainName: f.domainName,
 	})

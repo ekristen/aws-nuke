@@ -1,41 +1,52 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 	"time"
+
+	"github.com/gotidy/ptr"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
+const S3BucketResource = "S3Bucket"
+
 func init() {
-	register("S3Bucket", ListS3Buckets,
-		mapCloudControl("AWS::S3::Bucket"))
+	resource.Register(resource.Registration{
+		Name:   S3BucketResource,
+		Scope:  nuke.Account,
+		Lister: &S3BucketLister{},
+		DependsOn: []string{
+			S3ObjectResource,
+		},
+	}, nuke.MapCloudControl("AWS::S3::Bucket"))
 }
 
-type S3Bucket struct {
-	svc          *s3.S3
-	name         string
-	creationDate time.Time
-	tags         []*s3.Tag
-}
+type S3BucketLister struct{}
 
-func ListS3Buckets(s *session.Session) ([]Resource, error) {
-	svc := s3.New(s)
+func (l *S3BucketLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+	svc := s3.New(opts.Session)
 
 	buckets, err := DescribeS3Buckets(svc)
 	if err != nil {
 		return nil, err
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for _, bucket := range buckets {
 		tags, err := svc.GetBucketTagging(&s3.GetBucketTaggingInput{
 			Bucket: bucket.Name,
@@ -80,8 +91,16 @@ func DescribeS3Buckets(svc *s3.S3) ([]s3.Bucket, error) {
 			continue
 		}
 
-		location := UnPtrString(bucketLocationResponse.LocationConstraint, endpoints.UsEast1RegionID)
-		region := UnPtrString(svc.Config.Region, endpoints.UsEast1RegionID)
+		location := ptr.ToString(bucketLocationResponse.LocationConstraint)
+		if location == "" {
+			location = endpoints.UsEast1RegionID
+		}
+
+		region := ptr.ToString(svc.Config.Region)
+		if region == "" {
+			region = endpoints.UsEast1RegionID
+		}
+
 		if location == region && out != nil {
 			buckets = append(buckets, *out)
 		}
@@ -90,7 +109,14 @@ func DescribeS3Buckets(svc *s3.S3) ([]s3.Bucket, error) {
 	return buckets, nil
 }
 
-func (e *S3Bucket) Remove() error {
+type S3Bucket struct {
+	svc          *s3.S3
+	name         string
+	creationDate time.Time
+	tags         []*s3.Tag
+}
+
+func (e *S3Bucket) Remove(_ context.Context) error {
 	_, err := e.svc.DeleteBucketPolicy(&s3.DeleteBucketPolicyInput{
 		Bucket: &e.name,
 	})

@@ -1,13 +1,15 @@
 package resources
 
 import (
+	"context"
 	"testing"
+
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
-	"github.com/golang/mock/gomock"
-	"github.com/rebuy-de/aws-nuke/v2/mocks/mock_cloudformationiface"
-	"github.com/stretchr/testify/assert"
+	"github.com/ekristen/aws-nuke/mocks/mock_cloudformationiface"
 )
 
 func TestCloudformationType_Remove(t *testing.T) {
@@ -60,7 +62,6 @@ func TestCloudformationType_Remove(t *testing.T) {
 		Arn: aws.String("foobar"),
 	})
 
-	err := cfnType.Remove()
+	err := cfnType.Remove(context.TODO())
 	a.Nil(err)
-
 }

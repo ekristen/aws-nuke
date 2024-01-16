@@ -1,30 +1,39 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type EC2KeyPair struct {
-	svc  *ec2.EC2
-	name string
-	tags []*ec2.Tag
-}
+const EC2KeyPairResource = "EC2KeyPair"
 
 func init() {
-	register("EC2KeyPair", ListEC2KeyPairs)
+	resource.Register(resource.Registration{
+		Name:   EC2KeyPairResource,
+		Scope:  nuke.Account,
+		Lister: &EC2KeyPairLister{},
+	})
 }
 
-func ListEC2KeyPairs(sess *session.Session) ([]Resource, error) {
-	svc := ec2.New(sess)
+type EC2KeyPairLister struct{}
+
+func (l *EC2KeyPairLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := ec2.New(opts.Session)
 
 	resp, err := svc.DescribeKeyPairs(nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for _, out := range resp.KeyPairs {
 		resources = append(resources, &EC2KeyPair{
 			svc:  svc,
@@ -36,7 +45,13 @@ func ListEC2KeyPairs(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (e *EC2KeyPair) Remove() error {
+type EC2KeyPair struct {
+	svc  *ec2.EC2
+	name string
+	tags []*ec2.Tag
+}
+
+func (e *EC2KeyPair) Remove(_ context.Context) error {
 	params := &ec2.DeleteKeyPairInput{
 		KeyName: &e.name,
 	}

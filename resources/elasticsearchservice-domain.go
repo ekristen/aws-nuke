@@ -1,23 +1,32 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/elasticsearchservice"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type ESDomain struct {
-	svc        *elasticsearchservice.ElasticsearchService
-	domainName *string
-	tagList    []*elasticsearchservice.Tag
-}
+const ESDomainResource = "ESDomain"
 
 func init() {
-	register("ESDomain", ListESDomains)
+	resource.Register(resource.Registration{
+		Name:   ESDomainResource,
+		Scope:  nuke.Account,
+		Lister: &ESDomainLister{},
+	})
 }
 
-func ListESDomains(sess *session.Session) ([]Resource, error) {
-	svc := elasticsearchservice.New(sess)
+type ESDomainLister struct{}
+
+func (l *ESDomainLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := elasticsearchservice.New(opts.Session)
 
 	params := &elasticsearchservice.ListDomainNamesInput{}
 	resp, err := svc.ListDomainNames(params)
@@ -25,7 +34,7 @@ func ListESDomains(sess *session.Session) ([]Resource, error) {
 		return nil, err
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for _, domain := range resp.DomainNames {
 		dedo, err := svc.DescribeElasticsearchDomain(
 			&elasticsearchservice.DescribeElasticsearchDomainInput{DomainName: domain.DomainName})
@@ -46,8 +55,13 @@ func ListESDomains(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *ESDomain) Remove() error {
+type ESDomain struct {
+	svc        *elasticsearchservice.ElasticsearchService
+	domainName *string
+	tagList    []*elasticsearchservice.Tag
+}
 
+func (f *ESDomain) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteElasticsearchDomain(&elasticsearchservice.DeleteElasticsearchDomainInput{
 		DomainName: f.domainName,
 	})

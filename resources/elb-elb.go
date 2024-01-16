@@ -1,28 +1,37 @@
 package resources
 
 import (
+	"context"
+
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/elb"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type ELBLoadBalancer struct {
-	svc  *elb.ELB
-	elb  *elb.LoadBalancerDescription
-	tags []*elb.Tag
-}
+const ELBResource = "ELB"
 
 func init() {
-	register("ELB", ListELBLoadBalancers)
+	resource.Register(resource.Registration{
+		Name:   ELBResource,
+		Scope:  nuke.Account,
+		Lister: &ELBLister{},
+	})
 }
 
-func ListELBLoadBalancers(sess *session.Session) ([]Resource, error) {
-	resources := make([]Resource, 0)
+type ELBLister struct{}
+
+func (l *ELBLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	resources := make([]resource.Resource, 0)
 	elbNames := make([]*string, 0)
 	elbNameToRsc := make(map[string]*elb.LoadBalancerDescription)
-	svc := elb.New(sess)
+	svc := elb.New(opts.Session)
 
 	err := svc.DescribeLoadBalancersPages(nil,
 		func(page *elb.DescribeLoadBalancersOutput, lastPage bool) bool {
@@ -50,10 +59,10 @@ func ListELBLoadBalancers(sess *session.Session) ([]Resource, error) {
 			return nil, err
 		}
 		for _, elbTagInfo := range tagResp.TagDescriptions {
-			elb := elbNameToRsc[*elbTagInfo.LoadBalancerName]
+			elbEntity := elbNameToRsc[*elbTagInfo.LoadBalancerName]
 			resources = append(resources, &ELBLoadBalancer{
 				svc:  svc,
-				elb:  elb,
+				elb:  elbEntity,
 				tags: elbTagInfo.Tags,
 			})
 		}
@@ -65,7 +74,13 @@ func ListELBLoadBalancers(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (e *ELBLoadBalancer) Remove() error {
+type ELBLoadBalancer struct {
+	svc  *elb.ELB
+	elb  *elb.LoadBalancerDescription
+	tags []*elb.Tag
+}
+
+func (e *ELBLoadBalancer) Remove(_ context.Context) error {
 	params := &elb.DeleteLoadBalancerInput{
 		LoadBalancerName: e.elb.LoadBalancerName,
 	}

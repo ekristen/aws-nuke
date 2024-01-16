@@ -1,24 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type EC2PlacementGroup struct {
-	svc   *ec2.EC2
-	name  string
-	state string
-}
+const EC2PlacementGroupResource = "EC2PlacementGroup"
 
 func init() {
-	register("EC2PlacementGroup", ListEC2PlacementGroups)
+	resource.Register(resource.Registration{
+		Name:   EC2PlacementGroupResource,
+		Scope:  nuke.Account,
+		Lister: &EC2PlacementGroupLister{},
+	})
 }
 
-func ListEC2PlacementGroups(sess *session.Session) ([]Resource, error) {
-	svc := ec2.New(sess)
+type EC2PlacementGroupLister struct{}
+
+func (l *EC2PlacementGroupLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := ec2.New(opts.Session)
 
 	params := &ec2.DescribePlacementGroupsInput{}
 	resp, err := svc.DescribePlacementGroups(params)
@@ -26,7 +35,7 @@ func ListEC2PlacementGroups(sess *session.Session) ([]Resource, error) {
 		return nil, err
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for _, out := range resp.PlacementGroups {
 		resources = append(resources, &EC2PlacementGroup{
 			svc:   svc,
@@ -38,6 +47,12 @@ func ListEC2PlacementGroups(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
+type EC2PlacementGroup struct {
+	svc   *ec2.EC2
+	name  string
+	state string
+}
+
 func (p *EC2PlacementGroup) Filter() error {
 	if p.state == "deleted" {
 		return fmt.Errorf("already deleted")
@@ -45,7 +60,7 @@ func (p *EC2PlacementGroup) Filter() error {
 	return nil
 }
 
-func (p *EC2PlacementGroup) Remove() error {
+func (p *EC2PlacementGroup) Remove(_ context.Context) error {
 	params := &ec2.DeletePlacementGroupInput{
 		GroupName: &p.name,
 	}

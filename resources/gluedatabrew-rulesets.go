@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/gluedatabrew"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type GlueDataBrewRulesets struct {
-	svc  *gluedatabrew.GlueDataBrew
-	name *string
-}
+const GlueDataBrewRulesetsResource = "GlueDataBrewRulesets"
 
 func init() {
-	register("GlueDataBrewRulesets", ListGlueDataBrewRulesets)
+	resource.Register(resource.Registration{
+		Name:   GlueDataBrewRulesetsResource,
+		Scope:  nuke.Account,
+		Lister: &GlueDataBrewRulesetsLister{},
+	})
 }
 
-func ListGlueDataBrewRulesets(sess *session.Session) ([]Resource, error) {
-	svc := gluedatabrew.New(sess)
-	resources := []Resource{}
+type GlueDataBrewRulesetsLister struct{}
+
+func (l *GlueDataBrewRulesetsLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := gluedatabrew.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &gluedatabrew.ListRulesetsInput{
 		MaxResults: aws.Int64(100),
@@ -46,7 +56,12 @@ func ListGlueDataBrewRulesets(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *GlueDataBrewRulesets) Remove() error {
+type GlueDataBrewRulesets struct {
+	svc  *gluedatabrew.GlueDataBrew
+	name *string
+}
+
+func (f *GlueDataBrewRulesets) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteRuleset(&gluedatabrew.DeleteRulesetInput{
 		Name: f.name,
 	})

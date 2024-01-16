@@ -1,28 +1,37 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/emr"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type EMRCluster struct {
-	svc     *emr.EMR
-	cluster *emr.ClusterSummary
-	state   *string
-}
+const EMRClusterResource = "EMRCluster"
 
 func init() {
-	register("EMRCluster", ListEMRClusters)
+	resource.Register(resource.Registration{
+		Name:   EMRClusterResource,
+		Scope:  nuke.Account,
+		Lister: &EMRClusterLister{},
+	})
 }
 
-func ListEMRClusters(sess *session.Session) ([]Resource, error) {
-	svc := emr.New(sess)
-	resources := []Resource{}
+type EMRClusterLister struct{}
+
+func (l *EMRClusterLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := emr.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &emr.ListClustersInput{}
 
@@ -50,18 +59,25 @@ func ListEMRClusters(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *EMRCluster) Properties() types.Properties {
-	properties := types.NewProperties().
-		Set("CreatedTime", f.cluster.Status.Timeline.CreationDateTime.Format(time.RFC3339))
-	return properties
+type EMRCluster struct {
+	svc     *emr.EMR
+	cluster *emr.ClusterSummary
+	state   *string
 }
 
-func (f *EMRCluster) Remove() error {
+func (f *EMRCluster) Filter() error {
+	if strings.Contains(*f.state, "TERMINATED") {
+		return fmt.Errorf("already terminated")
+	}
+	return nil
+}
 
-	//Call names are inconsistent in the SDK
+func (f *EMRCluster) Remove(_ context.Context) error {
+	// Note: Call names are inconsistent in the SDK
 	_, err := f.svc.TerminateJobFlows(&emr.TerminateJobFlowsInput{
 		JobFlowIds: []*string{f.cluster.Id},
 	})
+
 	// Force nil return due to async callbacks blocking
 	if err == nil {
 		return nil
@@ -70,13 +86,13 @@ func (f *EMRCluster) Remove() error {
 	return err
 }
 
-func (f *EMRCluster) String() string {
-	return *f.cluster.Id
+func (f *EMRCluster) Properties() types.Properties {
+	properties := types.NewProperties().
+		Set("CreatedTime", f.cluster.Status.Timeline.CreationDateTime.Format(time.RFC3339))
+
+	return properties
 }
 
-func (f *EMRCluster) Filter() error {
-	if strings.Contains(*f.state, "TERMINATED") {
-		return fmt.Errorf("already terminated")
-	}
-	return nil
+func (f *EMRCluster) String() string {
+	return *f.cluster.Id
 }

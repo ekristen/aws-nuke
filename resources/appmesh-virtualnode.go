@@ -1,24 +1,33 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/appmesh"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type AppMeshVirtualNode struct {
-	svc             *appmesh.AppMesh
-	meshName        *string
-	virtualNodeName *string
-}
+const AppMeshVirtualNodeResource = "AppMeshVirtualNode"
 
 func init() {
-	register("AppMeshVirtualNode", ListAppMeshVirtualNodes)
+	resource.Register(resource.Registration{
+		Name:   AppMeshVirtualNodeResource,
+		Scope:  nuke.Account,
+		Lister: &AppMeshVirtualNodeLister{},
+	})
 }
 
-func ListAppMeshVirtualNodes(sess *session.Session) ([]Resource, error) {
-	svc := appmesh.New(sess)
-	resources := []Resource{}
+type AppMeshVirtualNodeLister struct{}
+
+func (l *AppMeshVirtualNodeLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := appmesh.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	// Get Meshes
 	var meshNames []*string
@@ -66,7 +75,13 @@ func ListAppMeshVirtualNodes(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *AppMeshVirtualNode) Remove() error {
+type AppMeshVirtualNode struct {
+	svc             *appmesh.AppMesh
+	meshName        *string
+	virtualNodeName *string
+}
+
+func (f *AppMeshVirtualNode) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteVirtualNode(&appmesh.DeleteVirtualNodeInput{
 		MeshName:        f.meshName,
 		VirtualNodeName: f.virtualNodeName,
