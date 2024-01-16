@@ -1,20 +1,31 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/macie2"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type Macie struct {
-	svc *macie2.Macie2
-}
+const MacieResource = "Macie"
 
 func init() {
-	register("Macie", CheckMacieStatus)
+	resource.Register(resource.Registration{
+		Name:   MacieResource,
+		Scope:  nuke.Account,
+		Lister: &MacieLister{},
+	})
 }
 
-func CheckMacieStatus(sess *session.Session) ([]Resource, error) {
-	svc := macie2.New(sess)
+type MacieLister struct{}
+
+func (l *MacieLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := macie2.New(opts.Session)
 
 	status, err := svc.GetMacieSession(&macie2.GetMacieSessionInput{})
 	if err != nil {
@@ -25,7 +36,7 @@ func CheckMacieStatus(sess *session.Session) ([]Resource, error) {
 		}
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	if *status.Status == macie2.AdminStatusEnabled {
 		resources = append(resources, &Macie{
 			svc: svc,
@@ -35,7 +46,11 @@ func CheckMacieStatus(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (b *Macie) Remove() error {
+type Macie struct {
+	svc *macie2.Macie2
+}
+
+func (b *Macie) Remove(_ context.Context) error {
 	_, err := b.svc.DisableMacie(&macie2.DisableMacieInput{})
 	if err != nil {
 		return err

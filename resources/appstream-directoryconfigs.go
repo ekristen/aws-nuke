@@ -1,9 +1,14 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/appstream"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 type AppStreamDirectoryConfig struct {
@@ -11,13 +16,23 @@ type AppStreamDirectoryConfig struct {
 	name *string
 }
 
+const AppStreamDirectoryConfigResource = "AppStreamDirectoryConfig"
+
 func init() {
-	register("AppStreamDirectoryConfig", ListAppStreamDirectoryConfigs)
+	resource.Register(resource.Registration{
+		Name:   AppStreamDirectoryConfigResource,
+		Scope:  nuke.Account,
+		Lister: &AppStreamDirectoryConfigLister{},
+	})
 }
 
-func ListAppStreamDirectoryConfigs(sess *session.Session) ([]Resource, error) {
-	svc := appstream.New(sess)
-	resources := []Resource{}
+type AppStreamDirectoryConfigLister struct{}
+
+func (l *AppStreamDirectoryConfigLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := appstream.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &appstream.DescribeDirectoryConfigsInput{
 		MaxResults: aws.Int64(100),
@@ -46,8 +61,7 @@ func ListAppStreamDirectoryConfigs(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *AppStreamDirectoryConfig) Remove() error {
-
+func (f *AppStreamDirectoryConfig) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteDirectoryConfig(&appstream.DeleteDirectoryConfigInput{
 		DirectoryName: f.name,
 	})

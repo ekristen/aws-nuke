@@ -1,13 +1,16 @@
 package resources
 
 import (
+	"context"
 	"testing"
+
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
-	"github.com/golang/mock/gomock"
-	"github.com/rebuy-de/aws-nuke/v2/mocks/mock_cloudformationiface"
-	"github.com/stretchr/testify/assert"
+
+	"github.com/ekristen/aws-nuke/mocks/mock_cloudformationiface"
 )
 
 func TestCloudformationStackSet_Remove(t *testing.T) {
@@ -70,7 +73,7 @@ func TestCloudformationStackSet_Remove(t *testing.T) {
 		StackSetName: aws.String("foobar"),
 	})).Return(&cloudformation.DeleteStackSetOutput{}, nil)
 
-	err := stackSet.Remove()
+	err := stackSet.Remove(context.TODO())
 	a.Nil(err)
 }
 
@@ -145,7 +148,7 @@ func TestCloudformationStackSet_Remove_MultipleAccounts(t *testing.T) {
 		StackSetName: aws.String("foobar"),
 	})).Return(&cloudformation.DeleteStackSetOutput{}, nil)
 
-	err := stackSet.Remove()
+	err := stackSet.Remove(context.TODO())
 	a.Nil(err)
 }
 
@@ -192,6 +195,6 @@ func TestCloudformationStackSet_Remove_DeleteStackInstanceFailed(t *testing.T) {
 		},
 	}, nil)
 
-	err := stackSet.Remove()
+	err := stackSet.Remove(context.TODO())
 	a.EqualError(err, "unable to delete stackSet=foobar operationId=o1 status=FAILED")
 }

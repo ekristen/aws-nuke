@@ -1,22 +1,32 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/opsworkscm"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type OpsWorksCMBackup struct {
-	svc *opsworkscm.OpsWorksCM
-	ID  *string
-}
+const OpsWorksCMBackupResource = "OpsWorksCMBackup"
 
 func init() {
-	register("OpsWorksCMBackup", ListOpsWorksCMBackups)
+	resource.Register(resource.Registration{
+		Name:   OpsWorksCMBackupResource,
+		Scope:  nuke.Account,
+		Lister: &OpsWorksCMBackupLister{},
+	})
 }
 
-func ListOpsWorksCMBackups(sess *session.Session) ([]Resource, error) {
-	svc := opsworkscm.New(sess)
-	resources := []Resource{}
+type OpsWorksCMBackupLister struct{}
+
+func (l *OpsWorksCMBackupLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := opsworkscm.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &opsworkscm.DescribeBackupsInput{}
 
@@ -35,8 +45,12 @@ func ListOpsWorksCMBackups(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *OpsWorksCMBackup) Remove() error {
+type OpsWorksCMBackup struct {
+	svc *opsworkscm.OpsWorksCM
+	ID  *string
+}
 
+func (f *OpsWorksCMBackup) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteBackup(&opsworkscm.DeleteBackupInput{
 		BackupId: f.ID,
 	})

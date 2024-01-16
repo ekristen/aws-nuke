@@ -1,23 +1,35 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/resourceexplorer2"
+	"github.com/ekristen/aws-nuke/pkg/nuke"
+	"github.com/ekristen/libnuke/pkg/resource"
 )
+
+const ResourceExplorer2IndexResource = "ResourceExplorer2Index"
+
+func init() {
+	resource.Register(resource.Registration{
+		Name:   ResourceExplorer2IndexResource,
+		Scope:  nuke.Account,
+		Lister: &ResourceExplorer2IndexLister{},
+	})
+}
+
+type ResourceExplorer2IndexLister struct{}
 
 type ResourceExplorer2Index struct {
 	svc      *resourceexplorer2.ResourceExplorer2
 	indexArn *string
 }
 
-func init() {
-	register("ResourceExplorer2Index", ResourceExplorer2Indexes)
-}
-
-func ResourceExplorer2Indexes(sess *session.Session) ([]Resource, error) {
-	svc := resourceexplorer2.New(sess)
-	var resources []Resource
+func (l *ResourceExplorer2IndexLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+	svc := resourceexplorer2.New(opts.Session)
+	var resources []resource.Resource
 
 	params := &resourceexplorer2.ListIndexesInput{}
 
@@ -44,7 +56,7 @@ func ResourceExplorer2Indexes(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *ResourceExplorer2Index) Remove() error {
+func (f *ResourceExplorer2Index) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteIndex(&resourceexplorer2.DeleteIndexInput{
 		Arn: f.indexArn,
 	})

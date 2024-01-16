@@ -1,21 +1,31 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/configservice"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type ConfigServiceConfigurationRecorder struct {
-	svc                       *configservice.ConfigService
-	configurationRecorderName *string
-}
+const ConfigServiceConfigurationRecorderResource = "ConfigServiceConfigurationRecorder"
 
 func init() {
-	register("ConfigServiceConfigurationRecorder", ListConfigServiceConfigurationRecorders)
+	resource.Register(resource.Registration{
+		Name:   ConfigServiceConfigurationRecorderResource,
+		Scope:  nuke.Account,
+		Lister: &ConfigServiceConfigurationRecorderLister{},
+	})
 }
 
-func ListConfigServiceConfigurationRecorders(sess *session.Session) ([]Resource, error) {
-	svc := configservice.New(sess)
+type ConfigServiceConfigurationRecorderLister struct{}
+
+func (l *ConfigServiceConfigurationRecorderLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := configservice.New(opts.Session)
 
 	params := &configservice.DescribeConfigurationRecordersInput{}
 	resp, err := svc.DescribeConfigurationRecorders(params)
@@ -23,10 +33,10 @@ func ListConfigServiceConfigurationRecorders(sess *session.Session) ([]Resource,
 		return nil, err
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for _, configurationRecorder := range resp.ConfigurationRecorders {
 		resources = append(resources, &ConfigServiceConfigurationRecorder{
-			svc: svc,
+			svc:                       svc,
 			configurationRecorderName: configurationRecorder.Name,
 		})
 	}
@@ -34,8 +44,12 @@ func ListConfigServiceConfigurationRecorders(sess *session.Session) ([]Resource,
 	return resources, nil
 }
 
-func (f *ConfigServiceConfigurationRecorder) Remove() error {
+type ConfigServiceConfigurationRecorder struct {
+	svc                       *configservice.ConfigService
+	configurationRecorderName *string
+}
 
+func (f *ConfigServiceConfigurationRecorder) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteConfigurationRecorder(&configservice.DeleteConfigurationRecorderInput{
 		ConfigurationRecorderName: f.configurationRecorderName,
 	})

@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ecs"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type ECSTaskDefinition struct {
-	svc *ecs.ECS
-	ARN *string
-}
+const ECSTaskDefinitionResource = "ECSTaskDefinition"
 
 func init() {
-	register("ECSTaskDefinition", ListECSTaskDefinitions)
+	resource.Register(resource.Registration{
+		Name:   ECSTaskDefinitionResource,
+		Scope:  nuke.Account,
+		Lister: &ECSTaskDefinitionLister{},
+	})
 }
 
-func ListECSTaskDefinitions(sess *session.Session) ([]Resource, error) {
-	svc := ecs.New(sess)
-	resources := []Resource{}
+type ECSTaskDefinitionLister struct{}
+
+func (l *ECSTaskDefinitionLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := ecs.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &ecs.ListTaskDefinitionsInput{
 		MaxResults: aws.Int64(100),
@@ -46,8 +56,12 @@ func ListECSTaskDefinitions(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *ECSTaskDefinition) Remove() error {
+type ECSTaskDefinition struct {
+	svc *ecs.ECS
+	ARN *string
+}
 
+func (f *ECSTaskDefinition) Remove(_ context.Context) error {
 	_, err := f.svc.DeregisterTaskDefinition(&ecs.DeregisterTaskDefinitionInput{
 		TaskDefinition: f.ARN,
 	})

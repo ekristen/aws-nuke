@@ -1,36 +1,58 @@
 package resources
 
 import (
+	"context"
+
+	"errors"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ses"
+
+	sdkerrors "github.com/ekristen/libnuke/pkg/errors"
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type SESReceiptRuleSet struct {
-	svc           *ses.SES
-	name          *string
-	activeRuleSet bool
-}
+const SESReceiptRuleSetResource = "SESReceiptRuleSet"
 
 func init() {
-	register("SESReceiptRuleSet", ListSESReceiptRuleSets)
+	resource.Register(resource.Registration{
+		Name:   SESReceiptRuleSetResource,
+		Scope:  nuke.Account,
+		Lister: &SESReceiptRuleSetLister{},
+	})
 }
 
-func ListSESReceiptRuleSets(sess *session.Session) ([]Resource, error) {
-	svc := ses.New(sess)
-	resources := []Resource{}
+type SESReceiptRuleSetLister struct{}
+
+func (l *SESReceiptRuleSetLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := ses.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &ses.ListReceiptRuleSetsInput{}
 
 	output, err := svc.ListReceiptRuleSets(params)
 	if err != nil {
+		// SES capabilities aren't the same in all regions, for example us-west-1 will throw InvalidAction
+		// errors, but other regions work, this allows us to safely ignore these and yet log them in debug logs
+		// should we need to troubleshoot.
+		var awsError awserr.Error
+		if errors.As(err, &awsError) {
+			if awsError.Code() == "InvalidAction" {
+				return nil, sdkerrors.ErrSkipRequest(
+					"Listing of SESReceiptFilter not supported in this region: " + *opts.Session.Config.Region)
+			}
+		}
+
 		return nil, err
 	}
 
 	for _, ruleSet := range output.RuleSets {
-
-		//Check active state
+		// Check active state
 		ruleSetState := false
 		ruleName := ruleSet.Name
 
@@ -54,8 +76,20 @@ func ListSESReceiptRuleSets(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *SESReceiptRuleSet) Remove() error {
+type SESReceiptRuleSet struct {
+	svc           *ses.SES
+	name          *string
+	activeRuleSet bool
+}
 
+func (f *SESReceiptRuleSet) Filter() error {
+	if f.activeRuleSet == true {
+		return fmt.Errorf("cannot delete active ruleset")
+	}
+	return nil
+}
+
+func (f *SESReceiptRuleSet) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteReceiptRuleSet(&ses.DeleteReceiptRuleSetInput{
 		RuleSetName: f.name,
 	})
@@ -65,11 +99,4 @@ func (f *SESReceiptRuleSet) Remove() error {
 
 func (f *SESReceiptRuleSet) String() string {
 	return *f.name
-}
-
-func (f *SESReceiptRuleSet) Filter() error {
-	if f.activeRuleSet == true {
-		return fmt.Errorf("cannot delete active ruleset")
-	}
-	return nil
 }

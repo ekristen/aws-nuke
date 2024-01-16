@@ -1,24 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/storagegateway"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type StorageGatewayTape struct {
-	svc        *storagegateway.StorageGateway
-	tapeARN    *string
-	gatewayARN *string
-}
+const StorageGatewayTapeResource = "StorageGatewayTape"
 
 func init() {
-	register("StorageGatewayTape", ListStorageGatewayTapes)
+	resource.Register(resource.Registration{
+		Name:   StorageGatewayTapeResource,
+		Scope:  nuke.Account,
+		Lister: &StorageGatewayTapeLister{},
+	})
 }
 
-func ListStorageGatewayTapes(sess *session.Session) ([]Resource, error) {
-	svc := storagegateway.New(sess)
-	resources := []Resource{}
+type StorageGatewayTapeLister struct{}
+
+func (l *StorageGatewayTapeLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := storagegateway.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &storagegateway.ListTapesInput{
 		Limit: aws.Int64(25),
@@ -48,8 +57,13 @@ func ListStorageGatewayTapes(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *StorageGatewayTape) Remove() error {
+type StorageGatewayTape struct {
+	svc        *storagegateway.StorageGateway
+	tapeARN    *string
+	gatewayARN *string
+}
 
+func (f *StorageGatewayTape) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteTape(&storagegateway.DeleteTapeInput{
 		TapeARN:    f.tapeARN,
 		GatewayARN: f.gatewayARN,

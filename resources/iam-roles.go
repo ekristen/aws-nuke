@@ -1,17 +1,36 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 	"strings"
 	"time"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
-	"github.com/sirupsen/logrus"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
+
+const IAMRoleResource = "IAMRole"
+
+func init() {
+	resource.Register(resource.Registration{
+		Name:   IAMRoleResource,
+		Scope:  nuke.Account,
+		Lister: &IAMRoleLister{},
+		DependsOn: []string{
+			IAMRolePolicyAttachmentResource,
+		},
+	})
+}
 
 type IAMRole struct {
 	svc  iamiface.IAMAPI
@@ -20,9 +39,41 @@ type IAMRole struct {
 	tags []*iam.Tag
 }
 
-func init() {
-	register("IAMRole", ListIAMRoles)
+func (e *IAMRole) Filter() error {
+	if strings.HasPrefix(e.path, "/aws-service-role/") {
+		return fmt.Errorf("cannot delete service roles")
+	}
+	if strings.HasPrefix(e.path, "/aws-reserved/sso.amazonaws.com/") {
+		return fmt.Errorf("cannot delete SSO roles")
+	}
+	return nil
 }
+
+func (e *IAMRole) Remove(_ context.Context) error {
+	_, err := e.svc.DeleteRole(&iam.DeleteRoleInput{
+		RoleName: aws.String(e.name),
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (e *IAMRole) Properties() types.Properties {
+	properties := types.NewProperties()
+	for _, tagValue := range e.tags {
+		properties.SetTag(tagValue.Key, tagValue.Value)
+	}
+
+	return properties
+}
+
+func (e *IAMRole) String() string {
+	return e.name
+}
+
+// ---------
 
 func GetIAMRole(svc *iam.IAM, roleName *string) (*iam.Role, error) {
 	params := &iam.GetRoleInput{
@@ -32,10 +83,27 @@ func GetIAMRole(svc *iam.IAM, roleName *string) (*iam.Role, error) {
 	return resp.Role, err
 }
 
-func ListIAMRoles(sess *session.Session) ([]Resource, error) {
-	svc := iam.New(sess)
+func getLastUsedDate(role *iam.Role, format string) string {
+	var lastUsedDate *time.Time
+	if role.RoleLastUsed == nil || role.RoleLastUsed.LastUsedDate == nil {
+		lastUsedDate = role.CreateDate
+	} else {
+		lastUsedDate = role.RoleLastUsed.LastUsedDate
+	}
+
+	return lastUsedDate.Format(format)
+}
+
+// --------------
+
+type IAMRoleLister struct{}
+
+func (l *IAMRoleLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := iam.New(opts.Session)
 	params := &iam.ListRolesInput{}
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 
 	for {
 		resp, err := svc.ListRoles(params)
@@ -69,49 +137,4 @@ func ListIAMRoles(sess *session.Session) ([]Resource, error) {
 	}
 
 	return resources, nil
-}
-
-func (e *IAMRole) Filter() error {
-	if strings.HasPrefix(e.path, "/aws-service-role/") {
-		return fmt.Errorf("cannot delete service roles")
-	}
-	if strings.HasPrefix(e.path, "/aws-reserved/sso.amazonaws.com/") {
-		return fmt.Errorf("cannot delete SSO roles")
-	}
-	return nil
-}
-
-func (e *IAMRole) Remove() error {
-	_, err := e.svc.DeleteRole(&iam.DeleteRoleInput{
-		RoleName: aws.String(e.name),
-	})
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (e *IAMRole) Properties() types.Properties {
-	properties := types.NewProperties()
-	for _, tagValue := range e.tags {
-		properties.SetTag(tagValue.Key, tagValue.Value)
-	}
-
-	return properties
-}
-
-func (e *IAMRole) String() string {
-	return e.name
-}
-
-func getLastUsedDate(role *iam.Role, format string) string {
-	var lastUsedDate *time.Time
-	if role.RoleLastUsed == nil || role.RoleLastUsed.LastUsedDate == nil {
-		lastUsedDate = role.CreateDate
-	} else {
-		lastUsedDate = role.RoleLastUsed.LastUsedDate
-	}
-
-	return lastUsedDate.Format(format)
 }

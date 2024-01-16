@@ -1,23 +1,30 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/resourcegroups"
+	"github.com/ekristen/aws-nuke/pkg/nuke"
+	"github.com/ekristen/libnuke/pkg/resource"
 )
 
-type ResourceGroupGroup struct {
-	svc       *resourcegroups.ResourceGroups
-	groupName *string
-}
+const ResourceGroupGroupResource = "ResourceGroupGroup"
 
 func init() {
-	register("ResourceGroupGroup", ListResourceGroupGroups)
+	resource.Register(resource.Registration{
+		Name:   ResourceGroupGroupResource,
+		Scope:  nuke.Account,
+		Lister: &ResourceGroupGroupLister{},
+	})
 }
 
-func ListResourceGroupGroups(sess *session.Session) ([]Resource, error) {
-	svc := resourcegroups.New(sess)
-	resources := []Resource{}
+type ResourceGroupGroupLister struct{}
+
+func (l *ResourceGroupGroupLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+	svc := resourcegroups.New(opts.Session)
+	var resources []resource.Resource
 
 	params := &resourcegroups.ListGroupsInput{
 		MaxResults: aws.Int64(50),
@@ -46,10 +53,15 @@ func ListResourceGroupGroups(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *ResourceGroupGroup) Remove() error {
+type ResourceGroupGroup struct {
+	svc       *resourcegroups.ResourceGroups
+	groupName *string
+}
+
+func (f *ResourceGroupGroup) Remove(_ context.Context) error {
 
 	_, err := f.svc.DeleteGroup(&resourcegroups.DeleteGroupInput{
-		GroupName: f.groupName,
+		Group: f.groupName,
 	})
 
 	return err

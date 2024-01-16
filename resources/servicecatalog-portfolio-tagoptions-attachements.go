@@ -1,32 +1,40 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/servicecatalog"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
-	log "github.com/sirupsen/logrus"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/awsutil"
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type ServiceCatalogTagOptionPortfolioAttachment struct {
-	svc            *servicecatalog.ServiceCatalog
-	tagOptionID    *string
-	resourceID     *string
-	tagOptionKey   *string
-	tagOptionValue *string
-	resourceName   *string
-}
+const ServiceCatalogTagOptionPortfolioAttachmentResource = "ServiceCatalogTagOptionPortfolioAttachment"
 
 func init() {
-	register("ServiceCatalogTagOptionPortfolioAttachment", ListServiceCatalogTagOptionPortfolioAttachments)
+	resource.Register(resource.Registration{
+		Name:   ServiceCatalogTagOptionPortfolioAttachmentResource,
+		Scope:  nuke.Account,
+		Lister: &ServiceCatalogTagOptionPortfolioAttachmentLister{},
+	})
 }
 
-func ListServiceCatalogTagOptionPortfolioAttachments(sess *session.Session) ([]Resource, error) {
-	svc := servicecatalog.New(sess)
-	resources := []Resource{}
-	tagOptions := []*servicecatalog.TagOptionDetail{}
+type ServiceCatalogTagOptionPortfolioAttachmentLister struct{}
+
+func (l *ServiceCatalogTagOptionPortfolioAttachmentLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := servicecatalog.New(opts.Session)
+	resources := make([]resource.Resource, 0)
+	var tagOptions []*servicecatalog.TagOptionDetail
 
 	params := &servicecatalog.ListTagOptionsInput{
 		PageSize: aws.Int64(20),
@@ -36,8 +44,8 @@ func ListServiceCatalogTagOptionPortfolioAttachments(sess *session.Session) ([]R
 	for {
 		resp, err := svc.ListTagOptions(params)
 		if err != nil {
-			if IsAWSError(err, servicecatalog.ErrCodeTagOptionNotMigratedException) {
-				log.Info(err)
+			if awsutil.IsAWSError(err, servicecatalog.ErrCodeTagOptionNotMigratedException) {
+				logrus.Info(err)
 				break
 			}
 			return nil, err
@@ -87,8 +95,16 @@ func ListServiceCatalogTagOptionPortfolioAttachments(sess *session.Session) ([]R
 	return resources, nil
 }
 
-func (f *ServiceCatalogTagOptionPortfolioAttachment) Remove() error {
+type ServiceCatalogTagOptionPortfolioAttachment struct {
+	svc            *servicecatalog.ServiceCatalog
+	tagOptionID    *string
+	resourceID     *string
+	tagOptionKey   *string
+	tagOptionValue *string
+	resourceName   *string
+}
 
+func (f *ServiceCatalogTagOptionPortfolioAttachment) Remove(_ context.Context) error {
 	_, err := f.svc.DisassociateTagOptionFromResource(&servicecatalog.DisassociateTagOptionFromResourceInput{
 		TagOptionId: f.tagOptionID,
 		ResourceId:  f.resourceID,

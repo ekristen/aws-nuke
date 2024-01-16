@@ -1,25 +1,34 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type CloudWatchAlarm struct {
-	svc       *cloudwatch.CloudWatch
-	alarmName *string
-	tags      []*cloudwatch.Tag
-}
+const CloudWatchAlarmResource = "CloudWatchAlarm"
 
 func init() {
-	register("CloudWatchAlarm", ListCloudWatchAlarms)
+	resource.Register(resource.Registration{
+		Name:   CloudWatchAlarmResource,
+		Scope:  nuke.Account,
+		Lister: &CloudWatchAlarmLister{},
+	})
 }
 
-func ListCloudWatchAlarms(sess *session.Session) ([]Resource, error) {
-	svc := cloudwatch.New(sess)
-	resources := []Resource{}
+type CloudWatchAlarmLister struct{}
+
+func (l *CloudWatchAlarmLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := cloudwatch.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &cloudwatch.DescribeAlarmsInput{
 		MaxRecords: aws.Int64(100),
@@ -62,8 +71,13 @@ func GetAlarmTags(svc *cloudwatch.CloudWatch, arn *string) ([]*cloudwatch.Tag, e
 	return resp.Tags, nil
 }
 
-func (f *CloudWatchAlarm) Remove() error {
+type CloudWatchAlarm struct {
+	svc       *cloudwatch.CloudWatch
+	alarmName *string
+	tags      []*cloudwatch.Tag
+}
 
+func (f *CloudWatchAlarm) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteAlarms(&cloudwatch.DeleteAlarmsInput{
 		AlarmNames: []*string{f.alarmName},
 	})

@@ -1,25 +1,34 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sns"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type SNSTopic struct {
-	svc  *sns.SNS
-	id   *string
-	tags []*sns.Tag
-}
+const SNSTopicResource = "SNSTopic"
 
 func init() {
-	register("SNSTopic", ListSNSTopics)
+	resource.Register(resource.Registration{
+		Name:   SNSTopicResource,
+		Scope:  nuke.Account,
+		Lister: &SNSTopicLister{},
+	})
 }
 
-func ListSNSTopics(sess *session.Session) ([]Resource, error) {
-	svc := sns.New(sess)
+type SNSTopicLister struct{}
+
+func (l *SNSTopicLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := sns.New(opts.Session)
 
 	topics := make([]*sns.Topic, 0)
 
@@ -34,7 +43,7 @@ func ListSNSTopics(sess *session.Session) ([]Resource, error) {
 	if err != nil {
 		return nil, err
 	}
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for _, topic := range topics {
 		tags, err := svc.ListTagsForResource(&sns.ListTagsForResourceInput{
 			ResourceArn: topic.TopicArn,
@@ -53,7 +62,13 @@ func ListSNSTopics(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (topic *SNSTopic) Remove() error {
+type SNSTopic struct {
+	svc  *sns.SNS
+	id   *string
+	tags []*sns.Tag
+}
+
+func (topic *SNSTopic) Remove(_ context.Context) error {
 	_, err := topic.svc.DeleteTopic(&sns.DeleteTopicInput{
 		TopicArn: topic.id,
 	})

@@ -1,31 +1,41 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/cognitoidentityprovider"
+	"context"
+
 	"github.com/sirupsen/logrus"
+
+	"github.com/aws/aws-sdk-go/service/cognitoidentityprovider"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type CognitoUserPoolDomain struct {
-	svc          *cognitoidentityprovider.CognitoIdentityProvider
-	name         *string
-	userPoolName *string
-	userPoolId   *string
-}
+const CognitoUserPoolDomainResource = "CognitoUserPoolDomain"
 
 func init() {
-	register("CognitoUserPoolDomain", ListCognitoUserPoolDomains)
+	resource.Register(resource.Registration{
+		Name:   CognitoUserPoolDomainResource,
+		Scope:  nuke.Account,
+		Lister: &CognitoUserPoolDomainLister{},
+	})
 }
 
-func ListCognitoUserPoolDomains(sess *session.Session) ([]Resource, error) {
-	svc := cognitoidentityprovider.New(sess)
+type CognitoUserPoolDomainLister struct{}
 
-	userPools, poolErr := ListCognitoUserPools(sess)
+func (l *CognitoUserPoolDomainLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := cognitoidentityprovider.New(opts.Session)
+
+	userPoolsLister := &CognitoUserPoolLister{}
+	userPools, poolErr := userPoolsLister.List(ctx, o)
 	if poolErr != nil {
 		return nil, poolErr
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for _, userPoolResource := range userPools {
 		userPool, ok := userPoolResource.(*CognitoUserPool)
 		if !ok {
@@ -56,7 +66,14 @@ func ListCognitoUserPoolDomains(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *CognitoUserPoolDomain) Remove() error {
+type CognitoUserPoolDomain struct {
+	svc          *cognitoidentityprovider.CognitoIdentityProvider
+	name         *string
+	userPoolName *string
+	userPoolId   *string
+}
+
+func (f *CognitoUserPoolDomain) Remove(_ context.Context) error {
 	params := &cognitoidentityprovider.DeleteUserPoolDomainInput{
 		Domain:     f.name,
 		UserPoolId: f.userPoolId,

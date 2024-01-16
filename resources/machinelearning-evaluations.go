@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/machinelearning"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type MachineLearningEvaluation struct {
-	svc *machinelearning.MachineLearning
-	ID  *string
-}
+const MachineLearningEvaluationResource = "MachineLearningEvaluation"
 
 func init() {
-	register("MachineLearningEvaluation", ListMachineLearningEvaluations)
+	resource.Register(resource.Registration{
+		Name:   MachineLearningEvaluationResource,
+		Scope:  nuke.Account,
+		Lister: &MachineLearningEvaluationLister{},
+	})
 }
 
-func ListMachineLearningEvaluations(sess *session.Session) ([]Resource, error) {
-	svc := machinelearning.New(sess)
-	resources := []Resource{}
+type MachineLearningEvaluationLister struct{}
+
+func (l *MachineLearningEvaluationLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := machinelearning.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &machinelearning.DescribeEvaluationsInput{
 		Limit: aws.Int64(100),
@@ -46,8 +56,12 @@ func ListMachineLearningEvaluations(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *MachineLearningEvaluation) Remove() error {
+type MachineLearningEvaluation struct {
+	svc *machinelearning.MachineLearning
+	ID  *string
+}
 
+func (f *MachineLearningEvaluation) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteEvaluation(&machinelearning.DeleteEvaluationInput{
 		EvaluationId: f.ID,
 	})

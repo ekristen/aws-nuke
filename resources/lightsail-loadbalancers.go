@@ -1,22 +1,32 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/lightsail"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type LightsailLoadBalancer struct {
-	svc              *lightsail.Lightsail
-	loadBalancerName *string
-}
+const LightsailLoadBalancerResource = "LightsailLoadBalancer"
 
 func init() {
-	register("LightsailLoadBalancer", ListLightsailLoadBalancers)
+	resource.Register(resource.Registration{
+		Name:   LightsailLoadBalancerResource,
+		Scope:  nuke.Account,
+		Lister: &LightsailLoadBalancerLister{},
+	})
 }
 
-func ListLightsailLoadBalancers(sess *session.Session) ([]Resource, error) {
-	svc := lightsail.New(sess)
-	resources := []Resource{}
+type LightsailLoadBalancerLister struct{}
+
+func (l *LightsailLoadBalancerLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := lightsail.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &lightsail.GetLoadBalancersInput{}
 
@@ -26,10 +36,10 @@ func ListLightsailLoadBalancers(sess *session.Session) ([]Resource, error) {
 			return nil, err
 		}
 
-		for _, loadbalancer := range output.LoadBalancers {
+		for _, lb := range output.LoadBalancers {
 			resources = append(resources, &LightsailLoadBalancer{
 				svc:              svc,
-				loadBalancerName: loadbalancer.Name,
+				loadBalancerName: lb.Name,
 			})
 		}
 
@@ -43,8 +53,12 @@ func ListLightsailLoadBalancers(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *LightsailLoadBalancer) Remove() error {
+type LightsailLoadBalancer struct {
+	svc              *lightsail.Lightsail
+	loadBalancerName *string
+}
 
+func (f *LightsailLoadBalancer) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteLoadBalancer(&lightsail.DeleteLoadBalancerInput{
 		LoadBalancerName: f.loadBalancerName,
 	})

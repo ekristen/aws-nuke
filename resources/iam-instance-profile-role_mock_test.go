@@ -1,13 +1,16 @@
 package resources
 
 import (
+	"context"
 	"testing"
+
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/iam"
-	"github.com/golang/mock/gomock"
-	"github.com/rebuy-de/aws-nuke/v2/mocks/mock_iamiface"
-	"github.com/stretchr/testify/assert"
+
+	"github.com/ekristen/aws-nuke/mocks/mock_iamiface"
 )
 
 func Test_Mock_IAMInstanceProfileRole_Remove(t *testing.T) {
@@ -18,18 +21,20 @@ func Test_Mock_IAMInstanceProfileRole_Remove(t *testing.T) {
 	mockIAM := mock_iamiface.NewMockIAMAPI(ctrl)
 
 	iamInstanceProfileRole := IAMInstanceProfileRole{
-		svc:  mockIAM,
-		role: "role:foobar",
+		svc: mockIAM,
+		role: &iam.Role{
+			RoleName: aws.String("role:foobar"),
+		},
 		profile: &iam.InstanceProfile{
 			InstanceProfileName: aws.String("profile:foobar"),
 		},
 	}
 
 	mockIAM.EXPECT().RemoveRoleFromInstanceProfile(gomock.Eq(&iam.RemoveRoleFromInstanceProfileInput{
-		RoleName:            aws.String(iamInstanceProfileRole.role),
+		RoleName:            iamInstanceProfileRole.role.RoleName,
 		InstanceProfileName: iamInstanceProfileRole.profile.InstanceProfileName,
 	})).Return(&iam.RemoveRoleFromInstanceProfileOutput{}, nil)
 
-	err := iamInstanceProfileRole.Remove()
+	err := iamInstanceProfileRole.Remove(context.TODO())
 	a.Nil(err)
 }

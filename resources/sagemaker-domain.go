@@ -1,24 +1,34 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sagemaker"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type SageMakerDomain struct {
-	svc      *sagemaker.SageMaker
-	domainID *string
-}
+const SageMakerDomainResource = "SageMakerDomain"
 
 func init() {
-	register("SageMakerDomain", ListSageMakerDomains)
+	resource.Register(resource.Registration{
+		Name:   SageMakerDomainResource,
+		Scope:  nuke.Account,
+		Lister: &SageMakerDomainLister{},
+	})
 }
 
-func ListSageMakerDomains(sess *session.Session) ([]Resource, error) {
-	svc := sagemaker.New(sess)
-	resources := []Resource{}
+type SageMakerDomainLister struct{}
+
+func (l *SageMakerDomainLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := sagemaker.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &sagemaker.ListDomainsInput{
 		MaxResults: aws.Int64(30),
@@ -47,7 +57,12 @@ func ListSageMakerDomains(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *SageMakerDomain) Remove() error {
+type SageMakerDomain struct {
+	svc      *sagemaker.SageMaker
+	domainID *string
+}
+
+func (f *SageMakerDomain) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteDomain(&sagemaker.DeleteDomainInput{
 		DomainId:        f.domainID,
 		RetentionPolicy: &sagemaker.RetentionPolicy{HomeEfsFileSystem: aws.String(sagemaker.RetentionTypeDelete)},
@@ -60,9 +75,9 @@ func (f *SageMakerDomain) String() string {
 	return *f.domainID
 }
 
-func (i *SageMakerDomain) Properties() types.Properties {
+func (f *SageMakerDomain) Properties() types.Properties {
 	properties := types.NewProperties()
 	properties.
-		Set("DomainID", i.domainID)
+		Set("DomainID", f.domainID)
 	return properties
 }

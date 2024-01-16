@@ -1,10 +1,25 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/accessanalyzer"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
+
+const AccessAnalyzerArchiveRuleResource = "ArchiveRule"
+
+func init() {
+	resource.Register(resource.Registration{
+		Name:   AccessAnalyzerArchiveRuleResource,
+		Scope:  nuke.Account,
+		Lister: &AccessAnalyzerArchiveRuleLister{},
+	})
+}
 
 type ArchiveRule struct {
 	svc          *accessanalyzer.AccessAnalyzer
@@ -12,19 +27,44 @@ type ArchiveRule struct {
 	analyzerName string
 }
 
-func init() {
-	register("ArchiveRule", ListArchiveRule)
+func (a *ArchiveRule) Remove(_ context.Context) error {
+	_, err := a.svc.DeleteArchiveRule(&accessanalyzer.DeleteArchiveRuleInput{
+		AnalyzerName: &a.analyzerName,
+		RuleName:     &a.ruleName,
+	})
+
+	return err
 }
 
-func ListArchiveRule(sess *session.Session) ([]Resource, error) {
-	svc := accessanalyzer.New(sess)
+func (a *ArchiveRule) Properties() types.Properties {
+	properties := types.NewProperties()
 
-	analyzers, err := ListAccessAnalyzer(sess)
+	properties.Set("RuleName", a.ruleName)
+	properties.Set("AnalyzerName", a.analyzerName)
+
+	return properties
+}
+
+func (a *ArchiveRule) String() string {
+	return a.ruleName
+}
+
+// ---------------------------
+
+type AccessAnalyzerArchiveRuleLister struct{}
+
+func (l *AccessAnalyzerArchiveRuleLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := accessanalyzer.New(opts.Session)
+
+	lister := &AccessAnalyzerLister{}
+	analyzers, err := lister.List(ctx, o)
 	if err != nil {
 		return nil, err
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 
 	for _, analyzer := range analyzers {
 		a, ok := analyzer.(*AccessAnalyzer)
@@ -53,26 +93,4 @@ func ListArchiveRule(sess *session.Session) ([]Resource, error) {
 	}
 
 	return resources, nil
-}
-
-func (a *ArchiveRule) Remove() error {
-	_, err := a.svc.DeleteArchiveRule(&accessanalyzer.DeleteArchiveRuleInput{
-		AnalyzerName: &a.analyzerName,
-		RuleName:     &a.ruleName,
-	})
-
-	return err
-}
-
-func (a *ArchiveRule) Properties() types.Properties {
-	properties := types.NewProperties()
-
-	properties.Set("RuleName", a.ruleName)
-	properties.Set("AnalyzerName", a.analyzerName)
-
-	return properties
-}
-
-func (a *ArchiveRule) String() string {
-	return a.ruleName
 }

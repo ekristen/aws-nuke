@@ -1,9 +1,14 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/appmesh"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 type AppMeshVirtualRouter struct {
@@ -12,13 +17,23 @@ type AppMeshVirtualRouter struct {
 	virtualRouterName *string
 }
 
+const AppMeshVirtualRouterResource = "AppMeshVirtualRouter"
+
 func init() {
-	register("AppMeshVirtualRouter", ListAppMeshVirtualRouters)
+	resource.Register(resource.Registration{
+		Name:   AppMeshVirtualRouterResource,
+		Scope:  nuke.Account,
+		Lister: &AppMeshVirtualRouterLister{},
+	})
 }
 
-func ListAppMeshVirtualRouters(sess *session.Session) ([]Resource, error) {
-	svc := appmesh.New(sess)
-	resources := []Resource{}
+type AppMeshVirtualRouterLister struct{}
+
+func (l *AppMeshVirtualRouterLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := appmesh.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	// Get Meshes
 	var meshNames []*string
@@ -66,7 +81,7 @@ func ListAppMeshVirtualRouters(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *AppMeshVirtualRouter) Remove() error {
+func (f *AppMeshVirtualRouter) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteVirtualRouter(&appmesh.DeleteVirtualRouterInput{
 		MeshName:          f.meshName,
 		VirtualRouterName: f.virtualRouterName,

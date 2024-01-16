@@ -1,25 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/robomaker"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type RoboMakerSimulationApplication struct {
-	svc     *robomaker.RoboMaker
-	name    *string
-	arn     *string
-	version *string
-}
+const RoboMakerSimulationApplicationResource = "RoboMakerSimulationApplication"
 
 func init() {
-	register("RoboMakerSimulationApplication", ListRoboMakerSimulationApplications)
+	resource.Register(resource.Registration{
+		Name:   RoboMakerSimulationApplicationResource,
+		Scope:  nuke.Account,
+		Lister: &RoboMakerSimulationApplicationLister{},
+	})
 }
 
-func ListRoboMakerSimulationApplications(sess *session.Session) ([]Resource, error) {
-	svc := robomaker.New(sess)
-	resources := []Resource{}
+type RoboMakerSimulationApplicationLister struct{}
+
+func (l *RoboMakerSimulationApplicationLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := robomaker.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &robomaker.ListSimulationApplicationsInput{
 		MaxResults: aws.Int64(30),
@@ -50,7 +58,14 @@ func ListRoboMakerSimulationApplications(sess *session.Session) ([]Resource, err
 	return resources, nil
 }
 
-func (f *RoboMakerSimulationApplication) Remove() error {
+type RoboMakerSimulationApplication struct {
+	svc     *robomaker.RoboMaker
+	name    *string
+	arn     *string
+	version *string
+}
+
+func (f *RoboMakerSimulationApplication) Remove(_ context.Context) error {
 
 	request := robomaker.DeleteSimulationApplicationInput{
 		Application: f.arn,

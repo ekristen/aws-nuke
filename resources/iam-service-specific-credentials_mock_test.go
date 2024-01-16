@@ -1,13 +1,16 @@
 package resources
 
 import (
+	"context"
 	"testing"
+
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/iam"
-	"github.com/golang/mock/gomock"
-	"github.com/rebuy-de/aws-nuke/v2/mocks/mock_iamiface"
-	"github.com/stretchr/testify/assert"
+
+	"github.com/ekristen/aws-nuke/mocks/mock_iamiface"
 )
 
 func Test_Mock_IAMServiceSpecificCredential_Remove(t *testing.T) {
@@ -30,6 +33,6 @@ func Test_Mock_IAMServiceSpecificCredential_Remove(t *testing.T) {
 		ServiceSpecificCredentialId: aws.String(iamServiceSpecificCredential.id),
 	})).Return(&iam.DeleteServiceSpecificCredentialOutput{}, nil)
 
-	err := iamServiceSpecificCredential.Remove()
+	err := iamServiceSpecificCredential.Remove(context.TODO())
 	a.Nil(err)
 }

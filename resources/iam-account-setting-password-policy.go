@@ -1,30 +1,43 @@
 package resources
 
 import (
+	"context"
+
+	"errors"
+
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type IAMAccountSettingPasswordPolicy struct {
-	svc    iamiface.IAMAPI
-	policy *iam.PasswordPolicy
-}
+const IAMAccountSettingPasswordPolicyResource = "IAMAccountSettingPasswordPolicy"
 
 func init() {
-	register("IAMAccountSettingPasswordPolicy", ListIAMAccountSettingPasswordPolicy)
+	resource.Register(resource.Registration{
+		Name:   IAMAccountSettingPasswordPolicyResource,
+		Scope:  nuke.Account,
+		Lister: &IAMAccountSettingPasswordPolicyLister{},
+	})
 }
 
-func ListIAMAccountSettingPasswordPolicy(sess *session.Session) ([]Resource, error) {
-	resources := make([]Resource, 0)
+type IAMAccountSettingPasswordPolicyLister struct{}
 
-	svc := iam.New(sess)
+func (l *IAMAccountSettingPasswordPolicyLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	resources := make([]resource.Resource, 0)
+
+	svc := iam.New(opts.Session)
 
 	resp, err := svc.GetAccountPasswordPolicy(&iam.GetAccountPasswordPolicyInput{})
 
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
+		var aerr awserr.Error
+		if errors.As(err, &aerr) {
 			switch aerr.Code() {
 			case iam.ErrCodeNoSuchEntityException:
 				return nil, nil
@@ -44,11 +57,17 @@ func ListIAMAccountSettingPasswordPolicy(sess *session.Session) ([]Resource, err
 	return resources, nil
 }
 
-func (e *IAMAccountSettingPasswordPolicy) Remove() error {
+type IAMAccountSettingPasswordPolicy struct {
+	svc    iamiface.IAMAPI
+	policy *iam.PasswordPolicy
+}
+
+func (e *IAMAccountSettingPasswordPolicy) Remove(_ context.Context) error {
 	_, err := e.svc.DeleteAccountPasswordPolicy(&iam.DeleteAccountPasswordPolicyInput{})
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 

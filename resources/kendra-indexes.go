@@ -1,25 +1,34 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/kendra"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type KendraIndex struct {
-	svc  *kendra.Kendra
-	name string
-	id   string
-}
+const KendraIndexResource = "KendraIndex"
 
 func init() {
-	register("KendraIndex", ListKendraIndexes)
+	resource.Register(resource.Registration{
+		Name:   KendraIndexResource,
+		Scope:  nuke.Account,
+		Lister: &KendraIndexLister{},
+	})
 }
 
-func ListKendraIndexes(sess *session.Session) ([]Resource, error) {
-	svc := kendra.New(sess)
-	resources := []Resource{}
+type KendraIndexLister struct{}
+
+func (l *KendraIndexLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := kendra.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &kendra.ListIndicesInput{
 		MaxResults: aws.Int64(100),
@@ -46,7 +55,13 @@ func ListKendraIndexes(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (i *KendraIndex) Remove() error {
+type KendraIndex struct {
+	svc  *kendra.Kendra
+	name string
+	id   string
+}
+
+func (i *KendraIndex) Remove(_ context.Context) error {
 	_, err := i.svc.DeleteIndex(&kendra.DeleteIndexInput{
 		Id: &i.id,
 	})

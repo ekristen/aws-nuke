@@ -1,28 +1,38 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/eks"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type EKSNodegroup struct {
-	svc       *eks.EKS
-	nodegroup *eks.Nodegroup
-}
+const EKSNodegroupResource = "EKSNodegroup"
 
 func init() {
-	register("EKSNodegroups", ListEKSNodegroups)
+	resource.Register(resource.Registration{
+		Name:   EKSNodegroupResource,
+		Scope:  nuke.Account,
+		Lister: &EKSNodegroupLister{},
+	})
 }
 
-func ListEKSNodegroups(sess *session.Session) ([]Resource, error) {
-	svc := eks.New(sess)
-	clusterNames := []*string{}
-	resources := []Resource{}
+type EKSNodegroupLister struct{}
+
+func (l *EKSNodegroupLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+	svc := eks.New(opts.Session)
+
+	var clusterNames []*string
+	var resources []resource.Resource
 
 	clusterInputParams := &eks.ListClustersInput{
 		MaxResults: aws.Int64(100),
@@ -86,7 +96,12 @@ func ListEKSNodegroups(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (ng *EKSNodegroup) Remove() error {
+type EKSNodegroup struct {
+	svc       *eks.EKS
+	nodegroup *eks.Nodegroup
+}
+
+func (ng *EKSNodegroup) Remove(_ context.Context) error {
 	_, err := ng.svc.DeleteNodegroup(&eks.DeleteNodegroupInput{
 		ClusterName:   ng.nodegroup.ClusterName,
 		NodegroupName: ng.nodegroup.NodegroupName,

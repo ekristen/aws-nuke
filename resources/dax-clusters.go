@@ -1,23 +1,37 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dax"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type DAXCluster struct {
-	svc         *dax.DAX
-	clusterName *string
-}
+const DAXClusterResource = "DAXCluster"
 
 func init() {
-	register("DAXCluster", ListDAXClusters)
+	resource.Register(resource.Registration{
+		Name:   DAXClusterResource,
+		Scope:  nuke.Account,
+		Lister: &DAXClusterLister{},
+		DependsOn: []string{
+			DAXParameterGroupResource,
+			DAXSubnetGroupResource,
+		},
+	})
 }
 
-func ListDAXClusters(sess *session.Session) ([]Resource, error) {
-	svc := dax.New(sess)
-	resources := []Resource{}
+type DAXClusterLister struct{}
+
+func (l *DAXClusterLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := dax.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &dax.DescribeClustersInput{
 		MaxResults: aws.Int64(100),
@@ -46,8 +60,12 @@ func ListDAXClusters(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *DAXCluster) Remove() error {
+type DAXCluster struct {
+	svc         *dax.DAX
+	clusterName *string
+}
 
+func (f *DAXCluster) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteCluster(&dax.DeleteClusterInput{
 		ClusterName: f.clusterName,
 	})

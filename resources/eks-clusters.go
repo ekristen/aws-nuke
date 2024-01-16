@@ -1,27 +1,35 @@
 package resources
 
 import (
+	"context"
+
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/eks"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type EKSCluster struct {
-	svc     *eks.EKS
-	name    *string
-	cluster *eks.Cluster
-}
+const EKSClusterResource = "EKSCluster"
 
 func init() {
-	register("EKSCluster", ListEKSClusters)
+	resource.Register(resource.Registration{
+		Name:   EKSClusterResource,
+		Scope:  nuke.Account,
+		Lister: &EKSClusterLister{},
+	})
 }
 
-func ListEKSClusters(sess *session.Session) ([]Resource, error) {
-	svc := eks.New(sess)
-	resources := []Resource{}
+type EKSClusterLister struct{}
+
+func (l *EKSClusterLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+	svc := eks.New(opts.Session)
+	var resources []resource.Resource
 
 	params := &eks.ListClustersInput{
 		MaxResults: aws.Int64(100),
@@ -53,7 +61,13 @@ func ListEKSClusters(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *EKSCluster) Remove() error {
+type EKSCluster struct {
+	svc     *eks.EKS
+	name    *string
+	cluster *eks.Cluster
+}
+
+func (f *EKSCluster) Remove(_ context.Context) error {
 
 	_, err := f.svc.DeleteCluster(&eks.DeleteClusterInput{
 		Name: f.name,

@@ -1,34 +1,42 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/rds"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type RDSSnapshot struct {
-	svc      *rds.RDS
-	snapshot *rds.DBSnapshot
-	tags     []*rds.Tag
-}
+const RDSSnapshotResource = "RDSSnapshot"
 
 func init() {
-	register("RDSSnapshot", ListRDSSnapshots)
+	resource.Register(resource.Registration{
+		Name:   RDSSnapshotResource,
+		Scope:  nuke.Account,
+		Lister: &RDSSnapshotLister{},
+	})
 }
 
-func ListRDSSnapshots(sess *session.Session) ([]Resource, error) {
-	svc := rds.New(sess)
+type RDSSnapshotLister struct{}
+
+func (l *RDSSnapshotLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+	svc := rds.New(opts.Session)
 
 	params := &rds.DescribeDBSnapshotsInput{MaxRecords: aws.Int64(100)}
 	resp, err := svc.DescribeDBSnapshots(params)
 	if err != nil {
 		return nil, err
 	}
-	var resources []Resource
+	var resources []resource.Resource
 	for _, snapshot := range resp.DBSnapshots {
 		tags, err := svc.ListTagsForResource(&rds.ListTagsForResourceInput{
 			ResourceName: snapshot.DBSnapshotArn,
@@ -48,6 +56,12 @@ func ListRDSSnapshots(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
+type RDSSnapshot struct {
+	svc      *rds.RDS
+	snapshot *rds.DBSnapshot
+	tags     []*rds.Tag
+}
+
 func (i *RDSSnapshot) Filter() error {
 	if *i.snapshot.SnapshotType == "automated" {
 		return fmt.Errorf("cannot delete automated snapshots")
@@ -55,7 +69,7 @@ func (i *RDSSnapshot) Filter() error {
 	return nil
 }
 
-func (i *RDSSnapshot) Remove() error {
+func (i *RDSSnapshot) Remove(_ context.Context) error {
 	if i.snapshot.DBSnapshotIdentifier == nil {
 		// Sanity check to make sure the delete request does not skip the
 		// identifier.

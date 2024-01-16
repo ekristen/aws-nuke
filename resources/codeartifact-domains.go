@@ -1,24 +1,33 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/codeartifact"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type CodeArtifactDomain struct {
-	svc  *codeartifact.CodeArtifact
-	name *string
-	tags map[string]*string
-}
+const CodeArtifactDomainResource = "CodeArtifactDomain"
 
 func init() {
-	register("CodeArtifactDomain", ListCodeArtifactDomains)
+	resource.Register(resource.Registration{
+		Name:   CodeArtifactDomainResource,
+		Scope:  nuke.Account,
+		Lister: &CodeArtifactDomainLister{},
+	})
 }
 
-func ListCodeArtifactDomains(sess *session.Session) ([]Resource, error) {
-	svc := codeartifact.New(sess)
-	resources := []Resource{}
+type CodeArtifactDomainLister struct{}
+
+func (l *CodeArtifactDomainLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := codeartifact.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &codeartifact.ListDomainsInput{}
 
@@ -62,7 +71,13 @@ func GetDomainTags(svc *codeartifact.CodeArtifact, arn *string) map[string]*stri
 	return tags
 }
 
-func (d *CodeArtifactDomain) Remove() error {
+type CodeArtifactDomain struct {
+	svc  *codeartifact.CodeArtifact
+	name *string
+	tags map[string]*string
+}
+
+func (d *CodeArtifactDomain) Remove(_ context.Context) error {
 	_, err := d.svc.DeleteDomain(&codeartifact.DeleteDomainInput{
 		Domain: d.name,
 	})

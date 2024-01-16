@@ -1,22 +1,32 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/codepipeline"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type CodePipelinePipeline struct {
-	svc          *codepipeline.CodePipeline
-	pipelineName *string
-}
+const CodePipelinePipelineResource = "CodePipelinePipeline"
 
 func init() {
-	register("CodePipelinePipeline", ListCodePipelinePipelines)
+	resource.Register(resource.Registration{
+		Name:   CodePipelinePipelineResource,
+		Scope:  nuke.Account,
+		Lister: &CodePipelinePipelineLister{},
+	})
 }
 
-func ListCodePipelinePipelines(sess *session.Session) ([]Resource, error) {
-	svc := codepipeline.New(sess)
-	resources := []Resource{}
+type CodePipelinePipelineLister struct{}
+
+func (l *CodePipelinePipelineLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := codepipeline.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &codepipeline.ListPipelinesInput{}
 
@@ -43,8 +53,12 @@ func ListCodePipelinePipelines(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *CodePipelinePipeline) Remove() error {
+type CodePipelinePipeline struct {
+	svc          *codepipeline.CodePipeline
+	pipelineName *string
+}
 
+func (f *CodePipelinePipeline) Remove(_ context.Context) error {
 	_, err := f.svc.DeletePipeline(&codepipeline.DeletePipelineInput{
 		Name: f.pipelineName,
 	})

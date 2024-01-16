@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ses"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type SESTemplate struct {
-	svc  *ses.SES
-	name *string
-}
+const SESTemplateResource = "SESTemplate"
 
 func init() {
-	register("SESTemplate", ListSESTemplates)
+	resource.Register(resource.Registration{
+		Name:   SESTemplateResource,
+		Scope:  nuke.Account,
+		Lister: &SESTemplateLister{},
+	})
 }
 
-func ListSESTemplates(sess *session.Session) ([]Resource, error) {
-	svc := ses.New(sess)
-	resources := []Resource{}
+type SESTemplateLister struct{}
+
+func (l *SESTemplateLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := ses.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &ses.ListTemplatesInput{
 		MaxItems: aws.Int64(100),
@@ -46,8 +56,12 @@ func ListSESTemplates(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *SESTemplate) Remove() error {
+type SESTemplate struct {
+	svc  *ses.SES
+	name *string
+}
 
+func (f *SESTemplate) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteTemplate(&ses.DeleteTemplateInput{
 		TemplateName: f.name,
 	})

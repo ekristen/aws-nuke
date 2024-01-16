@@ -1,23 +1,34 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
+
 	"github.com/aws/aws-sdk-go/service/ssm"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type SSMActivation struct {
-	svc *ssm.SSM
-	ID  *string
-}
+const SSMActivationResource = "SSMActivation"
 
 func init() {
-	register("SSMActivation", ListSSMActivations)
+	resource.Register(resource.Registration{
+		Name:   SSMActivationResource,
+		Scope:  nuke.Account,
+		Lister: &SSMActivationLister{},
+	})
 }
 
-func ListSSMActivations(sess *session.Session) ([]Resource, error) {
-	svc := ssm.New(sess)
-	resources := []Resource{}
+type SSMActivationLister struct{}
+
+func (l *SSMActivationLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := ssm.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &ssm.DescribeActivationsInput{
 		MaxResults: aws.Int64(50),
@@ -46,8 +57,12 @@ func ListSSMActivations(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *SSMActivation) Remove() error {
+type SSMActivation struct {
+	svc *ssm.SSM
+	ID  *string
+}
 
+func (f *SSMActivation) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteActivation(&ssm.DeleteActivationInput{
 		ActivationId: f.ID,
 	})

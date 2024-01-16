@@ -1,28 +1,37 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/elasticache"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type ElasticacheCacheParameterGroup struct {
-	svc         *elasticache.ElastiCache
-	groupName   *string
-	groupFamily *string
-}
+const ElasticacheCacheParameterGroupResource = "ElasticacheCacheParameterGroup"
 
 func init() {
-	register("ElasticacheCacheParameterGroup", ListElasticacheCacheParameterGroups)
+	resource.Register(resource.Registration{
+		Name:   ElasticacheCacheParameterGroupResource,
+		Scope:  nuke.Account,
+		Lister: &ElasticacheCacheParameterGroupLister{},
+	})
 }
 
-func ListElasticacheCacheParameterGroups(sess *session.Session) ([]Resource, error) {
-	svc := elasticache.New(sess)
-	var resources []Resource
+type ElasticacheCacheParameterGroupLister struct{}
+
+func (l *ElasticacheCacheParameterGroupLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := elasticache.New(opts.Session)
+	var resources []resource.Resource
 
 	params := &elasticache.DescribeCacheParameterGroupsInput{MaxRecords: aws.Int64(100)}
 
@@ -50,14 +59,20 @@ func ListElasticacheCacheParameterGroups(sess *session.Session) ([]Resource, err
 	return resources, nil
 }
 
+type ElasticacheCacheParameterGroup struct {
+	svc         *elasticache.ElastiCache
+	groupName   *string
+	groupFamily *string
+}
+
 func (i *ElasticacheCacheParameterGroup) Filter() error {
 	if strings.HasPrefix(*i.groupName, "default.") {
-		return fmt.Errorf("Cannot delete default cache parameter group")
+		return fmt.Errorf("cannot delete default cache parameter group")
 	}
 	return nil
 }
 
-func (i *ElasticacheCacheParameterGroup) Remove() error {
+func (i *ElasticacheCacheParameterGroup) Remove(_ context.Context) error {
 	params := &elasticache.DeleteCacheParameterGroupInput{
 		CacheParameterGroupName: i.groupName,
 	}

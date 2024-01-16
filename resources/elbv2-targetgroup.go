@@ -1,23 +1,35 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/elbv2"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type ELBv2TargetGroup struct {
-	svc  *elbv2.ELBV2
-	tg   *elbv2.TargetGroup
-	tags []*elbv2.Tag
-}
+const ELBv2TargetGroupResource = "ELBv2TargetGroup"
 
 func init() {
-	register("ELBv2TargetGroup", ListELBv2TargetGroups)
+	resource.Register(resource.Registration{
+		Name:   ELBv2TargetGroupResource,
+		Scope:  nuke.Account,
+		Lister: &ELBv2TargetGroupLister{},
+		DependsOn: []string{
+			ELBv2Resource,
+		},
+	})
 }
 
-func ListELBv2TargetGroups(sess *session.Session) ([]Resource, error) {
-	svc := elbv2.New(sess)
+type ELBv2TargetGroupLister struct{}
+
+func (l *ELBv2TargetGroupLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := elbv2.New(opts.Session)
 	var tagReqELBv2TargetGroupARNs []*string
 	targetGroupARNToRsc := make(map[string]*elbv2.TargetGroup)
 
@@ -36,7 +48,7 @@ func ListELBv2TargetGroups(sess *session.Session) ([]Resource, error) {
 	// Tags for ELBv2 target groups need to be fetched separately
 	// We can only specify up to 20 in a single call
 	// See: https://github.com/aws/aws-sdk-go/blob/0e8c61841163762f870f6976775800ded4a789b0/service/elbv2/api.go#L5398
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for len(tagReqELBv2TargetGroupARNs) > 0 {
 		requestElements := len(tagReqELBv2TargetGroupARNs)
 		if requestElements > 20 {
@@ -63,7 +75,13 @@ func ListELBv2TargetGroups(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (e *ELBv2TargetGroup) Remove() error {
+type ELBv2TargetGroup struct {
+	svc  *elbv2.ELBV2
+	tg   *elbv2.TargetGroup
+	tags []*elbv2.Tag
+}
+
+func (e *ELBv2TargetGroup) Remove(_ context.Context) error {
 	_, err := e.svc.DeleteTargetGroup(&elbv2.DeleteTargetGroupInput{
 		TargetGroupArn: e.tg.TargetGroupArn,
 	})
@@ -78,10 +96,13 @@ func (e *ELBv2TargetGroup) Remove() error {
 func (e *ELBv2TargetGroup) Properties() types.Properties {
 	properties := types.NewProperties().
 		Set("ARN", e.tg.TargetGroupArn)
+
 	for _, tagValue := range e.tags {
 		properties.SetTag(tagValue.Key, tagValue.Value)
 	}
+
 	properties.Set("IsLoadBalanced", len(e.tg.LoadBalancerArns) > 0)
+
 	return properties
 }
 

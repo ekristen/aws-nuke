@@ -1,19 +1,34 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
+const AutoScalingGroupResource = "AutoScalingGroup"
+
 func init() {
-	register("AutoScalingGroup", ListAutoscalingGroups)
+	resource.Register(resource.Registration{
+		Name:   AutoScalingGroupResource,
+		Scope:  nuke.Account,
+		Lister: &AutoScalingGroupLister{},
+	})
 }
 
-func ListAutoscalingGroups(s *session.Session) ([]Resource, error) {
-	svc := autoscaling.New(s)
-	resources := make([]Resource, 0)
+type AutoScalingGroupLister struct{}
+
+func (l *AutoScalingGroupLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := autoscaling.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &autoscaling.DescribeAutoScalingGroupsInput{}
 	err := svc.DescribeAutoScalingGroupsPages(params,
@@ -41,7 +56,7 @@ type AutoScalingGroup struct {
 	tags  []*autoscaling.TagDescription
 }
 
-func (asg *AutoScalingGroup) Remove() error {
+func (asg *AutoScalingGroup) Remove(_ context.Context) error {
 	params := &autoscaling.DeleteAutoScalingGroupInput{
 		AutoScalingGroupName: asg.group.AutoScalingGroupName,
 		ForceDelete:          aws.Bool(true),

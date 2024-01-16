@@ -1,25 +1,32 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/rds"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type RDSDBCluster struct {
-	svc                *rds.RDS
-	id                 string
-	deletionProtection bool
-	tags               []*rds.Tag
-}
+const RDSDBClusterResource = "RDSDBCluster"
 
 func init() {
-	register("RDSDBCluster", ListRDSClusters)
+	resource.Register(resource.Registration{
+		Name:   RDSDBClusterResource,
+		Scope:  nuke.Account,
+		Lister: &RDSDBClusterLister{},
+	})
 }
 
-func ListRDSClusters(sess *session.Session) ([]Resource, error) {
-	svc := rds.New(sess)
+type RDSDBClusterLister struct{}
+
+func (l *RDSDBClusterLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+	svc := rds.New(opts.Session)
 
 	params := &rds.DescribeDBClustersInput{}
 	resp, err := svc.DescribeDBClusters(params)
@@ -27,15 +34,15 @@ func ListRDSClusters(sess *session.Session) ([]Resource, error) {
 		return nil, err
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for _, instance := range resp.DBClusters {
 		tags, err := svc.ListTagsForResource(&rds.ListTagsForResourceInput{
-                        ResourceName: instance.DBClusterArn,
-                })
+			ResourceName: instance.DBClusterArn,
+		})
 
-                if err != nil {
-                        continue
-                }
+		if err != nil {
+			continue
+		}
 
 		resources = append(resources, &RDSDBCluster{
 			svc:                svc,
@@ -48,8 +55,15 @@ func ListRDSClusters(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (i *RDSDBCluster) Remove() error {
-	if (i.deletionProtection) {
+type RDSDBCluster struct {
+	svc                *rds.RDS
+	id                 string
+	deletionProtection bool
+	tags               []*rds.Tag
+}
+
+func (i *RDSDBCluster) Remove(_ context.Context) error {
+	if i.deletionProtection {
 		modifyParams := &rds.ModifyDBClusterInput{
 			DBClusterIdentifier: &i.id,
 			DeletionProtection:  aws.Bool(false),
@@ -78,13 +92,13 @@ func (i *RDSDBCluster) String() string {
 }
 
 func (i *RDSDBCluster) Properties() types.Properties {
-        properties := types.NewProperties()
-        properties.Set("Identifier", i.id)
+	properties := types.NewProperties()
+	properties.Set("Identifier", i.id)
 	properties.Set("Deletion Protection", i.deletionProtection)
 
-        for _, tag := range i.tags {
-                properties.SetTag(tag.Key, tag.Value)
-        }
+	for _, tag := range i.tags {
+		properties.SetTag(tag.Key, tag.Value)
+	}
 
-        return properties
+	return properties
 }

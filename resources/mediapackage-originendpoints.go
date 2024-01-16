@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/mediapackage"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type MediaPackageOriginEndpoint struct {
-	svc *mediapackage.MediaPackage
-	ID  *string
-}
+const MediaPackageOriginEndpointResource = "MediaPackageOriginEndpoint"
 
 func init() {
-	register("MediaPackageOriginEndpoint", ListMediaPackageOriginEndpoints)
+	resource.Register(resource.Registration{
+		Name:   MediaPackageOriginEndpointResource,
+		Scope:  nuke.Account,
+		Lister: &MediaPackageOriginEndpointLister{},
+	})
 }
 
-func ListMediaPackageOriginEndpoints(sess *session.Session) ([]Resource, error) {
-	svc := mediapackage.New(sess)
-	resources := []Resource{}
+type MediaPackageOriginEndpointLister struct{}
+
+func (l *MediaPackageOriginEndpointLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := mediapackage.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &mediapackage.ListOriginEndpointsInput{
 		MaxResults: aws.Int64(50),
@@ -46,8 +56,12 @@ func ListMediaPackageOriginEndpoints(sess *session.Session) ([]Resource, error) 
 	return resources, nil
 }
 
-func (f *MediaPackageOriginEndpoint) Remove() error {
+type MediaPackageOriginEndpoint struct {
+	svc *mediapackage.MediaPackage
+	ID  *string
+}
 
+func (f *MediaPackageOriginEndpoint) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteOriginEndpoint(&mediapackage.DeleteOriginEndpointInput{
 		Id: f.ID,
 	})

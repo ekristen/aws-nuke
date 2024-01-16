@@ -1,32 +1,40 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type IAMGroupPolicy struct {
-	svc        iamiface.IAMAPI
-	policyName string
-	groupName  string
-}
+const IAMGroupPolicyResource = "IAMGroupPolicy"
 
 func init() {
-	register("IAMGroupPolicy", ListIAMGroupPolicies)
+	resource.Register(resource.Registration{
+		Name:   IAMGroupPolicyResource,
+		Scope:  nuke.Account,
+		Lister: &IAMGroupPolicyLister{},
+	})
 }
 
-func ListIAMGroupPolicies(sess *session.Session) ([]Resource, error) {
-	svc := iam.New(sess)
+type IAMGroupPolicyLister struct{}
 
+func (l *IAMGroupPolicyLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := iam.New(opts.Session)
 	resp, err := svc.ListGroups(nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for _, group := range resp.Groups {
 		resp, err := svc.ListGroupPolicies(
 			&iam.ListGroupPoliciesInput{
@@ -48,7 +56,13 @@ func ListIAMGroupPolicies(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (e *IAMGroupPolicy) Remove() error {
+type IAMGroupPolicy struct {
+	svc        iamiface.IAMAPI
+	policyName string
+	groupName  string
+}
+
+func (e *IAMGroupPolicy) Remove(_ context.Context) error {
 	_, err := e.svc.DeleteGroupPolicy(
 		&iam.DeleteGroupPolicyInput{
 			PolicyName: &e.policyName,

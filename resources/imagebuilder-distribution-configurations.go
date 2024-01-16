@@ -1,24 +1,34 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/imagebuilder"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type ImageBuilderDistributionConfiguration struct {
-	svc *imagebuilder.Imagebuilder
-	arn string
-}
+const ImageBuilderDistributionConfigurationResource = "ImageBuilderDistributionConfiguration"
 
 func init() {
-	register("ImageBuilderDistributionConfiguration", ListImageBuilderDistributionConfigurations)
+	resource.Register(resource.Registration{
+		Name:   ImageBuilderDistributionConfigurationResource,
+		Scope:  nuke.Account,
+		Lister: &ImageBuilderDistributionConfigurationLister{},
+	})
 }
 
-func ListImageBuilderDistributionConfigurations(sess *session.Session) ([]Resource, error) {
-	svc := imagebuilder.New(sess)
+type ImageBuilderDistributionConfigurationLister struct{}
+
+func (l *ImageBuilderDistributionConfigurationLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := imagebuilder.New(opts.Session)
 	params := &imagebuilder.ListDistributionConfigurationsInput{}
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 
 	for {
 		resp, err := svc.ListDistributionConfigurations(params)
@@ -45,7 +55,12 @@ func ListImageBuilderDistributionConfigurations(sess *session.Session) ([]Resour
 	return resources, nil
 }
 
-func (e *ImageBuilderDistributionConfiguration) Remove() error {
+type ImageBuilderDistributionConfiguration struct {
+	svc *imagebuilder.Imagebuilder
+	arn string
+}
+
+func (e *ImageBuilderDistributionConfiguration) Remove(_ context.Context) error {
 	_, err := e.svc.DeleteDistributionConfiguration(&imagebuilder.DeleteDistributionConfigurationInput{
 		DistributionConfigurationArn: &e.arn,
 	})

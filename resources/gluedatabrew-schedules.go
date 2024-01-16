@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/gluedatabrew"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type GlueDataBrewSchedules struct {
-	svc  *gluedatabrew.GlueDataBrew
-	name *string
-}
+const GlueDataBrewSchedulesResource = "GlueDataBrewSchedules"
 
 func init() {
-	register("GlueDataBrewSchedules", ListGlueDataBrewSchedules)
+	resource.Register(resource.Registration{
+		Name:   GlueDataBrewSchedulesResource,
+		Scope:  nuke.Account,
+		Lister: &GlueDataBrewSchedulesLister{},
+	})
 }
 
-func ListGlueDataBrewSchedules(sess *session.Session) ([]Resource, error) {
-	svc := gluedatabrew.New(sess)
-	resources := []Resource{}
+type GlueDataBrewSchedulesLister struct{}
+
+func (l *GlueDataBrewSchedulesLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := gluedatabrew.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &gluedatabrew.ListSchedulesInput{
 		MaxResults: aws.Int64(100),
@@ -46,7 +56,12 @@ func ListGlueDataBrewSchedules(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *GlueDataBrewSchedules) Remove() error {
+type GlueDataBrewSchedules struct {
+	svc  *gluedatabrew.GlueDataBrew
+	name *string
+}
+
+func (f *GlueDataBrewSchedules) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteSchedule(&gluedatabrew.DeleteScheduleInput{
 		Name: f.name,
 	})

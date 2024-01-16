@@ -1,8 +1,13 @@
 package resources
 
 import (
+	"context"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
+	"github.com/ekristen/libnuke/pkg/resource"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
+
 	"github.com/aws/aws-sdk-go/service/cognitoidentity"
 )
 
@@ -12,13 +17,23 @@ type CognitoIdentityPool struct {
 	id   *string
 }
 
+const CognitoIdentityPoolResource = "CognitoIdentityPool"
+
 func init() {
-	register("CognitoIdentityPool", ListCognitoIdentityPools)
+	resource.Register(resource.Registration{
+		Name:   CognitoIdentityPoolResource,
+		Scope:  nuke.Account,
+		Lister: &CognitoIdentityPoolLister{},
+	})
 }
 
-func ListCognitoIdentityPools(sess *session.Session) ([]Resource, error) {
-	svc := cognitoidentity.New(sess)
-	resources := []Resource{}
+type CognitoIdentityPoolLister struct{}
+
+func (l *CognitoIdentityPoolLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := cognitoidentity.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &cognitoidentity.ListIdentityPoolsInput{
 		MaxResults: aws.Int64(50),
@@ -48,7 +63,7 @@ func ListCognitoIdentityPools(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *CognitoIdentityPool) Remove() error {
+func (f *CognitoIdentityPool) Remove(_ context.Context) error {
 
 	_, err := f.svc.DeleteIdentityPool(&cognitoidentity.DeleteIdentityPoolInput{
 		IdentityPoolId: f.id,

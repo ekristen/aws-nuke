@@ -1,34 +1,42 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type IAMGroupPolicyAttachment struct {
-	svc        iamiface.IAMAPI
-	policyArn  string
-	policyName string
-	groupName  string
-}
+const IAMGroupPolicyAttachmentResource = "IAMGroupPolicyAttachment"
 
 func init() {
-	register("IAMGroupPolicyAttachment", ListIAMGroupPolicyAttachments)
+	resource.Register(resource.Registration{
+		Name:   IAMGroupPolicyAttachmentResource,
+		Scope:  nuke.Account,
+		Lister: &IAMGroupPolicyAttachmentLister{},
+	})
 }
 
-func ListIAMGroupPolicyAttachments(sess *session.Session) ([]Resource, error) {
-	svc := iam.New(sess)
+type IAMGroupPolicyAttachmentLister struct{}
+
+func (l *IAMGroupPolicyAttachmentLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := iam.New(opts.Session)
 
 	resp, err := svc.ListGroups(nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for _, role := range resp.Groups {
 		resp, err := svc.ListAttachedGroupPolicies(
 			&iam.ListAttachedGroupPoliciesInput{
@@ -51,7 +59,14 @@ func ListIAMGroupPolicyAttachments(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (e *IAMGroupPolicyAttachment) Remove() error {
+type IAMGroupPolicyAttachment struct {
+	svc        iamiface.IAMAPI
+	policyArn  string
+	policyName string
+	groupName  string
+}
+
+func (e *IAMGroupPolicyAttachment) Remove(_ context.Context) error {
 	_, err := e.svc.DetachGroupPolicy(
 		&iam.DetachGroupPolicyInput{
 			PolicyArn: &e.policyArn,

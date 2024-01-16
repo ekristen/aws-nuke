@@ -1,40 +1,57 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go/service/kms"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type KMSAlias struct {
-	svc  *kms.KMS
-	name string
-}
+const KMSAliasResource = "KMSAlias"
 
 func init() {
-	register("KMSAlias", ListKMSAliases)
+	resource.Register(resource.Registration{
+		Name:   KMSAliasResource,
+		Scope:  nuke.Account,
+		Lister: &KMSAliasLister{},
+	})
 }
 
-func ListKMSAliases(sess *session.Session) ([]Resource, error) {
-	svc := kms.New(sess)
+type KMSAliasLister struct{}
+
+func (l *KMSAliasLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := kms.New(opts.Session)
 
 	resp, err := svc.ListAliases(nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for _, alias := range resp.Aliases {
 		resources = append(resources, &KMSAlias{
 			svc:  svc,
-			name: *alias.AliasName,
+			name: ptr.ToString(alias.AliasName),
 		})
 	}
 
 	return resources, nil
+}
+
+type KMSAlias struct {
+	svc  *kms.KMS
+	name string
 }
 
 func (e *KMSAlias) Filter() error {
@@ -44,7 +61,7 @@ func (e *KMSAlias) Filter() error {
 	return nil
 }
 
-func (e *KMSAlias) Remove() error {
+func (e *KMSAlias) Remove(_ context.Context) error {
 	_, err := e.svc.DeleteAlias(&kms.DeleteAliasInput{
 		AliasName: &e.name,
 	})

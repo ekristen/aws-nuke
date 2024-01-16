@@ -1,24 +1,34 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type EC2DHCPOption struct {
-	svc        *ec2.EC2
-	id         *string
-	tags       []*ec2.Tag
-	defaultVPC bool
-}
+const EC2DHCPOptionResource = "EC2DHCPOption"
 
 func init() {
-	register("EC2DHCPOption", ListEC2DHCPOptions)
+	resource.Register(resource.Registration{
+		Name:   EC2DHCPOptionResource,
+		Scope:  nuke.Account,
+		Lister: &EC2DHCPOptionLister{},
+	})
 }
 
-func ListEC2DHCPOptions(sess *session.Session) ([]Resource, error) {
-	svc := ec2.New(sess)
+type EC2DHCPOptionLister struct{}
+
+func (l *EC2DHCPOptionLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := ec2.New(opts.Session)
 
 	resp, err := svc.DescribeDhcpOptions(&ec2.DescribeDhcpOptionsInput{})
 	if err != nil {
@@ -27,23 +37,30 @@ func ListEC2DHCPOptions(sess *session.Session) ([]Resource, error) {
 
 	defVpcDhcpOptsId := ""
 	if defVpc := DefaultVpc(svc); defVpc != nil {
-		defVpcDhcpOptsId = *defVpc.DhcpOptionsId
+		defVpcDhcpOptsId = ptr.ToString(defVpc.DhcpOptionsId)
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for _, out := range resp.DhcpOptions {
 		resources = append(resources, &EC2DHCPOption{
 			svc:        svc,
 			id:         out.DhcpOptionsId,
 			tags:       out.Tags,
-			defaultVPC: defVpcDhcpOptsId == *out.DhcpOptionsId,
+			defaultVPC: defVpcDhcpOptsId == ptr.ToString(out.DhcpOptionsId),
 		})
 	}
 
 	return resources, nil
 }
 
-func (e *EC2DHCPOption) Remove() error {
+type EC2DHCPOption struct {
+	svc        *ec2.EC2
+	id         *string
+	tags       []*ec2.Tag
+	defaultVPC bool
+}
+
+func (e *EC2DHCPOption) Remove(_ context.Context) error {
 	params := &ec2.DeleteDhcpOptionsInput{
 		DhcpOptionsId: e.id,
 	}
@@ -66,5 +83,5 @@ func (e *EC2DHCPOption) Properties() types.Properties {
 }
 
 func (e *EC2DHCPOption) String() string {
-	return *e.id
+	return ptr.ToString(e.id)
 }

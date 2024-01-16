@@ -5,8 +5,8 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/sts"
+	"github.com/ekristen/aws-nuke/pkg/config"
 	"github.com/pkg/errors"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/config"
 )
 
 type Account struct {
@@ -56,7 +56,7 @@ func NewAccount(creds Credentials, endpoints config.CustomEndpoints) (*Account, 
 		return nil, errors.Wrap(err, "failed get account alias")
 	}
 
-	aliases := []string{}
+	var aliases []string
 	for _, alias := range aliasesOutput.AccountAliases {
 		if alias != nil {
 			aliases = append(aliases, *alias)

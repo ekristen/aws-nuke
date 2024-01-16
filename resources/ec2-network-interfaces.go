@@ -1,33 +1,43 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type EC2NetworkInterface struct {
-	svc *ec2.EC2
-	eni *ec2.NetworkInterface
-}
+const EC2NetworkInterfaceResource = "EC2NetworkInterface"
 
 func init() {
-	register("EC2NetworkInterface", ListEC2NetworkInterfaces)
+	resource.Register(resource.Registration{
+		Name:   EC2NetworkInterfaceResource,
+		Scope:  nuke.Account,
+		Lister: &EC2NetworkInterfaceLister{},
+	})
 }
 
-func ListEC2NetworkInterfaces(sess *session.Session) ([]Resource, error) {
-	svc := ec2.New(sess)
+type EC2NetworkInterfaceLister struct{}
+
+func (l *EC2NetworkInterfaceLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := ec2.New(opts.Session)
 
 	resp, err := svc.DescribeNetworkInterfaces(nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for _, out := range resp.NetworkInterfaces {
 
 		resources = append(resources, &EC2NetworkInterface{
@@ -39,8 +49,12 @@ func ListEC2NetworkInterfaces(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (e *EC2NetworkInterface) Remove() error {
+type EC2NetworkInterface struct {
+	svc *ec2.EC2
+	eni *ec2.NetworkInterface
+}
 
+func (e *EC2NetworkInterface) Remove(_ context.Context) error {
 	if e.eni.Attachment != nil {
 		_, err := e.svc.DetachNetworkInterface(&ec2.DetachNetworkInterfaceInput{
 			AttachmentId: e.eni.Attachment.AttachmentId,
@@ -69,21 +83,21 @@ func (e *EC2NetworkInterface) Remove() error {
 	return nil
 }
 
-func (r *EC2NetworkInterface) Properties() types.Properties {
+func (e *EC2NetworkInterface) Properties() types.Properties {
 	properties := types.NewProperties()
-	for _, tag := range r.eni.TagSet {
+	for _, tag := range e.eni.TagSet {
 		properties.SetTag(tag.Key, tag.Value)
 	}
 	properties.
-		Set("ID", r.eni.NetworkInterfaceId).
-		Set("VPC", r.eni.VpcId).
-		Set("AvailabilityZone", r.eni.AvailabilityZone).
-		Set("PrivateIPAddress", r.eni.PrivateIpAddress).
-		Set("SubnetID", r.eni.SubnetId).
-		Set("Status", r.eni.Status)
+		Set("ID", e.eni.NetworkInterfaceId).
+		Set("VPC", e.eni.VpcId).
+		Set("AvailabilityZone", e.eni.AvailabilityZone).
+		Set("PrivateIPAddress", e.eni.PrivateIpAddress).
+		Set("SubnetID", e.eni.SubnetId).
+		Set("Status", e.eni.Status)
 	return properties
 }
 
-func (r *EC2NetworkInterface) String() string {
-	return *r.eni.NetworkInterfaceId
+func (e *EC2NetworkInterface) String() string {
+	return *e.eni.NetworkInterfaceId
 }

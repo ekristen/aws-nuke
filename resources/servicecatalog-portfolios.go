@@ -1,26 +1,34 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/servicecatalog"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type ServiceCatalogPortfolio struct {
-	svc          *servicecatalog.ServiceCatalog
-	ID           *string
-	displayName  *string
-	providerName *string
-}
+const ServiceCatalogPortfolioResource = "ServiceCatalogPortfolio"
 
 func init() {
-	register("ServiceCatalogPortfolio", ListServiceCatalogPortfolios)
+	resource.Register(resource.Registration{
+		Name:   ServiceCatalogPortfolioResource,
+		Scope:  nuke.Account,
+		Lister: &ServiceCatalogPortfolioLister{},
+	})
 }
 
-func ListServiceCatalogPortfolios(sess *session.Session) ([]Resource, error) {
-	svc := servicecatalog.New(sess)
-	resources := []Resource{}
+type ServiceCatalogPortfolioLister struct{}
+
+func (l *ServiceCatalogPortfolioLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := servicecatalog.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &servicecatalog.ListPortfoliosInput{
 		PageSize: aws.Int64(20),
@@ -51,8 +59,14 @@ func ListServiceCatalogPortfolios(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *ServiceCatalogPortfolio) Remove() error {
+type ServiceCatalogPortfolio struct {
+	svc          *servicecatalog.ServiceCatalog
+	ID           *string
+	displayName  *string
+	providerName *string
+}
 
+func (f *ServiceCatalogPortfolio) Remove(_ context.Context) error {
 	_, err := f.svc.DeletePortfolio(&servicecatalog.DeletePortfolioInput{
 		Id: f.ID,
 	})

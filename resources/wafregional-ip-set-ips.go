@@ -1,26 +1,35 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/waf"
 	"github.com/aws/aws-sdk-go/service/wafregional"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type WAFRegionalIPSetIP struct {
-	svc        *wafregional.WAFRegional
-	ipSetid    *string
-	descriptor *waf.IPSetDescriptor
-}
+const WAFRegionalIPSetIPResource = "WAFRegionalIPSetIP"
 
 func init() {
-	register("WAFRegionalIPSetIP", ListWAFRegionalIPSetIPs)
+	resource.Register(resource.Registration{
+		Name:   WAFRegionalIPSetIPResource,
+		Scope:  nuke.Account,
+		Lister: &WAFRegionalIPSetIPLister{},
+	})
 }
 
-func ListWAFRegionalIPSetIPs(sess *session.Session) ([]Resource, error) {
-	svc := wafregional.New(sess)
-	resources := []Resource{}
+type WAFRegionalIPSetIPLister struct{}
+
+func (l *WAFRegionalIPSetIPLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := wafregional.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &waf.ListIPSetsInput{
 		Limit: aws.Int64(50),
@@ -44,7 +53,7 @@ func ListWAFRegionalIPSetIPs(sess *session.Session) ([]Resource, error) {
 			for _, descriptor := range details.IPSet.IPSetDescriptors {
 				resources = append(resources, &WAFRegionalIPSetIP{
 					svc:        svc,
-					ipSetid:    set.IPSetId,
+					ipSetID:    set.IPSetId,
 					descriptor: descriptor,
 				})
 			}
@@ -60,7 +69,13 @@ func ListWAFRegionalIPSetIPs(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (r *WAFRegionalIPSetIP) Remove() error {
+type WAFRegionalIPSetIP struct {
+	svc        *wafregional.WAFRegional
+	ipSetID    *string
+	descriptor *waf.IPSetDescriptor
+}
+
+func (r *WAFRegionalIPSetIP) Remove(_ context.Context) error {
 	tokenOutput, err := r.svc.GetChangeToken(&waf.GetChangeTokenInput{})
 	if err != nil {
 		return err
@@ -68,7 +83,7 @@ func (r *WAFRegionalIPSetIP) Remove() error {
 
 	_, err = r.svc.UpdateIPSet(&waf.UpdateIPSetInput{
 		ChangeToken: tokenOutput.ChangeToken,
-		IPSetId:     r.ipSetid,
+		IPSetId:     r.ipSetID,
 		Updates: []*waf.IPSetUpdate{
 			&waf.IPSetUpdate{
 				Action:          aws.String("DELETE"),
@@ -82,7 +97,7 @@ func (r *WAFRegionalIPSetIP) Remove() error {
 
 func (r *WAFRegionalIPSetIP) Properties() types.Properties {
 	return types.NewProperties().
-		Set("IPSetID", r.ipSetid).
+		Set("IPSetID", r.ipSetID).
 		Set("Type", r.descriptor.Type).
 		Set("Value", r.descriptor.Value)
 }

@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iot"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type IoTThingType struct {
-	svc  *iot.IoT
-	name *string
-}
+const IoTThingTypeResource = "IoTThingType"
 
 func init() {
-	register("IoTThingType", ListIoTThingTypes)
+	resource.Register(resource.Registration{
+		Name:   IoTThingTypeResource,
+		Scope:  nuke.Account,
+		Lister: &IoTThingTypeLister{},
+	})
 }
 
-func ListIoTThingTypes(sess *session.Session) ([]Resource, error) {
-	svc := iot.New(sess)
-	resources := []Resource{}
+type IoTThingTypeLister struct{}
+
+func (l *IoTThingTypeLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := iot.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &iot.ListThingTypesInput{
 		MaxResults: aws.Int64(100),
@@ -44,8 +54,12 @@ func ListIoTThingTypes(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *IoTThingType) Remove() error {
+type IoTThingType struct {
+	svc  *iot.IoT
+	name *string
+}
 
+func (f *IoTThingType) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteThingType(&iot.DeleteThingTypeInput{
 		ThingTypeName: f.name,
 	})

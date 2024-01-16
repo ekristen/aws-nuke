@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iot"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type IoTStream struct {
-	svc *iot.IoT
-	ID  *string
-}
+const IoTStreamResource = "IoTStream"
 
 func init() {
-	register("IoTStream", ListIoTStreams)
+	resource.Register(resource.Registration{
+		Name:   IoTStreamResource,
+		Scope:  nuke.Account,
+		Lister: &IoTStreamLister{},
+	})
 }
 
-func ListIoTStreams(sess *session.Session) ([]Resource, error) {
-	svc := iot.New(sess)
-	resources := []Resource{}
+type IoTStreamLister struct{}
+
+func (l *IoTStreamLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := iot.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &iot.ListStreamsInput{
 		MaxResults: aws.Int64(100),
@@ -44,8 +54,12 @@ func ListIoTStreams(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *IoTStream) Remove() error {
+type IoTStream struct {
+	svc *iot.IoT
+	ID  *string
+}
 
+func (f *IoTStream) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteStream(&iot.DeleteStreamInput{
 		StreamId: f.ID,
 	})

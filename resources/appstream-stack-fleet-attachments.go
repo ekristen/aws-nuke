@@ -1,10 +1,15 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/appstream"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 type AppStreamStackFleetAttachment struct {
@@ -13,14 +18,24 @@ type AppStreamStackFleetAttachment struct {
 	fleetName *string
 }
 
+const AppStreamStackFleetAttachmentResource = "AppStreamStackFleetAttachment"
+
 func init() {
-	register("AppStreamStackFleetAttachment", ListAppStreamStackFleetAttachments)
+	resource.Register(resource.Registration{
+		Name:   AppStreamStackFleetAttachmentResource,
+		Scope:  nuke.Account,
+		Lister: &AppStreamStackFleetAttachmentLister{},
+	})
 }
 
-func ListAppStreamStackFleetAttachments(sess *session.Session) ([]Resource, error) {
-	svc := appstream.New(sess)
-	resources := []Resource{}
-	stacks := []*appstream.Stack{}
+type AppStreamStackFleetAttachmentLister struct{}
+
+func (l *AppStreamStackFleetAttachmentLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := appstream.New(opts.Session)
+	resources := make([]resource.Resource, 0)
+	var stacks []*appstream.Stack
 	params := &appstream.DescribeStacksInput{}
 
 	for {
@@ -61,7 +76,7 @@ func ListAppStreamStackFleetAttachments(sess *session.Session) ([]Resource, erro
 	return resources, nil
 }
 
-func (f *AppStreamStackFleetAttachment) Remove() error {
+func (f *AppStreamStackFleetAttachment) Remove(_ context.Context) error {
 
 	_, err := f.svc.DisassociateFleet(&appstream.DisassociateFleetInput{
 		StackName: f.stackName,

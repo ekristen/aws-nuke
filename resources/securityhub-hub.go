@@ -1,49 +1,65 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/securityhub"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/awsutil"
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
+const SecurityHubResource = "SecurityHub"
+
 func init() {
-	register("SecurityHub", ListHubs)
+	resource.Register(resource.Registration{
+		Name:   SecurityHubResource,
+		Scope:  nuke.Account,
+		Lister: &SecurityHubLister{},
+	})
 }
 
-func ListHubs(sess *session.Session) ([]Resource, error) {
-	svc := securityhub.New(sess)
+type SecurityHubLister struct{}
 
-	resources := make([]Resource, 0)
+func (l *SecurityHubLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := securityhub.New(opts.Session)
+
+	resources := make([]resource.Resource, 0)
 
 	resp, err := svc.DescribeHub(nil)
 
 	if err != nil {
-		if IsAWSError(err, securityhub.ErrCodeInvalidAccessException) {
-			// Security Hub is not enabled for this region
+		if awsutil.IsAWSError(err, securityhub.ErrCodeInvalidAccessException) {
+			// Security SecurityHub is not enabled for this region
 			return resources, nil
 		}
 		return nil, err
 	}
 
-	resources = append(resources, &Hub{
+	resources = append(resources, &SecurityHub{
 		svc: svc,
 		id:  resp.HubArn,
 	})
 	return resources, nil
 }
 
-type Hub struct {
+type SecurityHub struct {
 	svc *securityhub.SecurityHub
 	id  *string
 }
 
-func (hub *Hub) Properties() types.Properties {
+func (hub *SecurityHub) Properties() types.Properties {
 	properties := types.NewProperties()
 	properties.Set("Arn", hub.id)
 	return properties
 }
 
-func (hub *Hub) Remove() error {
+func (hub *SecurityHub) Remove(_ context.Context) error {
 	_, err := hub.svc.DisableSecurityHub(&securityhub.DisableSecurityHubInput{})
 	return err
 }

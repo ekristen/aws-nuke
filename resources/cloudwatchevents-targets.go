@@ -1,26 +1,41 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cloudwatchevents"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
+const CloudWatchEventsTargetResource = "CloudWatchEventsTarget"
+
 func init() {
-	register("CloudWatchEventsTarget", ListCloudWatchEventsTargets)
+	resource.Register(resource.Registration{
+		Name:   CloudWatchEventsTargetResource,
+		Scope:  nuke.Account,
+		Lister: &CloudWatchEventsTargetLister{},
+	})
 }
 
-func ListCloudWatchEventsTargets(sess *session.Session) ([]Resource, error) {
-	svc := cloudwatchevents.New(sess)
+type CloudWatchEventsTargetLister struct{}
+
+func (l *CloudWatchEventsTargetLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := cloudwatchevents.New(opts.Session)
 
 	resp, err := svc.ListEventBuses(nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for _, bus := range resp.EventBuses {
 		resp, err := svc.ListRules(&cloudwatchevents.ListRulesInput{
 			EventBusName: bus.Name,
@@ -57,7 +72,7 @@ type CloudWatchEventsTarget struct {
 	busName  *string
 }
 
-func (target *CloudWatchEventsTarget) Remove() error {
+func (target *CloudWatchEventsTarget) Remove(_ context.Context) error {
 	ids := []*string{target.targetId}
 	_, err := target.svc.RemoveTargets(&cloudwatchevents.RemoveTargetsInput{
 		Ids:          ids,
@@ -69,5 +84,7 @@ func (target *CloudWatchEventsTarget) Remove() error {
 }
 
 func (target *CloudWatchEventsTarget) String() string {
+	// TODO: change this to IAM format rule -> target and mark as breaking change for filters
+	// TODO: add properties for rule and target separately
 	return fmt.Sprintf("Rule: %s Target ID: %s", *target.ruleName, *target.targetId)
 }

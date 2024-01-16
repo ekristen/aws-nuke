@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/medialive"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type MediaLiveInputSecurityGroup struct {
-	svc *medialive.MediaLive
-	ID  *string
-}
+const MediaLiveInputSecurityGroupResource = "MediaLiveInputSecurityGroup"
 
 func init() {
-	register("MediaLiveInputSecurityGroup", ListMediaLiveInputSecurityGroups)
+	resource.Register(resource.Registration{
+		Name:   MediaLiveInputSecurityGroupResource,
+		Scope:  nuke.Account,
+		Lister: &MediaLiveInputSecurityGroupLister{},
+	})
 }
 
-func ListMediaLiveInputSecurityGroups(sess *session.Session) ([]Resource, error) {
-	svc := medialive.New(sess)
-	resources := []Resource{}
+type MediaLiveInputSecurityGroupLister struct{}
+
+func (l *MediaLiveInputSecurityGroupLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := medialive.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &medialive.ListInputSecurityGroupsInput{
 		MaxResults: aws.Int64(20),
@@ -46,8 +56,12 @@ func ListMediaLiveInputSecurityGroups(sess *session.Session) ([]Resource, error)
 	return resources, nil
 }
 
-func (f *MediaLiveInputSecurityGroup) Remove() error {
+type MediaLiveInputSecurityGroup struct {
+	svc *medialive.MediaLive
+	ID  *string
+}
 
+func (f *MediaLiveInputSecurityGroup) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteInputSecurityGroup(&medialive.DeleteInputSecurityGroupInput{
 		InputSecurityGroupId: f.ID,
 	})

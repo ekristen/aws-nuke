@@ -1,13 +1,16 @@
 package resources
 
 import (
+	"context"
 	"testing"
+
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/iam"
-	"github.com/golang/mock/gomock"
-	"github.com/rebuy-de/aws-nuke/v2/mocks/mock_iamiface"
-	"github.com/stretchr/testify/assert"
+
+	"github.com/ekristen/aws-nuke/mocks/mock_iamiface"
 )
 
 func Test_Mock_IAMRolePolicy_Remove(t *testing.T) {
@@ -30,6 +33,6 @@ func Test_Mock_IAMRolePolicy_Remove(t *testing.T) {
 		PolicyName: aws.String(iamRolePolicy.policyName),
 	})).Return(&iam.DeleteRolePolicyOutput{}, nil)
 
-	err := iamRolePolicy.Remove()
+	err := iamRolePolicy.Remove(context.TODO())
 	a.Nil(err)
 }

@@ -1,30 +1,37 @@
 package resources
 
 import (
-	"fmt"
+	"context"
 
+	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/budgets"
 	"github.com/aws/aws-sdk-go/service/sts"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
+const BudgetResource = "Budget"
+
 func init() {
-	register("Budget", ListBudgets)
+	resource.Register(resource.Registration{
+		Name:   BudgetResource,
+		Scope:  nuke.Account,
+		Lister: &BudgetLister{},
+	})
 }
 
-type Budget struct {
-	svc        *budgets.Budgets
-	name       *string
-	budgetType *string
-	accountId  *string
-}
+type BudgetLister struct{}
 
-func ListBudgets(sess *session.Session) ([]Resource, error) {
-	svc := budgets.New(sess)
+func (l *BudgetLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+	svc := budgets.New(opts.Session)
 
-	identityOutput, err := sts.New(sess).GetCallerIdentity(nil)
+	// TODO: modify ListerOpts to include Account to reduce API calls
+	identityOutput, err := sts.New(opts.Session).GetCallerIdentity(nil)
 	if err != nil {
 		fmt.Printf("sts error: %s \n", err)
 		return nil, err
@@ -48,7 +55,7 @@ func ListBudgets(sess *session.Session) ([]Resource, error) {
 		return nil, err
 	}
 
-	resources := []Resource{}
+	var resources []resource.Resource
 	for _, bud := range buds {
 		resources = append(resources, &Budget{
 			svc:        svc,
@@ -61,7 +68,14 @@ func ListBudgets(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (b *Budget) Remove() error {
+type Budget struct {
+	svc        *budgets.Budgets
+	name       *string
+	budgetType *string
+	accountId  *string
+}
+
+func (b *Budget) Remove(_ context.Context) error {
 
 	_, err := b.svc.DeleteBudget(&budgets.DeleteBudgetInput{
 		AccountId:  b.accountId,

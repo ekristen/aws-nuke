@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/databasemigrationservice"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type DatabaseMigrationServiceSubnetGroup struct {
-	svc *databasemigrationservice.DatabaseMigrationService
-	ID  *string
-}
+const DatabaseMigrationServiceSubnetGroupResource = "DatabaseMigrationServiceSubnetGroup"
 
 func init() {
-	register("DatabaseMigrationServiceSubnetGroup", ListDatabaseMigrationServiceSubnetGroups)
+	resource.Register(resource.Registration{
+		Name:   DatabaseMigrationServiceSubnetGroupResource,
+		Scope:  nuke.Account,
+		Lister: &DatabaseMigrationServiceSubnetGroupLister{},
+	})
 }
 
-func ListDatabaseMigrationServiceSubnetGroups(sess *session.Session) ([]Resource, error) {
-	svc := databasemigrationservice.New(sess)
-	resources := []Resource{}
+type DatabaseMigrationServiceSubnetGroupLister struct{}
+
+func (l *DatabaseMigrationServiceSubnetGroupLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := databasemigrationservice.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &databasemigrationservice.DescribeReplicationSubnetGroupsInput{
 		MaxRecords: aws.Int64(100),
@@ -46,8 +56,12 @@ func ListDatabaseMigrationServiceSubnetGroups(sess *session.Session) ([]Resource
 	return resources, nil
 }
 
-func (f *DatabaseMigrationServiceSubnetGroup) Remove() error {
+type DatabaseMigrationServiceSubnetGroup struct {
+	svc *databasemigrationservice.DatabaseMigrationService
+	ID  *string
+}
 
+func (f *DatabaseMigrationServiceSubnetGroup) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteReplicationSubnetGroup(&databasemigrationservice.DeleteReplicationSubnetGroupInput{
 		ReplicationSubnetGroupIdentifier: f.ID,
 	})

@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iot"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type IoTCertificate struct {
-	svc *iot.IoT
-	ID  *string
-}
+const IoTCertificateResource = "IoTCertificate"
 
 func init() {
-	register("IoTCertificate", ListIoTCertificates)
+	resource.Register(resource.Registration{
+		Name:   IoTCertificateResource,
+		Scope:  nuke.Account,
+		Lister: &IoTCertificateLister{},
+	})
 }
 
-func ListIoTCertificates(sess *session.Session) ([]Resource, error) {
-	svc := iot.New(sess)
-	resources := []Resource{}
+type IoTCertificateLister struct{}
+
+func (l *IoTCertificateLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := iot.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &iot.ListCertificatesInput{}
 
@@ -43,8 +53,12 @@ func ListIoTCertificates(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *IoTCertificate) Remove() error {
+type IoTCertificate struct {
+	svc *iot.IoT
+	ID  *string
+}
 
+func (f *IoTCertificate) Remove(_ context.Context) error {
 	_, err := f.svc.UpdateCertificate(&iot.UpdateCertificateInput{
 		CertificateId: f.ID,
 		NewStatus:     aws.String("INACTIVE"),

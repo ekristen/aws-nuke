@@ -1,22 +1,32 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/opsworks"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type OpsWorksApp struct {
-	svc *opsworks.OpsWorks
-	ID  *string
-}
+const OpsWorksAppResource = "OpsWorksApp"
 
 func init() {
-	register("OpsWorksApp", ListOpsWorksApps)
+	resource.Register(resource.Registration{
+		Name:   OpsWorksAppResource,
+		Scope:  nuke.Account,
+		Lister: &OpsWorksAppLister{},
+	})
 }
 
-func ListOpsWorksApps(sess *session.Session) ([]Resource, error) {
-	svc := opsworks.New(sess)
-	resources := []Resource{}
+type OpsWorksAppLister struct{}
+
+func (l *OpsWorksAppLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := opsworks.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	stackParams := &opsworks.DescribeStacksInput{}
 
@@ -45,8 +55,12 @@ func ListOpsWorksApps(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *OpsWorksApp) Remove() error {
+type OpsWorksApp struct {
+	svc *opsworks.OpsWorks
+	ID  *string
+}
 
+func (f *OpsWorksApp) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteApp(&opsworks.DeleteAppInput{
 		AppId: f.ID,
 	})

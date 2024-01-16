@@ -1,28 +1,34 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/appsync"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-// AppSyncGraphqlAPI - An AWS AppSync GraphQL API
-type AppSyncGraphqlAPI struct {
-	svc   *appsync.AppSync
-	apiID *string
-	name  *string
-	tags  map[string]*string
-}
+const AppSyncGraphqlAPIResource = "AppSyncGraphqlAPI"
 
 func init() {
-	register("AppSyncGraphqlAPI", ListAppSyncGraphqlAPIs)
+	resource.Register(resource.Registration{
+		Name:   AppSyncGraphqlAPIResource,
+		Scope:  nuke.Account,
+		Lister: &AppSyncGraphqlAPILister{},
+	})
 }
 
-// ListAppSyncGraphqlAPIs - List all AWS AppSync GraphQL APIs in the account
-func ListAppSyncGraphqlAPIs(sess *session.Session) ([]Resource, error) {
-	svc := appsync.New(sess)
-	resources := []Resource{}
+type AppSyncGraphqlAPILister struct{}
+
+// List - List all AWS AppSync GraphQL APIs in the account
+func (l *AppSyncGraphqlAPILister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+	svc := appsync.New(opts.Session)
+	var resources []resource.Resource
 
 	params := &appsync.ListGraphqlApisInput{
 		MaxResults: aws.Int64(25),
@@ -53,8 +59,16 @@ func ListAppSyncGraphqlAPIs(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
+// AppSyncGraphqlAPI - An AWS AppSync GraphQL API
+type AppSyncGraphqlAPI struct {
+	svc   *appsync.AppSync
+	apiID *string
+	name  *string
+	tags  map[string]*string
+}
+
 // Remove - remove an AWS AppSync GraphQL API
-func (f *AppSyncGraphqlAPI) Remove() error {
+func (f *AppSyncGraphqlAPI) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteGraphqlApi(&appsync.DeleteGraphqlApiInput{
 		ApiId: f.apiID,
 	})

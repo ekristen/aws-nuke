@@ -1,22 +1,32 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/codedeploy"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type CodeDeployApplication struct {
-	svc             *codedeploy.CodeDeploy
-	applicationName *string
-}
+const CodeDeployApplicationResource = "CodeDeployApplication"
 
 func init() {
-	register("CodeDeployApplication", ListCodeDeployApplications)
+	resource.Register(resource.Registration{
+		Name:   CodeDeployApplicationResource,
+		Scope:  nuke.Account,
+		Lister: &CodeDeployApplicationLister{},
+	})
 }
 
-func ListCodeDeployApplications(sess *session.Session) ([]Resource, error) {
-	svc := codedeploy.New(sess)
-	resources := []Resource{}
+type CodeDeployApplicationLister struct{}
+
+func (l *CodeDeployApplicationLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := codedeploy.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &codedeploy.ListApplicationsInput{}
 
@@ -43,8 +53,12 @@ func ListCodeDeployApplications(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *CodeDeployApplication) Remove() error {
+type CodeDeployApplication struct {
+	svc             *codedeploy.CodeDeploy
+	applicationName *string
+}
 
+func (f *CodeDeployApplication) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteApplication(&codedeploy.DeleteApplicationInput{
 		ApplicationName: f.applicationName,
 	})

@@ -1,29 +1,39 @@
 package resources
 
 import (
+	"context"
+
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cloudfront"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type CloudFrontDistribution struct {
-	svc              *cloudfront.CloudFront
-	ID               *string
-	status           *string
-	lastModifiedTime *time.Time
-	tags             []*cloudfront.Tag
-}
+const CloudFrontDistributionResource = "CloudFrontDistribution"
 
 func init() {
-	register("CloudFrontDistribution", ListCloudFrontDistributions)
+	resource.Register(resource.Registration{
+		Name:   CloudFrontDistributionResource,
+		Scope:  nuke.Account,
+		Lister: &CloudFrontDistributionLister{},
+		DependsOn: []string{
+			CloudFrontDistributionDeploymentResource,
+		},
+	})
 }
 
-func ListCloudFrontDistributions(sess *session.Session) ([]Resource, error) {
-	svc := cloudfront.New(sess)
-	resources := []Resource{}
+type CloudFrontDistributionLister struct{}
+
+func (l *CloudFrontDistributionLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := cloudfront.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &cloudfront.ListDistributionsInput{
 		MaxItems: aws.Int64(25),
@@ -62,6 +72,14 @@ func ListCloudFrontDistributions(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
+type CloudFrontDistribution struct {
+	svc              *cloudfront.CloudFront
+	ID               *string
+	status           *string
+	lastModifiedTime *time.Time
+	tags             []*cloudfront.Tag
+}
+
 func (f *CloudFrontDistribution) Properties() types.Properties {
 	properties := types.NewProperties().
 		Set("LastModifiedTime", f.lastModifiedTime.Format(time.RFC3339))
@@ -72,8 +90,7 @@ func (f *CloudFrontDistribution) Properties() types.Properties {
 	return properties
 }
 
-func (f *CloudFrontDistribution) Remove() error {
-
+func (f *CloudFrontDistribution) Remove(_ context.Context) error {
 	// Get Existing eTag
 	resp, err := f.svc.GetDistributionConfig(&cloudfront.GetDistributionConfigInput{
 		Id: f.ID,

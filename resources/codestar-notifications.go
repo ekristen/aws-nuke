@@ -1,29 +1,36 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/codestarnotifications"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type CodeStarNotificationRule struct {
-	svc  *codestarnotifications.CodeStarNotifications
-	id   *string
-	name *string
-	arn  *string
-	tags map[string]*string
-}
+const CodeStarNotificationRuleResource = "CodeStarNotificationRule"
 
 func init() {
-	register("CodeStarNotificationRule", ListCodeStarNotificationRules)
+	resource.Register(resource.Registration{
+		Name:   CodeStarNotificationRuleResource,
+		Scope:  nuke.Account,
+		Lister: &CodeStarNotificationRuleLister{},
+	})
 }
 
-func ListCodeStarNotificationRules(sess *session.Session) ([]Resource, error) {
-	svc := codestarnotifications.New(sess)
-	resources := []Resource{}
+type CodeStarNotificationRuleLister struct{}
+
+func (l *CodeStarNotificationRuleLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := codestarnotifications.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &codestarnotifications.ListNotificationRulesInput{
 		MaxResults: aws.Int64(100),
@@ -62,8 +69,15 @@ func ListCodeStarNotificationRules(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (cn *CodeStarNotificationRule) Remove() error {
+type CodeStarNotificationRule struct {
+	svc  *codestarnotifications.CodeStarNotifications
+	id   *string
+	name *string
+	arn  *string
+	tags map[string]*string
+}
 
+func (cn *CodeStarNotificationRule) Remove(_ context.Context) error {
 	_, err := cn.svc.DeleteNotificationRule(&codestarnotifications.DeleteNotificationRuleInput{
 		Arn: cn.arn,
 	})

@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/mediatailor"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type MediaTailorConfiguration struct {
-	svc  *mediatailor.MediaTailor
-	name *string
-}
+const MediaTailorConfigurationResource = "MediaTailorConfiguration"
 
 func init() {
-	register("MediaTailorConfiguration", ListMediaTailorConfigurations)
+	resource.Register(resource.Registration{
+		Name:   MediaTailorConfigurationResource,
+		Scope:  nuke.Account,
+		Lister: &MediaTailorConfigurationLister{},
+	})
 }
 
-func ListMediaTailorConfigurations(sess *session.Session) ([]Resource, error) {
-	svc := mediatailor.New(sess)
-	resources := []Resource{}
+type MediaTailorConfigurationLister struct{}
+
+func (l *MediaTailorConfigurationLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := mediatailor.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &mediatailor.ListPlaybackConfigurationsInput{
 		MaxResults: aws.Int64(100),
@@ -44,8 +54,12 @@ func ListMediaTailorConfigurations(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *MediaTailorConfiguration) Remove() error {
+type MediaTailorConfiguration struct {
+	svc  *mediatailor.MediaTailor
+	name *string
+}
 
+func (f *MediaTailorConfiguration) Remove(_ context.Context) error {
 	_, err := f.svc.DeletePlaybackConfiguration(&mediatailor.DeletePlaybackConfigurationInput{
 		Name: f.name,
 	})

@@ -1,23 +1,33 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/cloudfront"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type CloudFrontOriginAccessControl struct {
-	svc *cloudfront.CloudFront
-	ID  *string
-}
+const CloudFrontOriginAccessControlResource = "CloudFrontOriginAccessControl"
 
 func init() {
-	register("CloudFrontOriginAccessControl", ListCloudFrontOriginAccessControls)
+	resource.Register(resource.Registration{
+		Name:   CloudFrontOriginAccessControlResource,
+		Scope:  nuke.Account,
+		Lister: &CloudFrontOriginAccessControlLister{},
+	})
 }
 
-func ListCloudFrontOriginAccessControls(sess *session.Session) ([]Resource, error) {
-	svc := cloudfront.New(sess)
-	resources := []Resource{}
+type CloudFrontOriginAccessControlLister struct{}
+
+func (l *CloudFrontOriginAccessControlLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := cloudfront.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 	params := &cloudfront.ListOriginAccessControlsInput{}
 
 	for {
@@ -43,7 +53,12 @@ func ListCloudFrontOriginAccessControls(sess *session.Session) ([]Resource, erro
 	return resources, nil
 }
 
-func (f *CloudFrontOriginAccessControl) Remove() error {
+type CloudFrontOriginAccessControl struct {
+	svc *cloudfront.CloudFront
+	ID  *string
+}
+
+func (f *CloudFrontOriginAccessControl) Remove(_ context.Context) error {
 	resp, err := f.svc.GetOriginAccessControl(&cloudfront.GetOriginAccessControlInput{
 		Id: f.ID,
 	})

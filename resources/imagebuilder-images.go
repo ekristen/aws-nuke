@@ -1,24 +1,34 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/imagebuilder"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type ImageBuilderImage struct {
-	svc *imagebuilder.Imagebuilder
-	arn string
-}
+const ImageBuilderImageResource = "ImageBuilderImage"
 
 func init() {
-	register("ImageBuilderImage", ListImageBuilderImages)
+	resource.Register(resource.Registration{
+		Name:   ImageBuilderImageResource,
+		Scope:  nuke.Account,
+		Lister: &ImageBuilderImageLister{},
+	})
 }
 
-func ListImageBuilderImages(sess *session.Session) ([]Resource, error) {
-	svc := imagebuilder.New(sess)
+type ImageBuilderImageLister struct{}
+
+func (l *ImageBuilderImageLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := imagebuilder.New(opts.Session)
 	params := &imagebuilder.ListImagesInput{}
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 
 	for {
 		resp, err := svc.ListImages(params)
@@ -45,7 +55,7 @@ func ListImageBuilderImages(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func ImageBuildVersions(svc *imagebuilder.Imagebuilder, imageVersionArn *string, resources []Resource) ([]Resource, error) {
+func ImageBuildVersions(svc *imagebuilder.Imagebuilder, imageVersionArn *string, resources []resource.Resource) ([]resource.Resource, error) {
 	params := &imagebuilder.ListImageBuildVersionsInput{
 		ImageVersionArn: imageVersionArn,
 	}
@@ -75,7 +85,12 @@ func ImageBuildVersions(svc *imagebuilder.Imagebuilder, imageVersionArn *string,
 	return resources, nil
 }
 
-func (e *ImageBuilderImage) Remove() error {
+type ImageBuilderImage struct {
+	svc *imagebuilder.Imagebuilder
+	arn string
+}
+
+func (e *ImageBuilderImage) Remove(_ context.Context) error {
 	_, err := e.svc.DeleteImage(&imagebuilder.DeleteImageInput{
 		ImageBuildVersionArn: &e.arn,
 	})

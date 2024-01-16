@@ -1,29 +1,36 @@
 package resources
 
 import (
+	"context"
+
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/transfer"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type TransferServer struct {
-	svc          *transfer.Transfer
-	serverID     *string
-	endpointType *string
-	protocols    []string
-	tags         []*transfer.Tag
-}
+const TransferServerResource = "TransferServer"
 
 func init() {
-	register("TransferServer", ListTransferServers)
+	resource.Register(resource.Registration{
+		Name:   TransferServerResource,
+		Scope:  nuke.Account,
+		Lister: &TransferServerLister{},
+	})
 }
 
-func ListTransferServers(sess *session.Session) ([]Resource, error) {
-	svc := transfer.New(sess)
-	resources := []Resource{}
+type TransferServerLister struct{}
+
+func (l *TransferServerLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := transfer.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &transfer.ListServersInput{
 		MaxResults: aws.Int64(50),
@@ -43,7 +50,7 @@ func ListTransferServers(sess *session.Session) ([]Resource, error) {
 				return nil, err
 			}
 
-			protocols := []string{}
+			var protocols []string
 			for _, protocol := range descOutput.Server.Protocols {
 				protocols = append(protocols, *protocol)
 			}
@@ -67,8 +74,15 @@ func ListTransferServers(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (ts *TransferServer) Remove() error {
+type TransferServer struct {
+	svc          *transfer.Transfer
+	serverID     *string
+	endpointType *string
+	protocols    []string
+	tags         []*transfer.Tag
+}
 
+func (ts *TransferServer) Remove(_ context.Context) error {
 	_, err := ts.svc.DeleteServer(&transfer.DeleteServerInput{
 		ServerId: ts.serverID,
 	})

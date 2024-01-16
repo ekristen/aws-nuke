@@ -1,22 +1,32 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/lightsail"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type LightsailStaticIP struct {
-	svc          *lightsail.Lightsail
-	staticIPName *string
-}
+const LightsailStaticIPResource = "LightsailStaticIP"
 
 func init() {
-	register("LightsailStaticIP", ListLightsailStaticIPs)
+	resource.Register(resource.Registration{
+		Name:   LightsailStaticIPResource,
+		Scope:  nuke.Account,
+		Lister: &LightsailStaticIPLister{},
+	})
 }
 
-func ListLightsailStaticIPs(sess *session.Session) ([]Resource, error) {
-	svc := lightsail.New(sess)
-	resources := []Resource{}
+type LightsailStaticIPLister struct{}
+
+func (l *LightsailStaticIPLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := lightsail.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &lightsail.GetStaticIpsInput{}
 
@@ -43,8 +53,12 @@ func ListLightsailStaticIPs(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *LightsailStaticIP) Remove() error {
+type LightsailStaticIP struct {
+	svc          *lightsail.Lightsail
+	staticIPName *string
+}
 
+func (f *LightsailStaticIP) Remove(_ context.Context) error {
 	_, err := f.svc.ReleaseStaticIp(&lightsail.ReleaseStaticIpInput{
 		StaticIpName: f.staticIPName,
 	})

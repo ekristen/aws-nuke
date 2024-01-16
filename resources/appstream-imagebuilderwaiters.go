@@ -1,11 +1,16 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/appstream"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 type AppStreamImageBuilderWaiter struct {
@@ -14,13 +19,23 @@ type AppStreamImageBuilderWaiter struct {
 	state *string
 }
 
+const AppStreamImageBuilderWaiterResource = "AppStreamImageBuilderWaiter"
+
 func init() {
-	register("AppStreamImageBuilderWaiter", ListAppStreamImageBuilderWaiters)
+	resource.Register(resource.Registration{
+		Name:   AppStreamImageBuilderWaiterResource,
+		Scope:  nuke.Account,
+		Lister: &AppStreamImageBuilderWaiterLister{},
+	})
 }
 
-func ListAppStreamImageBuilderWaiters(sess *session.Session) ([]Resource, error) {
-	svc := appstream.New(sess)
-	resources := []Resource{}
+type AppStreamImageBuilderWaiterLister struct{}
+
+func (l *AppStreamImageBuilderWaiterLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := appstream.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &appstream.DescribeImageBuildersInput{
 		MaxResults: aws.Int64(100),
@@ -50,7 +65,7 @@ func ListAppStreamImageBuilderWaiters(sess *session.Session) ([]Resource, error)
 	return resources, nil
 }
 
-func (f *AppStreamImageBuilderWaiter) Remove() error {
+func (f *AppStreamImageBuilderWaiter) Remove(_ context.Context) error {
 
 	return nil
 }

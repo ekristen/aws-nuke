@@ -1,26 +1,34 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/rds"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type RDSClusterSnapshot struct {
-	svc      *rds.RDS
-	snapshot *rds.DBClusterSnapshot
-	tags     []*rds.Tag
-}
+const RDSClusterSnapshotResource = "RDSClusterSnapshot"
 
 func init() {
-	register("RDSClusterSnapshot", ListRDSClusterSnapshots)
+	resource.Register(resource.Registration{
+		Name:   RDSClusterSnapshotResource,
+		Scope:  nuke.Account,
+		Lister: &RDSClusterSnapshotLister{},
+	})
 }
 
-func ListRDSClusterSnapshots(sess *session.Session) ([]Resource, error) {
-	svc := rds.New(sess)
+type RDSClusterSnapshotLister struct{}
+
+func (l *RDSClusterSnapshotLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+	svc := rds.New(opts.Session)
 
 	params := &rds.DescribeDBClusterSnapshotsInput{MaxRecords: aws.Int64(100)}
 
@@ -28,7 +36,7 @@ func ListRDSClusterSnapshots(sess *session.Session) ([]Resource, error) {
 	if err != nil {
 		return nil, err
 	}
-	var resources []Resource
+	var resources []resource.Resource
 	for _, snapshot := range resp.DBClusterSnapshots {
 		tags, err := svc.ListTagsForResource(&rds.ListTagsForResourceInput{
 			ResourceName: snapshot.DBClusterSnapshotArn,
@@ -48,6 +56,12 @@ func ListRDSClusterSnapshots(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
+type RDSClusterSnapshot struct {
+	svc      *rds.RDS
+	snapshot *rds.DBClusterSnapshot
+	tags     []*rds.Tag
+}
+
 func (i *RDSClusterSnapshot) Filter() error {
 	if *i.snapshot.SnapshotType == "automated" {
 		return fmt.Errorf("cannot delete automated snapshots")
@@ -55,7 +69,7 @@ func (i *RDSClusterSnapshot) Filter() error {
 	return nil
 }
 
-func (i *RDSClusterSnapshot) Remove() error {
+func (i *RDSClusterSnapshot) Remove(_ context.Context) error {
 	if i.snapshot.DBClusterSnapshotIdentifier == nil {
 		// Sanity check to make sure the delete request does not skip the
 		// identifier.

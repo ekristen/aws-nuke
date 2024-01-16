@@ -1,26 +1,35 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/waf"
 	"github.com/aws/aws-sdk-go/service/wafregional"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type WAFRegionalRegexMatchTuple struct {
-	svc        *wafregional.WAFRegional
-	matchSetid *string
-	tuple      *waf.RegexMatchTuple
-}
+const WAFRegionalRegexMatchTupleResource = "WAFRegionalRegexMatchTuple"
 
 func init() {
-	register("WAFRegionalRegexMatchTuple", ListWAFRegionalRegexMatchTuple)
+	resource.Register(resource.Registration{
+		Name:   WAFRegionalRegexMatchTupleResource,
+		Scope:  nuke.Account,
+		Lister: &WAFRegionalRegexMatchTupleLister{},
+	})
 }
 
-func ListWAFRegionalRegexMatchTuple(sess *session.Session) ([]Resource, error) {
-	svc := wafregional.New(sess)
-	resources := []Resource{}
+type WAFRegionalRegexMatchTupleLister struct{}
+
+func (l *WAFRegionalRegexMatchTupleLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := wafregional.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &waf.ListRegexMatchSetsInput{
 		Limit: aws.Int64(50),
@@ -43,7 +52,7 @@ func ListWAFRegionalRegexMatchTuple(sess *session.Session) ([]Resource, error) {
 			for _, tuple := range regexMatchSet.RegexMatchSet.RegexMatchTuples {
 				resources = append(resources, &WAFRegionalRegexMatchTuple{
 					svc:        svc,
-					matchSetid: set.RegexMatchSetId,
+					matchSetID: set.RegexMatchSetId,
 					tuple:      tuple,
 				})
 			}
@@ -59,7 +68,13 @@ func ListWAFRegionalRegexMatchTuple(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (r *WAFRegionalRegexMatchTuple) Remove() error {
+type WAFRegionalRegexMatchTuple struct {
+	svc        *wafregional.WAFRegional
+	matchSetID *string
+	tuple      *waf.RegexMatchTuple
+}
+
+func (r *WAFRegionalRegexMatchTuple) Remove(_ context.Context) error {
 	tokenOutput, err := r.svc.GetChangeToken(&waf.GetChangeTokenInput{})
 	if err != nil {
 		return err
@@ -67,7 +82,7 @@ func (r *WAFRegionalRegexMatchTuple) Remove() error {
 
 	_, err = r.svc.UpdateRegexMatchSet(&waf.UpdateRegexMatchSetInput{
 		ChangeToken:     tokenOutput.ChangeToken,
-		RegexMatchSetId: r.matchSetid,
+		RegexMatchSetId: r.matchSetID,
 		Updates: []*waf.RegexMatchSetUpdate{
 			&waf.RegexMatchSetUpdate{
 				Action:          aws.String("DELETE"),
@@ -81,7 +96,7 @@ func (r *WAFRegionalRegexMatchTuple) Remove() error {
 
 func (r *WAFRegionalRegexMatchTuple) Properties() types.Properties {
 	return types.NewProperties().
-		Set("RegexMatchSetID", r.matchSetid).
+		Set("RegexMatchSetID", r.matchSetID).
 		Set("FieldToMatchType", r.tuple.FieldToMatch.Type).
 		Set("FieldToMatchData", r.tuple.FieldToMatch.Data).
 		Set("TextTransformation", r.tuple.TextTransformation)

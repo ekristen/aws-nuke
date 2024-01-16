@@ -1,24 +1,32 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/apigateway"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type APIGatewayClientCertificate struct {
-	svc                 *apigateway.APIGateway
-	clientCertificateID *string
-}
+const APIGatewayClientCertificateResource = "APIGatewayClientCertificate"
 
 func init() {
-	register("APIGatewayClientCertificate", ListAPIGatewayClientCertificates,
-		mapCloudControl("AWS::ApiGateway::ClientCertificate"))
+	resource.Register(resource.Registration{
+		Name:   APIGatewayClientCertificateResource,
+		Scope:  nuke.Account,
+		Lister: &APIGatewayClientCertificateLister{},
+	}, nuke.MapCloudControl("AWS::ApiGateway::ClientCertificate"))
 }
 
-func ListAPIGatewayClientCertificates(sess *session.Session) ([]Resource, error) {
-	svc := apigateway.New(sess)
-	resources := []Resource{}
+type APIGatewayClientCertificateLister struct{}
+
+func (l *APIGatewayClientCertificateLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+	svc := apigateway.New(opts.Session)
+	var resources []resource.Resource
 
 	params := &apigateway.GetClientCertificatesInput{
 		Limit: aws.Int64(100),
@@ -47,8 +55,12 @@ func ListAPIGatewayClientCertificates(sess *session.Session) ([]Resource, error)
 	return resources, nil
 }
 
-func (f *APIGatewayClientCertificate) Remove() error {
+type APIGatewayClientCertificate struct {
+	svc                 *apigateway.APIGateway
+	clientCertificateID *string
+}
 
+func (f *APIGatewayClientCertificate) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteClientCertificate(&apigateway.DeleteClientCertificateInput{
 		ClientCertificateId: f.clientCertificateID,
 	})

@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/databasemigrationservice"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type DatabaseMigrationServiceEventSubscription struct {
-	svc              *databasemigrationservice.DatabaseMigrationService
-	subscriptionName *string
-}
+const DatabaseMigrationServiceEventSubscriptionResource = "DatabaseMigrationServiceEventSubscription"
 
 func init() {
-	register("DatabaseMigrationServiceEventSubscription", ListDatabaseMigrationServiceEventSubscriptions)
+	resource.Register(resource.Registration{
+		Name:   DatabaseMigrationServiceEventSubscriptionResource,
+		Scope:  nuke.Account,
+		Lister: &DatabaseMigrationServiceEventSubscriptionLister{},
+	})
 }
 
-func ListDatabaseMigrationServiceEventSubscriptions(sess *session.Session) ([]Resource, error) {
-	svc := databasemigrationservice.New(sess)
-	resources := []Resource{}
+type DatabaseMigrationServiceEventSubscriptionLister struct{}
+
+func (l *DatabaseMigrationServiceEventSubscriptionLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := databasemigrationservice.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &databasemigrationservice.DescribeEventSubscriptionsInput{
 		MaxRecords: aws.Int64(100),
@@ -46,8 +56,12 @@ func ListDatabaseMigrationServiceEventSubscriptions(sess *session.Session) ([]Re
 	return resources, nil
 }
 
-func (f *DatabaseMigrationServiceEventSubscription) Remove() error {
+type DatabaseMigrationServiceEventSubscription struct {
+	svc              *databasemigrationservice.DatabaseMigrationService
+	subscriptionName *string
+}
 
+func (f *DatabaseMigrationServiceEventSubscription) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteEventSubscription(&databasemigrationservice.DeleteEventSubscriptionInput{
 		SubscriptionName: f.subscriptionName,
 	})

@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type CloudWatchLogsDestination struct {
-	svc             *cloudwatchlogs.CloudWatchLogs
-	destinationName *string
-}
+const CloudWatchLogsDestinationResource = "CloudWatchLogsDestination"
 
 func init() {
-	register("CloudWatchLogsDestination", ListCloudWatchLogsDestinations)
+	resource.Register(resource.Registration{
+		Name:   CloudWatchLogsDestinationResource,
+		Scope:  nuke.Account,
+		Lister: &CloudWatchLogsDestinationLister{},
+	})
 }
 
-func ListCloudWatchLogsDestinations(sess *session.Session) ([]Resource, error) {
-	svc := cloudwatchlogs.New(sess)
-	resources := []Resource{}
+type CloudWatchLogsDestinationLister struct{}
+
+func (l *CloudWatchLogsDestinationLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := cloudwatchlogs.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &cloudwatchlogs.DescribeDestinationsInput{
 		Limit: aws.Int64(50),
@@ -46,8 +56,12 @@ func ListCloudWatchLogsDestinations(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *CloudWatchLogsDestination) Remove() error {
+type CloudWatchLogsDestination struct {
+	svc             *cloudwatchlogs.CloudWatchLogs
+	destinationName *string
+}
 
+func (f *CloudWatchLogsDestination) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteDestination(&cloudwatchlogs.DeleteDestinationInput{
 		DestinationName: f.destinationName,
 	})

@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/clouddirectory"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type CloudDirectorySchema struct {
-	svc       *clouddirectory.CloudDirectory
-	schemaARN *string
-}
+const CloudDirectorySchemaResource = "CloudDirectorySchema"
 
 func init() {
-	register("CloudDirectorySchema", ListCloudDirectorySchemas)
+	resource.Register(resource.Registration{
+		Name:   CloudDirectorySchemaResource,
+		Scope:  nuke.Account,
+		Lister: &CloudDirectorySchemaLister{},
+	})
 }
 
-func ListCloudDirectorySchemas(sess *session.Session) ([]Resource, error) {
-	svc := clouddirectory.New(sess)
-	resources := []Resource{}
+type CloudDirectorySchemaLister struct{}
+
+func (l *CloudDirectorySchemaLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := clouddirectory.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	developmentParams := &clouddirectory.ListDevelopmentSchemaArnsInput{
 		MaxResults: aws.Int64(30),
@@ -72,7 +82,12 @@ func ListCloudDirectorySchemas(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *CloudDirectorySchema) Remove() error {
+type CloudDirectorySchema struct {
+	svc       *clouddirectory.CloudDirectory
+	schemaARN *string
+}
+
+func (f *CloudDirectorySchema) Remove(_ context.Context) error {
 
 	_, err := f.svc.DeleteSchema(&clouddirectory.DeleteSchemaInput{
 		SchemaArn: f.schemaARN,

@@ -1,36 +1,37 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
-	"github.com/sirupsen/logrus"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type IAMInstanceProfile struct {
-	svc     iamiface.IAMAPI
-	name    string
-	path    string
-	profile *iam.InstanceProfile
-}
+const IAMInstanceProfileResource = "IAMInstanceProfile"
 
 func init() {
-	register("IAMInstanceProfile", ListIAMInstanceProfiles)
+	resource.Register(resource.Registration{
+		Name:   IAMInstanceProfileResource,
+		Scope:  nuke.Account,
+		Lister: &IAMInstanceProfileLister{},
+	})
 }
 
-func GetIAMInstanceProfile(svc *iam.IAM, instanceProfileName *string) (*iam.InstanceProfile, error) {
-	params := &iam.GetInstanceProfileInput{
-		InstanceProfileName: instanceProfileName,
-	}
-	resp, err := svc.GetInstanceProfile(params)
-	return resp.InstanceProfile, err
-}
+type IAMInstanceProfileLister struct{}
 
-func ListIAMInstanceProfiles(sess *session.Session) ([]Resource, error) {
-	svc := iam.New(sess)
+func (l *IAMInstanceProfileLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := iam.New(opts.Session)
 	params := &iam.ListInstanceProfilesInput{}
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 
 	for {
 		resp, err := svc.ListInstanceProfiles(params)
@@ -66,7 +67,22 @@ func ListIAMInstanceProfiles(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (e *IAMInstanceProfile) Remove() error {
+func GetIAMInstanceProfile(svc *iam.IAM, instanceProfileName *string) (*iam.InstanceProfile, error) {
+	params := &iam.GetInstanceProfileInput{
+		InstanceProfileName: instanceProfileName,
+	}
+	resp, err := svc.GetInstanceProfile(params)
+	return resp.InstanceProfile, err
+}
+
+type IAMInstanceProfile struct {
+	svc     iamiface.IAMAPI
+	name    string
+	path    string
+	profile *iam.InstanceProfile
+}
+
+func (e *IAMInstanceProfile) Remove(_ context.Context) error {
 	_, err := e.svc.DeleteInstanceProfile(&iam.DeleteInstanceProfileInput{
 		InstanceProfileName: &e.name,
 	})

@@ -1,23 +1,33 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+	"github.com/gotidy/ptr"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type EC2InternetGateway struct {
-	svc        *ec2.EC2
-	igw        *ec2.InternetGateway
-	defaultVPC bool
-}
+const EC2InternetGatewayResource = "EC2InternetGateway"
 
 func init() {
-	register("EC2InternetGateway", ListEC2InternetGateways)
+	resource.Register(resource.Registration{
+		Name:   EC2InternetGatewayResource,
+		Scope:  nuke.Account,
+		Lister: &EC2InternetGatewayLister{},
+	})
 }
 
-func ListEC2InternetGateways(sess *session.Session) ([]Resource, error) {
-	svc := ec2.New(sess)
+type EC2InternetGatewayLister struct{}
+
+func (l *EC2InternetGatewayLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := ec2.New(opts.Session)
 
 	resp, err := svc.DescribeInternetGateways(nil)
 	if err != nil {
@@ -29,7 +39,7 @@ func ListEC2InternetGateways(sess *session.Session) ([]Resource, error) {
 		defVpcId = *defVpc.VpcId
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for _, igw := range resp.InternetGateways {
 		resources = append(resources, &EC2InternetGateway{
 			svc:        svc,
@@ -54,7 +64,13 @@ func HasVpcAttachment(vpcId *string, attachments []*ec2.InternetGatewayAttachmen
 	return false
 }
 
-func (e *EC2InternetGateway) Remove() error {
+type EC2InternetGateway struct {
+	svc        *ec2.EC2
+	igw        *ec2.InternetGateway
+	defaultVPC bool
+}
+
+func (e *EC2InternetGateway) Remove(_ context.Context) error {
 	params := &ec2.DeleteInternetGatewayInput{
 		InternetGatewayId: e.igw.InternetGatewayId,
 	}
@@ -78,5 +94,5 @@ func (e *EC2InternetGateway) Properties() types.Properties {
 }
 
 func (e *EC2InternetGateway) String() string {
-	return *e.igw.InternetGatewayId
+	return ptr.ToString(e.igw.InternetGatewayId)
 }

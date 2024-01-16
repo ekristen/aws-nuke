@@ -1,28 +1,39 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/opsworks"
 	"github.com/aws/aws-sdk-go/service/sts"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type OpsWorksUserProfile struct {
-	svc        *opsworks.OpsWorks
-	ARN        *string
-	callingArn *string
-}
+const OpsWorksUserProfileResource = "OpsWorksUserProfile"
 
 func init() {
-	register("OpsWorksUserProfile", ListOpsWorksUserProfiles)
+	resource.Register(resource.Registration{
+		Name:   OpsWorksUserProfileResource,
+		Scope:  nuke.Account,
+		Lister: &OpsWorksUserProfileLister{},
+	})
 }
 
-func ListOpsWorksUserProfiles(sess *session.Session) ([]Resource, error) {
-	svc := opsworks.New(sess)
-	resources := []Resource{}
+type OpsWorksUserProfileLister struct{}
 
-	identityOutput, err := sts.New(sess).GetCallerIdentity(nil)
+func (l *OpsWorksUserProfileLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := opsworks.New(opts.Session)
+	resources := make([]resource.Resource, 0)
+
+	// TODO: pass in account information via ListerOpts to avoid additional calls.
+
+	identityOutput, err := sts.New(opts.Session).GetCallerIdentity(nil)
 	if err != nil {
 		return nil, err
 	}
@@ -45,14 +56,20 @@ func ListOpsWorksUserProfiles(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
+type OpsWorksUserProfile struct {
+	svc        *opsworks.OpsWorks
+	ARN        *string
+	callingArn *string
+}
+
 func (f *OpsWorksUserProfile) Filter() error {
 	if *f.callingArn == *f.ARN {
-		return fmt.Errorf("Cannot delete OpsWorksUserProfile of calling User")
+		return fmt.Errorf("cannot delete OpsWorksUserProfile of calling User")
 	}
 	return nil
 }
 
-func (f *OpsWorksUserProfile) Remove() error {
+func (f *OpsWorksUserProfile) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteUserProfile(&opsworks.DeleteUserProfileInput{
 		IamUserArn: f.ARN,
 	})

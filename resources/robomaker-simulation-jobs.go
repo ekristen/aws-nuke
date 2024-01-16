@@ -1,32 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/robomaker"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type RoboMakerSimulationJob struct {
-	svc  *robomaker.RoboMaker
-	name *string
-	arn  *string
-}
+const RoboMakerSimulationJobResource = "RoboMakerSimulationJob"
 
 func init() {
-	register("RoboMakerSimulationJob", ListRoboMakerSimulationJobs)
+	resource.Register(resource.Registration{
+		Name:   RoboMakerSimulationJobResource,
+		Scope:  nuke.Account,
+		Lister: &RoboMakerSimulationJobLister{},
+	})
 }
 
-func simulationJobNeedsToBeCanceled(job *robomaker.SimulationJobSummary) bool {
-	for _, n := range []string{"Completed", "Failed", "RunningFailed", "Terminating", "Terminated", "Canceled"} {
-		if job.Status != nil && *job.Status == n {
-			return false
-		}
-	}
-	return true
-}
-func ListRoboMakerSimulationJobs(sess *session.Session) ([]Resource, error) {
-	svc := robomaker.New(sess)
-	resources := []Resource{}
+type RoboMakerSimulationJobLister struct{}
+
+func (l *RoboMakerSimulationJobLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := robomaker.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &robomaker.ListSimulationJobsInput{
 		MaxResults: aws.Int64(30),
@@ -57,8 +58,23 @@ func ListRoboMakerSimulationJobs(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *RoboMakerSimulationJob) Remove() error {
+// simulationJobNeedsToBeCanceled returns true if the simulation job needs to be canceled (helper function)
+func simulationJobNeedsToBeCanceled(job *robomaker.SimulationJobSummary) bool {
+	for _, n := range []string{"Completed", "Failed", "RunningFailed", "Terminating", "Terminated", "Canceled"} {
+		if job.Status != nil && *job.Status == n {
+			return false
+		}
+	}
+	return true
+}
 
+type RoboMakerSimulationJob struct {
+	svc  *robomaker.RoboMaker
+	name *string
+	arn  *string
+}
+
+func (f *RoboMakerSimulationJob) Remove(_ context.Context) error {
 	_, err := f.svc.CancelSimulationJob(&robomaker.CancelSimulationJobInput{
 		Job: f.arn,
 	})

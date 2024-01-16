@@ -1,32 +1,39 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 	"time"
 
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type S3Object struct {
-	svc          *s3.S3
-	bucket       string
-	creationDate time.Time
-	key          string
-	versionID    *string
-	latest       bool
-}
+const S3ObjectResource = "S3Object"
 
 func init() {
-	register("S3Object", ListS3Objects)
+	resource.Register(resource.Registration{
+		Name:   S3ObjectResource,
+		Scope:  nuke.Account,
+		Lister: &S3ObjectLister{},
+	})
 }
 
-func ListS3Objects(sess *session.Session) ([]Resource, error) {
-	svc := s3.New(sess)
+type S3ObjectLister struct{}
 
-	resources := make([]Resource, 0)
+func (l *S3ObjectLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+	svc := s3.New(opts.Session)
+
+	resources := make([]resource.Resource, 0)
 
 	buckets, err := DescribeS3Buckets(svc)
 	if err != nil {
@@ -55,7 +62,7 @@ func ListS3Objects(sess *session.Session) ([]Resource, error) {
 					creationDate: aws.TimeValue(bucket.CreationDate),
 					key:          *out.Key,
 					versionID:    out.VersionId,
-					latest:       UnPtrBool(out.IsLatest, false),
+					latest:       ptr.ToBool(out.IsLatest),
 				})
 			}
 
@@ -70,7 +77,7 @@ func ListS3Objects(sess *session.Session) ([]Resource, error) {
 					creationDate: aws.TimeValue(bucket.CreationDate),
 					key:          *out.Key,
 					versionID:    out.VersionId,
-					latest:       UnPtrBool(out.IsLatest, false),
+					latest:       ptr.ToBool(out.IsLatest),
 				})
 			}
 
@@ -87,7 +94,16 @@ func ListS3Objects(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (e *S3Object) Remove() error {
+type S3Object struct {
+	svc          *s3.S3
+	bucket       string
+	creationDate time.Time
+	key          string
+	versionID    *string
+	latest       bool
+}
+
+func (e *S3Object) Remove(_ context.Context) error {
 	params := &s3.DeleteObjectInput{
 		Bucket:    &e.bucket,
 		Key:       &e.key,

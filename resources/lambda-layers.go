@@ -1,23 +1,32 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/lambda"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type lambdaLayer struct {
-	svc       *lambda.Lambda
-	layerName *string
-	version   int64
-}
+const LambdaLayerResource = "LambdaLayer"
 
 func init() {
-	register("LambdaLayer", ListLambdaLayers)
+	resource.Register(resource.Registration{
+		Name:   LambdaLayerResource,
+		Scope:  nuke.Account,
+		Lister: &LambdaLayerLister{},
+	})
 }
 
-func ListLambdaLayers(sess *session.Session) ([]Resource, error) {
-	svc := lambda.New(sess)
+type LambdaLayerLister struct{}
+
+func (l *LambdaLayerLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := lambda.New(opts.Session)
 
 	layers := make([]*lambda.LayersListItem, 0)
 
@@ -33,7 +42,7 @@ func ListLambdaLayers(sess *session.Session) ([]Resource, error) {
 		return nil, err
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 
 	for _, layer := range layers {
 		versionsParams := &lambda.ListLayerVersionsInput{
@@ -41,7 +50,7 @@ func ListLambdaLayers(sess *session.Session) ([]Resource, error) {
 		}
 		err := svc.ListLayerVersionsPages(versionsParams, func(page *lambda.ListLayerVersionsOutput, lastPage bool) bool {
 			for _, out := range page.LayerVersions {
-				resources = append(resources, &lambdaLayer{
+				resources = append(resources, &LambdaLayer{
 					svc:       svc,
 					layerName: layer.LayerName,
 					version:   *out.Version,
@@ -52,13 +61,18 @@ func ListLambdaLayers(sess *session.Session) ([]Resource, error) {
 		if err != nil {
 			return nil, err
 		}
-
 	}
 
 	return resources, nil
 }
 
-func (l *lambdaLayer) Remove() error {
+type LambdaLayer struct {
+	svc       *lambda.Lambda
+	layerName *string
+	version   int64
+}
+
+func (l *LambdaLayer) Remove(_ context.Context) error {
 
 	_, err := l.svc.DeleteLayerVersion(&lambda.DeleteLayerVersionInput{
 		LayerName:     l.layerName,
@@ -68,7 +82,7 @@ func (l *lambdaLayer) Remove() error {
 	return err
 }
 
-func (l *lambdaLayer) Properties() types.Properties {
+func (l *LambdaLayer) Properties() types.Properties {
 	properties := types.NewProperties()
 	properties.Set("Name", l.layerName)
 	properties.Set("Version", l.version)
@@ -76,6 +90,6 @@ func (l *lambdaLayer) Properties() types.Properties {
 	return properties
 }
 
-func (l *lambdaLayer) String() string {
+func (l *LambdaLayer) String() string {
 	return *l.layerName
 }

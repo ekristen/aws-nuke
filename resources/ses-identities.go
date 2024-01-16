@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ses"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type SESIdentity struct {
-	svc      *ses.SES
-	identity *string
-}
+const SESIdentityResource = "SESIdentity"
 
 func init() {
-	register("SESIdentity", ListSESIdentities)
+	resource.Register(resource.Registration{
+		Name:   SESIdentityResource,
+		Scope:  nuke.Account,
+		Lister: &SESIdentityLister{},
+	})
 }
 
-func ListSESIdentities(sess *session.Session) ([]Resource, error) {
-	svc := ses.New(sess)
-	resources := []Resource{}
+type SESIdentityLister struct{}
+
+func (l *SESIdentityLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := ses.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &ses.ListIdentitiesInput{
 		MaxItems: aws.Int64(100),
@@ -46,8 +56,12 @@ func ListSESIdentities(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *SESIdentity) Remove() error {
+type SESIdentity struct {
+	svc      *ses.SES
+	identity *string
+}
 
+func (f *SESIdentity) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteIdentity(&ses.DeleteIdentityInput{
 		Identity: f.identity,
 	})

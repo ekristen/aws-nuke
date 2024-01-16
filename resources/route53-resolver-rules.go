@@ -1,40 +1,44 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
-	"github.com/aws/smithy-go/ptr"
+	"github.com/gotidy/ptr"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/route53resolver"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type (
-	// Route53ResolverRule is the resource type
-	Route53ResolverRule struct {
-		svc        *route53resolver.Route53Resolver
-		id         *string
-		name       *string
-		domainName *string
-		vpcIds     []*string
-	}
-)
+const Route53ResolverRuleResource = "Route53ResolverRule"
 
 func init() {
-	register("Route53ResolverRule", ListRoute53ResolverRules)
+	resource.Register(resource.Registration{
+		Name:   Route53ResolverRuleResource,
+		Scope:  nuke.Account,
+		Lister: &Route53ResolverRuleLister{},
+	})
 }
 
-// ListRoute53ResolverRules produces the resources to be nuked.
-func ListRoute53ResolverRules(sess *session.Session) ([]Resource, error) {
-	svc := route53resolver.New(sess)
+type Route53ResolverRuleLister struct{}
+
+// List returns a list of all Route53 ResolverRules before filtering to be nuked
+func (l *Route53ResolverRuleLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := route53resolver.New(opts.Session)
 
 	vpcAssociations, err := resolverRulesToVpcIDs(svc)
 	if err != nil {
 		return nil, err
 	}
 
-	var resources []Resource
+	var resources []resource.Resource
 
 	params := &route53resolver.ListResolverRulesInput{}
 	for {
@@ -64,7 +68,7 @@ func ListRoute53ResolverRules(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-// Associate all the vpcIDs to their resolver rule ID to be disassociated before deleting the rule.
+// resolverRulesToVpcIDs - Associate all the vpcIDs to their resolver rule ID to be disassociated before deleting the rule.
 func resolverRulesToVpcIDs(svc *route53resolver.Route53Resolver) (map[string][]*string, error) {
 	vpcAssociations := map[string][]*string{}
 
@@ -100,10 +104,19 @@ func resolverRulesToVpcIDs(svc *route53resolver.Route53Resolver) (map[string][]*
 	return vpcAssociations, nil
 }
 
+// Route53ResolverRule is the resource type
+type Route53ResolverRule struct {
+	svc        *route53resolver.Route53Resolver
+	id         *string
+	name       *string
+	domainName *string
+	vpcIds     []*string
+}
+
 // Filter removes resources automatically from being nuked
 func (r *Route53ResolverRule) Filter() error {
 	if r.domainName != nil && ptr.ToString(r.domainName) == "." {
-		return fmt.Errorf(`Filtering DomainName "."`)
+		return fmt.Errorf(`filtering DomainName "."`)
 	}
 
 	if r.id != nil && strings.HasPrefix(ptr.ToString(r.id), "rslvr-autodefined-rr") {
@@ -114,7 +127,7 @@ func (r *Route53ResolverRule) Filter() error {
 }
 
 // Remove implements Resource
-func (r *Route53ResolverRule) Remove() error {
+func (r *Route53ResolverRule) Remove(_ context.Context) error {
 	for _, vpcID := range r.vpcIds {
 		_, err := r.svc.DisassociateResolverRule(&route53resolver.DisassociateResolverRuleInput{
 			ResolverRuleId: r.id,

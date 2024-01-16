@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/firehose"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type FirehoseDeliveryStream struct {
-	svc                *firehose.Firehose
-	deliveryStreamName *string
-}
+const FirehoseDeliveryStreamResource = "FirehoseDeliveryStream"
 
 func init() {
-	register("FirehoseDeliveryStream", ListFirehoseDeliveryStreams)
+	resource.Register(resource.Registration{
+		Name:   FirehoseDeliveryStreamResource,
+		Scope:  nuke.Account,
+		Lister: &FirehoseDeliveryStreamLister{},
+	})
 }
 
-func ListFirehoseDeliveryStreams(sess *session.Session) ([]Resource, error) {
-	svc := firehose.New(sess)
-	resources := []Resource{}
+type FirehoseDeliveryStreamLister struct{}
+
+func (l *FirehoseDeliveryStreamLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := firehose.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 	var lastDeliveryStreamName *string
 
 	params := &firehose.ListDeliveryStreamsInput{
@@ -48,8 +58,12 @@ func ListFirehoseDeliveryStreams(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *FirehoseDeliveryStream) Remove() error {
+type FirehoseDeliveryStream struct {
+	svc                *firehose.Firehose
+	deliveryStreamName *string
+}
 
+func (f *FirehoseDeliveryStream) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteDeliveryStream(&firehose.DeleteDeliveryStreamInput{
 		DeliveryStreamName: f.deliveryStreamName,
 	})

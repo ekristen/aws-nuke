@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ssm"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type SSMDocument struct {
-	svc  *ssm.SSM
-	name *string
-}
+const SSMDocumentResource = "SSMDocument"
 
 func init() {
-	register("SSMDocument", ListSSMDocuments)
+	resource.Register(resource.Registration{
+		Name:   SSMDocumentResource,
+		Scope:  nuke.Account,
+		Lister: &SSMDocumentLister{},
+	})
 }
 
-func ListSSMDocuments(sess *session.Session) ([]Resource, error) {
-	svc := ssm.New(sess)
-	resources := []Resource{}
+type SSMDocumentLister struct{}
+
+func (l *SSMDocumentLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := ssm.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	documentKeyFilter := []*ssm.DocumentKeyValuesFilter{
 		{
@@ -54,8 +64,12 @@ func ListSSMDocuments(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *SSMDocument) Remove() error {
+type SSMDocument struct {
+	svc  *ssm.SSM
+	name *string
+}
 
+func (f *SSMDocument) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteDocument(&ssm.DeleteDocumentInput{
 		Name: f.name,
 	})

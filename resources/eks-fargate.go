@@ -1,28 +1,36 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/eks"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type EKSFargateProfile struct {
-	svc     *eks.EKS
-	cluster *string
-	name    *string
-}
+const EKSFargateProfileResource = "EKSFargateProfile"
 
 func init() {
-	register("EKSFargateProfiles", ListEKSFargateProfiles)
+	resource.Register(resource.Registration{
+		Name:   EKSFargateProfileResource,
+		Scope:  nuke.Account,
+		Lister: &EKSFargateProfileLister{},
+	})
 }
 
-func ListEKSFargateProfiles(sess *session.Session) ([]Resource, error) {
-	svc := eks.New(sess)
-	clusterNames := []*string{}
-	resources := []Resource{}
+type EKSFargateProfileLister struct{}
+
+func (l *EKSFargateProfileLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+	svc := eks.New(opts.Session)
+	var clusterNames []*string
+	var resources []resource.Resource
 
 	clusterInputParams := &eks.ListClustersInput{
 		MaxResults: aws.Int64(100),
@@ -81,7 +89,13 @@ func ListEKSFargateProfiles(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (fp *EKSFargateProfile) Remove() error {
+type EKSFargateProfile struct {
+	svc     *eks.EKS
+	cluster *string
+	name    *string
+}
+
+func (fp *EKSFargateProfile) Remove(_ context.Context) error {
 	_, err := fp.svc.DeleteFargateProfile(&eks.DeleteFargateProfileInput{
 		ClusterName:        fp.cluster,
 		FargateProfileName: fp.name,

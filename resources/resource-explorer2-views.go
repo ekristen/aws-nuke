@@ -1,23 +1,35 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/resourceexplorer2"
+	"github.com/ekristen/aws-nuke/pkg/nuke"
+	"github.com/ekristen/libnuke/pkg/resource"
 )
+
+const ResourceExplorer2ViewResource = "ResourceExplorer2View"
+
+func init() {
+	resource.Register(resource.Registration{
+		Name:   ResourceExplorer2ViewResource,
+		Scope:  nuke.Account,
+		Lister: &ResourceExplorer2ViewLister{},
+	})
+}
+
+type ResourceExplorer2ViewLister struct{}
 
 type ResourceExplorer2View struct {
 	svc     *resourceexplorer2.ResourceExplorer2
 	viewArn *string
 }
 
-func init() {
-	register("ResourceExplorer2View", ResourceExplorer2Views)
-}
-
-func ResourceExplorer2Views(sess *session.Session) ([]Resource, error) {
-	svc := resourceexplorer2.New(sess)
-	var resources []Resource
+func (l *ResourceExplorer2ViewLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+	svc := resourceexplorer2.New(opts.Session)
+	var resources []resource.Resource
 
 	params := &resourceexplorer2.ListViewsInput{}
 
@@ -44,7 +56,7 @@ func ResourceExplorer2Views(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *ResourceExplorer2View) Remove() error {
+func (f *ResourceExplorer2View) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteView(&resourceexplorer2.DeleteViewInput{
 		ViewArn: f.viewArn,
 	})

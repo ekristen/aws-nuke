@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/directoryservice"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type DirectoryServiceDirectory struct {
-	svc         *directoryservice.DirectoryService
-	directoryID *string
-}
+const DirectoryServiceDirectoryResource = "DirectoryServiceDirectory"
 
 func init() {
-	register("DirectoryServiceDirectory", ListDirectoryServiceDirectories)
+	resource.Register(resource.Registration{
+		Name:   DirectoryServiceDirectoryResource,
+		Scope:  nuke.Account,
+		Lister: &DirectoryServiceDirectoryLister{},
+	})
 }
 
-func ListDirectoryServiceDirectories(sess *session.Session) ([]Resource, error) {
-	svc := directoryservice.New(sess)
-	resources := []Resource{}
+type DirectoryServiceDirectoryLister struct{}
+
+func (l *DirectoryServiceDirectoryLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := directoryservice.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &directoryservice.DescribeDirectoriesInput{
 		Limit: aws.Int64(100),
@@ -46,8 +56,12 @@ func ListDirectoryServiceDirectories(sess *session.Session) ([]Resource, error) 
 	return resources, nil
 }
 
-func (f *DirectoryServiceDirectory) Remove() error {
+type DirectoryServiceDirectory struct {
+	svc         *directoryservice.DirectoryService
+	directoryID *string
+}
 
+func (f *DirectoryServiceDirectory) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteDirectory(&directoryservice.DeleteDirectoryInput{
 		DirectoryId: f.directoryID,
 	})

@@ -1,25 +1,32 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/appmesh"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type AppMeshGatewayRoute struct {
-	svc                *appmesh.AppMesh
-	routeName          *string
-	meshName           *string
-	virtualGatewayName *string
-}
+const AppMeshGatewayRouteResource = "AppMeshGatewayRoute"
 
 func init() {
-	register("AppMeshGatewayRoute", ListAppMeshGatewayRoutes)
+	resource.Register(resource.Registration{
+		Name:   AppMeshGatewayRouteResource,
+		Scope:  nuke.Account,
+		Lister: &AppMeshGatewayRouteLister{},
+	})
 }
 
-func ListAppMeshGatewayRoutes(sess *session.Session) ([]Resource, error) {
-	svc := appmesh.New(sess)
-	resources := []Resource{}
+type AppMeshGatewayRouteLister struct{}
+
+func (l *AppMeshGatewayRouteLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+	svc := appmesh.New(opts.Session)
+	var resources []resource.Resource
 
 	// Get Meshes
 	var meshNames []*string
@@ -86,7 +93,14 @@ func ListAppMeshGatewayRoutes(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *AppMeshGatewayRoute) Remove() error {
+type AppMeshGatewayRoute struct {
+	svc                *appmesh.AppMesh
+	routeName          *string
+	meshName           *string
+	virtualGatewayName *string
+}
+
+func (f *AppMeshGatewayRoute) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteGatewayRoute(&appmesh.DeleteGatewayRouteInput{
 		MeshName:           f.meshName,
 		GatewayRouteName:   f.routeName,

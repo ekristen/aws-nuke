@@ -1,25 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type EC2VPCEndpointServiceConfiguration struct {
-	svc  *ec2.EC2
-	id   *string
-	name *string
-}
+const EC2VPCEndpointServiceConfigurationResource = "EC2VPCEndpointServiceConfiguration"
 
 func init() {
-	register("EC2VPCEndpointServiceConfiguration", ListEC2VPCEndpointServiceConfigurations)
+	resource.Register(resource.Registration{
+		Name:   EC2VPCEndpointServiceConfigurationResource,
+		Scope:  nuke.Account,
+		Lister: &EC2VPCEndpointServiceConfigurationLister{},
+	})
 }
 
-func ListEC2VPCEndpointServiceConfigurations(sess *session.Session) ([]Resource, error) {
-	svc := ec2.New(sess)
-	resources := make([]Resource, 0)
+type EC2VPCEndpointServiceConfigurationLister struct{}
+
+func (l *EC2VPCEndpointServiceConfigurationLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+	svc := ec2.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &ec2.DescribeVpcEndpointServiceConfigurationsInput{
 		MaxResults: aws.Int64(100),
@@ -49,7 +57,13 @@ func ListEC2VPCEndpointServiceConfigurations(sess *session.Session) ([]Resource,
 	return resources, nil
 }
 
-func (e *EC2VPCEndpointServiceConfiguration) Remove() error {
+type EC2VPCEndpointServiceConfiguration struct {
+	svc  *ec2.EC2
+	id   *string
+	name *string
+}
+
+func (e *EC2VPCEndpointServiceConfiguration) Remove(_ context.Context) error {
 	params := &ec2.DeleteVpcEndpointServiceConfigurationsInput{
 		ServiceIds: []*string{e.id},
 	}

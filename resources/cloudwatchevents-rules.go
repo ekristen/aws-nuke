@@ -1,26 +1,41 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cloudwatchevents"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
+const CloudWatchEventsRuleResource = "CloudWatchEventsRule"
+
 func init() {
-	register("CloudWatchEventsRule", ListCloudWatchEventsRules)
+	resource.Register(resource.Registration{
+		Name:   CloudWatchEventsRuleResource,
+		Scope:  nuke.Account,
+		Lister: &CloudWatchEventsRuleLister{},
+	})
 }
 
-func ListCloudWatchEventsRules(sess *session.Session) ([]Resource, error) {
-	svc := cloudwatchevents.New(sess)
+type CloudWatchEventsRuleLister struct{}
+
+func (l *CloudWatchEventsRuleLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := cloudwatchevents.New(opts.Session)
 
 	resp, err := svc.ListEventBuses(nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for _, bus := range resp.EventBuses {
 		resp, err := svc.ListRules(&cloudwatchevents.ListRulesInput{
 			EventBusName: bus.Name,
@@ -46,7 +61,7 @@ type CloudWatchEventsRule struct {
 	busName *string
 }
 
-func (rule *CloudWatchEventsRule) Remove() error {
+func (rule *CloudWatchEventsRule) Remove(_ context.Context) error {
 	_, err := rule.svc.DeleteRule(&cloudwatchevents.DeleteRuleInput{
 		Name:         rule.name,
 		EventBusName: rule.busName,
@@ -56,5 +71,6 @@ func (rule *CloudWatchEventsRule) Remove() error {
 }
 
 func (rule *CloudWatchEventsRule) String() string {
+	// TODO: remove Rule:, mark as breaking change for filters
 	return fmt.Sprintf("Rule: %s", *rule.name)
 }

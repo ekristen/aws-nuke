@@ -1,27 +1,36 @@
 package resources
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ecs"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type ECSClusterInstance struct {
-	svc         *ecs.ECS
-	instanceARN *string
-	clusterARN  *string
-}
+const ECSClusterInstanceResource = "ECSClusterInstance"
 
 func init() {
-	register("ECSClusterInstance", ListECSClusterInstances)
+	resource.Register(resource.Registration{
+		Name:   ECSClusterInstanceResource,
+		Scope:  nuke.Account,
+		Lister: &ECSClusterInstanceLister{},
+	})
 }
 
-func ListECSClusterInstances(sess *session.Session) ([]Resource, error) {
-	svc := ecs.New(sess)
-	resources := []Resource{}
-	clusters := []*string{}
+type ECSClusterInstanceLister struct{}
+
+func (l *ECSClusterInstanceLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := ecs.New(opts.Session)
+	resources := make([]resource.Resource, 0)
+	var clusters []*string
 
 	clusterParams := &ecs.ListClustersInput{
 		MaxResults: aws.Int64(100),
@@ -75,8 +84,13 @@ func ListECSClusterInstances(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *ECSClusterInstance) Remove() error {
+type ECSClusterInstance struct {
+	svc         *ecs.ECS
+	instanceARN *string
+	clusterARN  *string
+}
 
+func (f *ECSClusterInstance) Remove(_ context.Context) error {
 	_, err := f.svc.DeregisterContainerInstance(&ecs.DeregisterContainerInstanceInput{
 		Cluster:           f.clusterARN,
 		ContainerInstance: f.instanceARN,

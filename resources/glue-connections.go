@@ -1,23 +1,33 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/glue"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type GlueConnection struct {
-	svc            *glue.Glue
-	connectionName *string
-}
+const GlueConnectionResource = "GlueConnection"
 
 func init() {
-	register("GlueConnection", ListGlueConnections)
+	resource.Register(resource.Registration{
+		Name:   GlueConnectionResource,
+		Scope:  nuke.Account,
+		Lister: &GlueConnectionLister{},
+	})
 }
 
-func ListGlueConnections(sess *session.Session) ([]Resource, error) {
-	svc := glue.New(sess)
-	resources := []Resource{}
+type GlueConnectionLister struct{}
+
+func (l *GlueConnectionLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := glue.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &glue.GetConnectionsInput{
 		MaxResults: aws.Int64(100),
@@ -46,8 +56,12 @@ func ListGlueConnections(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *GlueConnection) Remove() error {
+type GlueConnection struct {
+	svc            *glue.Glue
+	connectionName *string
+}
 
+func (f *GlueConnection) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteConnection(&glue.DeleteConnectionInput{
 		ConnectionName: f.connectionName,
 	})

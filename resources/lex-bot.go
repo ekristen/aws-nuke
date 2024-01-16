@@ -1,25 +1,34 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/lexmodelbuildingservice"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type LexBot struct {
-	svc    *lexmodelbuildingservice.LexModelBuildingService
-	name   *string
-	status *string
-}
+const LexBotResource = "LexBot"
 
 func init() {
-	register("LexBot", ListLexBots)
+	resource.Register(resource.Registration{
+		Name:   LexBotResource,
+		Scope:  nuke.Account,
+		Lister: &LexBotLister{},
+	})
 }
 
-func ListLexBots(sess *session.Session) ([]Resource, error) {
-	svc := lexmodelbuildingservice.New(sess)
-	resources := []Resource{}
+type LexBotLister struct{}
+
+func (l *LexBotLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := lexmodelbuildingservice.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &lexmodelbuildingservice.GetBotsInput{
 		MaxResults: aws.Int64(10),
@@ -49,8 +58,13 @@ func ListLexBots(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *LexBot) Remove() error {
+type LexBot struct {
+	svc    *lexmodelbuildingservice.LexModelBuildingService
+	name   *string
+	status *string
+}
 
+func (f *LexBot) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteBot(&lexmodelbuildingservice.DeleteBotInput{
 		Name: f.name,
 	})

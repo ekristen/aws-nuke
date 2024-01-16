@@ -1,26 +1,35 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/waf"
 	"github.com/aws/aws-sdk-go/service/wafregional"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type WAFRegionalRegexPatternSet struct {
-	svc  *wafregional.WAFRegional
-	id   *string
-	name *string
-}
+const WAFRegionalRegexPatternSetResource = "WAFRegionalRegexPatternSet"
 
 func init() {
-	register("WAFRegionalRegexPatternSet", ListWAFRegionalRegexPatternSet)
+	resource.Register(resource.Registration{
+		Name:   WAFRegionalRegexPatternSetResource,
+		Scope:  nuke.Account,
+		Lister: &WAFRegionalRegexPatternSetLister{},
+	})
 }
 
-func ListWAFRegionalRegexPatternSet(sess *session.Session) ([]Resource, error) {
-	svc := wafregional.New(sess)
-	resources := []Resource{}
+type WAFRegionalRegexPatternSetLister struct{}
+
+func (l *WAFRegionalRegexPatternSetLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := wafregional.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &waf.ListRegexPatternSetsInput{
 		Limit: aws.Int64(50),
@@ -50,7 +59,13 @@ func ListWAFRegionalRegexPatternSet(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (r *WAFRegionalRegexPatternSet) Remove() error {
+type WAFRegionalRegexPatternSet struct {
+	svc  *wafregional.WAFRegional
+	id   *string
+	name *string
+}
+
+func (r *WAFRegionalRegexPatternSet) Remove(_ context.Context) error {
 	tokenOutput, err := r.svc.GetChangeToken(&waf.GetChangeTokenInput{})
 	if err != nil {
 		return err
