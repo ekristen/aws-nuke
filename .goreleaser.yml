@@ -44,10 +44,11 @@ dockers:
   - use: buildx
     goos: linux
     goarch: amd64
-    dockerfile: Dockerfile.goreleaser
+    dockerfile: Dockerfile
     image_templates:
       - ghcr.io/ekristen/aws-nuke:v{{ .Version }}-amd64
     build_flag_templates:
+      - "--target=goreleaser"
       - "--pull"
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.title={{.ProjectName}}"
@@ -58,10 +59,11 @@ dockers:
   - use: buildx
     goos: linux
     goarch: arm64
-    dockerfile: Dockerfile.goreleaser
+    dockerfile: Dockerfile
     image_templates:
       - ghcr.io/ekristen/aws-nuke:v{{ .Version }}-arm64
     build_flag_templates:
+      - "--target=goreleaser"
       - "--pull"
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.title={{.ProjectName}}"
@@ -73,10 +75,11 @@ dockers:
     goos: linux
     goarch: arm
     goarm: "7"
-    dockerfile: Dockerfile.goreleaser
+    dockerfile: Dockerfile
     image_templates:
       - ghcr.io/ekristen/aws-nuke:v{{ .Version }}-arm32v7
     build_flag_templates:
+      - "--target=goreleaser"
       - "--pull"
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.title={{.ProjectName}}"
@@ -95,7 +98,7 @@ signs:
   - cmd: cosign
     stdin: "{{ .Env.COSIGN_PASSWORD }}"
     args:
-      ["sign-blob", "--yes", "--key=cosign.key", "--output-signature=${signature}", "${artifact}"]
+      ["sign-blob", "--yes", "--key=cosign.key", "--output=${signature}", "${artifact}"]
     artifacts: all
 docker_signs:
   - artifacts: all
