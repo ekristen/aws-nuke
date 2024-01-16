@@ -6,3 +6,12 @@ docs-serve:
 
 docs-seed:
 	cp README.md docs/index.md
+
+generate:
+	go generate ./...
+
+test:
+	go test ./...
+
+test-integration:
+	go test ./... -tags=integration
