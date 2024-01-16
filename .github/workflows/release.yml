@@ -9,6 +9,8 @@ on:
       - main
     tags:
       - "*.*.*"
+      - "v*.*.*"
+      - "v*.*.*-*"
 
 permissions:
   contents: write
