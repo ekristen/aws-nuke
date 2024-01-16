@@ -2,7 +2,7 @@ releases
 .envrc
 .idea
 cosign.key
-config*.yaml
-*-config.yaml
-config.*.yaml
+/config*.yaml
+/*-config.yaml
+/config.*.yaml
 
