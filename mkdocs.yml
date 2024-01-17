@@ -1,8 +1,13 @@
 site_name: AWS Nuke
 site_url: https://ekristen.github.io/aws-nuke
+site_author: Erik Kristensen
+site_description: >-
+  AWS Nuke is a tool to clean up your AWS account by nuking (deleting) all resources within it.
+
 repo_name: ekristen/aws-nuke
 repo_url: https://github.com/ekristen/aws-nuke
-edit_uri: ""
+
+copyright: Copyright &copy; 2024 - Erik Kristensen
 
 site_dir: public
 
@@ -30,10 +35,18 @@ theme:
         icon: material/toggle-switch-off
         name: Switch to system preference
   features:
-    - navigation.sections
-    #- navigation.tabs
-    - toc.integrate
+    - navigation.footer
+    - navigation.indexes
     - navigation.path
+    - navigation.sections
+    - toc.follow
+    - toc.integrate
+    - content.code.annotate
+    - content.code.copy
+    - content.tooltips
+    - search.highlight
+    - search.share
+    - search.suggest
 
 # Plugins
 plugins:
