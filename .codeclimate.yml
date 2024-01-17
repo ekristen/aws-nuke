@@ -1,0 +1,9 @@
+plugins:
+  duplication:
+    enabled: true
+    checks:
+      Similar code:
+        enabled: false
+exclude_patterns:
+  - "mocks/"
+  - "**/*_test.go"
