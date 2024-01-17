@@ -59,7 +59,7 @@ To add another integration test, you will need to do the following:
 
 1. Create a new file in the `resources/` directory called `<resource>_test.go`
 2. Add the following code to the file: (replace `<resource>` with actual resource name)
-    ```go
+   ```go
     //go:build integration
     
     package resources
