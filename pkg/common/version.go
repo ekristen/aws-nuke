@@ -4,7 +4,7 @@ package common
 var NAME = "aws-nuke"
 
 // SUMMARY of the Version
-var SUMMARY = "3.0.0-beta.1"
+var SUMMARY = "3.0.0-beta.2"
 
 // BRANCH of the Version
 var BRANCH = "dev"
