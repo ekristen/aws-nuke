@@ -4,7 +4,7 @@ go 1.21.6
 
 require (
 	github.com/aws/aws-sdk-go v1.49.21
-	github.com/ekristen/libnuke v0.0.0-20240122232527-922a9af6ba13
+	github.com/ekristen/libnuke v0.0.0-20240123221700-d8899f33f580
 	github.com/fatih/color v1.16.0
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.5.0
