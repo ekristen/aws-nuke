@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"io"
 	"reflect"
 	"strings"
 	"testing"
@@ -16,8 +17,13 @@ import (
 )
 
 func TestLoadExampleConfig(t *testing.T) {
+	logger := logrus.New()
+	logger.SetOutput(io.Discard)
+	entry := logrus.WithField("test", true)
+
 	config, err := New(libconfig.Options{
 		Path: "testdata/example.yaml",
+		Log:  entry,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -61,7 +67,7 @@ func TestLoadExampleConfig(t *testing.T) {
 			},
 			Settings:     &settings.Settings{},
 			Deprecations: make(map[string]string),
-			Log:          logrus.WithField("test", true),
+			Log:          entry,
 		},
 		CustomEndpoints: []*CustomRegion{
 			{
@@ -86,6 +92,10 @@ func TestLoadExampleConfig(t *testing.T) {
 }
 
 func TestResolveDeprecations(t *testing.T) {
+	logger := logrus.New()
+	logger.SetOutput(io.Discard)
+	entry := logrus.WithField("test", true)
+
 	config := Config{
 		Config: &libconfig.Config{
 			Blocklist: []string{"1234567890"},
@@ -114,6 +124,12 @@ func TestResolveDeprecations(t *testing.T) {
 					},
 				},
 			},
+			Settings: &settings.Settings{},
+			Deprecations: map[string]string{
+				"ECRrepository": "ECRRepository",
+				"IamRole":       "IAMRole",
+			},
+			Log: entry,
 		},
 	}
 
@@ -143,14 +159,9 @@ func TestResolveDeprecations(t *testing.T) {
 	}
 
 	err := config.ResolveDeprecations()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if !reflect.DeepEqual(config.Accounts, expect) {
-		t.Errorf("Read struct mismatches:")
-		t.Errorf("  Got:      %#v", config.Accounts)
-		t.Errorf("  Expected: %#v", expect)
-	}
+	assert.NoError(t, err)
+
+	assert.Equal(t, expect, config.Accounts)
 
 	invalidConfig := Config{
 		Config: &libconfig.Config{
@@ -166,6 +177,10 @@ func TestResolveDeprecations(t *testing.T) {
 					},
 				},
 			},
+			Deprecations: map[string]string{
+				"IamUserAccessKeys": "IAMUserAccessKey",
+			},
+			Log: entry,
 		},
 	}
 
