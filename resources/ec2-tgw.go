@@ -16,7 +16,7 @@ import (
 const EC2TGWResource = "EC2TGW"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   EC2TGWResource,
 		Scope:  nuke.Account,
 		Lister: &EC2TGWLister{},

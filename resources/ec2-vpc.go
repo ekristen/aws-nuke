@@ -15,7 +15,7 @@ import (
 const EC2VPCResource = "EC2VPC"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   EC2VPCResource,
 		Scope:  nuke.Account,
 		Lister: &EC2VPCLister{},
@@ -31,7 +31,11 @@ func init() {
 			EC2VPNGatewayResource,
 			EC2EgressOnlyInternetGatewayResource,
 		},
-	}, nuke.MapCloudControl("AWS::EC2::VPC"))
+		AlternativeResource: "AWS::EC2::VPC",
+		DeprecatedAliases: []string{
+			"EC2Vpc",
+		},
+	})
 }
 
 type EC2VPC struct {

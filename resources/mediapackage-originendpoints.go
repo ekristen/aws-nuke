@@ -14,7 +14,7 @@ import (
 const MediaPackageOriginEndpointResource = "MediaPackageOriginEndpoint"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   MediaPackageOriginEndpointResource,
 		Scope:  nuke.Account,
 		Lister: &MediaPackageOriginEndpointLister{},

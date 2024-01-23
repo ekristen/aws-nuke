@@ -14,7 +14,7 @@ import (
 const ApplicationAutoScalingScalableTargetResource = "ApplicationAutoScalingScalableTarget"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   ApplicationAutoScalingScalableTargetResource,
 		Scope:  nuke.Account,
 		Lister: &ApplicationAutoScalingScalableTargetLister{},

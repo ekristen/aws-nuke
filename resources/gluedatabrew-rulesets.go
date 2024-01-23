@@ -14,7 +14,7 @@ import (
 const GlueDataBrewRulesetsResource = "GlueDataBrewRulesets"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   GlueDataBrewRulesetsResource,
 		Scope:  nuke.Account,
 		Lister: &GlueDataBrewRulesetsLister{},

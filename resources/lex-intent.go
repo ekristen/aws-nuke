@@ -15,7 +15,7 @@ import (
 const LexIntentResource = "LexIntent"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   LexIntentResource,
 		Scope:  nuke.Account,
 		Lister: &LexIntentLister{},

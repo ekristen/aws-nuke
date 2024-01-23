@@ -19,7 +19,7 @@ type AppStreamDirectoryConfig struct {
 const AppStreamDirectoryConfigResource = "AppStreamDirectoryConfig"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   AppStreamDirectoryConfigResource,
 		Scope:  nuke.Account,
 		Lister: &AppStreamDirectoryConfigLister{},

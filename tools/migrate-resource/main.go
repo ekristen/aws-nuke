@@ -13,7 +13,7 @@ import (
 var resourceTemplate = `const {{.ResourceType}}Resource = "{{.ResourceType}}"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   {{.ResourceType}}Resource,
 		Scope:  nuke.Account,
 		Lister: &{{.ResourceType}}Lister{},
@@ -107,5 +107,8 @@ func main() {
 	newContents = strings.ReplaceAll(newContents, "config.FeatureFlags", "*featureflag.FeatureFlags")
 	newContents = strings.ReplaceAll(newContents, ") Remove() error {", ") Remove(_ context.Context) error {")
 
-	os.WriteFile(filepath.Join(".", "resources", args[0]+".go"), []byte(newContents), 0644)
+	if err := os.WriteFile(
+		filepath.Join(".", "resources", args[0]+".go"), []byte(newContents), 0644); err != nil {
+		panic(err)
+	}
 }

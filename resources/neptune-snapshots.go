@@ -14,10 +14,13 @@ import (
 const NeptuneSnapshotResource = "NeptuneSnapshot"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   NeptuneSnapshotResource,
 		Scope:  nuke.Account,
 		Lister: &NeptuneSnapshotLister{},
+		DeprecatedAliases: []string{
+			"NetpuneSnapshot",
+		},
 	})
 }
 

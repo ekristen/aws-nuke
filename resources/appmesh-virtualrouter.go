@@ -20,7 +20,7 @@ type AppMeshVirtualRouter struct {
 const AppMeshVirtualRouterResource = "AppMeshVirtualRouter"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   AppMeshVirtualRouterResource,
 		Scope:  nuke.Account,
 		Lister: &AppMeshVirtualRouterLister{},

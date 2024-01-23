@@ -14,7 +14,7 @@ import (
 const ComprehendKeyPhrasesDetectionJobResource = "ComprehendKeyPhrasesDetectionJob"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   ComprehendKeyPhrasesDetectionJobResource,
 		Scope:  nuke.Account,
 		Lister: &ComprehendKeyPhrasesDetectionJobLister{},

@@ -14,7 +14,7 @@ import (
 const ESDomainResource = "ESDomain"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   ESDomainResource,
 		Scope:  nuke.Account,
 		Lister: &ESDomainLister{},

@@ -14,7 +14,7 @@ import (
 const IoTStreamResource = "IoTStream"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   IoTStreamResource,
 		Scope:  nuke.Account,
 		Lister: &IoTStreamLister{},

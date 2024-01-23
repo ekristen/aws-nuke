@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"strings"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
@@ -14,9 +16,9 @@ import (
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3control"
+
 	"github.com/ekristen/aws-nuke/pkg/config"
-	sdkerrors "github.com/ekristen/libnuke/pkg/errors"
-	log "github.com/sirupsen/logrus"
+	liberrors "github.com/ekristen/libnuke/pkg/errors"
 )
 
 const (
@@ -149,7 +151,7 @@ func (c *Credentials) NewSession(region, serviceType string) (*session.Session, 
 	if customRegion := c.CustomEndpoints.GetRegion(region); customRegion != nil {
 		customService := customRegion.Services.GetService(serviceType)
 		if customService == nil {
-			return nil, sdkerrors.ErrSkipRequest(fmt.Sprintf(
+			return nil, liberrors.ErrSkipRequest(fmt.Sprintf(
 				".service '%s' is not available in region '%s'",
 				serviceType, region))
 		}
@@ -216,7 +218,7 @@ func skipMissingServiceInRegionHandler(r *request.Request) {
 
 	_, ok = rs[region]
 	if !ok {
-		r.Error = sdkerrors.ErrSkipRequest(fmt.Sprintf(
+		r.Error = liberrors.ErrSkipRequest(fmt.Sprintf(
 			"service '%s' is not available in region '%s'",
 			service, region))
 	}
@@ -234,25 +236,25 @@ func skipGlobalHandler(global bool) func(r *request.Request) {
 		if !ok {
 			// This means that the service does not exist in the endpoints list.
 			if global {
-				r.Error = sdkerrors.ErrSkipRequest(fmt.Sprintf("service '%s' is was not found in the endpoint list; assuming it is not global", service))
+				r.Error = liberrors.ErrSkipRequest(fmt.Sprintf("service '%s' is was not found in the endpoint list; assuming it is not global", service))
 			} else {
 				host := r.HTTPRequest.URL.Hostname()
 				_, err := net.LookupHost(host)
 				if err != nil {
 					log.Debug(err)
-					r.Error = sdkerrors.ErrUnknownEndpoint(fmt.Sprintf("DNS lookup failed for %s; assuming it does not exist in this region", host))
+					r.Error = liberrors.ErrUnknownEndpoint(fmt.Sprintf("DNS lookup failed for %s; assuming it does not exist in this region", host))
 				}
 			}
 			return
 		}
 
 		if len(rs) == 0 && !global {
-			r.Error = sdkerrors.ErrSkipRequest(fmt.Sprintf("service '%s' is global, but the session is not", service))
+			r.Error = liberrors.ErrSkipRequest(fmt.Sprintf("service '%s' is global, but the session is not", service))
 			return
 		}
 
 		if (len(rs) > 0 && global) && service != "sts" {
-			r.Error = sdkerrors.ErrSkipRequest(fmt.Sprintf("service '%s' is not global, but the session is", service))
+			r.Error = liberrors.ErrSkipRequest(fmt.Sprintf("service '%s' is not global, but the session is", service))
 			return
 		}
 	}

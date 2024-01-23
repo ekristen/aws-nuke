@@ -2,11 +2,11 @@ package resources
 
 import (
 	"context"
+	"github.com/ekristen/libnuke/pkg/settings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/lightsail"
 
-	"github.com/ekristen/libnuke/pkg/featureflag"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
@@ -16,7 +16,7 @@ import (
 const LightsailInstanceResource = "LightsailInstance"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   LightsailInstanceResource,
 		Scope:  nuke.Account,
 		Lister: &LightsailInstanceLister{},
@@ -62,22 +62,17 @@ type LightsailInstance struct {
 	instanceName *string
 	tags         []*lightsail.Tag
 
-	featureFlags *featureflag.FeatureFlags
+	settings *settings.Setting
 }
 
-func (f *LightsailInstance) FeatureFlags(ff *featureflag.FeatureFlags) {
-	f.featureFlags = ff
+func (f *LightsailInstance) Settings(setting *settings.Setting) {
+	f.settings = setting
 }
 
 func (f *LightsailInstance) Remove(_ context.Context) error {
-	ffDLA, ffErr := f.featureFlags.Get("ForceDeleteLightsailAddOns")
-	if ffErr != nil {
-		return ffErr
-	}
-
 	_, err := f.svc.DeleteInstance(&lightsail.DeleteInstanceInput{
 		InstanceName:      f.instanceName,
-		ForceDeleteAddOns: aws.Bool(ffDLA.Enabled()),
+		ForceDeleteAddOns: aws.Bool(f.settings.Get("ForceDeleteAddOns").(bool)),
 	})
 
 	return err

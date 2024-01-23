@@ -15,7 +15,7 @@ import (
 const LifecycleHookResource = "LifecycleHook"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   LifecycleHookResource,
 		Scope:  nuke.Account,
 		Lister: &LifecycleHookLister{},

@@ -15,7 +15,7 @@ import (
 const LaunchConfigurationResource = "LaunchConfiguration"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   LaunchConfigurationResource,
 		Scope:  nuke.Account,
 		Lister: &LaunchConfigurationLister{},

@@ -15,7 +15,7 @@ import (
 const LexSlotTypeResource = "LexSlotType"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   LexSlotTypeResource,
 		Scope:  nuke.Account,
 		Lister: &LexSlotTypeLister{},

@@ -2,10 +2,11 @@ package nuke
 
 import (
 	"fmt"
-	sdkerrors "github.com/ekristen/libnuke/pkg/errors"
 	"sync"
 
 	"github.com/aws/aws-sdk-go/aws/session"
+
+	liberrors "github.com/ekristen/libnuke/pkg/errors"
 )
 
 // SessionFactory support for custom endpoints
@@ -14,6 +15,7 @@ type SessionFactory func(regionName, svcType string) (*session.Session, error)
 // ResourceTypeResolver returns the service type from the resourceType
 type ResourceTypeResolver func(regionName, resourceType string) string
 
+// Region is an AWS Region with an attached SessionFactory
 type Region struct {
 	Name            string
 	NewSession      SessionFactory
@@ -23,6 +25,7 @@ type Region struct {
 	lock  *sync.RWMutex
 }
 
+// NewRegion creates a new Region and returns it.
 func NewRegion(name string, typeResolver ResourceTypeResolver, sessionFactory SessionFactory) *Region {
 	return &Region{
 		Name:            name,
@@ -33,10 +36,11 @@ func NewRegion(name string, typeResolver ResourceTypeResolver, sessionFactory Se
 	}
 }
 
+// Session returns a session for a given resource type for the region it's associated to.
 func (region *Region) Session(resourceType string) (*session.Session, error) {
 	svcType := region.ResTypeResolver(region.Name, resourceType)
 	if svcType == "" {
-		return nil, sdkerrors.ErrSkipRequest(fmt.Sprintf(
+		return nil, liberrors.ErrSkipRequest(fmt.Sprintf(
 			"No service available in region '%s' to handle '%s'",
 			region.Name, resourceType))
 	}

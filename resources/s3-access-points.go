@@ -18,7 +18,7 @@ import (
 const S3AccessPointResource = "S3AccessPoint"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   S3AccessPointResource,
 		Scope:  nuke.Account,
 		Lister: &S3AccessPointLister{},

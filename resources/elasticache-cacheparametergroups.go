@@ -18,7 +18,7 @@ import (
 const ElasticacheCacheParameterGroupResource = "ElasticacheCacheParameterGroup"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   ElasticacheCacheParameterGroupResource,
 		Scope:  nuke.Account,
 		Lister: &ElasticacheCacheParameterGroupLister{},

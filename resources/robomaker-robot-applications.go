@@ -14,7 +14,7 @@ import (
 const RoboMakerRobotApplicationResource = "RoboMakerRobotApplication"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   RoboMakerRobotApplicationResource,
 		Scope:  nuke.Account,
 		Lister: &RoboMakerRobotApplicationLister{},

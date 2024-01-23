@@ -18,7 +18,7 @@ import (
 const RDSDBClusterParameterGroupResource = "RDSDBClusterParameterGroup"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   RDSDBClusterParameterGroupResource,
 		Scope:  nuke.Account,
 		Lister: &RDSDBClusterParameterGroupLister{},

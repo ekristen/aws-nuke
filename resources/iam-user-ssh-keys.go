@@ -17,7 +17,7 @@ import (
 const IAMUserSSHPublicKeyResource = "IAMUserSSHPublicKey"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   IAMUserSSHPublicKeyResource,
 		Scope:  nuke.Account,
 		Lister: &IAMUserSSHPublicKeyLister{},

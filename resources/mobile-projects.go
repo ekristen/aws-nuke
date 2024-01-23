@@ -14,7 +14,7 @@ import (
 const MobileProjectResource = "MobileProject"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   MobileProjectResource,
 		Scope:  nuke.Account,
 		Lister: &MobileProjectLister{},

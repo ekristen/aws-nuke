@@ -17,7 +17,7 @@ import (
 const ACMPCACertificateAuthorityStateResource = "ACMPCACertificateAuthorityState"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   ACMPCACertificateAuthorityStateResource,
 		Scope:  nuke.Account,
 		Lister: &ACMPCACertificateAuthorityStateLister{},

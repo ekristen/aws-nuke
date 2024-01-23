@@ -14,7 +14,7 @@ import (
 const CloudDirectorySchemaResource = "CloudDirectorySchema"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   CloudDirectorySchemaResource,
 		Scope:  nuke.Account,
 		Lister: &CloudDirectorySchemaLister{},

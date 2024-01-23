@@ -15,7 +15,7 @@ import (
 const RDSEventSubscriptionResource = "RDSEventSubscription"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   RDSEventSubscriptionResource,
 		Scope:  nuke.Account,
 		Lister: &RDSEventSubscriptionLister{},

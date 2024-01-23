@@ -1,0 +1,6 @@
+feature-flags:
+  disable-ec2-instance-stop-protection: true
+  disable-deletion-protection:
+    RDSInstance: true
+    EC2Instance: true
+    CloudformationStack: true

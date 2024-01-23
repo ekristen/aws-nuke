@@ -17,7 +17,7 @@ import (
 const Route53TrafficPolicyResource = "Route53TrafficPolicy"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   Route53TrafficPolicyResource,
 		Scope:  nuke.Account,
 		Lister: &Route53TrafficPolicyLister{},

@@ -16,7 +16,7 @@ import (
 const WAFRegionalRegexPatternSetResource = "WAFRegionalRegexPatternSet"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   WAFRegionalRegexPatternSetResource,
 		Scope:  nuke.Account,
 		Lister: &WAFRegionalRegexPatternSetLister{},

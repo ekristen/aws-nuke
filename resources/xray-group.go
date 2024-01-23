@@ -14,7 +14,7 @@ import (
 const XRayGroupResource = "XRayGroup"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   XRayGroupResource,
 		Scope:  nuke.Account,
 		Lister: &XRayGroupLister{},

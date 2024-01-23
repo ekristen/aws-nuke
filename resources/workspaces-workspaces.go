@@ -14,7 +14,7 @@ import (
 const WorkSpacesWorkspaceResource = "WorkSpacesWorkspace"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   WorkSpacesWorkspaceResource,
 		Scope:  nuke.Account,
 		Lister: &WorkSpacesWorkspaceLister{},

@@ -14,7 +14,7 @@ import (
 const ElasticacheReplicationGroupResource = "ElasticacheReplicationGroup"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   ElasticacheReplicationGroupResource,
 		Scope:  nuke.Account,
 		Lister: &ElasticacheReplicationGroupLister{},

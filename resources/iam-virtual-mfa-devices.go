@@ -20,7 +20,7 @@ import (
 const IAMVirtualMFADeviceResource = "IAMVirtualMFADevice"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   IAMVirtualMFADeviceResource,
 		Scope:  nuke.Account,
 		Lister: &IAMVirtualMFADeviceLister{},

@@ -13,7 +13,7 @@ import (
 const LightsailStaticIPResource = "LightsailStaticIP"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   LightsailStaticIPResource,
 		Scope:  nuke.Account,
 		Lister: &LightsailStaticIPLister{},

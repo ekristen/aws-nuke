@@ -15,13 +15,16 @@ import (
 const IAMGroupResource = "IAMGroup"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   IAMGroupResource,
 		Scope:  nuke.Account,
 		Lister: &IAMGroupLister{},
 		DependsOn: []string{
 			IAMUserGroupAttachmentResource,
 			IAMGroupPolicyResource,
+		},
+		DeprecatedAliases: []string{
+			"IamGroup",
 		},
 	})
 }

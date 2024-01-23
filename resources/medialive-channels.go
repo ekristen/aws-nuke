@@ -14,7 +14,7 @@ import (
 const MediaLiveChannelResource = "MediaLiveChannel"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   MediaLiveChannelResource,
 		Scope:  nuke.Account,
 		Lister: &MediaLiveChannelLister{},

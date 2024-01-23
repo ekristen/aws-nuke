@@ -13,7 +13,7 @@ import (
 const EMRSecurityConfigurationResource = "EMRSecurityConfiguration"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   EMRSecurityConfigurationResource,
 		Scope:  nuke.Account,
 		Lister: &EMRSecurityConfigurationLister{},

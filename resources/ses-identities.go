@@ -14,7 +14,7 @@ import (
 const SESIdentityResource = "SESIdentity"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   SESIdentityResource,
 		Scope:  nuke.Account,
 		Lister: &SESIdentityLister{},

@@ -53,13 +53,14 @@ func init() {
 }
 
 func registerCloudControl(typeName string) {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:  typeName,
 		Scope: nuke.Account,
 		Lister: &CloudControlResourceLister{
 			TypeName: typeName,
 		},
-	}, nuke.MapCloudControl(typeName))
+		AlternativeResource: typeName,
+	})
 }
 
 type CloudControlResourceLister struct {

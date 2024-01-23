@@ -22,12 +22,15 @@ import (
 const IAMRoleResource = "IAMRole"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   IAMRoleResource,
 		Scope:  nuke.Account,
 		Lister: &IAMRoleLister{},
 		DependsOn: []string{
 			IAMRolePolicyAttachmentResource,
+		},
+		DeprecatedAliases: []string{
+			"IamRole",
 		},
 	})
 }

@@ -15,7 +15,7 @@ import (
 const FSxFileSystemResource = "FSxFileSystem"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   FSxFileSystemResource,
 		Scope:  nuke.Account,
 		Lister: &FSxFileSystemLister{},

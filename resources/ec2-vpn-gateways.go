@@ -15,12 +15,15 @@ import (
 const EC2VPNGatewayResource = "EC2VPNGateway"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   EC2VPNGatewayResource,
 		Scope:  nuke.Account,
 		Lister: &EC2VPNGatewayLister{},
 		DependsOn: []string{
 			EC2VPNGatewayAttachmentResource,
+		},
+		DeprecatedAliases: []string{
+			"EC2VpnGateway",
 		},
 	})
 }

@@ -16,7 +16,7 @@ import (
 const WAFRegionalRegexMatchTupleResource = "WAFRegionalRegexMatchTuple"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   WAFRegionalRegexMatchTupleResource,
 		Scope:  nuke.Account,
 		Lister: &WAFRegionalRegexMatchTupleLister{},

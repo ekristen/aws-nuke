@@ -15,7 +15,7 @@ import (
 const AutoScalingGroupResource = "AutoScalingGroup"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   AutoScalingGroupResource,
 		Scope:  nuke.Account,
 		Lister: &AutoScalingGroupLister{},

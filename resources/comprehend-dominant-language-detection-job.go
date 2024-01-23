@@ -14,7 +14,7 @@ import (
 const ComprehendDominantLanguageDetectionJobResource = "ComprehendDominantLanguageDetectionJob"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   ComprehendDominantLanguageDetectionJobResource,
 		Scope:  nuke.Account,
 		Lister: &ComprehendDominantLanguageDetectionJobLister{},

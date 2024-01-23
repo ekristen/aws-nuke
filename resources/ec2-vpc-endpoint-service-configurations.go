@@ -15,7 +15,7 @@ import (
 const EC2VPCEndpointServiceConfigurationResource = "EC2VPCEndpointServiceConfiguration"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   EC2VPCEndpointServiceConfigurationResource,
 		Scope:  nuke.Account,
 		Lister: &EC2VPCEndpointServiceConfigurationLister{},

@@ -14,7 +14,7 @@ import (
 const DatabaseMigrationServiceEventSubscriptionResource = "DatabaseMigrationServiceEventSubscription"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   DatabaseMigrationServiceEventSubscriptionResource,
 		Scope:  nuke.Account,
 		Lister: &DatabaseMigrationServiceEventSubscriptionLister{},

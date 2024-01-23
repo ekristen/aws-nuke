@@ -14,7 +14,7 @@ import (
 const AppMeshVirtualGatewayResource = "AppMeshVirtualGateway"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   AppMeshVirtualGatewayResource,
 		Scope:  nuke.Account,
 		Lister: &AppMeshVirtualGatewayLister{},

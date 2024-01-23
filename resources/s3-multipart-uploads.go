@@ -17,7 +17,7 @@ import (
 const S3MultipartUploadResource = "S3MultipartUpload"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   S3MultipartUploadResource,
 		Scope:  nuke.Account,
 		Lister: &S3MultipartUploadLister{},

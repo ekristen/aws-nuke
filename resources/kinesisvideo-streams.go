@@ -14,7 +14,7 @@ import (
 const KinesisVideoProjectResource = "KinesisVideoProject"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   KinesisVideoProjectResource,
 		Scope:  nuke.Account,
 		Lister: &KinesisVideoProjectLister{},

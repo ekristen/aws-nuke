@@ -2,8 +2,8 @@ package resources
 
 import (
 	"context"
+	"github.com/ekristen/libnuke/pkg/settings"
 
-	"github.com/ekristen/libnuke/pkg/featureflag"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -18,7 +18,7 @@ import (
 const RDSInstanceResource = "RDSInstance"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   RDSInstanceResource,
 		Scope:  nuke.Account,
 		Lister: &RDSInstanceLister{},
@@ -30,7 +30,7 @@ type RDSInstance struct {
 	instance *rds.DBInstance
 	tags     []*rds.Tag
 
-	featureFlags *featureflag.FeatureFlags
+	settings *settings.Setting
 }
 
 type RDSInstanceLister struct{}
@@ -66,17 +66,12 @@ func (l *RDSInstanceLister) List(_ context.Context, o interface{}) ([]resource.R
 	return resources, nil
 }
 
-func (i *RDSInstance) FeatureFlags(ff *featureflag.FeatureFlags) {
-	i.featureFlags = ff
+func (i *RDSInstance) Settings(settings *settings.Setting) {
+	i.settings = settings
 }
 
 func (i *RDSInstance) Remove(_ context.Context) error {
-	ffddpRDSInstance, err := i.featureFlags.Get("DisableDeletionProtection_RDSInstance")
-	if err != nil {
-		return err
-	}
-
-	if aws.BoolValue(i.instance.DeletionProtection) && ffddpRDSInstance.Enabled() {
+	if aws.BoolValue(i.instance.DeletionProtection) && i.settings.Get("DisableDeletionProtection").(bool) {
 		modifyParams := &rds.ModifyDBInstanceInput{
 			DBInstanceIdentifier: i.instance.DBInstanceIdentifier,
 			DeletionProtection:   aws.Bool(false),

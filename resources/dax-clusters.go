@@ -14,7 +14,7 @@ import (
 const DAXClusterResource = "DAXCluster"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   DAXClusterResource,
 		Scope:  nuke.Account,
 		Lister: &DAXClusterLister{},

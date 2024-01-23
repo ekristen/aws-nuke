@@ -15,13 +15,16 @@ import (
 const EC2VPCEndpointResource = "EC2VPCEndpoint"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   EC2VPCEndpointResource,
 		Scope:  nuke.Account,
 		Lister: &EC2VPCEndpointLister{},
 		DependsOn: []string{
 			EC2VPCEndpointConnectionResource,
 			EC2VPCEndpointServiceConfigurationResource,
+		},
+		DeprecatedAliases: []string{
+			"EC2VpcEndpoint",
 		},
 	})
 }

@@ -17,10 +17,13 @@ import (
 const EKSFargateProfileResource = "EKSFargateProfile"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   EKSFargateProfileResource,
 		Scope:  nuke.Account,
 		Lister: &EKSFargateProfileLister{},
+		DeprecatedAliases: []string{
+			"EKSFargateProfiles",
+		},
 	})
 }
 

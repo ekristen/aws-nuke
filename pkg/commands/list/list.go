@@ -1,9 +1,9 @@
 package list
 
 import (
-	"fmt"
 	"github.com/ekristen/aws-nuke/pkg/nuke"
 	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/fatih/color"
 	"github.com/urfave/cli/v2"
 
 	"github.com/ekristen/aws-nuke/pkg/commands/global"
@@ -16,7 +16,7 @@ func execute(c *cli.Context) error {
 	ls := resource.GetListersForScope(nuke.Account)
 
 	for name, _ := range ls {
-		fmt.Println(name)
+		color.New(color.Bold).Printf("%-55s\n", name)
 	}
 
 	return nil

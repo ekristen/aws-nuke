@@ -14,7 +14,7 @@ import (
 const LambdaEventSourceMappingResource = "LambdaEventSourceMapping"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   LambdaEventSourceMappingResource,
 		Scope:  nuke.Account,
 		Lister: &LambdaEventSourceMappingLister{},

@@ -14,7 +14,7 @@ import (
 const GlueDevEndpointResource = "GlueDevEndpoint"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   GlueDevEndpointResource,
 		Scope:  nuke.Account,
 		Lister: &GlueDevEndpointLister{},

@@ -13,7 +13,7 @@ import (
 const CodeCommitRepositoryResource = "CodeCommitRepository"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   CodeCommitRepositoryResource,
 		Scope:  nuke.Account,
 		Lister: &CodeCommitRepositoryLister{},

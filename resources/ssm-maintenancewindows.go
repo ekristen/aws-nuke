@@ -14,7 +14,7 @@ import (
 const SSMMaintenanceWindowResource = "SSMMaintenanceWindow"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   SSMMaintenanceWindowResource,
 		Scope:  nuke.Account,
 		Lister: &SSMMaintenanceWindowLister{},

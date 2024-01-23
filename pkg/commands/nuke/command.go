@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/aws/aws-sdk-go/aws/endpoints"
-
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 
-	sdknuke "github.com/ekristen/libnuke/pkg/nuke"
+	"github.com/aws/aws-sdk-go/aws/endpoints"
+
+	libconfig "github.com/ekristen/libnuke/pkg/config"
+	libnuke "github.com/ekristen/libnuke/pkg/nuke"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
@@ -24,8 +25,6 @@ import (
 func execute(c *cli.Context) error {
 	ctx, cancel := context.WithCancel(c.Context)
 	defer cancel()
-
-	_ = ctx
 
 	var (
 		err           error
@@ -42,24 +41,28 @@ func execute(c *cli.Context) error {
 		return err
 	}
 
-	params := nuke.Parameters{
-		Parameters: sdknuke.Parameters{
-			Force:      c.Bool("force"),
-			ForceSleep: c.Int("force-sleep"),
-			Quiet:      c.Bool("quiet"),
-			NoDryRun:   c.Bool("no-dry-run"),
-		},
-		Targets:      c.StringSlice("only-resource"),
+	// Create the parameters object that will be used to configure the nuke process.
+	params := &libnuke.Parameters{
+		Force:        c.Bool("force"),
+		ForceSleep:   c.Int("force-sleep"),
+		Quiet:        c.Bool("quiet"),
+		NoDryRun:     c.Bool("no-dry-run"),
+		Includes:     c.StringSlice("only-resource"),
 		Excludes:     c.StringSlice("exclude-resource"),
-		CloudControl: c.StringSlice("cloud-control"),
+		Alternatives: c.StringSlice("cloud-control"),
 	}
 
-	parsedConfig, err := config.Load(c.Path("config"))
+	// Parse the user supplied configuration file to pass in part to configure the nuke process.
+	parsedConfig, err := config.New(libconfig.Options{
+		Path:         c.Path("config"),
+		Deprecations: resource.GetDeprecatedResourceTypeMapping(),
+	})
 	if err != nil {
 		logrus.Errorf("Failed to parse config file %s", c.Path("config"))
 		return err
 	}
 
+	// Set the default region for the AWS SDK to use.
 	if defaultRegion != "" {
 		awsutil.DefaultRegionID = defaultRegion
 		switch defaultRegion {
@@ -76,71 +79,74 @@ func execute(c *cli.Context) error {
 		}
 	}
 
+	// Create the AWS Account object. This will be used to get the account ID and aliases for the account.
 	account, err := awsutil.NewAccount(creds, parsedConfig.CustomEndpoints)
 	if err != nil {
 		return err
 	}
 
+	// Get the filters for the account that is being connected to via the AWS SDK.
 	filters, err := parsedConfig.Filters(account.ID())
 	if err != nil {
 		return err
 	}
 
-	n := nuke.New(params, parsedConfig, filters, *account)
+	// Instantiate libnuke
+	n := libnuke.New(params, filters, parsedConfig.Settings)
 
+	// Register our custom validate handler that validates the account and AWS nuke unique alias checks
 	n.RegisterValidateHandler(func() error {
-		return parsedConfig.ValidateAccount(n.Account.ID(), n.Account.Aliases())
+		return parsedConfig.ValidateAccount(account.ID(), account.Aliases())
 	})
 
-	n.RegisterPrompt(n.Prompt)
+	// Register our custom prompt handler that shows the account information
+	p := &nuke.Prompt{Parameters: params, Account: account}
+	n.RegisterPrompt(p.Prompt)
 
-	accountConfig := parsedConfig.Accounts[n.Account.ID()]
-	resourceTypes := nuke.ResolveResourceTypes(
+	// Get any specific account level configuration
+	accountConfig := parsedConfig.Accounts[account.ID()]
+
+	// Resolve the resource types to be used for the nuke process based on the parameters, global configuration, and
+	// account level configuration.
+	resourceTypes := types.ResolveResourceTypes(
 		resource.GetNames(),
-		nuke.GetCloudControlMapping(),
 		[]types.Collection{
-			n.Parameters.Targets,
-			n.Config.GetResourceTypes().Targets,
+			n.Parameters.Includes,
+			parsedConfig.ResourceTypes.Targets,
 			accountConfig.ResourceTypes.Targets,
 		},
 		[]types.Collection{
 			n.Parameters.Excludes,
-			n.Config.GetResourceTypes().Excludes,
+			parsedConfig.ResourceTypes.Excludes,
 			accountConfig.ResourceTypes.Excludes,
 		},
 		[]types.Collection{
-			n.Parameters.CloudControl,
-			n.Config.GetResourceTypes().CloudControl,
+			n.Parameters.Alternatives,
+			parsedConfig.ResourceTypes.CloudControl,
 			accountConfig.ResourceTypes.CloudControl,
 		},
+		resource.GetAlternativeResourceTypeMapping(),
 	)
 
-	// mutateOps is a function that will be called for each resource type to mutate the options
-	// for the scanner based on whatever criteria you want. However, in this case for the aws-nuke
-	// tool, it's mutating the opts to create the proper session for the proper region.
-	var mutateOps = func(opts interface{}, resourceType string) interface{} {
-		o := opts.(*nuke.ListerOpts)
-
-		session, err := o.Region.Session(resourceType)
-		if err != nil {
-			panic(err)
-		}
-
-		o.Session = session
-		return o
-	}
-
+	// Register the scanners for each region that is defined in the configuration.
 	for _, regionName := range parsedConfig.Regions {
-		region := nuke.NewRegion(regionName, n.Account.ResourceTypeToServiceType, n.Account.NewSession)
-		scanner := sdknuke.NewScanner(regionName, resourceTypes, &nuke.ListerOpts{
+		// Step 1 - Create the region object
+		region := nuke.NewRegion(regionName, account.ResourceTypeToServiceType, account.NewSession)
+
+		// Step 2 - Create the scanner object
+		scanner := libnuke.NewScanner(regionName, resourceTypes, &nuke.ListerOpts{
 			Region: region,
 		})
 
-		regMutateErr := scanner.RegisterMutateOptsFunc(mutateOps)
+		// Step 3 - Register a mutate function that will be called to modify the lister options for each resource type
+		// see pkg/nuke/resource.go for the MutateOpts function. Its purpose is to create the proper session for the
+		// proper region.
+		regMutateErr := scanner.RegisterMutateOptsFunc(nuke.MutateOpts)
 		if regMutateErr != nil {
 			return regMutateErr
 		}
 
+		// Step 4 - Register the scanner with the nuke object
 		regScanErr := n.RegisterScanner(nuke.Account, scanner)
 		if regScanErr != nil {
 			return regScanErr
@@ -177,11 +183,16 @@ func init() {
 		&cli.StringSliceFlag{
 			Name:    "only-resource",
 			Usage:   "only run against these resource types",
-			Aliases: []string{"target"},
+			Aliases: []string{"target", "include", "include-resource"},
 		},
-		&cli.BoolFlag{
-			Name:  "experimental-deps",
-			Usage: "turn on dependency removal ordering",
+		&cli.StringSliceFlag{
+			Name:    "exclude-resource",
+			Usage:   "exclude these resource types",
+			Aliases: []string{"exclude"},
+		},
+		&cli.StringSliceFlag{
+			Name:  "cloud-control",
+			Usage: "use these resource types with the Cloud Control API instead of the default",
 		},
 	}
 

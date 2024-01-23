@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"github.com/ekristen/libnuke/pkg/settings"
 
 	"errors"
 	"strings"
@@ -15,7 +16,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudformation/cloudformationiface"
 
 	liberrors "github.com/ekristen/libnuke/pkg/errors"
-	"github.com/ekristen/libnuke/pkg/featureflag"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
@@ -27,7 +27,7 @@ const CloudformationMaxDeleteAttempt = 3
 const CloudFormationStackResource = "CloudFormationStack"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   CloudFormationStackResource,
 		Scope:  nuke.Account,
 		Lister: &CloudFormationStackLister{},
@@ -71,11 +71,11 @@ type CloudFormationStack struct {
 	svc               cloudformationiface.CloudFormationAPI
 	stack             *cloudformation.Stack
 	maxDeleteAttempts int
-	featureFlags      *featureflag.FeatureFlags
+	settings          *settings.Setting
 }
 
-func (cfs *CloudFormationStack) FeatureFlags(ff *featureflag.FeatureFlags) {
-	cfs.featureFlags = ff
+func (cfs *CloudFormationStack) Settings(setting *settings.Setting) {
+	cfs.settings = setting
 }
 
 func (cfs *CloudFormationStack) Remove(_ context.Context) error {
@@ -83,11 +83,6 @@ func (cfs *CloudFormationStack) Remove(_ context.Context) error {
 }
 
 func (cfs *CloudFormationStack) removeWithAttempts(attempt int) error {
-	ffddpCFS, err := cfs.featureFlags.Get("DisableDeletionProtection_CloudformationStack")
-	if err != nil {
-		return err
-	}
-
 	if err := cfs.doRemove(); err != nil {
 		// TODO: pass logrus in via ListerOpts so that it can be used here instead of global
 
@@ -98,7 +93,7 @@ func (cfs *CloudFormationStack) removeWithAttempts(attempt int) error {
 		if ok && awsErr.Code() == "ValidationError" &&
 			awsErr.Message() == "Stack ["+*cfs.stack.StackName+"] cannot be deleted while TerminationProtection is enabled" {
 
-			if ffddpCFS.Enabled() {
+			if cfs.settings.Get("DisableDeletionProtection").(bool) {
 				logrus.Infof("CloudFormationStack stackName=%s attempt=%d maxAttempts=%d updating termination protection", *cfs.stack.StackName, attempt, cfs.maxDeleteAttempts)
 				_, err = cfs.svc.UpdateTerminationProtection(&cloudformation.UpdateTerminationProtectionInput{
 					EnableTerminationProtection: aws.Bool(false),

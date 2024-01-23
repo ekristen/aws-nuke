@@ -18,7 +18,7 @@ import (
 const RDSDBParameterGroupResource = "RDSDBParameterGroup"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   RDSDBParameterGroupResource,
 		Scope:  nuke.Account,
 		Lister: &RDSDBParameterGroupLister{},

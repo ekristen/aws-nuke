@@ -18,7 +18,7 @@ import (
 const EC2SecurityGroupResource = "EC2SecurityGroup"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   EC2SecurityGroupResource,
 		Scope:  nuke.Account,
 		Lister: &EC2SecurityGroupLister{},

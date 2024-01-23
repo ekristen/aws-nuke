@@ -16,7 +16,7 @@ import (
 const WAFRegionalIPSetResource = "WAFRegionalIPSet"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   WAFRegionalIPSetResource,
 		Scope:  nuke.Account,
 		Lister: &WAFRegionalIPSetLister{},

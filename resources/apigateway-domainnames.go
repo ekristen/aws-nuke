@@ -14,7 +14,7 @@ import (
 const APIGatewayDomainNameResource = "APIGatewayDomainName"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   APIGatewayDomainNameResource,
 		Scope:  nuke.Account,
 		Lister: &APIGatewayDomainNameLister{},

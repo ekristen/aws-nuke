@@ -14,7 +14,7 @@ import (
 const AutoScalingPlansScalingPlanResource = "AutoScalingPlansScalingPlan"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   AutoScalingPlansScalingPlanResource,
 		Scope:  nuke.Account,
 		Lister: &AutoScalingPlansScalingPlanLister{},

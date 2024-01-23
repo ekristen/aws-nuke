@@ -17,7 +17,7 @@ import (
 const ServiceCatalogPortfolioShareAttachmentResource = "ServiceCatalogPortfolioShareAttachment"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   ServiceCatalogPortfolioShareAttachmentResource,
 		Scope:  nuke.Account,
 		Lister: &ServiceCatalogPortfolioShareAttachmentLister{},

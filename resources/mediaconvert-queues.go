@@ -17,7 +17,7 @@ import (
 const MediaConvertQueueResource = "MediaConvertQueue"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   MediaConvertQueueResource,
 		Scope:  nuke.Account,
 		Lister: &MediaConvertQueueLister{},

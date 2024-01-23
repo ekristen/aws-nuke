@@ -25,14 +25,15 @@ import (
 const S3BucketResource = "S3Bucket"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   S3BucketResource,
 		Scope:  nuke.Account,
 		Lister: &S3BucketLister{},
 		DependsOn: []string{
 			S3ObjectResource,
 		},
-	}, nuke.MapCloudControl("AWS::S3::Bucket"))
+		AlternativeResource: "AWS::S3::Bucket",
+	})
 }
 
 type S3BucketLister struct{}

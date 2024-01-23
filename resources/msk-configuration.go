@@ -14,7 +14,7 @@ import (
 const MSKConfigurationResource = "MSKConfiguration"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   MSKConfigurationResource,
 		Scope:  nuke.Account,
 		Lister: &MSKConfigurationLister{},

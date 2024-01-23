@@ -25,7 +25,7 @@ func main() {
 	var awsNukeResourceFiles []string
 	var awsNukeResourceTypes []string
 
-	filepath.WalkDir(awsNukeDirectory, func(path string, di fs.DirEntry, err error) error {
+	err := filepath.WalkDir(awsNukeDirectory, func(path string, di fs.DirEntry, err error) error {
 		if !strings.HasSuffix(path, ".go") {
 			return nil
 		}
@@ -37,6 +37,9 @@ func main() {
 		awsNukeResourceFiles = append(awsNukeResourceFiles, filepath.Base(path))
 		return nil
 	})
+	if err != nil {
+		panic(err)
+	}
 
 	for _, file := range awsNukeResourceFiles {
 		originalFileContents, err := os.ReadFile(filepath.Join(awsNukeDirectory, file))
@@ -61,7 +64,7 @@ func main() {
 	var localResourceFiles []string
 	var localResourceTypes []string
 
-	filepath.WalkDir(localResourcesPath, func(path string, di fs.DirEntry, err error) error {
+	if err := filepath.WalkDir(localResourcesPath, func(path string, di fs.DirEntry, err error) error {
 		if !strings.HasSuffix(path, ".go") {
 			return nil
 		}
@@ -72,7 +75,9 @@ func main() {
 
 		localResourceFiles = append(localResourceFiles, filepath.Base(path))
 		return nil
-	})
+	}); err != nil {
+		panic(err)
+	}
 
 	for _, file := range localResourceFiles {
 		originalFileContents, err := os.ReadFile(filepath.Join(localResourcesPath, file))

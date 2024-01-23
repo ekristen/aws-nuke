@@ -14,7 +14,7 @@ import (
 const DatabaseMigrationServiceReplicationTaskResource = "DatabaseMigrationServiceReplicationTask"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   DatabaseMigrationServiceReplicationTaskResource,
 		Scope:  nuke.Account,
 		Lister: &DatabaseMigrationServiceReplicationTaskLister{},

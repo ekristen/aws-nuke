@@ -13,7 +13,7 @@ import (
 const CloudWatchDashboardResource = "CloudWatchDashboard"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   CloudWatchDashboardResource,
 		Scope:  nuke.Account,
 		Lister: &CloudWatchDashboardLister{},

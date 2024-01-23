@@ -14,7 +14,7 @@ import (
 const NeptuneClusterResource = "NeptuneCluster"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   NeptuneClusterResource,
 		Scope:  nuke.Account,
 		Lister: &NeptuneClusterLister{},

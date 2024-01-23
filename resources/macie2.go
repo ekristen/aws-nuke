@@ -13,7 +13,7 @@ import (
 const MacieResource = "Macie"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   MacieResource,
 		Scope:  nuke.Account,
 		Lister: &MacieLister{},

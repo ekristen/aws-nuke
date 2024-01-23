@@ -16,7 +16,7 @@ import (
 const EC2LaunchTemplateResource = "EC2LaunchTemplate"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   EC2LaunchTemplateResource,
 		Scope:  nuke.Account,
 		Lister: &EC2LaunchTemplateLister{},

@@ -15,7 +15,7 @@ import (
 const GlobalAcceleratorEndpointGroupResource = "GlobalAcceleratorEndpointGroup"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   GlobalAcceleratorEndpointGroupResource,
 		Scope:  nuke.Account,
 		Lister: &GlobalAcceleratorEndpointGroupLister{},

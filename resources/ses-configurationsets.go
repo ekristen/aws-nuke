@@ -14,7 +14,7 @@ import (
 const SESConfigurationSetResource = "SESConfigurationSet"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   SESConfigurationSetResource,
 		Scope:  nuke.Account,
 		Lister: &SESConfigurationSetLister{},

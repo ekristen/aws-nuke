@@ -18,7 +18,7 @@ import (
 const Route53ResolverRuleResource = "Route53ResolverRule"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   Route53ResolverRuleResource,
 		Scope:  nuke.Account,
 		Lister: &Route53ResolverRuleLister{},

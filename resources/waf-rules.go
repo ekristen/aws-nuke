@@ -15,7 +15,7 @@ import (
 const WAFRuleResource = "WAFRule"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   WAFRuleResource,
 		Scope:  nuke.Account,
 		Lister: &WAFRuleLister{},

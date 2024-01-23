@@ -14,7 +14,7 @@ import (
 const KinesisAnalyticsApplicationResource = "KinesisAnalyticsApplication"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   KinesisAnalyticsApplicationResource,
 		Scope:  nuke.Account,
 		Lister: &KinesisAnalyticsApplicationLister{},

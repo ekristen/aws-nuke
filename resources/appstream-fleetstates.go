@@ -21,7 +21,7 @@ type AppStreamFleetState struct {
 const AppStreamFleetStateResource = "AppStreamFleetState"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   AppStreamFleetStateResource,
 		Scope:  nuke.Account,
 		Lister: &AppStreamFleetStateLister{},

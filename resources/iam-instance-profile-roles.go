@@ -21,10 +21,13 @@ import (
 const IAMInstanceProfileRoleResource = "IAMInstanceProfileRole"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   IAMInstanceProfileRoleResource,
 		Scope:  nuke.Account,
 		Lister: &IAMInstanceProfileRoleLister{},
+		DeprecatedAliases: []string{
+			"IamInstanceProfileRole",
+		},
 	})
 }
 

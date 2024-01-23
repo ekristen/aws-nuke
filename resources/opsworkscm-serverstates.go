@@ -15,7 +15,7 @@ import (
 const OpsWorksCMServerStateResource = "OpsWorksCMServerState"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   OpsWorksCMServerStateResource,
 		Scope:  nuke.Account,
 		Lister: &OpsWorksCMServerStateLister{},

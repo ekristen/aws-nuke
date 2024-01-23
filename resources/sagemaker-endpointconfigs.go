@@ -14,7 +14,7 @@ import (
 const SageMakerEndpointConfigResource = "SageMakerEndpointConfig"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   SageMakerEndpointConfigResource,
 		Scope:  nuke.Account,
 		Lister: &SageMakerEndpointConfigLister{},

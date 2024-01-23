@@ -16,7 +16,7 @@ import (
 const WAFRegionalRuleResource = "WAFRegionalRule"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   WAFRegionalRuleResource,
 		Scope:  nuke.Account,
 		Lister: &WAFRegionalRuleLister{},

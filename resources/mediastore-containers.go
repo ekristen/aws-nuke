@@ -14,7 +14,7 @@ import (
 const MediaStoreContainerResource = "MediaStoreContainer"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   MediaStoreContainerResource,
 		Scope:  nuke.Account,
 		Lister: &MediaStoreContainerLister{},
