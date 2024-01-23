@@ -73,15 +73,31 @@ IAMUser:
 
 ### DateOlderThan
 
-The identifier is parsed as a timestamp. After the offset is added to it (specified in the `value` field), the resulting
-timestamp must be AFTER the current time. Details on offset syntax can be found in the [library documentation](https://golang.org/pkg/time/#ParseDuration).
-Supported date formats are epoch time:
+This works by parsing the specified property into a timestamp and comparing it to the current time minus the specified
+duration. The duration is specified in the `value` field. The duration syntax is based on golang's duration syntax.
+
+> ParseDuration parses a duration string. A duration string is a possibly signed sequence of decimal numbers, each with
+> optional fraction and a unit suffix, such as "300ms", "-1.5h" or "2h45m". Valid time units are "ns", "us" (or "µs"),
+> "ms", "s", "m", "h".
+
+Full details on duration syntax can be found in the [time library documentation](https://golang.org/pkg/time/#ParseDuration).
+
+The value from the property is parsed as a timestamp and the following are the supported formats:
 
 - `2006-01-02`
 - `2006/01/02`
 - `2006-01-02T15:04:05Z`
 - `2006-01-02T15:04:05.999999999Z07:00`
 - `2006-01-02T15:04:05Z07:00`
+
+In the follow example we are filtering EC2 Images that have a `CreationDate` older than 1 hour.
+
+```yaml
+EC2Image:
+  - type: dateOlderThan
+    property: CreationDate
+    value: 1h
+```
 
 ## Properties
 
