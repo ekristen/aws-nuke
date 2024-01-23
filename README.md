@@ -36,9 +36,8 @@ proper unit tests for it.
 
 ## Version 3
 
-Version 3 is a rewrite of this tool using [libnuke](https://github.com/ekristen/libnuke) with a focus on improving a
-number of the outstanding things that I couldn't get done with the original project without separating out the core
-code into a library.
+Version 3 is a rewrite of this tool using [libnuke](https://github.com/ekristen/libnuke) with a focus on improving a number of the outstanding things
+that I couldn't get done with the original project without separating out the core code into a library.
 
 ### Changes
 
@@ -67,39 +66,8 @@ In the root of the project exists mkdocs.yml which drives the configuration for 
 This README.md is currently copied to `docs/index.md` and the documentation is automatically published to the GitHub
 pages location for this repository using a GitHub Action workflow. It does not use the `gh-pages` branch.
 
-
-## Use Cases
-
-- We are testing our [Terraform](https://www.terraform.io/) code with Jenkins. Sometimes a Terraform run fails during development and
-  messes up the account. With *aws-nuke* we can simply clean up the failed account, so it can be reused for the next
-  build.
-- Our platform developers have their own AWS Accounts where they can create their own Kubernetes clusters for testing
-  purposes. With *aws-nuke* it is very easy to clean up these account at the end of the day and keep the costs low.
-
-
-### Feature Flags
-
-There are some features, which are quite opinionated. To make those work for
-everyone, *aws-nuke* has flags to manually enable those features. These can be
-configured on the root-level of the config, like this:
-
-```yaml
----
-feature-flags:
-  disable-deletion-protection:
-    RDSInstance: true
-    EC2Instance: true
-    CloudformationStack: true
-  force-delete-lightsail-addons: true
-```
-
-## Contact Channels
-
-For now GitHub issues, may open a Slack or Discord if warranted.
-
 ## Contribute
 
-You can contribute to *aws-nuke* by forking this repository, making your
-changes and creating a Pull Request against our repository. If you are unsure
-how to solve a problem or have other questions about a contributions, please
-create a GitHub issue.
+You can contribute to *aws-nuke* by forking this repository, making your changes and creating a Pull Request against
+this repository. If you are unsure how to solve a problem or have other questions about a contributions, please create
+a GitHub issue.
