@@ -7,7 +7,7 @@ require (
 	github.com/ekristen/libnuke v0.0.0-20240123221700-d8899f33f580
 	github.com/fatih/color v1.16.0
 	github.com/golang/mock v1.6.0
-	github.com/google/uuid v1.5.0
+	github.com/google/uuid v1.6.0
 	github.com/gotidy/ptr v1.4.0
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.3
