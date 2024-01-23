@@ -70,6 +70,9 @@ nav:
     - Install: installation.md
     - Authentication: auth.md
     - Quick Start: quick-start.md
+  - CLI:
+    - Usage: cli-usage.md
+    - Feature Flags: cli-feature-flags.md
   - Config:
     - Overview: config.md
     - Filtering: config-filtering.md

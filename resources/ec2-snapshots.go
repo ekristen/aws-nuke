@@ -22,6 +22,9 @@ func init() {
 		Name:   EC2SnapshotResource,
 		Scope:  nuke.Account,
 		Lister: &EC2SnapshotLister{},
+		DependsOn: []string{
+			EC2ImageResource,
+		},
 	})
 }
 
