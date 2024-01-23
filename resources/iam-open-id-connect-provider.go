@@ -15,7 +15,7 @@ import (
 const IAMOpenIDConnectProviderResource = "IAMOpenIDConnectProvider"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   IAMOpenIDConnectProviderResource,
 		Scope:  nuke.Account,
 		Lister: &IAMOpenIDConnectProviderLister{},

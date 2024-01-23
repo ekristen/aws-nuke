@@ -17,7 +17,7 @@ import (
 const IAMServiceSpecificCredentialResource = "IAMServiceSpecificCredential"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   IAMServiceSpecificCredentialResource,
 		Scope:  nuke.Account,
 		Lister: &IAMServiceSpecificCredentialLister{},

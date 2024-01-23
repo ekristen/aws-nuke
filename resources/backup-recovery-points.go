@@ -22,7 +22,7 @@ type BackupRecoveryPoint struct {
 const AWSBackupRecoveryPointResource = "AWSBackupRecoveryPoint"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   AWSBackupRecoveryPointResource,
 		Scope:  nuke.Account,
 		Lister: &AWSBackupRecoveryPointLister{},

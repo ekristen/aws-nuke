@@ -20,7 +20,7 @@ import (
 const ServiceCatalogTagOptionPortfolioAttachmentResource = "ServiceCatalogTagOptionPortfolioAttachment"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   ServiceCatalogTagOptionPortfolioAttachmentResource,
 		Scope:  nuke.Account,
 		Lister: &ServiceCatalogTagOptionPortfolioAttachmentLister{},

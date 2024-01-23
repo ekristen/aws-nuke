@@ -15,7 +15,7 @@ import (
 const RDSDBSubnetGroupResource = "RDSDBSubnetGroup"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   RDSDBSubnetGroupResource,
 		Scope:  nuke.Account,
 		Lister: &RDSDBSubnetGroupLister{},

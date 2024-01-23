@@ -17,7 +17,7 @@ import (
 const Route53HostedZoneResource = "Route53HostedZone"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   Route53HostedZoneResource,
 		Scope:  nuke.Account,
 		Lister: &Route53HostedZoneLister{},

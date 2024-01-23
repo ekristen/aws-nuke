@@ -14,7 +14,7 @@ import (
 const ComprehendEndpointResource = "ComprehendEndpoint"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   ComprehendEndpointResource,
 		Scope:  nuke.Account,
 		Lister: &ComprehendEndpointLister{},

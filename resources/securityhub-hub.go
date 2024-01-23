@@ -15,7 +15,7 @@ import (
 const SecurityHubResource = "SecurityHub"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   SecurityHubResource,
 		Scope:  nuke.Account,
 		Lister: &SecurityHubLister{},

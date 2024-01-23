@@ -15,7 +15,7 @@ import (
 const ElasticBeanstalkEnvironmentResource = "ElasticBeanstalkEnvironment"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   ElasticBeanstalkEnvironmentResource,
 		Scope:  nuke.Account,
 		Lister: &ElasticBeanstalkEnvironmentLister{},
@@ -75,9 +75,9 @@ func (f *ElasticBeanstalkEnvironment) Remove(_ context.Context) error {
 	return err
 }
 
-func (e *ElasticBeanstalkEnvironment) Properties() types.Properties {
+func (f *ElasticBeanstalkEnvironment) Properties() types.Properties {
 	return types.NewProperties().
-		Set("Name", e.name)
+		Set("Name", f.name)
 }
 
 func (f *ElasticBeanstalkEnvironment) String() string {

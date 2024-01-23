@@ -14,7 +14,7 @@ import (
 const SSMAssociationResource = "SSMAssociation"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   SSMAssociationResource,
 		Scope:  nuke.Account,
 		Lister: &SSMAssociationLister{},

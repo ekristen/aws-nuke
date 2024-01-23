@@ -14,7 +14,7 @@ import (
 const ElasticacheCacheClusterResource = "ElasticacheCacheCluster"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   ElasticacheCacheClusterResource,
 		Scope:  nuke.Account,
 		Lister: &ElasticacheCacheClusterLister{},

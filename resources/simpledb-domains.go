@@ -14,7 +14,7 @@ import (
 const SimpleDBDomainResource = "SimpleDBDomain"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   SimpleDBDomainResource,
 		Scope:  nuke.Account,
 		Lister: &SimpleDBDomainLister{},

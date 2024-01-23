@@ -15,7 +15,7 @@ import (
 const FSxBackupResource = "FSxBackup"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   FSxBackupResource,
 		Scope:  nuke.Account,
 		Lister: &FSxBackupLister{},

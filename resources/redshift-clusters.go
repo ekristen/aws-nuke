@@ -15,7 +15,7 @@ import (
 const RedshiftClusterResource = "RedshiftCluster"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   RedshiftClusterResource,
 		Scope:  nuke.Account,
 		Lister: &RedshiftClusterLister{},

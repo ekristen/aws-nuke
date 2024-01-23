@@ -13,7 +13,7 @@ import (
 const ElasticBeanstalkApplicationResource = "ElasticBeanstalkApplication"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   ElasticBeanstalkApplicationResource,
 		Scope:  nuke.Account,
 		Lister: &ElasticBeanstalkApplicationLister{},

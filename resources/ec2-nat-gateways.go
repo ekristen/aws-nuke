@@ -18,10 +18,13 @@ import (
 const EC2NATGatewayResource = "EC2NATGateway"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   EC2NATGatewayResource,
 		Scope:  nuke.Account,
 		Lister: &EC2NATGatewayLister{},
+		DeprecatedAliases: []string{
+			"EC2NatGateway",
+		},
 	})
 }
 

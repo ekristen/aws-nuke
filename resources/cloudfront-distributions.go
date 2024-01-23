@@ -17,7 +17,7 @@ import (
 const CloudFrontDistributionResource = "CloudFrontDistribution"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   CloudFrontDistributionResource,
 		Scope:  nuke.Account,
 		Lister: &CloudFrontDistributionLister{},

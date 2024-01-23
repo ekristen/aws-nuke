@@ -21,7 +21,7 @@ import (
 const IAMLoginProfileResource = "IAMLoginProfile"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   IAMLoginProfileResource,
 		Scope:  nuke.Account,
 		Lister: &IAMLoginProfileLister{},

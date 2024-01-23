@@ -16,10 +16,14 @@ import (
 const EC2DHCPOptionResource = "EC2DHCPOption"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   EC2DHCPOptionResource,
 		Scope:  nuke.Account,
 		Lister: &EC2DHCPOptionLister{},
+		DeprecatedAliases: []string{
+			"EC2DhcpOptions",
+			"EC2DHCPOptions",
+		},
 	})
 }
 

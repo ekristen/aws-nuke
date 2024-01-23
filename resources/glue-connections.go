@@ -14,7 +14,7 @@ import (
 const GlueConnectionResource = "GlueConnection"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   GlueConnectionResource,
 		Scope:  nuke.Account,
 		Lister: &GlueConnectionLister{},

@@ -14,7 +14,7 @@ import (
 const BatchComputeEnvironmentResource = "BatchComputeEnvironment"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   BatchComputeEnvironmentResource,
 		Scope:  nuke.Account,
 		Lister: &BatchComputeEnvironmentLister{},

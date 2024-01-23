@@ -12,7 +12,7 @@ import (
 const RDSProxyResource = "RDSProxy"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   RDSProxyResource,
 		Scope:  nuke.Account,
 		Lister: &RDSProxyLister{},

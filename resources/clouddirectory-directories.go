@@ -14,7 +14,7 @@ import (
 const CloudDirectoryDirectoryResource = "CloudDirectoryDirectory"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   CloudDirectoryDirectoryResource,
 		Scope:  nuke.Account,
 		Lister: &CloudDirectoryDirectoryLister{},

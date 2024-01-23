@@ -16,7 +16,7 @@ import (
 const RedshiftParameterGroupResource = "RedshiftParameterGroup"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   RedshiftParameterGroupResource,
 		Scope:  nuke.Account,
 		Lister: &RedshiftParameterGroupLister{},

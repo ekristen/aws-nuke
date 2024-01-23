@@ -14,7 +14,7 @@ import (
 const GlueCrawlerResource = "GlueCrawler"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   GlueCrawlerResource,
 		Scope:  nuke.Account,
 		Lister: &GlueCrawlerLister{},

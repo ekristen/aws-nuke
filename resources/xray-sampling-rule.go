@@ -14,7 +14,7 @@ import (
 const XRaySamplingRuleResource = "XRaySamplingRule"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   XRaySamplingRuleResource,
 		Scope:  nuke.Account,
 		Lister: &XRaySamplingRuleLister{},

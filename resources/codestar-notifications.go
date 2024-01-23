@@ -17,7 +17,7 @@ import (
 const CodeStarNotificationRuleResource = "CodeStarNotificationRule"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   CodeStarNotificationRuleResource,
 		Scope:  nuke.Account,
 		Lister: &CodeStarNotificationRuleLister{},

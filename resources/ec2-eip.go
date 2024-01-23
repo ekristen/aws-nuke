@@ -16,7 +16,7 @@ import (
 const EC2AddressResource = "EC2Address"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   EC2AddressResource,
 		Scope:  nuke.Account,
 		Lister: &EC2AddressLister{},

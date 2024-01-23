@@ -13,7 +13,7 @@ import (
 const CloudSearchDomainResource = "CloudSearchDomain"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   CloudSearchDomainResource,
 		Scope:  nuke.Account,
 		Lister: &CloudSearchDomainLister{},

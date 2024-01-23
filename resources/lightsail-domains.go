@@ -16,7 +16,7 @@ import (
 const LightsailDomainResource = "LightsailDomain"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   LightsailDomainResource,
 		Scope:  nuke.Account,
 		Lister: &LightsailDomainLister{},

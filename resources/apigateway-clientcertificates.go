@@ -14,11 +14,12 @@ import (
 const APIGatewayClientCertificateResource = "APIGatewayClientCertificate"
 
 func init() {
-	resource.Register(resource.Registration{
-		Name:   APIGatewayClientCertificateResource,
-		Scope:  nuke.Account,
-		Lister: &APIGatewayClientCertificateLister{},
-	}, nuke.MapCloudControl("AWS::ApiGateway::ClientCertificate"))
+	resource.Register(&resource.Registration{
+		Name:                APIGatewayClientCertificateResource,
+		Scope:               nuke.Account,
+		Lister:              &APIGatewayClientCertificateLister{},
+		AlternativeResource: "AWS::ApiGateway::ClientCertificate",
+	})
 }
 
 type APIGatewayClientCertificateLister struct{}

@@ -21,7 +21,7 @@ import (
 const AthenaWorkGroupResource = "AthenaWorkGroup"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   AthenaWorkGroupResource,
 		Scope:  nuke.Account,
 		Lister: &AthenaWorkGroupLister{},

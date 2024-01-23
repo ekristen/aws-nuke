@@ -16,7 +16,7 @@ import (
 const SSMPatchBaselineResource = "SSMPatchBaseline"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   SSMPatchBaselineResource,
 		Scope:  nuke.Account,
 		Lister: &SSMPatchBaselineLister{},

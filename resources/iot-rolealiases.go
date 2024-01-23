@@ -14,7 +14,7 @@ import (
 const IoTRoleAliasResource = "IoTRoleAlias"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   IoTRoleAliasResource,
 		Scope:  nuke.Account,
 		Lister: &IoTRoleAliasLister{},

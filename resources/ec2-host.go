@@ -17,7 +17,7 @@ import (
 const EC2HostResource = "EC2Host"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   EC2HostResource,
 		Scope:  nuke.Account,
 		Lister: &EC2HostLister{},

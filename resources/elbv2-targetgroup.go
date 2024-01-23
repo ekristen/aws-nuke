@@ -14,7 +14,7 @@ import (
 const ELBv2TargetGroupResource = "ELBv2TargetGroup"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   ELBv2TargetGroupResource,
 		Scope:  nuke.Account,
 		Lister: &ELBv2TargetGroupLister{},

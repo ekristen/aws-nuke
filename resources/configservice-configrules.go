@@ -16,7 +16,7 @@ import (
 const ConfigServiceConfigRuleResource = "ConfigServiceConfigRule"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   ConfigServiceConfigRuleResource,
 		Scope:  nuke.Account,
 		Lister: &ConfigServiceConfigRuleLister{},

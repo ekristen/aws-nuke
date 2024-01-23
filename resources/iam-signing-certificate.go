@@ -20,7 +20,7 @@ import (
 const IAMSigningCertificateResource = "IAMSigningCertificate"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   IAMSigningCertificateResource,
 		Scope:  nuke.Account,
 		Lister: &IAMSigningCertificateLister{},

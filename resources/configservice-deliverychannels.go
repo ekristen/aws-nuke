@@ -13,7 +13,7 @@ import (
 const ConfigServiceDeliveryChannelResource = "ConfigServiceDeliveryChannel"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   ConfigServiceDeliveryChannelResource,
 		Scope:  nuke.Account,
 		Lister: &ConfigServiceDeliveryChannelLister{},

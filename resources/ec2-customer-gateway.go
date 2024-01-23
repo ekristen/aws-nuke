@@ -15,7 +15,7 @@ import (
 const EC2CustomerGatewayResource = "EC2CustomerGateway"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   EC2CustomerGatewayResource,
 		Scope:  nuke.Account,
 		Lister: &EC2CustomerGatewayLister{},

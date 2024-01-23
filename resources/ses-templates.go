@@ -14,7 +14,7 @@ import (
 const SESTemplateResource = "SESTemplate"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   SESTemplateResource,
 		Scope:  nuke.Account,
 		Lister: &SESTemplateLister{},

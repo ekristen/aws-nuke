@@ -24,7 +24,7 @@ type BackupSelection struct {
 const AWSBackupSelectionResource = "AWSBackupSelection"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   AWSBackupSelectionResource,
 		Scope:  nuke.Account,
 		Lister: &AWSBackupSelectionLister{},

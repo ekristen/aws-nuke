@@ -24,7 +24,7 @@ type CloudFrontDistributionDeployment struct {
 const CloudFrontDistributionDeploymentResource = "CloudFrontDistributionDeployment"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   CloudFrontDistributionDeploymentResource,
 		Scope:  nuke.Account,
 		Lister: &CloudFrontDistributionDeploymentLister{},

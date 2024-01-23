@@ -17,7 +17,7 @@ import (
 const IAMAccountSettingPasswordPolicyResource = "IAMAccountSettingPasswordPolicy"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   IAMAccountSettingPasswordPolicyResource,
 		Scope:  nuke.Account,
 		Lister: &IAMAccountSettingPasswordPolicyLister{},

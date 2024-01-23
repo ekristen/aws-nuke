@@ -23,11 +23,12 @@ type AccessAnalyzer struct {
 }
 
 func init() {
-	resource.Register(resource.Registration{
-		Name:   AccessAnalyzerResource,
-		Scope:  nuke.Account,
-		Lister: &AccessAnalyzerLister{},
-	}, nuke.MapCloudControl("AWS::AccessAnalyzer::Analyzer"))
+	resource.Register(&resource.Registration{
+		Name:                AccessAnalyzerResource,
+		Scope:               nuke.Account,
+		Lister:              &AccessAnalyzerLister{},
+		AlternativeResource: "AWS::AccessAnalyzer::Analyzer",
+	})
 }
 
 type AccessAnalyzerLister struct{}

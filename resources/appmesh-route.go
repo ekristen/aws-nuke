@@ -14,7 +14,7 @@ import (
 const AppMeshRouteResource = "AppMeshRoute"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   AppMeshRouteResource,
 		Scope:  nuke.Account,
 		Lister: &AppMeshRouteLister{},

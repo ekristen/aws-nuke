@@ -15,7 +15,7 @@ import (
 const CloudWatchAlarmResource = "CloudWatchAlarm"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   CloudWatchAlarmResource,
 		Scope:  nuke.Account,
 		Lister: &CloudWatchAlarmLister{},

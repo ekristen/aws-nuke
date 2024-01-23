@@ -14,7 +14,7 @@ import (
 const KinesisStreamResource = "KinesisStream"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   KinesisStreamResource,
 		Scope:  nuke.Account,
 		Lister: &KinesisStreamLister{},

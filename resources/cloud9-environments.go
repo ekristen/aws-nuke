@@ -19,7 +19,7 @@ type Cloud9Environment struct {
 const Cloud9EnvironmentResource = "Cloud9Environment"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   Cloud9EnvironmentResource,
 		Scope:  nuke.Account,
 		Lister: &Cloud9EnvironmentLister{},

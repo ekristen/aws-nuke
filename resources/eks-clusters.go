@@ -17,7 +17,7 @@ import (
 const EKSClusterResource = "EKSCluster"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   EKSClusterResource,
 		Scope:  nuke.Account,
 		Lister: &EKSClusterLister{},

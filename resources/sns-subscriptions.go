@@ -15,7 +15,7 @@ import (
 const SNSSubscriptionResource = "SNSSubscription"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   SNSSubscriptionResource,
 		Scope:  nuke.Account,
 		Lister: &SNSSubscriptionLister{},

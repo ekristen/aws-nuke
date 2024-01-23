@@ -14,7 +14,7 @@ import (
 const EC2ClientVpnEndpointResource = "EC2ClientVpnEndpoint"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   EC2ClientVpnEndpointResource,
 		Scope:  nuke.Account,
 		Lister: &EC2ClientVpnEndpointLister{},
@@ -70,9 +70,9 @@ func (c *EC2ClientVpnEndpoint) Remove(_ context.Context) error {
 	return nil
 }
 
-func (e *EC2ClientVpnEndpoint) Properties() types.Properties {
+func (c *EC2ClientVpnEndpoint) Properties() types.Properties {
 	properties := types.NewProperties()
-	for _, tagValue := range e.cveTags {
+	for _, tagValue := range c.cveTags {
 		properties.SetTagWithPrefix("cve", tagValue.Key, tagValue.Value)
 	}
 	return properties

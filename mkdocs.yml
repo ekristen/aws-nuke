@@ -71,8 +71,11 @@ nav:
     - Authentication: auth.md
     - Quick Start: quick-start.md
   - Config:
-    - Filtering: filtering.md
-    - Custom Endpoints: custom-endpoints.md
+    - Overview: config.md
+    - Filtering: config-filtering.md
+    - Presets: config-presets.md
+    - Custom Endpoints: config-custom-endpoints.md
+    - Migration Guide: config-migration.md
   - Development:
     - Overview: development.md
     - Resources: resources.md

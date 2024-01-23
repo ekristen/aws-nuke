@@ -14,7 +14,7 @@ import (
 const GlueJobResource = "GlueJob"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   GlueJobResource,
 		Scope:  nuke.Account,
 		Lister: &GlueJobLister{},

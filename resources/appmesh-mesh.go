@@ -15,7 +15,7 @@ import (
 const AppMeshMeshResource = "AppMeshMesh"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   AppMeshMeshResource,
 		Scope:  nuke.Account,
 		Lister: &AppMeshMeshLister{},

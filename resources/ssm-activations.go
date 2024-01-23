@@ -15,7 +15,7 @@ import (
 const SSMActivationResource = "SSMActivation"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   SSMActivationResource,
 		Scope:  nuke.Account,
 		Lister: &SSMActivationLister{},

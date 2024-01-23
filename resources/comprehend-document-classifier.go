@@ -16,7 +16,7 @@ import (
 const ComprehendDocumentClassifierResource = "ComprehendDocumentClassifier"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   ComprehendDocumentClassifierResource,
 		Scope:  nuke.Account,
 		Lister: &ComprehendDocumentClassifierLister{},

@@ -14,7 +14,7 @@ import (
 const AppMeshVirtualNodeResource = "AppMeshVirtualNode"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   AppMeshVirtualNodeResource,
 		Scope:  nuke.Account,
 		Lister: &AppMeshVirtualNodeLister{},

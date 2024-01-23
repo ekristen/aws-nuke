@@ -14,7 +14,7 @@ import (
 const AccessAnalyzerArchiveRuleResource = "ArchiveRule"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   AccessAnalyzerArchiveRuleResource,
 		Scope:  nuke.Account,
 		Lister: &AccessAnalyzerArchiveRuleLister{},

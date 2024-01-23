@@ -15,7 +15,7 @@ import (
 const APIGatewayV2APIResource = "APIGatewayV2API"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   APIGatewayV2APIResource,
 		Scope:  nuke.Account,
 		Lister: &APIGatewayV2APILister{},

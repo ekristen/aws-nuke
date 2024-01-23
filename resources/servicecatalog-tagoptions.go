@@ -18,7 +18,7 @@ import (
 const ServiceCatalogTagOptionResource = "ServiceCatalogTagOption"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   ServiceCatalogTagOptionResource,
 		Scope:  nuke.Account,
 		Lister: &ServiceCatalogTagOptionLister{},

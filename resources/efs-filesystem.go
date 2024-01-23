@@ -14,7 +14,7 @@ import (
 const EFSFileSystemResource = "EFSFileSystem"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   EFSFileSystemResource,
 		Scope:  nuke.Account,
 		Lister: &EFSFileSystemLister{},

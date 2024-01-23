@@ -16,7 +16,7 @@ import (
 const EC2SpotFleetRequestResource = "EC2SpotFleetRequest"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   EC2SpotFleetRequestResource,
 		Scope:  nuke.Account,
 		Lister: &EC2SpotFleetRequestLister{},

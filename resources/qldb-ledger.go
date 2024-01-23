@@ -2,13 +2,13 @@ package resources
 
 import (
 	"context"
+	"github.com/ekristen/libnuke/pkg/settings"
 
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/qldb"
 
-	"github.com/ekristen/libnuke/pkg/featureflag"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
@@ -18,7 +18,7 @@ import (
 const QLDBLedgerResource = "QLDBLedger"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   QLDBLedgerResource,
 		Scope:  nuke.Account,
 		Lister: &QLDBLedgerLister{},
@@ -66,20 +66,15 @@ type QLDBLedger struct {
 	svc    *qldb.QLDB
 	ledger *qldb.DescribeLedgerOutput
 
-	featureFlags *featureflag.FeatureFlags
+	settings *settings.Setting
 }
 
-func (l *QLDBLedger) FeatureFlags(ff *featureflag.FeatureFlags) {
-	l.featureFlags = ff
+func (l *QLDBLedger) Settings(setting *settings.Setting) {
+	l.settings = setting
 }
 
 func (l *QLDBLedger) Remove(_ context.Context) error {
-	ffDDP, err := l.featureFlags.Get("DisableDeletionProtection_QLDBLedger")
-	if err != nil {
-		return err
-	}
-
-	if aws.BoolValue(l.ledger.DeletionProtection) && ffDDP.Enabled() {
+	if aws.BoolValue(l.ledger.DeletionProtection) && l.settings.Get("DisableDeletionProtection").(bool) {
 		modifyParams := &qldb.UpdateLedgerInput{
 			DeletionProtection: aws.Bool(false),
 			Name:               l.ledger.Name,

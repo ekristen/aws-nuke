@@ -14,7 +14,7 @@ import (
 const ComprehendSentimentDetectionJobResource = "ComprehendSentimentDetectionJob"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   ComprehendSentimentDetectionJobResource,
 		Scope:  nuke.Account,
 		Lister: &ComprehendSentimentDetectionJobLister{},

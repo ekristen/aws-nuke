@@ -14,7 +14,7 @@ import (
 const AthenaNamedQueryResource = "AthenaNamedQuery"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   AthenaNamedQueryResource,
 		Scope:  nuke.Account,
 		Lister: &AthenaNamedQueryLister{},

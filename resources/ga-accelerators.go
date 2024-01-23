@@ -20,7 +20,7 @@ type GlobalAccelerator struct {
 const GlobalAcceleratorResource = "GlobalAccelerator"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   GlobalAcceleratorResource,
 		Scope:  nuke.Account,
 		Lister: &GlobalAcceleratorLister{},

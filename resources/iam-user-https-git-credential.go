@@ -18,7 +18,7 @@ import (
 const IAMUserHTTPSGitCredentialResource = "IAMUserHTTPSGitCredential"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   IAMUserHTTPSGitCredentialResource,
 		Scope:  nuke.Account,
 		Lister: &IAMUserHTTPSGitCredentialLister{},

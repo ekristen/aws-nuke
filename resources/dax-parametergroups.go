@@ -21,7 +21,7 @@ type DAXParameterGroup struct {
 const DAXParameterGroupResource = "DAXParameterGroup"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   DAXParameterGroupResource,
 		Scope:  nuke.Account,
 		Lister: &DAXParameterGroupLister{},

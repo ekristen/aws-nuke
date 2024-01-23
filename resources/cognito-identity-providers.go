@@ -17,7 +17,7 @@ import (
 const CognitoIdentityProviderResource = "CognitoIdentityProvider"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   CognitoIdentityProviderResource,
 		Scope:  nuke.Account,
 		Lister: &CognitoIdentityProviderLister{},

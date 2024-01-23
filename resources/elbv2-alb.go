@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"github.com/ekristen/libnuke/pkg/settings"
 
 	"errors"
 	"time"
@@ -10,7 +11,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 
-	"github.com/ekristen/libnuke/pkg/featureflag"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
@@ -18,16 +18,16 @@ import (
 )
 
 type ELBv2LoadBalancer struct {
-	svc          *elbv2.ELBV2
-	tags         []*elbv2.Tag
-	elb          *elbv2.LoadBalancer
-	featureFlags *featureflag.FeatureFlags
+	svc      *elbv2.ELBV2
+	tags     []*elbv2.Tag
+	elb      *elbv2.LoadBalancer
+	settings *settings.Setting
 }
 
 const ELBv2Resource = "ELBv2"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   ELBv2Resource,
 		Scope:  nuke.Account,
 		Lister: &ELBv2Lister{},
@@ -87,22 +87,17 @@ func (l *ELBv2Lister) List(_ context.Context, o interface{}) ([]resource.Resourc
 	return resources, nil
 }
 
-func (e *ELBv2LoadBalancer) FeatureFlags(ff *featureflag.FeatureFlags) {
-	e.featureFlags = ff
+func (e *ELBv2LoadBalancer) Settings(setting *settings.Setting) {
+	e.settings = setting
 }
 
 func (e *ELBv2LoadBalancer) Remove(_ context.Context) error {
-	ffdddElbV2, err := e.featureFlags.Get("DisableDeletionProtection_ELBv2")
-	if err != nil {
-		return err
-	}
-
 	params := &elbv2.DeleteLoadBalancerInput{
 		LoadBalancerArn: e.elb.LoadBalancerArn,
 	}
 
 	if _, err := e.svc.DeleteLoadBalancer(params); err != nil {
-		if ffdddElbV2.Enabled() {
+		if e.settings.Get("DisableDeletionProtection").(bool) {
 			var awsErr awserr.Error
 			ok := errors.As(err, &awsErr)
 			if ok && awsErr.Code() == "OperationNotPermitted" &&

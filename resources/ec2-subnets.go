@@ -14,7 +14,7 @@ import (
 const EC2SubnetResource = "EC2Subnet"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   EC2SubnetResource,
 		Scope:  nuke.Account,
 		Lister: &EC2SubnetLister{},

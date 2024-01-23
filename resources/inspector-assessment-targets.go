@@ -13,7 +13,7 @@ import (
 const InspectorAssessmentTargetResource = "InspectorAssessmentTarget"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   InspectorAssessmentTargetResource,
 		Scope:  nuke.Account,
 		Lister: &InspectorAssessmentTargetLister{},

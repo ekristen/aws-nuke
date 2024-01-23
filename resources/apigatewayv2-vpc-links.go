@@ -15,7 +15,7 @@ import (
 const APIGatewayV2VpcLinkResource = "APIGatewayV2VpcLink"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   APIGatewayV2VpcLinkResource,
 		Scope:  nuke.Account,
 		Lister: &APIGatewayV2VpcLinkLister{},

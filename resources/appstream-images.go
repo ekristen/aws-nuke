@@ -22,7 +22,7 @@ type AppStreamImage struct {
 const AppStreamImageResource = "AppStreamImage"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   AppStreamImageResource,
 		Scope:  nuke.Account,
 		Lister: &AppStreamImageLister{},

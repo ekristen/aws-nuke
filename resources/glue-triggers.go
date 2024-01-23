@@ -14,7 +14,7 @@ import (
 const GlueTriggerResource = "GlueTrigger"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   GlueTriggerResource,
 		Scope:  nuke.Account,
 		Lister: &GlueTriggerLister{},

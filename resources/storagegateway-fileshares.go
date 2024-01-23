@@ -14,7 +14,7 @@ import (
 const StorageGatewayFileShareResource = "StorageGatewayFileShare"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   StorageGatewayFileShareResource,
 		Scope:  nuke.Account,
 		Lister: &StorageGatewayFileShareLister{},

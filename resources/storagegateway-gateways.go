@@ -14,7 +14,7 @@ import (
 const StorageGatewayGatewayResource = "StorageGatewayGateway"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   StorageGatewayGatewayResource,
 		Scope:  nuke.Account,
 		Lister: &StorageGatewayGatewayLister{},

@@ -15,7 +15,7 @@ import (
 const ServiceCatalogPortfolioResource = "ServiceCatalogPortfolio"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   ServiceCatalogPortfolioResource,
 		Scope:  nuke.Account,
 		Lister: &ServiceCatalogPortfolioLister{},

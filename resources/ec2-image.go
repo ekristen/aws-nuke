@@ -15,7 +15,7 @@ import (
 const EC2ImageResource = "EC2Image"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   EC2ImageResource,
 		Scope:  nuke.Account,
 		Lister: &EC2ImageLister{},

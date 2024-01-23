@@ -13,7 +13,7 @@ import (
 const ConfigServiceConfigurationRecorderResource = "ConfigServiceConfigurationRecorder"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   ConfigServiceConfigurationRecorderResource,
 		Scope:  nuke.Account,
 		Lister: &ConfigServiceConfigurationRecorderLister{},

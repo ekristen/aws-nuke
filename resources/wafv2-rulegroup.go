@@ -15,7 +15,7 @@ import (
 const WAFv2RuleGroupResource = "WAFv2RuleGroup"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   WAFv2RuleGroupResource,
 		Scope:  nuke.Account,
 		Lister: &WAFv2RuleGroupLister{},

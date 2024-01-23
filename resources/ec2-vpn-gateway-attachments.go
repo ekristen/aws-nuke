@@ -17,10 +17,13 @@ import (
 const EC2VPNGatewayAttachmentResource = "EC2VPNGatewayAttachment"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   EC2VPNGatewayAttachmentResource,
 		Scope:  nuke.Account,
 		Lister: &EC2VPNGatewayAttachmentLister{},
+		DeprecatedAliases: []string{
+			"EC2VpnGatewayAttachement",
+		},
 	})
 }
 

@@ -19,11 +19,15 @@ const ECRRepositoryResource = "ECRRepository"
 const ECRRepositoryCloudControlResource = "AWS::ECR::Repository"
 
 func init() {
-	resource.Register(resource.Registration{
-		Name:   ECRRepositoryResource,
-		Scope:  nuke.Account,
-		Lister: &ECRRepositoryLister{},
-	}, nuke.MapCloudControl(ECRRepositoryCloudControlResource))
+	resource.Register(&resource.Registration{
+		Name:                ECRRepositoryResource,
+		Scope:               nuke.Account,
+		Lister:              &ECRRepositoryLister{},
+		AlternativeResource: ECRRepositoryCloudControlResource,
+		DeprecatedAliases: []string{
+			"ECRrepository",
+		},
+	})
 }
 
 type ECRRepositoryLister struct{}

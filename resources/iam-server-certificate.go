@@ -14,10 +14,13 @@ import (
 const IAMServerCertificateResource = "IAMServerCertificate"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   IAMServerCertificateResource,
 		Scope:  nuke.Account,
 		Lister: &IAMServerCertificateLister{},
+		DeprecatedAliases: []string{
+			"IamServerCertificate",
+		},
 	})
 }
 

@@ -18,7 +18,7 @@ import (
 const EMRClusterResource = "EMRCluster"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   EMRClusterResource,
 		Scope:  nuke.Account,
 		Lister: &EMRClusterLister{},

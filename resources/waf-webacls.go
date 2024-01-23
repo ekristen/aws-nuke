@@ -14,7 +14,7 @@ import (
 const WAFWebACLResource = "WAFWebACL"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   WAFWebACLResource,
 		Scope:  nuke.Account,
 		Lister: &WAFWebACLLister{},

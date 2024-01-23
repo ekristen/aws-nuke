@@ -13,7 +13,7 @@ import (
 const CodePipelinePipelineResource = "CodePipelinePipeline"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   CodePipelinePipelineResource,
 		Scope:  nuke.Account,
 		Lister: &CodePipelinePipelineLister{},

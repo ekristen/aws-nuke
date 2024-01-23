@@ -16,7 +16,7 @@ import (
 const WAFRegionalByteMatchSetResource = "WAFRegionalByteMatchSet"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   WAFRegionalByteMatchSetResource,
 		Scope:  nuke.Account,
 		Lister: &WAFRegionalByteMatchSetLister{},

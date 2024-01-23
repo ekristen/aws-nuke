@@ -15,7 +15,7 @@ import (
 const ECSTaskResource = "ECSTask"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   ECSTaskResource,
 		Scope:  nuke.Account,
 		Lister: &ECSTaskLister{},

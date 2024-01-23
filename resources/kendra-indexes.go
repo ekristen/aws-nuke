@@ -15,7 +15,7 @@ import (
 const KendraIndexResource = "KendraIndex"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   KendraIndexResource,
 		Scope:  nuke.Account,
 		Lister: &KendraIndexLister{},

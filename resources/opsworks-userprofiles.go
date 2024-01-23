@@ -16,7 +16,7 @@ import (
 const OpsWorksUserProfileResource = "OpsWorksUserProfile"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   OpsWorksUserProfileResource,
 		Scope:  nuke.Account,
 		Lister: &OpsWorksUserProfileLister{},

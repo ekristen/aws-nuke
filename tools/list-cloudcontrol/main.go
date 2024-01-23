@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/ekristen/libnuke/pkg/resource"
 	"strings"
 
 	"github.com/fatih/color"
@@ -13,8 +14,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
-
-	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 type CFTypeSchema struct {
@@ -33,7 +32,7 @@ func main() {
 
 	cf := cloudformation.New(sess)
 
-	mapping := nuke.GetCloudControlMapping()
+	mapping := resource.GetAlternativeResourceTypeMapping()
 
 	in := &cloudformation.ListTypesInput{
 		Type:             aws.String(cloudformation.RegistryTypeResource),

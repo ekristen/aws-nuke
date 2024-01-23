@@ -16,7 +16,7 @@ import (
 const WAFRegionalRateBasedRulePredicateResource = "WAFRegionalRateBasedRulePredicate"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   WAFRegionalRateBasedRulePredicateResource,
 		Scope:  nuke.Account,
 		Lister: &WAFRegionalRateBasedRulePredicateLister{},

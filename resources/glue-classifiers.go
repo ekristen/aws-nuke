@@ -14,7 +14,7 @@ import (
 const GlueClassifierResource = "GlueClassifier"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   GlueClassifierResource,
 		Scope:  nuke.Account,
 		Lister: &GlueClassifierLister{},

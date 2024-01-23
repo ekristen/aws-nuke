@@ -15,7 +15,7 @@ import (
 const EC2VPCPeeringConnectionResource = "EC2VPCPeeringConnection"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   EC2VPCPeeringConnectionResource,
 		Scope:  nuke.Account,
 		Lister: &EC2VPCPeeringConnectionLister{},
