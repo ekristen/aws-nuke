@@ -4,7 +4,7 @@ go 1.21.6
 
 require (
 	github.com/aws/aws-sdk-go v1.49.21
-	github.com/ekristen/libnuke v0.0.0-20240122232527-922a9af6ba13
+	github.com/ekristen/libnuke v0.0.0-20240123221700-d8899f33f580
 	github.com/fatih/color v1.16.0
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.5.0
@@ -24,7 +24,6 @@ require (
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mb0/glob v0.0.0-20160210091149-1eb79d2de6c4 // indirect
-	github.com/mitchellh/hashstructure/v2 v2.0.2 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/stevenle/topsort v0.2.0 // indirect
