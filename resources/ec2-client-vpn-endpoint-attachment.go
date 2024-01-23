@@ -17,7 +17,7 @@ import (
 const EC2ClientVpnEndpointAttachmentResource = "EC2ClientVpnEndpointAttachment"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   EC2ClientVpnEndpointAttachmentResource,
 		Scope:  nuke.Account,
 		Lister: &EC2ClientVpnEndpointAttachmentLister{},

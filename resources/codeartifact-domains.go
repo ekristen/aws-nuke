@@ -14,7 +14,7 @@ import (
 const CodeArtifactDomainResource = "CodeArtifactDomain"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   CodeArtifactDomainResource,
 		Scope:  nuke.Account,
 		Lister: &CodeArtifactDomainLister{},

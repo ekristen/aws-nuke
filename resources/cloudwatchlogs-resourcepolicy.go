@@ -15,7 +15,7 @@ import (
 const CloudWatchLogsResourcePolicyResource = "CloudWatchLogsResourcePolicy"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   CloudWatchLogsResourcePolicyResource,
 		Scope:  nuke.Account,
 		Lister: &CloudWatchLogsResourcePolicyLister{},

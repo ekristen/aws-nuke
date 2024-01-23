@@ -14,7 +14,7 @@ import (
 const MediaTailorConfigurationResource = "MediaTailorConfiguration"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   MediaTailorConfigurationResource,
 		Scope:  nuke.Account,
 		Lister: &MediaTailorConfigurationLister{},

@@ -2,17 +2,15 @@ package resources
 
 import (
 	"context"
+	"github.com/ekristen/libnuke/pkg/settings"
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
-
-	"github.com/ekristen/libnuke/pkg/featureflag"
 
 	"github.com/ekristen/aws-nuke/mocks/mock_cloudformationiface"
 )
@@ -29,10 +27,10 @@ func TestCloudformationStack_Remove_StackAlreadyDeleted(t *testing.T) {
 		stack: &cloudformation.Stack{
 			StackName: aws.String("foobar"),
 		},
-		featureFlags: &featureflag.FeatureFlags{},
+		settings: &settings.Setting{
+			"DisableDeletionProtection": true,
+		},
 	}
-
-	stack.featureFlags.New("DisableDeletionProtection_CloudformationStack", ptr.Bool(true), ptr.Bool(true))
 
 	mockCloudformation.EXPECT().DescribeStacks(gomock.Eq(&cloudformation.DescribeStacksInput{
 		StackName: aws.String("foobar"),
@@ -59,10 +57,11 @@ func TestCloudformationStack_Remove_StackDoesNotExist(t *testing.T) {
 		svc: mockCloudformation,
 		stack: &cloudformation.Stack{
 			StackName: aws.String("foobar"),
-		}, featureFlags: &featureflag.FeatureFlags{},
+		},
+		settings: &settings.Setting{
+			"DisableDeletionProtection": true,
+		},
 	}
-
-	stack.featureFlags.New("DisableDeletionProtection_CloudformationStack", ptr.Bool(true), ptr.Bool(true))
 
 	mockCloudformation.EXPECT().DescribeStacks(gomock.Eq(&cloudformation.DescribeStacksInput{
 		StackName: aws.String("foobar"),
@@ -84,10 +83,10 @@ func TestCloudformationStack_Remove_DeleteFailed(t *testing.T) {
 		stack: &cloudformation.Stack{
 			StackName: aws.String("foobar"),
 		},
-		featureFlags: &featureflag.FeatureFlags{},
+		settings: &settings.Setting{
+			"DisableDeletionProtection": true,
+		},
 	}
-
-	stack.featureFlags.New("DisableDeletionProtection_CloudformationStack", ptr.Bool(true), ptr.Bool(true))
 
 	gomock.InOrder(
 		mockCloudformation.EXPECT().DescribeStacks(gomock.Eq(&cloudformation.DescribeStacksInput{
@@ -141,10 +140,10 @@ func TestCloudformationStack_Remove_DeleteInProgress(t *testing.T) {
 		stack: &cloudformation.Stack{
 			StackName: aws.String("foobar"),
 		},
-		featureFlags: &featureflag.FeatureFlags{},
+		settings: &settings.Setting{
+			"DisableDeletionProtection": true,
+		},
 	}
-
-	stack.featureFlags.New("DisableDeletionProtection_CloudformationStack", ptr.Bool(true), ptr.Bool(true))
 
 	gomock.InOrder(
 		mockCloudformation.EXPECT().DescribeStacks(gomock.Eq(&cloudformation.DescribeStacksInput{
@@ -191,10 +190,10 @@ func TestCloudformationStack_Remove_Stack_InCompletedStatus(t *testing.T) {
 				stack: &cloudformation.Stack{
 					StackName: aws.String("foobar"),
 				},
-				featureFlags: &featureflag.FeatureFlags{},
+				settings: &settings.Setting{
+					"DisableDeletionProtection": true,
+				},
 			}
-
-			stack.featureFlags.New("DisableDeletionProtection_CloudformationStack", ptr.Bool(true), ptr.Bool(true))
 
 			gomock.InOrder(
 				mockCloudformation.EXPECT().DescribeStacks(gomock.Eq(&cloudformation.DescribeStacksInput{
@@ -241,10 +240,10 @@ func TestCloudformationStack_Remove_Stack_CreateInProgress(t *testing.T) {
 				stack: &cloudformation.Stack{
 					StackName: aws.String("foobar"),
 				},
-				featureFlags: &featureflag.FeatureFlags{},
+				settings: &settings.Setting{
+					"DisableDeletionProtection": true,
+				},
 			}
-
-			stack.featureFlags.New("DisableDeletionProtection_CloudformationStack", ptr.Bool(true), ptr.Bool(true))
 
 			gomock.InOrder(
 				mockCloudformation.EXPECT().DescribeStacks(gomock.Eq(&cloudformation.DescribeStacksInput{
@@ -296,10 +295,10 @@ func TestCloudformationStack_Remove_Stack_UpdateInProgress(t *testing.T) {
 				stack: &cloudformation.Stack{
 					StackName: aws.String("foobar"),
 				},
-				featureFlags: &featureflag.FeatureFlags{},
+				settings: &settings.Setting{
+					"DisableDeletionProtection": true,
+				},
 			}
-
-			stack.featureFlags.New("DisableDeletionProtection_CloudformationStack", ptr.Bool(true), ptr.Bool(true))
 
 			gomock.InOrder(
 				mockCloudformation.EXPECT().DescribeStacks(gomock.Eq(&cloudformation.DescribeStacksInput{

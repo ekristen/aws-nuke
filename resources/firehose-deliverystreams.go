@@ -14,7 +14,7 @@ import (
 const FirehoseDeliveryStreamResource = "FirehoseDeliveryStream"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   FirehoseDeliveryStreamResource,
 		Scope:  nuke.Account,
 		Lister: &FirehoseDeliveryStreamLister{},

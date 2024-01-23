@@ -25,7 +25,7 @@ type BackupPlan struct {
 const AWSBackupPlanResource = "AWSBackupPlan"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   AWSBackupPlanResource,
 		Scope:  nuke.Account,
 		Lister: &AWSBackupPlanLister{},

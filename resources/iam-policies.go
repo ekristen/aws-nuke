@@ -18,7 +18,7 @@ import (
 const IAMPolicyResource = "IAMPolicy"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   IAMPolicyResource,
 		Scope:  nuke.Account,
 		Lister: &IAMPolicyLister{},
@@ -26,6 +26,9 @@ func init() {
 			IAMUserPolicyAttachmentResource,
 			IAMGroupPolicyAttachmentResource,
 			IAMRolePolicyAttachmentResource,
+		},
+		DeprecatedAliases: []string{
+			"IamPolicy",
 		},
 	})
 }

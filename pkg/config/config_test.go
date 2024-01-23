@@ -2,89 +2,66 @@ package config
 
 import (
 	"fmt"
-	"github.com/ekristen/libnuke/pkg/filter"
-	"github.com/ekristen/libnuke/pkg/types"
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
+
+	libconfig "github.com/ekristen/libnuke/pkg/config"
+	"github.com/ekristen/libnuke/pkg/filter"
+	"github.com/ekristen/libnuke/pkg/settings"
+	"github.com/ekristen/libnuke/pkg/types"
 )
 
-func TestConfigBlocklist(t *testing.T) {
-	config := new(Nuke)
-
-	if config.HasBlocklist() {
-		t.Errorf("HasBlocklist() returned true on a nil backlist.")
-	}
-
-	if config.InBlocklist("blubber") {
-		t.Errorf("InBlocklist() returned true on a nil backlist.")
-	}
-
-	config.AccountBlocklist = []string{}
-
-	if config.HasBlocklist() {
-		t.Errorf("HasBlocklist() returned true on a empty backlist.")
-	}
-
-	if config.InBlocklist("foobar") {
-		t.Errorf("InBlocklist() returned true on a empty backlist.")
-	}
-
-	config.AccountBlocklist = append(config.AccountBlocklist, "bim")
-
-	if !config.HasBlocklist() {
-		t.Errorf("HasBlocklist() returned false on a backlist with one element.")
-	}
-
-	if !config.InBlocklist("bim") {
-		t.Errorf("InBlocklist() returned false on looking up an existing value.")
-	}
-
-	if config.InBlocklist("baz") {
-		t.Errorf("InBlocklist() returned true on looking up an non existing value.")
-	}
-}
-
 func TestLoadExampleConfig(t *testing.T) {
-	config, err := Load("testdata/example.yaml")
+	config, err := New(libconfig.Options{
+		Path: "testdata/example.yaml",
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	expect := Nuke{
-		AccountBlocklist: []string{"1234567890"},
-		Regions:          []string{"eu-west-1", "stratoscale"},
-		Accounts: map[string]Account{
-			"555133742": {
-				Presets: []string{"terraform"},
-				Filters: filter.Filters{
-					"IAMRole": {
-						filter.NewExactFilter("uber.admin"),
+	expect := Config{
+		Config: &libconfig.Config{
+			Blocklist: []string{"1234567890"},
+			Regions:   []string{"eu-west-1", "stratoscale"},
+			Accounts: map[string]*libconfig.Account{
+				"555133742": {
+					Presets: []string{"terraform"},
+					Filters: filter.Filters{
+						"IAMRole": {
+							filter.NewExactFilter("uber.admin"),
+						},
+						"IAMRolePolicyAttachment": {
+							filter.NewExactFilter("uber.admin -> AdministratorAccess"),
+						},
 					},
-					"IAMRolePolicyAttachment": {
-						filter.NewExactFilter("uber.admin -> AdministratorAccess"),
+					ResourceTypes: libconfig.ResourceTypes{
+						Targets: types.Collection{"S3Bucket"},
 					},
-				},
-				ResourceTypes: ResourceTypes{
-					Targets: types.Collection{"S3Bucket"},
 				},
 			},
-		},
-		ResourceTypes: ResourceTypes{
-			Targets:  types.Collection{"DynamoDBTable", "S3Bucket", "S3Object"},
-			Excludes: types.Collection{"IAMRole"},
-		},
-		Presets: map[string]PresetDefinitions{
-			"terraform": {
-				Filters: filter.Filters{
-					"S3Bucket": {
-						filter.Filter{
-							Type:  filter.Glob,
-							Value: "my-statebucket-*",
+			ResourceTypes: libconfig.ResourceTypes{
+				Targets:  types.Collection{"DynamoDBTable", "S3Bucket", "S3Object"},
+				Excludes: types.Collection{"IAMRole"},
+			},
+			Presets: map[string]libconfig.Preset{
+				"terraform": {
+					Filters: filter.Filters{
+						"S3Bucket": {
+							filter.Filter{
+								Type:  filter.Glob,
+								Value: "my-statebucket-*",
+							},
 						},
 					},
 				},
 			},
+			Settings:     &settings.Settings{},
+			Deprecations: make(map[string]string),
+			Log:          logrus.WithField("test", true),
 		},
 		CustomEndpoints: []*CustomRegion{
 			{
@@ -105,44 +82,42 @@ func TestLoadExampleConfig(t *testing.T) {
 		},
 	}
 
-	if !reflect.DeepEqual(*config, expect) {
-		t.Errorf("Read struct mismatches:")
-		t.Errorf("  Got:      %#v", *config)
-		t.Errorf("  Expected: %#v", expect)
-	}
+	assert.Equal(t, expect, *config)
 }
 
 func TestResolveDeprecations(t *testing.T) {
-	config := Nuke{
-		AccountBlocklist: []string{"1234567890"},
-		Regions:          []string{"eu-west-1"},
-		Accounts: map[string]Account{
-			"555133742": {
-				Filters: filter.Filters{
-					"IamRole": {
-						filter.NewExactFilter("uber.admin"),
-						filter.NewExactFilter("foo.bar"),
-					},
-					"IAMRolePolicyAttachment": {
-						filter.NewExactFilter("uber.admin -> AdministratorAccess"),
+	config := Config{
+		Config: &libconfig.Config{
+			Blocklist: []string{"1234567890"},
+			Regions:   []string{"eu-west-1"},
+			Accounts: map[string]*libconfig.Account{
+				"555133742": {
+					Filters: filter.Filters{
+						"IamRole": {
+							filter.NewExactFilter("uber.admin"),
+							filter.NewExactFilter("foo.bar"),
+						},
+						"IAMRolePolicyAttachment": {
+							filter.NewExactFilter("uber.admin -> AdministratorAccess"),
+						},
 					},
 				},
-			},
-			"2345678901": {
-				Filters: filter.Filters{
-					"ECRrepository": {
-						filter.NewExactFilter("foo:bar"),
-						filter.NewExactFilter("bar:foo"),
-					},
-					"IAMRolePolicyAttachment": {
-						filter.NewExactFilter("uber.admin -> AdministratorAccess"),
+				"2345678901": {
+					Filters: filter.Filters{
+						"ECRrepository": {
+							filter.NewExactFilter("foo:bar"),
+							filter.NewExactFilter("bar:foo"),
+						},
+						"IAMRolePolicyAttachment": {
+							filter.NewExactFilter("uber.admin -> AdministratorAccess"),
+						},
 					},
 				},
 			},
 		},
 	}
 
-	expect := map[string]Account{
+	expect := map[string]*libconfig.Account{
 		"555133742": {
 			Filters: filter.Filters{
 				"IAMRole": {
@@ -177,16 +152,18 @@ func TestResolveDeprecations(t *testing.T) {
 		t.Errorf("  Expected: %#v", expect)
 	}
 
-	invalidConfig := Nuke{
-		AccountBlocklist: []string{"1234567890"},
-		Regions:          []string{"eu-west-1"},
-		Accounts: map[string]Account{
-			"555133742": {
-				Filters: filter.Filters{
-					"IamUserAccessKeys": {
-						filter.NewExactFilter("X")},
-					"IAMUserAccessKey": {
-						filter.NewExactFilter("Y")},
+	invalidConfig := Config{
+		Config: &libconfig.Config{
+			Blocklist: []string{"1234567890"},
+			Regions:   []string{"eu-west-1"},
+			Accounts: map[string]*libconfig.Account{
+				"555133742": {
+					Filters: filter.Filters{
+						"IamUserAccessKeys": {
+							filter.NewExactFilter("X")},
+						"IAMUserAccessKey": {
+							filter.NewExactFilter("Y")},
+					},
 				},
 			},
 		},
@@ -199,7 +176,9 @@ func TestResolveDeprecations(t *testing.T) {
 }
 
 func TestConfigValidation(t *testing.T) {
-	config, err := Load("testdata/example.yaml")
+	config, err := New(libconfig.Options{
+		Path: "testdata/example.yaml",
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -232,7 +211,9 @@ func TestConfigValidation(t *testing.T) {
 }
 
 func TestDeprecatedConfigKeys(t *testing.T) {
-	config, err := Load("testdata/deprecated-keys-config.yaml")
+	config, err := New(libconfig.Options{
+		Path: "testdata/deprecated-keys-config.yaml",
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -243,7 +224,9 @@ func TestDeprecatedConfigKeys(t *testing.T) {
 }
 
 func TestFilterMerge(t *testing.T) {
-	config, err := Load("testdata/example.yaml")
+	config, err := New(libconfig.Options{
+		Path: "testdata/example.yaml",
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -281,7 +264,9 @@ func TestFilterMerge(t *testing.T) {
 }
 
 func TestGetCustomRegion(t *testing.T) {
-	config, err := Load("testdata/example.yaml")
+	config, err := New(libconfig.Options{
+		Path: "testdata/example.yaml",
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -304,4 +289,42 @@ func TestGetCustomRegion(t *testing.T) {
 			t.Fatal("Expected to not find a custom rds service for region10")
 		}
 	})
+}
+
+func TestConfig_DeprecatedFeatureFlags(t *testing.T) {
+	logrus.AddHook(&TestGlobalHook{
+		t: t,
+		tf: func(t *testing.T, e *logrus.Entry) {
+			if strings.HasSuffix(e.Caller.File, "pkg/config/config.go") {
+				return
+			}
+
+			if e.Caller.Line == 235 {
+				assert.Equal(t, "deprecated configuration key 'feature-flags' - please use 'settings' instead", e.Message)
+			}
+		},
+	})
+	defer logrus.StandardLogger().ReplaceHooks(make(logrus.LevelHooks))
+
+	opts := libconfig.Options{
+		Path: "testdata/deprecated-feature-flags.yaml",
+	}
+
+	c, err := New(opts)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, c)
+
+	ec2InstanceSettings := c.Settings.Get("EC2Instance")
+	assert.NotNil(t, ec2InstanceSettings)
+	assert.Equal(t, true, ec2InstanceSettings.Get("DisableDeletionProtection"))
+	assert.Equal(t, true, ec2InstanceSettings.Get("DisableStopProtection"))
+
+	rdsInstanceSettings := c.Settings.Get("RDSInstance")
+	assert.NotNil(t, rdsInstanceSettings)
+	assert.Equal(t, true, rdsInstanceSettings.Get("DisableDeletionProtection"))
+
+	cloudformationStackSettings := c.Settings.Get("CloudformationStack")
+	assert.NotNil(t, cloudformationStackSettings)
+	assert.Equal(t, true, cloudformationStackSettings.Get("DisableDeletionProtection"))
 }

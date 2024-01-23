@@ -16,7 +16,7 @@ import (
 const OSDomainResource = "OSDomain"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   OSDomainResource,
 		Scope:  nuke.Account,
 		Lister: &OSDomainLister{},

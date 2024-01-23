@@ -17,11 +17,12 @@ import (
 const ACMPCACertificateAuthorityResource = "ACMPCACertificateAuthority"
 
 func init() {
-	resource.Register(resource.Registration{
-		Name:   ACMPCACertificateAuthorityResource,
-		Scope:  nuke.Account,
-		Lister: &ACMPCACertificateAuthorityLister{},
-	}, nuke.MapCloudControl("AWS::ACMPCA::CertificateAuthority"))
+	resource.Register(&resource.Registration{
+		Name:                ACMPCACertificateAuthorityResource,
+		Scope:               nuke.Account,
+		Lister:              &ACMPCACertificateAuthorityLister{},
+		AlternativeResource: "AWS::ACMPCA::CertificateAuthority",
+	})
 }
 
 type ACMPCACertificateAuthorityLister struct{}

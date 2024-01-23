@@ -15,7 +15,7 @@ import (
 const GlobalAcceleratorListenerResource = "GlobalAcceleratorListener"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   GlobalAcceleratorListenerResource,
 		Scope:  nuke.Account,
 		Lister: &GlobalAcceleratorListenerLister{},

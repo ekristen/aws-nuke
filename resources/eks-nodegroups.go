@@ -18,10 +18,13 @@ import (
 const EKSNodegroupResource = "EKSNodegroup"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   EKSNodegroupResource,
 		Scope:  nuke.Account,
 		Lister: &EKSNodegroupLister{},
+		DeprecatedAliases: []string{
+			"EKSNodegroups",
+		},
 	})
 }
 

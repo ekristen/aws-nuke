@@ -17,7 +17,7 @@ import (
 const TransferServerUserResource = "TransferServerUser"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   TransferServerUserResource,
 		Scope:  nuke.Account,
 		Lister: &TransferServerUserLister{},

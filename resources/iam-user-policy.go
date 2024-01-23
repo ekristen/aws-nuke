@@ -16,7 +16,7 @@ import (
 const IAMUserPolicyResource = "IAMUserPolicy"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   IAMUserPolicyResource,
 		Scope:  nuke.Account,
 		Lister: &IAMUserPolicyLister{},

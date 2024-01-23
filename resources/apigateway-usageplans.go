@@ -15,11 +15,12 @@ import (
 const APIGatewayUsagePlanResource = "APIGatewayUsagePlan"
 
 func init() {
-	resource.Register(resource.Registration{
-		Name:   APIGatewayUsagePlanResource,
-		Scope:  nuke.Account,
-		Lister: &APIGatewayUsagePlanLister{},
-	}, nuke.MapCloudControl("AWS::ApiGateway::UsagePlan"))
+	resource.Register(&resource.Registration{
+		Name:                APIGatewayUsagePlanResource,
+		Scope:               nuke.Account,
+		Lister:              &APIGatewayUsagePlanLister{},
+		AlternativeResource: "AWS::ApiGateway::UsagePlan",
+	})
 }
 
 type APIGatewayUsagePlanLister struct{}

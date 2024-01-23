@@ -14,7 +14,7 @@ import (
 const MediaLiveInputResource = "MediaLiveInput"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   MediaLiveInputResource,
 		Scope:  nuke.Account,
 		Lister: &MediaLiveInputLister{},

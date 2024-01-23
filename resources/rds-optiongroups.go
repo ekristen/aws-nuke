@@ -18,7 +18,7 @@ import (
 const RDSOptionGroupResource = "RDSOptionGroup"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   RDSOptionGroupResource,
 		Scope:  nuke.Account,
 		Lister: &RDSOptionGroupLister{},

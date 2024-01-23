@@ -14,7 +14,7 @@ import (
 const SFNStateMachineResource = "SFNStateMachine"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   SFNStateMachineResource,
 		Scope:  nuke.Account,
 		Lister: &SFNStateMachineLister{},

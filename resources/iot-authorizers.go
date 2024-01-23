@@ -13,7 +13,7 @@ import (
 const IoTAuthorizerResource = "IoTAuthorizer"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   IoTAuthorizerResource,
 		Scope:  nuke.Account,
 		Lister: &IoTAuthorizerLister{},

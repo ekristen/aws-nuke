@@ -17,7 +17,7 @@ import (
 const EC2VPCEndpointConnectionResource = "EC2VPCEndpointConnection"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   EC2VPCEndpointConnectionResource,
 		Scope:  nuke.Account,
 		Lister: &EC2VPCEndpointConnectionLister{},

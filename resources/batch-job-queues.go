@@ -14,7 +14,7 @@ import (
 const BatchJobQueueResource = "BatchJobQueue"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   BatchJobQueueResource,
 		Scope:  nuke.Account,
 		Lister: &BatchJobQueueLister{},

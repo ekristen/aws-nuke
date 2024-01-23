@@ -13,7 +13,7 @@ import (
 const DeviceFarmProjectResource = "DeviceFarmProject"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   DeviceFarmProjectResource,
 		Scope:  nuke.Account,
 		Lister: &DeviceFarmProjectLister{},

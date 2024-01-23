@@ -19,7 +19,7 @@ import (
 const DynamoDBTableItemResource = "DynamoDBTableItem"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   DynamoDBTableItemResource,
 		Scope:  nuke.Account,
 		Lister: &DynamoDBTableItemLister{},

@@ -16,7 +16,7 @@ import (
 const Route53ResolverEndpointResource = "Route53ResolverEndpoint"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   Route53ResolverEndpointResource,
 		Scope:  nuke.Account,
 		Lister: &Route53ResolverEndpointLister{},

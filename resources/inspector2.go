@@ -14,7 +14,7 @@ import (
 const Inspector2Resource = "Inspector2"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   Inspector2Resource,
 		Scope:  nuke.Account,
 		Lister: &Inspector2Lister{},

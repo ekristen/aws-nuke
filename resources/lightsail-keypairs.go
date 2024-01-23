@@ -13,7 +13,7 @@ import (
 const LightsailKeyPairResource = "LightsailKeyPair"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   LightsailKeyPairResource,
 		Scope:  nuke.Account,
 		Lister: &LightsailKeyPairLister{},

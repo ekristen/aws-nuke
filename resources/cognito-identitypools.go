@@ -20,7 +20,7 @@ type CognitoIdentityPool struct {
 const CognitoIdentityPoolResource = "CognitoIdentityPool"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   CognitoIdentityPoolResource,
 		Scope:  nuke.Account,
 		Lister: &CognitoIdentityPoolLister{},

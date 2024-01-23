@@ -17,7 +17,7 @@ type AppStreamStack struct {
 const AppStreamStackResource = "AppStreamStack"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   AppStreamStackResource,
 		Scope:  nuke.Account,
 		Lister: &AppStreamStackLister{},

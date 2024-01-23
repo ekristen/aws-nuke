@@ -17,7 +17,7 @@ import (
 const BudgetResource = "Budget"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   BudgetResource,
 		Scope:  nuke.Account,
 		Lister: &BudgetLister{},

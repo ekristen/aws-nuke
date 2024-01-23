@@ -19,7 +19,7 @@ import (
 const CloudFormationTypeResource = "CloudFormationType"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   CloudFormationTypeResource,
 		Scope:  nuke.Account,
 		Lister: &CloudFormationTypeLister{},

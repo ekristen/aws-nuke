@@ -12,7 +12,7 @@ import (
 const ResourceExplorer2IndexResource = "ResourceExplorer2Index"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   ResourceExplorer2IndexResource,
 		Scope:  nuke.Account,
 		Lister: &ResourceExplorer2IndexLister{},

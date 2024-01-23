@@ -17,7 +17,7 @@ import (
 const EC2RouteTableResource = "EC2RouteTable"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   EC2RouteTableResource,
 		Scope:  nuke.Account,
 		Lister: &EC2RouteTableLister{},

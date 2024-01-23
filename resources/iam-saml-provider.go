@@ -12,7 +12,7 @@ import (
 const IAMSAMLProviderResource = "IAMSAMLProvider"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   IAMSAMLProviderResource,
 		Scope:  nuke.Account,
 		Lister: &IAMSAMLProviderLister{},

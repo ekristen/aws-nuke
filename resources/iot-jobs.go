@@ -14,7 +14,7 @@ import (
 const IoTJobResource = "IoTJob"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   IoTJobResource,
 		Scope:  nuke.Account,
 		Lister: &IoTJobLister{},

@@ -15,7 +15,7 @@ import (
 const SecretsManagerSecretResource = "SecretsManagerSecret"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   SecretsManagerSecretResource,
 		Scope:  nuke.Account,
 		Lister: &SecretsManagerSecretLister{},

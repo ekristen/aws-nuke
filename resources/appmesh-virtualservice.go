@@ -20,7 +20,7 @@ type AppMeshVirtualService struct {
 const AppMeshVirtualServiceResource = "AppMeshVirtualService"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   AppMeshVirtualServiceResource,
 		Scope:  nuke.Account,
 		Lister: &AppMeshVirtualServiceLister{},

@@ -18,7 +18,7 @@ import (
 const EC2NetworkInterfaceResource = "EC2NetworkInterface"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   EC2NetworkInterfaceResource,
 		Scope:  nuke.Account,
 		Lister: &EC2NetworkInterfaceLister{},

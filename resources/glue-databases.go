@@ -14,7 +14,7 @@ import (
 const GlueDatabaseResource = "GlueDatabase"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   GlueDatabaseResource,
 		Scope:  nuke.Account,
 		Lister: &GlueDatabaseLister{},

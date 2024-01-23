@@ -15,7 +15,7 @@ import (
 const SageMakerNotebookInstanceLifecycleConfigResource = "SageMakerNotebookInstanceLifecycleConfig"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   SageMakerNotebookInstanceLifecycleConfigResource,
 		Scope:  nuke.Account,
 		Lister: &SageMakerNotebookInstanceLifecycleConfigLister{},

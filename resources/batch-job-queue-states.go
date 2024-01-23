@@ -23,7 +23,7 @@ type BatchJobQueueState struct {
 const BatchJobQueueStateResource = "BatchJobQueueState"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   BatchJobQueueStateResource,
 		Scope:  nuke.Account,
 		Lister: &BatchJobQueueStateLister{},

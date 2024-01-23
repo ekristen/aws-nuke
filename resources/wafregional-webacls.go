@@ -22,7 +22,7 @@ type WAFRegionalWebACL struct {
 const WAFRegionalWebACLResource = "WAFRegionalWebACL"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   WAFRegionalWebACLResource,
 		Scope:  nuke.Account,
 		Lister: &WAFRegionalWebACLLister{},

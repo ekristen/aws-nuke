@@ -15,7 +15,7 @@ import (
 const WAFv2IPSetResource = "WAFv2IPSet"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   WAFv2IPSetResource,
 		Scope:  nuke.Account,
 		Lister: &WAFv2IPSetLister{},

@@ -17,14 +17,15 @@ import (
 const ECRPublicRepositoryResource = "ECRPublicRepository"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   ECRPublicRepositoryResource,
 		Scope:  nuke.Account,
 		Lister: &ECRPublicRepositoryLister{},
 		DependsOn: []string{
 			EC2VPNGatewayAttachmentResource,
 		},
-	}, nuke.MapCloudControl("AWS::ECR::PublicRepository"))
+		AlternativeResource: "AWS::ECR::PublicRepository",
+	})
 }
 
 type ECRPublicRepositoryLister struct{}

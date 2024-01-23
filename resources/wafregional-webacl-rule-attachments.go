@@ -17,7 +17,7 @@ import (
 const WAFRegionalWebACLRuleAttachmentResource = "WAFRegionalWebACLRuleAttachment"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   WAFRegionalWebACLRuleAttachmentResource,
 		Scope:  nuke.Account,
 		Lister: &WAFRegionalWebACLRuleAttachmentLister{},

@@ -14,7 +14,7 @@ import (
 const AMPWorkspaceResource = "AMPWorkspace"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   AMPWorkspaceResource,
 		Scope:  nuke.Account,
 		Lister: &AMPWorkspaceLister{},

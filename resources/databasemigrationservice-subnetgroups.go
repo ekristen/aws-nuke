@@ -14,7 +14,7 @@ import (
 const DatabaseMigrationServiceSubnetGroupResource = "DatabaseMigrationServiceSubnetGroup"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   DatabaseMigrationServiceSubnetGroupResource,
 		Scope:  nuke.Account,
 		Lister: &DatabaseMigrationServiceSubnetGroupLister{},

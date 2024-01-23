@@ -13,7 +13,7 @@ import (
 const LightsailLoadBalancerResource = "LightsailLoadBalancer"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   LightsailLoadBalancerResource,
 		Scope:  nuke.Account,
 		Lister: &LightsailLoadBalancerLister{},

@@ -14,7 +14,7 @@ import (
 const LambdaLayerResource = "LambdaLayer"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   LambdaLayerResource,
 		Scope:  nuke.Account,
 		Lister: &LambdaLayerLister{},

@@ -15,7 +15,7 @@ import (
 const CognitoUserPoolDomainResource = "CognitoUserPoolDomain"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   CognitoUserPoolDomainResource,
 		Scope:  nuke.Account,
 		Lister: &CognitoUserPoolDomainLister{},

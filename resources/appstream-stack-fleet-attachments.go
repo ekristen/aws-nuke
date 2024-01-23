@@ -21,7 +21,7 @@ type AppStreamStackFleetAttachment struct {
 const AppStreamStackFleetAttachmentResource = "AppStreamStackFleetAttachment"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   AppStreamStackFleetAttachmentResource,
 		Scope:  nuke.Account,
 		Lister: &AppStreamStackFleetAttachmentLister{},

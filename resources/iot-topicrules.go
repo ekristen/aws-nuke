@@ -14,7 +14,7 @@ import (
 const IoTTopicRuleResource = "IoTTopicRule"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   IoTTopicRuleResource,
 		Scope:  nuke.Account,
 		Lister: &IoTTopicRuleLister{},

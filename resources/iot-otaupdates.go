@@ -14,7 +14,7 @@ import (
 const IoTOTAUpdateResource = "IoTOTAUpdate"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   IoTOTAUpdateResource,
 		Scope:  nuke.Account,
 		Lister: &IoTOTAUpdateLister{},

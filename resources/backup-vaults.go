@@ -23,7 +23,7 @@ type BackupVault struct {
 const AWSBackupVaultResource = "AWSBackupVault"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   AWSBackupVaultResource,
 		Scope:  nuke.Account,
 		Lister: &AWSBackupVaultLister{},

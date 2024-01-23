@@ -14,7 +14,7 @@ import (
 const CloudTrailTrailResource = "CloudTrailTrail"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   CloudTrailTrailResource,
 		Scope:  nuke.Account,
 		Lister: &CloudTrailTrailLister{},

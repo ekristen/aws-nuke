@@ -17,7 +17,7 @@ import (
 const KMSKeyResource = "KMSKey"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   KMSKeyResource,
 		Scope:  nuke.Account,
 		Lister: &KMSKeyLister{},

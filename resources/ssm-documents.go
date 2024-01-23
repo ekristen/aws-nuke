@@ -14,7 +14,7 @@ import (
 const SSMDocumentResource = "SSMDocument"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   SSMDocumentResource,
 		Scope:  nuke.Account,
 		Lister: &SSMDocumentLister{},

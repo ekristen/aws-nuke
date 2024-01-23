@@ -14,7 +14,7 @@ import (
 const DatabaseMigrationServiceEndpointResource = "DatabaseMigrationServiceEndpoint"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   DatabaseMigrationServiceEndpointResource,
 		Scope:  nuke.Account,
 		Lister: &DatabaseMigrationServiceEndpointLister{},

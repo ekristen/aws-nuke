@@ -14,7 +14,7 @@ import (
 const IoTCertificateResource = "IoTCertificate"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   IoTCertificateResource,
 		Scope:  nuke.Account,
 		Lister: &IoTCertificateLister{},

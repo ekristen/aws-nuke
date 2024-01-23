@@ -15,7 +15,7 @@ import (
 const SQSQueueResource = "SQSQueue"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   SQSQueueResource,
 		Scope:  nuke.Account,
 		Lister: &SQSQueueLister{},

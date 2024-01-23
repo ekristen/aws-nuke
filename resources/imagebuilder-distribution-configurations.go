@@ -14,7 +14,7 @@ import (
 const ImageBuilderDistributionConfigurationResource = "ImageBuilderDistributionConfiguration"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   ImageBuilderDistributionConfigurationResource,
 		Scope:  nuke.Account,
 		Lister: &ImageBuilderDistributionConfigurationLister{},

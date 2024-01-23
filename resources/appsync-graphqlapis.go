@@ -15,7 +15,7 @@ import (
 const AppSyncGraphqlAPIResource = "AppSyncGraphqlAPI"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   AppSyncGraphqlAPIResource,
 		Scope:  nuke.Account,
 		Lister: &AppSyncGraphqlAPILister{},

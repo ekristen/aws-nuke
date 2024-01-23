@@ -14,7 +14,7 @@ import (
 const SSMResourceDataSyncResource = "SSMResourceDataSync"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   SSMResourceDataSyncResource,
 		Scope:  nuke.Account,
 		Lister: &SSMResourceDataSyncLister{},

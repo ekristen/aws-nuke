@@ -13,7 +13,7 @@ import (
 const OpsWorksLayerResource = "OpsWorksLayer"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   OpsWorksLayerResource,
 		Scope:  nuke.Account,
 		Lister: &OpsWorksLayerLister{},

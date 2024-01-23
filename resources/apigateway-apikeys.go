@@ -14,11 +14,12 @@ import (
 const APIGatewayAPIKeyResource = "APIGatewayAPIKey"
 
 func init() {
-	resource.Register(resource.Registration{
-		Name:   APIGatewayAPIKeyResource,
-		Scope:  nuke.Account,
-		Lister: &APIGatewayAPIKeyLister{},
-	}, nuke.MapCloudControl("AWS::ApiGateway::ApiKey"))
+	resource.Register(&resource.Registration{
+		Name:                APIGatewayAPIKeyResource,
+		Scope:               nuke.Account,
+		Lister:              &APIGatewayAPIKeyLister{},
+		AlternativeResource: "AWS::ApiGateway::ApiKey",
+	})
 }
 
 type APIGatewayAPIKeyLister struct{}

@@ -14,7 +14,7 @@ import (
 const CodeStarProjectResource = "CodeStarProject"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   CodeStarProjectResource,
 		Scope:  nuke.Account,
 		Lister: &CodeStarProjectLister{},

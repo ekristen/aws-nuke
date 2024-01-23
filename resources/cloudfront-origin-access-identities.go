@@ -14,7 +14,7 @@ import (
 const CloudFrontOriginAccessIdentityResource = "CloudFrontOriginAccessIdentity"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   CloudFrontOriginAccessIdentityResource,
 		Scope:  nuke.Account,
 		Lister: &CloudFrontOriginAccessIdentityLister{},

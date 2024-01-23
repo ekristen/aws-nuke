@@ -17,7 +17,7 @@ import (
 const SESReceiptFilterResource = "SESReceiptFilter"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   SESReceiptFilterResource,
 		Scope:  nuke.Account,
 		Lister: &SESReceiptFilterLister{},

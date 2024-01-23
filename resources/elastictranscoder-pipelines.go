@@ -13,7 +13,7 @@ import (
 const ElasticTranscoderPipelineResource = "ElasticTranscoderPipeline"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   ElasticTranscoderPipelineResource,
 		Scope:  nuke.Account,
 		Lister: &ElasticTranscoderPipelineLister{},

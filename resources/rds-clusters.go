@@ -15,10 +15,13 @@ import (
 const RDSDBClusterResource = "RDSDBCluster"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   RDSDBClusterResource,
 		Scope:  nuke.Account,
 		Lister: &RDSDBClusterLister{},
+		DeprecatedAliases: []string{
+			"RDSCluster",
+		},
 	})
 }
 

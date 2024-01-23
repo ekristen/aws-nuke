@@ -17,7 +17,7 @@ import (
 const Route53HealthCheckResource = "Route53HealthCheck"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   Route53HealthCheckResource,
 		Scope:  nuke.Account,
 		Lister: &Route53HealthCheckLister{},

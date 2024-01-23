@@ -18,7 +18,7 @@ import (
 const EC2SnapshotResource = "EC2Snapshot"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   EC2SnapshotResource,
 		Scope:  nuke.Account,
 		Lister: &EC2SnapshotLister{},

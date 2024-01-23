@@ -14,7 +14,7 @@ import (
 const CodeBuildProjectResource = "CodeBuildProject"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   CodeBuildProjectResource,
 		Scope:  nuke.Account,
 		Lister: &CodeBuildProjectLister{},

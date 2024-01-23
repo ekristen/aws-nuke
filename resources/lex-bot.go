@@ -15,7 +15,7 @@ import (
 const LexBotResource = "LexBot"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   LexBotResource,
 		Scope:  nuke.Account,
 		Lister: &LexBotLister{},

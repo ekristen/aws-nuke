@@ -14,7 +14,7 @@ import (
 const LambdaFunctionResource = "LambdaFunction"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   LambdaFunctionResource,
 		Scope:  nuke.Account,
 		Lister: &LambdaFunctionLister{},

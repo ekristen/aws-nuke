@@ -13,7 +13,7 @@ import (
 const CodeDeployApplicationResource = "CodeDeployApplication"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   CodeDeployApplicationResource,
 		Scope:  nuke.Account,
 		Lister: &CodeDeployApplicationLister{},

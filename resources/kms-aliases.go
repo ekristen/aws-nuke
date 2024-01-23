@@ -19,7 +19,7 @@ import (
 const KMSAliasResource = "KMSAlias"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   KMSAliasResource,
 		Scope:  nuke.Account,
 		Lister: &KMSAliasLister{},

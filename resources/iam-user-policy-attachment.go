@@ -19,10 +19,13 @@ import (
 const IAMUserPolicyAttachmentResource = "IAMUserPolicyAttachment"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   IAMUserPolicyAttachmentResource,
 		Scope:  nuke.Account,
 		Lister: &IAMUserPolicyAttachmentLister{},
+		DeprecatedAliases: []string{
+			"IamUserPolicyAttachement",
+		},
 	})
 }
 

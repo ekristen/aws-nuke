@@ -16,7 +16,7 @@ import (
 const CloudWatchEventsRuleResource = "CloudWatchEventsRule"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   CloudWatchEventsRuleResource,
 		Scope:  nuke.Account,
 		Lister: &CloudWatchEventsRuleLister{},

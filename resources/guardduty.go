@@ -14,7 +14,7 @@ import (
 const GuardDutyDetectorResource = "GuardDutyDetector"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   GuardDutyDetectorResource,
 		Scope:  nuke.Account,
 		Lister: &GuardDutyDetectorLister{},

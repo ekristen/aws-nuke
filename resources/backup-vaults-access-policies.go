@@ -17,7 +17,7 @@ type BackupVaultAccessPolicy struct {
 const AWSBackupVaultAccessPolicyResource = "AWSBackupVaultAccessPolicy"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   AWSBackupVaultAccessPolicyResource,
 		Scope:  nuke.Account,
 		Lister: &AWSBackupVaultAccessPolicyLister{},

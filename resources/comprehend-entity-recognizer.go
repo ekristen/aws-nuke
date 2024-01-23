@@ -16,7 +16,7 @@ import (
 const ComprehendEntityRecognizerResource = "ComprehendEntityRecognizer"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   ComprehendEntityRecognizerResource,
 		Scope:  nuke.Account,
 		Lister: &ComprehendEntityRecognizerLister{},

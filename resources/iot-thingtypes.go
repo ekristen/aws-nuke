@@ -14,7 +14,7 @@ import (
 const IoTThingTypeResource = "IoTThingType"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   IoTThingTypeResource,
 		Scope:  nuke.Account,
 		Lister: &IoTThingTypeLister{},

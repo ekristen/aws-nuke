@@ -15,7 +15,7 @@ import (
 const LexModelBuildingServiceBotAliasResource = "LexModelBuildingServiceBotAlias"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   LexModelBuildingServiceBotAliasResource,
 		Scope:  nuke.Account,
 		Lister: &LexModelBuildingServiceBotAliasLister{},

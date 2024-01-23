@@ -20,7 +20,7 @@ import (
 const S3ObjectResource = "S3Object"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   S3ObjectResource,
 		Scope:  nuke.Account,
 		Lister: &S3ObjectLister{},

@@ -3,10 +3,12 @@ package awsutil
 import (
 	"strings"
 
+	"github.com/pkg/errors"
+
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/sts"
+
 	"github.com/ekristen/aws-nuke/pkg/config"
-	"github.com/pkg/errors"
 )
 
 type Account struct {

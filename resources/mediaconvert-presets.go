@@ -14,7 +14,7 @@ import (
 const MediaConvertPresetResource = "MediaConvertPreset"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   MediaConvertPresetResource,
 		Scope:  nuke.Account,
 		Lister: &MediaConvertPresetLister{},

@@ -14,7 +14,7 @@ import (
 const RedshiftSubnetGroupResource = "RedshiftSubnetGroup"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   RedshiftSubnetGroupResource,
 		Scope:  nuke.Account,
 		Lister: &RedshiftSubnetGroupLister{},

@@ -14,7 +14,7 @@ import (
 const DirectoryServiceDirectoryResource = "DirectoryServiceDirectory"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   DirectoryServiceDirectoryResource,
 		Scope:  nuke.Account,
 		Lister: &DirectoryServiceDirectoryLister{},

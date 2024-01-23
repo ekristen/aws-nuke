@@ -22,7 +22,7 @@ type AppStreamImageBuilderWaiter struct {
 const AppStreamImageBuilderWaiterResource = "AppStreamImageBuilderWaiter"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   AppStreamImageBuilderWaiterResource,
 		Scope:  nuke.Account,
 		Lister: &AppStreamImageBuilderWaiterLister{},

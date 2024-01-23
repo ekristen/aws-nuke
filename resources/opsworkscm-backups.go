@@ -13,7 +13,7 @@ import (
 const OpsWorksCMBackupResource = "OpsWorksCMBackup"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   OpsWorksCMBackupResource,
 		Scope:  nuke.Account,
 		Lister: &OpsWorksCMBackupLister{},

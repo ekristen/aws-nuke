@@ -14,7 +14,7 @@ import (
 const AMGWorkspaceResource = "AMGWorkspace"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   AMGWorkspaceResource,
 		Scope:  nuke.Account,
 		Lister: &AMGWorkspaceLister{},

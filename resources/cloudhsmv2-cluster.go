@@ -14,7 +14,7 @@ import (
 const CloudHSMV2ClusterResource = "CloudHSMV2Cluster"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   CloudHSMV2ClusterResource,
 		Scope:  nuke.Account,
 		Lister: &CloudHSMV2ClusterLister{},

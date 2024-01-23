@@ -25,7 +25,7 @@ import (
 const {{.ResourceType}}Resource = "{{.ResourceType}}"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   {{.ResourceType}}Resource,
 		Scope:  nuke.Account,
 		Lister: &{{.ResourceType}}Lister{},

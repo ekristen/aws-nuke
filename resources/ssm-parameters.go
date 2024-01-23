@@ -15,7 +15,7 @@ import (
 const SSMParameterResource = "SSMParameter"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   SSMParameterResource,
 		Scope:  nuke.Account,
 		Lister: &SSMParameterLister{},

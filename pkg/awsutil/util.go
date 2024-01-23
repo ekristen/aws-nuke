@@ -3,13 +3,15 @@ package awsutil
 import (
 	"bytes"
 	"errors"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"net/http"
 	"net/http/httputil"
 	"regexp"
 
+	"github.com/sirupsen/logrus"
+
+	"github.com/aws/aws-sdk-go/aws/awserr"
+
 	"github.com/ekristen/libnuke/pkg/utils"
-	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -23,8 +25,7 @@ func HideSecureHeaders(dump []byte) []byte {
 func DumpRequest(r *http.Request) string {
 	dump, err := httputil.DumpRequest(r, true)
 	if err != nil {
-		log.WithField("Error", err).
-			Warnf("failed to dump HTTP request")
+		logrus.WithField("Error", err).Warnf("failed to dump HTTP request")
 		return ""
 	}
 
@@ -37,8 +38,7 @@ func DumpRequest(r *http.Request) string {
 func DumpResponse(r *http.Response) string {
 	dump, err := httputil.DumpResponse(r, true)
 	if err != nil {
-		log.WithField("Error", err).
-			Warnf("failed to dump HTTP response")
+		logrus.WithField("Error", err).Warnf("failed to dump HTTP response")
 		return ""
 	}
 

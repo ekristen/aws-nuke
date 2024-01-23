@@ -14,7 +14,7 @@ import (
 const MediaPackageChannelResource = "MediaPackageChannel"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   MediaPackageChannelResource,
 		Scope:  nuke.Account,
 		Lister: &MediaPackageChannelLister{},

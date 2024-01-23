@@ -14,7 +14,7 @@ import (
 const NeptuneInstanceResource = "NeptuneInstance"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   NeptuneInstanceResource,
 		Scope:  nuke.Account,
 		Lister: &NeptuneInstanceLister{},

@@ -15,7 +15,7 @@ import (
 const EC2DefaultSecurityGroupRuleResource = "EC2DefaultSecurityGroupRule"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   EC2DefaultSecurityGroupRuleResource,
 		Scope:  nuke.Account,
 		Lister: &EC2DefaultSecurityGroupRuleLister{},

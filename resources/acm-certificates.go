@@ -15,7 +15,7 @@ import (
 const ACMCertificateResource = "ACMCertificate"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   ACMCertificateResource,
 		Scope:  nuke.Account,
 		Lister: &ACMCertificateLister{},

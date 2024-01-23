@@ -18,7 +18,7 @@ import (
 const EC2NetworkACLResource = "EC2NetworkACL"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   EC2NetworkACLResource,
 		Scope:  nuke.Account,
 		Lister: &EC2NetworkACLLister{},

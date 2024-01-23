@@ -18,7 +18,7 @@ import (
 const SignerSigningJobResource = "SignerSigningJob"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   SignerSigningJobResource,
 		Scope:  nuke.Account,
 		Lister: &SignerSigningJobLister{},

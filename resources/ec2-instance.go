@@ -2,11 +2,11 @@ package resources
 
 import (
 	"context"
+	"github.com/ekristen/libnuke/pkg/settings"
 
 	"errors"
 	"fmt"
 	"github.com/ekristen/aws-nuke/pkg/nuke"
-	"github.com/ekristen/libnuke/pkg/featureflag"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"time"
 
@@ -19,7 +19,7 @@ import (
 const EC2InstanceResource = "EC2Instance"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   EC2InstanceResource,
 		Scope:  nuke.Account,
 		Lister: &EC2InstanceLister{},
@@ -65,11 +65,11 @@ type EC2Instance struct {
 	svc      *ec2.EC2
 	instance *ec2.Instance
 
-	featureFlags *featureflag.FeatureFlags
+	settings *settings.Setting
 }
 
-func (i *EC2Instance) FeatureFlags(ff *featureflag.FeatureFlags) {
-	i.featureFlags = ff
+func (i *EC2Instance) Settings(setting *settings.Setting) {
+	i.settings = setting
 }
 
 func (i *EC2Instance) Filter() error {
@@ -80,16 +80,6 @@ func (i *EC2Instance) Filter() error {
 }
 
 func (i *EC2Instance) Remove(_ context.Context) error {
-	ffddpEC2Instance, err := i.featureFlags.Get("DisableDeletionProtection_EC2Instance")
-	if err != nil {
-		return err
-	}
-
-	ffDisableEC2InstanceStopProtection, err := i.featureFlags.Get("DisableEC2InstanceStopProtection")
-	if err != nil {
-		return err
-	}
-
 	params := &ec2.TerminateInstancesInput{
 		InstanceIds: []*string{i.instance.InstanceId},
 	}
@@ -102,7 +92,7 @@ func (i *EC2Instance) Remove(_ context.Context) error {
 		if ok && awsErr.Code() == "OperationNotPermitted" &&
 			awsErr.Message() == "The instance '"+*i.instance.InstanceId+"' may not be "+
 				"terminated. Modify its 'disableApiTermination' instance attribute and "+
-				"try again." && ffddpEC2Instance.Enabled() {
+				"try again." && i.settings.Get("DisableDeletionProtection").(bool) {
 			termErr := i.DisableTerminationProtection()
 			if termErr != nil {
 				return termErr
@@ -119,7 +109,7 @@ func (i *EC2Instance) Remove(_ context.Context) error {
 		if ok && awsErr.Code() == "OperationNotPermitted" &&
 			awsErr.Message() == "The instance '"+*i.instance.InstanceId+"' may not be "+
 				"terminated. Modify its 'disableApiStop' instance attribute and try "+
-				"again." && ffDisableEC2InstanceStopProtection.Enabled() {
+				"again." && i.settings.Get("DisableStopProtection").(bool) {
 			stopErr := i.DisableStopProtection()
 			if stopErr != nil {
 				return stopErr

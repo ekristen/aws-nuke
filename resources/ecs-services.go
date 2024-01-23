@@ -16,7 +16,7 @@ import (
 const ECSServiceResource = "ECSService"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   ECSServiceResource,
 		Scope:  nuke.Account,
 		Lister: &ECSServiceLister{},

@@ -18,7 +18,7 @@ import (
 const RDSSnapshotResource = "RDSSnapshot"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   RDSSnapshotResource,
 		Scope:  nuke.Account,
 		Lister: &RDSSnapshotLister{},

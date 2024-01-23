@@ -14,7 +14,7 @@ import (
 const ServiceDiscoveryNamespaceResource = "ServiceDiscoveryNamespace"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   ServiceDiscoveryNamespaceResource,
 		Scope:  nuke.Account,
 		Lister: &ServiceDiscoveryNamespaceLister{},

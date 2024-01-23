@@ -14,7 +14,7 @@ import (
 const MediaConvertJobTemplateResource = "MediaConvertJobTemplate"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   MediaConvertJobTemplateResource,
 		Scope:  nuke.Account,
 		Lister: &MediaConvertJobTemplateLister{},

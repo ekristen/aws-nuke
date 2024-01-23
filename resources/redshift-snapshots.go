@@ -15,7 +15,7 @@ import (
 const RedshiftSnapshotResource = "RedshiftSnapshot"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   RedshiftSnapshotResource,
 		Scope:  nuke.Account,
 		Lister: &RedshiftSnapshotLister{},

@@ -16,7 +16,7 @@ import (
 const ELBResource = "ELB"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   ELBResource,
 		Scope:  nuke.Account,
 		Lister: &ELBLister{},

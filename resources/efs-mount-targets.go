@@ -16,7 +16,7 @@ import (
 const EFSMountTargetResource = "EFSMountTarget"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   EFSMountTargetResource,
 		Scope:  nuke.Account,
 		Lister: &EFSMountTargetLister{},

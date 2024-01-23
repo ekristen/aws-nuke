@@ -12,7 +12,7 @@ import (
 const ResourceGroupGroupResource = "ResourceGroupGroup"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   ResourceGroupGroupResource,
 		Scope:  nuke.Account,
 		Lister: &ResourceGroupGroupLister{},

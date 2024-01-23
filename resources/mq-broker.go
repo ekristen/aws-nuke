@@ -14,7 +14,7 @@ import (
 const MQBrokerResource = "MQBroker"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   MQBrokerResource,
 		Scope:  nuke.Account,
 		Lister: &MQBrokerLister{},

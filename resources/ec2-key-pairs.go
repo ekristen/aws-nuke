@@ -14,7 +14,7 @@ import (
 const EC2KeyPairResource = "EC2KeyPair"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   EC2KeyPairResource,
 		Scope:  nuke.Account,
 		Lister: &EC2KeyPairLister{},

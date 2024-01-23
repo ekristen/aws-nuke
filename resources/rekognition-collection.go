@@ -14,7 +14,7 @@ import (
 const RekognitionCollectionResource = "RekognitionCollection"
 
 func init() {
-	resource.Register(resource.Registration{
+	resource.Register(&resource.Registration{
 		Name:   RekognitionCollectionResource,
 		Scope:  nuke.Account,
 		Lister: &RekognitionCollectionLister{},
