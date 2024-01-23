@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"slices"
 
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
@@ -52,6 +53,12 @@ func execute(c *cli.Context) error {
 		Alternatives: c.StringSlice("cloud-control"),
 	}
 
+	if len(c.StringSlice("feature-flag")) > 0 {
+		if slices.Contains(c.StringSlice("feature-flag"), "wait-on-dependencies") {
+			params.WaitOnDependencies = true
+		}
+	}
+
 	// Parse the user supplied configuration file to pass in part to configure the nuke process.
 	parsedConfig, err := config.New(libconfig.Options{
 		Path:         c.Path("config"),
@@ -94,6 +101,8 @@ func execute(c *cli.Context) error {
 	// Instantiate libnuke
 	n := libnuke.New(params, filters, parsedConfig.Settings)
 
+	n.RegisterVersion(common.AppVersion.Summary)
+
 	// Register our custom validate handler that validates the account and AWS nuke unique alias checks
 	n.RegisterValidateHandler(func() error {
 		return parsedConfig.ValidateAccount(account.ID(), account.Aliases())
@@ -112,8 +121,8 @@ func execute(c *cli.Context) error {
 		resource.GetNames(),
 		[]types.Collection{
 			n.Parameters.Includes,
-			parsedConfig.ResourceTypes.Targets,
-			accountConfig.ResourceTypes.Targets,
+			parsedConfig.ResourceTypes.GetIncludes(),
+			accountConfig.ResourceTypes.GetIncludes(),
 		},
 		[]types.Collection{
 			n.Parameters.Excludes,
@@ -122,8 +131,8 @@ func execute(c *cli.Context) error {
 		},
 		[]types.Collection{
 			n.Parameters.Alternatives,
-			parsedConfig.ResourceTypes.CloudControl,
-			accountConfig.ResourceTypes.CloudControl,
+			parsedConfig.ResourceTypes.GetAlternatives(),
+			accountConfig.ResourceTypes.GetAlternatives(),
 		},
 		resource.GetAlternativeResourceTypeMapping(),
 	)
@@ -193,6 +202,10 @@ func init() {
 		&cli.StringSliceFlag{
 			Name:  "cloud-control",
 			Usage: "use these resource types with the Cloud Control API instead of the default",
+		},
+		&cli.StringSliceFlag{
+			Name:  "feature-flag",
+			Usage: "enable experimental behaviors that may not be fully tested or supported",
 		},
 	}
 

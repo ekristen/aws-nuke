@@ -1,3 +1,6 @@
+checks:
+  return-statements:
+    enabled: false
 plugins:
   duplication:
     enabled: true

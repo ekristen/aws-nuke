@@ -6,8 +6,8 @@ github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ3
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/ekristen/libnuke v0.0.0-20240122232527-922a9af6ba13 h1:d8d42BTmJkuO+cS8c+xitkNFC0ik9xAbqbZ+pJ76j3M=
-github.com/ekristen/libnuke v0.0.0-20240122232527-922a9af6ba13/go.mod h1:GgNcRFHihQza4zWLoun9hEXzVfGTk+nKTwCwo6xAyDg=
+github.com/ekristen/libnuke v0.0.0-20240123221700-d8899f33f580 h1:7F4+KkJLtwDC5STusCTGIcnIjBmOOP7mUOpCzS2KoCU=
+github.com/ekristen/libnuke v0.0.0-20240123221700-d8899f33f580/go.mod h1:BqHpyOLHEgCwAi82WbM+1fjGRgdDDG4a8W4ivjfHMP8=
 github.com/fatih/color v1.16.0 h1:zmkK9Ngbjj+K0yRhTVONQh1p/HknKYSlNT+vZCzyokM=
 github.com/fatih/color v1.16.0/go.mod h1:fL2Sau1YI5c0pdGEVCbKQbLXB6edEj1ZgiY4NijnWvE=
 github.com/golang/mock v1.6.0 h1:ErTB+efbowRARo13NNdxyJji2egdxLGQhRaY+DUumQc=
@@ -34,8 +34,6 @@ github.com/mattn/go-isatty v0.0.20 h1:xfD0iDuEKnDkl03q4limB+vH+GxLEtL/jb4xVJSWWE
 github.com/mattn/go-isatty v0.0.20/go.mod h1:W+V8PltTTMOvKvAeJH7IuucS94S2C6jfK/D7dTCTo3Y=
 github.com/mb0/glob v0.0.0-20160210091149-1eb79d2de6c4 h1:NK3O7S5FRD/wj7ORQ5C3Mx1STpyEMuFe+/F0Lakd1Nk=
 github.com/mb0/glob v0.0.0-20160210091149-1eb79d2de6c4/go.mod h1:FqD3ES5hx6zpzDainDaHgkTIqrPaI9uX4CVWqYZoQjY=
-github.com/mitchellh/hashstructure/v2 v2.0.2 h1:vGKWl0YJqUNxE8d+h8f6NJLcCJrgbhC4NcD46KavDd4=
-github.com/mitchellh/hashstructure/v2 v2.0.2/go.mod h1:MG3aRVU/N29oo/V/IhBX8GR/zz4kQkprJgF2EVszyDE=
 github.com/pkg/diff v0.0.0-20210226163009-20ebb0f2a09e/go.mod h1:pJLUxLENpZxwdsKMEsNbx1VGcRFpLqf3715MtcvvzbA=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
