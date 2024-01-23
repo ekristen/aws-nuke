@@ -12,9 +12,11 @@ RUN \
   go build -o bin/aws-nuke main.go
 
 FROM base AS goreleaser
+ENTRYPOINT ["/usr/local/bin/aws-nuke"]
 COPY aws-nuke /usr/local/bin/aws-nuke
 USER aws-nuke
 
 FROM base
+ENTRYPOINT ["/usr/local/bin/aws-nuke"]
 COPY --from=build /src/bin/aws-nuke /usr/local/bin/aws-nuke
 USER aws-nuke
