@@ -1,23 +1,33 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/opensearchservice"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type OSVPCEndpoint struct {
-	svc           *opensearchservice.OpenSearchService
-	vpcEndpointId *string
-}
+const OSVPCEndpointResource = "OSVPCEndpoint"
 
 func init() {
-	register("OSVPCEndpoint", ListOSVPCEndpoints)
+	resource.Register(&resource.Registration{
+		Name:   OSVPCEndpointResource,
+		Scope:  nuke.Account,
+		Lister: &OSVPCEndpointLister{},
+	})
 }
 
-func ListOSVPCEndpoints(sess *session.Session) ([]Resource, error) {
-	svc := opensearchservice.New(sess)
-	resources := []Resource{}
+type OSVPCEndpointLister struct{}
+
+func (l *OSVPCEndpointLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := opensearchservice.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 	var nextToken *string
 
 	for {
@@ -48,7 +58,12 @@ func ListOSVPCEndpoints(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (o *OSVPCEndpoint) Remove() error {
+type OSVPCEndpoint struct {
+	svc           *opensearchservice.OpenSearchService
+	vpcEndpointId *string
+}
+
+func (o *OSVPCEndpoint) Remove(_ context.Context) error {
 	_, err := o.svc.DeleteVpcEndpoint(&opensearchservice.DeleteVpcEndpointInput{
 		VpcEndpointId: o.vpcEndpointId,
 	})

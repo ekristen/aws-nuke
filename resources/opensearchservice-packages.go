@@ -1,29 +1,36 @@
 package resources
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/opensearchservice"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type OSPackage struct {
-	svc         *opensearchservice.OpenSearchService
-	packageID   *string
-	packageName *string
-	createdTime *time.Time
-}
+const OSPackageResource = "OSPackage"
 
 func init() {
-	register("OSPackage", ListOSPackages)
+	resource.Register(&resource.Registration{
+		Name:   OSPackageResource,
+		Scope:  nuke.Account,
+		Lister: &OSPackageLister{},
+	})
 }
 
-func ListOSPackages(sess *session.Session) ([]Resource, error) {
-	svc := opensearchservice.New(sess)
-	resources := []Resource{}
+type OSPackageLister struct{}
+
+func (l *OSPackageLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := opensearchservice.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 	var nextToken *string
 
 	for {
@@ -56,6 +63,13 @@ func ListOSPackages(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
+type OSPackage struct {
+	svc         *opensearchservice.OpenSearchService
+	packageID   *string
+	packageName *string
+	createdTime *time.Time
+}
+
 func (o *OSPackage) Filter() error {
 	if strings.HasPrefix(*o.packageID, "G") {
 		return fmt.Errorf("cannot delete default opensearch packages")
@@ -63,7 +77,7 @@ func (o *OSPackage) Filter() error {
 	return nil
 }
 
-func (o *OSPackage) Remove() error {
+func (o *OSPackage) Remove(_ context.Context) error {
 	_, err := o.svc.DeletePackage(&opensearchservice.DeletePackageInput{
 		PackageID: o.packageID,
 	})
