@@ -1,13 +1,17 @@
 package resources
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/appconfig"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 type AppConfigDeploymentStrategy struct {
@@ -16,13 +20,23 @@ type AppConfigDeploymentStrategy struct {
 	name *string
 }
 
+const AppConfigDeploymentStrategyResource = "AppConfigDeploymentStrategy"
+
 func init() {
-	register("AppConfigDeploymentStrategy", ListAppConfigDeploymentStrategies)
+	resource.Register(&resource.Registration{
+		Name:   AppConfigDeploymentStrategyResource,
+		Scope:  nuke.Account,
+		Lister: &AppConfigDeploymentStrategyLister{},
+	})
 }
 
-func ListAppConfigDeploymentStrategies(sess *session.Session) ([]Resource, error) {
-	svc := appconfig.New(sess)
-	resources := []Resource{}
+type AppConfigDeploymentStrategyLister struct{}
+
+func (l *AppConfigDeploymentStrategyLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := appconfig.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 	params := &appconfig.ListDeploymentStrategiesInput{
 		MaxResults: aws.Int64(50),
 	}
@@ -49,7 +63,7 @@ func (f *AppConfigDeploymentStrategy) Filter() error {
 	return nil
 }
 
-func (f *AppConfigDeploymentStrategy) Remove() error {
+func (f *AppConfigDeploymentStrategy) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteDeploymentStrategy(&appconfig.DeleteDeploymentStrategyInput{
 		DeploymentStrategyId: f.id,
 	})
