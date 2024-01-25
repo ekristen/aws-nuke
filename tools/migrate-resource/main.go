@@ -41,13 +41,18 @@ func main() {
 		panic("no arguments given")
 	}
 
+	if len(args) != 2 {
+		fmt.Println("usage: migrate-resource <source-aws-nuke> <resource-type>")
+		os.Exit(1)
+	}
+
 	originalSourceDir := filepath.Join(args[0], "resources")
 
 	repl := regexp.MustCompile("func init\\(\\) {\\s+.*[\\s+].*\\s}")
 	match := regexp.MustCompile("register\\(\"(?P<resource>.*)\",\\s?(?P<function>\\w+)(,)?(\\s+mapCloudControl\\(\"(?P<cc>.*)\"\\))?")
 	funcMatch := regexp.MustCompile("func List.*{")
 
-	filename := filepath.Join(originalSourceDir, "resources", args[0]+".go")
+	filename := filepath.Join(originalSourceDir, "resources", args[1]+".go")
 
 	originalFileContents, err := os.ReadFile(filename)
 	if err != nil {
@@ -60,14 +65,6 @@ func main() {
 		panic("no matches")
 	}
 	resourceType := matches[1]
-	funcName := matches[2]
-	cc := ""
-	if len(matches) == 4 {
-		cc = matches[3]
-	}
-
-	fmt.Println(cc)
-	fmt.Println(funcName)
 
 	data := struct {
 		ResourceType string
@@ -107,8 +104,13 @@ func main() {
 	newContents = strings.ReplaceAll(newContents, "config.FeatureFlags", "*featureflag.FeatureFlags")
 	newContents = strings.ReplaceAll(newContents, ") Remove() error {", ") Remove(_ context.Context) error {")
 
+	cwd, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+
 	if err := os.WriteFile(
-		filepath.Join(".", "resources", args[0]+".go"), []byte(newContents), 0644); err != nil {
+		filepath.Join(cwd, "resources", args[1]+".go"), []byte(newContents), 0644); err != nil {
 		panic(err)
 	}
 }

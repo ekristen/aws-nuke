@@ -13,6 +13,12 @@ import (
 var OriginalRegisterRegex = regexp.MustCompile("register\\(\"(?P<resource>.*)\",\\s?(?P<function>\\w+)(,)?(\\s+mapCloudControl\\(\"(?P<cc>.*)\"\\))?")
 var NewRegisterRegex = regexp.MustCompile(`resource.Registration{\s+Name:\s+(?P<name>.*),`)
 
+var aliases = map[string]string{
+	"NetpuneSnapshot":    "NeptuneSnapshot",
+	"EKSFargateProfiles": "EKSFargateProfile",
+	"EKSNodegroups":      "EKSNodegroup",
+}
+
 func main() {
 	args := os.Args[1:]
 
@@ -104,14 +110,22 @@ func main() {
 
 	fmt.Println("\nResources not in local aws-nuke:")
 	for _, resource := range awsNukeResourceTypes {
-		if !slices.Contains(localResourceTypes, resource) {
+		_, ok := aliases[resource]
+		if !slices.Contains(localResourceTypes, resource) && !ok {
 			fmt.Println("->", resource)
 		}
 	}
 
 	fmt.Println("\nResources not in aws-nuke:")
 	for _, resource := range localResourceTypes {
-		if !slices.Contains(awsNukeResourceTypes, resource) {
+		found := false
+		for _, v := range aliases {
+			if v == resource {
+				found = true
+			}
+		}
+
+		if !slices.Contains(awsNukeResourceTypes, resource) && !found {
 			fmt.Println("+>", resource)
 		}
 	}
