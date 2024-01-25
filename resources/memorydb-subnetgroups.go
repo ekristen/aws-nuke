@@ -1,10 +1,15 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/memorydb"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 type MemoryDBSubnetGroup struct {
@@ -13,13 +18,23 @@ type MemoryDBSubnetGroup struct {
 	tags []*memorydb.Tag
 }
 
+const MemoryDBSubnetGroupResource = "MemoryDBSubnetGroup"
+
 func init() {
-	register("MemoryDBSubnetGroup", ListMemoryDBSubnetGroups)
+	resource.Register(&resource.Registration{
+		Name:   MemoryDBSubnetGroupResource,
+		Scope:  nuke.Account,
+		Lister: &MemoryDBSubnetGroupLister{},
+	})
 }
 
-func ListMemoryDBSubnetGroups(sess *session.Session) ([]Resource, error) {
-	svc := memorydb.New(sess)
-	var resources []Resource
+type MemoryDBSubnetGroupLister struct{}
+
+func (l *MemoryDBSubnetGroupLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := memorydb.New(opts.Session)
+	var resources []resource.Resource
 
 	params := &memorydb.DescribeSubnetGroupsInput{MaxResults: aws.Int64(100)}
 
@@ -55,7 +70,7 @@ func ListMemoryDBSubnetGroups(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (i *MemoryDBSubnetGroup) Remove() error {
+func (i *MemoryDBSubnetGroup) Remove(_ context.Context) error {
 	params := &memorydb.DeleteSubnetGroupInput{
 		SubnetGroupName: i.name,
 	}

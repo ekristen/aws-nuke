@@ -1,12 +1,16 @@
 package resources
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/memorydb"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 type MemoryDBACL struct {
@@ -15,13 +19,23 @@ type MemoryDBACL struct {
 	tags []*memorydb.Tag
 }
 
+const MemoryDBACLResource = "MemoryDBACL"
+
 func init() {
-	register("MemoryDBACL", ListMemoryDBACLs)
+	resource.Register(&resource.Registration{
+		Name:   MemoryDBACLResource,
+		Scope:  nuke.Account,
+		Lister: &MemoryDBACLLister{},
+	})
 }
 
-func ListMemoryDBACLs(sess *session.Session) ([]Resource, error) {
-	svc := memorydb.New(sess)
-	var resources []Resource
+type MemoryDBACLLister struct{}
+
+func (l *MemoryDBACLLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := memorydb.New(opts.Session)
+	var resources []resource.Resource
 
 	params := &memorydb.DescribeACLsInput{MaxResults: aws.Int64(50)}
 	for {
@@ -65,7 +79,7 @@ func (i *MemoryDBACL) Filter() error {
 	}
 }
 
-func (i *MemoryDBACL) Remove() error {
+func (i *MemoryDBACL) Remove(_ context.Context) error {
 	params := &memorydb.DeleteACLInput{
 		ACLName: i.name,
 	}
