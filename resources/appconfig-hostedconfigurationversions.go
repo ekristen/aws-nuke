@@ -1,11 +1,17 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/appconfig"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+	"context"
+
 	"github.com/sirupsen/logrus"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/appconfig"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 type AppConfigHostedConfigurationVersion struct {
@@ -15,14 +21,26 @@ type AppConfigHostedConfigurationVersion struct {
 	versionNumber          *int64
 }
 
+const AppConfigHostedConfigurationVersionResource = "AppConfigHostedConfigurationVersion"
+
 func init() {
-	register("AppConfigHostedConfigurationVersion", ListAppConfigHostedConfigurationVersions)
+	resource.Register(&resource.Registration{
+		Name:   AppConfigHostedConfigurationVersionResource,
+		Scope:  nuke.Account,
+		Lister: &AppConfigHostedConfigurationVersionLister{},
+	})
 }
 
-func ListAppConfigHostedConfigurationVersions(sess *session.Session) ([]Resource, error) {
-	svc := appconfig.New(sess)
-	resources := []Resource{}
-	configurationProfiles, err := ListAppConfigConfigurationProfiles(sess)
+type AppConfigHostedConfigurationVersionLister struct{}
+
+func (l *AppConfigHostedConfigurationVersionLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := appconfig.New(opts.Session)
+	resources := make([]resource.Resource, 0)
+
+	profilerLister := &AppConfigConfigurationProfileLister{}
+	configurationProfiles, err := profilerLister.List(ctx, o)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +73,7 @@ func ListAppConfigHostedConfigurationVersions(sess *session.Session) ([]Resource
 	return resources, nil
 }
 
-func (f *AppConfigHostedConfigurationVersion) Remove() error {
+func (f *AppConfigHostedConfigurationVersion) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteHostedConfigurationVersion(&appconfig.DeleteHostedConfigurationVersionInput{
 		ApplicationId:          f.applicationId,
 		ConfigurationProfileId: f.configurationProfileId,

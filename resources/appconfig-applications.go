@@ -1,10 +1,15 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/appconfig"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 type AppConfigApplication struct {
@@ -13,13 +18,23 @@ type AppConfigApplication struct {
 	name *string
 }
 
+const AppConfigApplicationResource = "AppConfigApplication"
+
 func init() {
-	register("AppConfigApplication", ListAppConfigApplications)
+	resource.Register(&resource.Registration{
+		Name:   AppConfigApplicationResource,
+		Scope:  nuke.Account,
+		Lister: &AppConfigApplicationLister{},
+	})
 }
 
-func ListAppConfigApplications(sess *session.Session) ([]Resource, error) {
-	svc := appconfig.New(sess)
-	resources := []Resource{}
+type AppConfigApplicationLister struct{}
+
+func (l *AppConfigApplicationLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := appconfig.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 	params := &appconfig.ListApplicationsInput{
 		MaxResults: aws.Int64(50),
 	}
@@ -39,7 +54,7 @@ func ListAppConfigApplications(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *AppConfigApplication) Remove() error {
+func (f *AppConfigApplication) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteApplication(&appconfig.DeleteApplicationInput{
 		ApplicationId: f.id,
 	})

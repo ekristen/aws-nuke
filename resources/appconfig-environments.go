@@ -1,11 +1,17 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/appconfig"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+	"context"
+
 	"github.com/sirupsen/logrus"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/appconfig"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 type AppConfigEnvironment struct {
@@ -15,14 +21,26 @@ type AppConfigEnvironment struct {
 	name          *string
 }
 
+const AppConfigEnvironmentResource = "AppConfigEnvironment"
+
 func init() {
-	register("AppConfigEnvironment", ListAppConfigEnvironments)
+	resource.Register(&resource.Registration{
+		Name:   AppConfigEnvironmentResource,
+		Scope:  nuke.Account,
+		Lister: &AppConfigEnvironmentLister{},
+	})
 }
 
-func ListAppConfigEnvironments(sess *session.Session) ([]Resource, error) {
-	svc := appconfig.New(sess)
-	resources := []Resource{}
-	applications, err := ListAppConfigApplications(sess)
+type AppConfigEnvironmentLister struct{}
+
+func (l *AppConfigEnvironmentLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := appconfig.New(opts.Session)
+	resources := make([]resource.Resource, 0)
+
+	applicationLister := &AppConfigApplicationLister{}
+	applications, err := applicationLister.List(ctx, o)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +72,7 @@ func ListAppConfigEnvironments(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *AppConfigEnvironment) Remove() error {
+func (f *AppConfigEnvironment) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteEnvironment(&appconfig.DeleteEnvironmentInput{
 		ApplicationId: f.applicationId,
 		EnvironmentId: f.id,

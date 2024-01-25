@@ -1,11 +1,17 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/appconfig"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+	"context"
+
 	"github.com/sirupsen/logrus"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/appconfig"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 type AppConfigConfigurationProfile struct {
@@ -15,14 +21,27 @@ type AppConfigConfigurationProfile struct {
 	name          *string
 }
 
+const AppConfigConfigurationProfileResource = "AppConfigConfigurationProfile"
+
 func init() {
-	register("AppConfigConfigurationProfile", ListAppConfigConfigurationProfiles)
+	resource.Register(&resource.Registration{
+		Name:   AppConfigConfigurationProfileResource,
+		Scope:  nuke.Account,
+		Lister: &AppConfigConfigurationProfileLister{},
+	})
 }
 
-func ListAppConfigConfigurationProfiles(sess *session.Session) ([]Resource, error) {
-	svc := appconfig.New(sess)
-	resources := []Resource{}
-	applications, err := ListAppConfigApplications(sess)
+type AppConfigConfigurationProfileLister struct{}
+
+func (l *AppConfigConfigurationProfileLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := appconfig.New(opts.Session)
+	resources := make([]resource.Resource, 0)
+
+	applicationLister := &AppConfigApplicationLister{}
+
+	applications, err := applicationLister.List(ctx, o)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +73,7 @@ func ListAppConfigConfigurationProfiles(sess *session.Session) ([]Resource, erro
 	return resources, nil
 }
 
-func (f *AppConfigConfigurationProfile) Remove() error {
+func (f *AppConfigConfigurationProfile) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteConfigurationProfile(&appconfig.DeleteConfigurationProfileInput{
 		ApplicationId:          f.applicationId,
 		ConfigurationProfileId: f.id,
