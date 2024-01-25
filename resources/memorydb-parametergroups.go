@@ -1,13 +1,17 @@
 package resources
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/memorydb"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 type MemoryDBParameterGroup struct {
@@ -17,13 +21,23 @@ type MemoryDBParameterGroup struct {
 	tags   []*memorydb.Tag
 }
 
+const MemoryDBParameterGroupResource = "MemoryDBParameterGroup"
+
 func init() {
-	register("MemoryDBParameterGroup", ListMemoryDBParameterGroups)
+	resource.Register(&resource.Registration{
+		Name:   MemoryDBParameterGroupResource,
+		Scope:  nuke.Account,
+		Lister: &MemoryDBParameterGroupLister{},
+	})
 }
 
-func ListMemoryDBParameterGroups(sess *session.Session) ([]Resource, error) {
-	svc := memorydb.New(sess)
-	var resources []Resource
+type MemoryDBParameterGroupLister struct{}
+
+func (l *MemoryDBParameterGroupLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := memorydb.New(opts.Session)
+	var resources []resource.Resource
 
 	params := &memorydb.DescribeParameterGroupsInput{MaxResults: aws.Int64(100)}
 
@@ -67,7 +81,7 @@ func (i *MemoryDBParameterGroup) Filter() error {
 	return nil
 }
 
-func (i *MemoryDBParameterGroup) Remove() error {
+func (i *MemoryDBParameterGroup) Remove(_ context.Context) error {
 	params := &memorydb.DeleteParameterGroupInput{
 		ParameterGroupName: i.name,
 	}

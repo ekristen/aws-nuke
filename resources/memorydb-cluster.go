@@ -1,10 +1,15 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/memorydb"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 type MemoryDBCluster struct {
@@ -13,13 +18,23 @@ type MemoryDBCluster struct {
 	tags []*memorydb.Tag
 }
 
+const MemoryDBClusterResource = "MemoryDBCluster"
+
 func init() {
-	register("MemoryDBCluster", ListMemoryDbClusters)
+	resource.Register(&resource.Registration{
+		Name:   MemoryDBClusterResource,
+		Scope:  nuke.Account,
+		Lister: &MemoryDBClusterLister{},
+	})
 }
 
-func ListMemoryDbClusters(sess *session.Session) ([]Resource, error) {
-	svc := memorydb.New(sess)
-	var resources []Resource
+type MemoryDBClusterLister struct{}
+
+func (l *MemoryDBClusterLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := memorydb.New(opts.Session)
+	var resources []resource.Resource
 
 	params := &memorydb.DescribeClustersInput{MaxResults: aws.Int64(100)}
 
@@ -55,7 +70,7 @@ func ListMemoryDbClusters(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (c *MemoryDBCluster) Remove() error {
+func (c *MemoryDBCluster) Remove(_ context.Context) error {
 	params := &memorydb.DeleteClusterInput{
 		ClusterName: c.name,
 	}
