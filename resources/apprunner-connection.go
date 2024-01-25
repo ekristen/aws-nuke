@@ -1,9 +1,14 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/apprunner"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 type AppRunnerConnection struct {
@@ -12,13 +17,23 @@ type AppRunnerConnection struct {
 	ConnectionName *string
 }
 
+const AppRunnerConnectionResource = "AppRunnerConnection"
+
 func init() {
-	register("AppRunnerConnection", ListAppRunnerConnections)
+	resource.Register(&resource.Registration{
+		Name:   AppRunnerConnectionResource,
+		Scope:  nuke.Account,
+		Lister: &AppRunnerConnectionLister{},
+	})
 }
 
-func ListAppRunnerConnections(sess *session.Session) ([]Resource, error) {
-	svc := apprunner.New(sess)
-	resources := []Resource{}
+type AppRunnerConnectionLister struct{}
+
+func (l *AppRunnerConnectionLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := apprunner.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &apprunner.ListConnectionsInput{}
 
@@ -46,7 +61,7 @@ func ListAppRunnerConnections(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *AppRunnerConnection) Remove() error {
+func (f *AppRunnerConnection) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteConnection(&apprunner.DeleteConnectionInput{
 		ConnectionArn: f.ConnectionArn,
 	})
