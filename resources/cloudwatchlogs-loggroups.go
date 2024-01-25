@@ -22,6 +22,9 @@ func init() {
 		Name:   CloudWatchLogsLogGroupResource,
 		Scope:  nuke.Account,
 		Lister: &CloudWatchLogsLogGroupLister{},
+		DependsOn: []string{
+			EC2VPCResource, // Reason: flow logs, if log group is cleaned before vpc, vpc can write more flow logs
+		},
 	})
 }
 
