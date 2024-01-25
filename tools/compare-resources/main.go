@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/fatih/color"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -26,12 +27,13 @@ func main() {
 		panic("no arguments given")
 	}
 
-	awsNukeDirectory := filepath.Join(args[0], "resources")
+	upstreamDirectory := filepath.Join(args[0], "resources")
 
-	var awsNukeResourceFiles []string
-	var awsNukeResourceTypes []string
+	var upstreamResourceFiles []string
+	var upstreamResourceTypes []string
+	var upstreamTypeToFile = map[string]string{}
 
-	err := filepath.WalkDir(awsNukeDirectory, func(path string, di fs.DirEntry, err error) error {
+	err := filepath.WalkDir(upstreamDirectory, func(path string, di fs.DirEntry, err error) error {
 		if !strings.HasSuffix(path, ".go") {
 			return nil
 		}
@@ -40,15 +42,15 @@ func main() {
 			return nil
 		}
 
-		awsNukeResourceFiles = append(awsNukeResourceFiles, filepath.Base(path))
+		upstreamResourceFiles = append(upstreamResourceFiles, filepath.Base(path))
 		return nil
 	})
 	if err != nil {
 		panic(err)
 	}
 
-	for _, file := range awsNukeResourceFiles {
-		originalFileContents, err := os.ReadFile(filepath.Join(awsNukeDirectory, file))
+	for _, file := range upstreamResourceFiles {
+		originalFileContents, err := os.ReadFile(filepath.Join(upstreamDirectory, file))
 		if err != nil {
 			panic(err)
 		}
@@ -63,7 +65,8 @@ func main() {
 		funcName := matches[2]
 		_ = funcName
 
-		awsNukeResourceTypes = append(awsNukeResourceTypes, resourceType)
+		upstreamResourceTypes = append(upstreamResourceTypes, resourceType)
+		upstreamTypeToFile[resourceType] = file
 	}
 
 	var localResourcesPath = filepath.Join("resources")
@@ -105,16 +108,8 @@ func main() {
 		localResourceTypes = append(localResourceTypes, resourceType)
 	}
 
-	fmt.Println("\naws-nuke resource count:", len(awsNukeResourceTypes))
+	fmt.Println("\naws-nuke resource count:", len(upstreamResourceTypes))
 	fmt.Println("local resource count:", len(localResourceTypes))
-
-	fmt.Println("\nResources not in local aws-nuke:")
-	for _, resource := range awsNukeResourceTypes {
-		_, ok := aliases[resource]
-		if !slices.Contains(localResourceTypes, resource) && !ok {
-			fmt.Println("->", resource)
-		}
-	}
 
 	fmt.Println("\nResources not in aws-nuke:")
 	for _, resource := range localResourceTypes {
@@ -125,8 +120,18 @@ func main() {
 			}
 		}
 
-		if !slices.Contains(awsNukeResourceTypes, resource) && !found {
+		if !slices.Contains(upstreamResourceTypes, resource) && !found {
 			fmt.Println("+>", resource)
 		}
 	}
+
+	fmt.Println("\nResources not in local aws-nuke:")
+	for _, resource := range upstreamResourceTypes {
+		_, ok := aliases[resource]
+		if !slices.Contains(localResourceTypes, resource) && !ok {
+			color.New(color.Bold).Printf("%-55s", resource)
+			color.New(color.FgYellow).Println(upstreamTypeToFile[resource])
+		}
+	}
+
 }
