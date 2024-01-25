@@ -1,11 +1,15 @@
 package resources
 
 import (
+	"context"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cloudfront"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 type CloudFrontKeyGroup struct {
@@ -15,13 +19,23 @@ type CloudFrontKeyGroup struct {
 	lastModifiedTime *time.Time
 }
 
+const CloudFrontKeyGroupResource = "CloudFrontKeyGroup"
+
 func init() {
-	register("CloudFrontKeyGroup", ListCloudFrontKeyGroups)
+	resource.Register(&resource.Registration{
+		Name:   CloudFrontKeyGroupResource,
+		Scope:  nuke.Account,
+		Lister: &CloudFrontKeyGroupLister{},
+	})
 }
 
-func ListCloudFrontKeyGroups(sess *session.Session) ([]Resource, error) {
-	svc := cloudfront.New(sess)
-	resources := []Resource{}
+type CloudFrontKeyGroupLister struct{}
+
+func (l *CloudFrontKeyGroupLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := cloudfront.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 	params := &cloudfront.ListKeyGroupsInput{}
 
 	for {
@@ -49,7 +63,7 @@ func ListCloudFrontKeyGroups(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *CloudFrontKeyGroup) Remove() error {
+func (f *CloudFrontKeyGroup) Remove(_ context.Context) error {
 	resp, err := f.svc.GetKeyGroup(&cloudfront.GetKeyGroupInput{
 		Id: f.ID,
 	})

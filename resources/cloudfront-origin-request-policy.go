@@ -1,9 +1,14 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/cloudfront"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 type CloudFrontOriginRequestPolicy struct {
@@ -11,13 +16,23 @@ type CloudFrontOriginRequestPolicy struct {
 	ID  *string
 }
 
+const CloudFrontOriginRequestPolicyResource = "CloudFrontOriginRequestPolicy"
+
 func init() {
-	register("CloudFrontOriginRequestPolicy", ListCloudFrontOriginRequestPolicies)
+	resource.Register(&resource.Registration{
+		Name:   CloudFrontOriginRequestPolicyResource,
+		Scope:  nuke.Account,
+		Lister: &CloudFrontOriginRequestPolicyLister{},
+	})
 }
 
-func ListCloudFrontOriginRequestPolicies(sess *session.Session) ([]Resource, error) {
-	svc := cloudfront.New(sess)
-	resources := []Resource{}
+type CloudFrontOriginRequestPolicyLister struct{}
+
+func (l *CloudFrontOriginRequestPolicyLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := cloudfront.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 	params := &cloudfront.ListOriginRequestPoliciesInput{}
 
 	for {
@@ -45,7 +60,7 @@ func ListCloudFrontOriginRequestPolicies(sess *session.Session) ([]Resource, err
 	return resources, nil
 }
 
-func (f *CloudFrontOriginRequestPolicy) Remove() error {
+func (f *CloudFrontOriginRequestPolicy) Remove(_ context.Context) error {
 	resp, err := f.svc.GetOriginRequestPolicy(&cloudfront.GetOriginRequestPolicyInput{
 		Id: f.ID,
 	})
