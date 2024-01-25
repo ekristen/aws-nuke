@@ -25,6 +25,10 @@ func init() {
 		Name:   AppConfigApplicationResource,
 		Scope:  nuke.Account,
 		Lister: &AppConfigApplicationLister{},
+		DependsOn: []string{
+			AppConfigConfigurationProfileResource,
+			AppConfigEnvironmentResource,
+		},
 	})
 }
 

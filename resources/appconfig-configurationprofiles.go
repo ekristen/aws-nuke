@@ -28,6 +28,9 @@ func init() {
 		Name:   AppConfigConfigurationProfileResource,
 		Scope:  nuke.Account,
 		Lister: &AppConfigConfigurationProfileLister{},
+		DependsOn: []string{
+			AppConfigHostedConfigurationVersionResource,
+		},
 	})
 }
 
