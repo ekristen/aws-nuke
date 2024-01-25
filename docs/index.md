@@ -5,7 +5,7 @@ Remove all resources from an AWS account.
 *aws-nuke* is stable, but it is likely that not all AWS resources are covered by it. Be encouraged to add missing
 resources and create a Pull Request or to create an [Issue](https://github.com/ekristen/aws-nuke/issues/new).
 
-## History
+## History of this Fork
 
 This is a full fork of the original tool written by the folks over at [rebuy-de](https://github.com/rebuy-de). This fork became necessary
 after attempting to make contributions and respond to issues to learn that the current maintainers only have time to
@@ -16,7 +16,15 @@ decision to fork and maintain it.
 Since then the rebuy-de team has taken up interest in responding to their issues and pull requests, but I have decided
 to continue maintaining this fork as I have a few things I want to do with it that I don't think they will be interested.
 
-## libnuke
+### Continued Attribution
+
+I want to make it clear that I am not trying to take credit for the work of the original authors, and I will continue
+to give them credit for their work. I also want to make sure any contributors are also recognized and attributed for
+their work. Since this has diverged from the upstream, I've written tooling and scripts to cherry-pick commits from
+upstream and apply them to this fork, then modify the resources to work with the new library and submit as a PR to this
+fork.
+
+## Introducing libnuke
 
 Officially over the Christmas break of 2023, I decided to create [libnuke](https://github.com/ekristen/libnuke) which
 is a library that can be used to create similar tools for other cloud providers. This library is used by both this tool,
