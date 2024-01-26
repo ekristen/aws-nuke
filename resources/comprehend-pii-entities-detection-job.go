@@ -11,19 +11,22 @@ import (
 	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-const ComprehendPiiEntititesDetectionJobResource = "ComprehendPiiEntititesDetectionJob"
+const ComprehendPiiEntitiesDetectionJobResource = "ComprehendPiiEntitiesDetectionJob"
 
 func init() {
 	resource.Register(&resource.Registration{
-		Name:   ComprehendPiiEntititesDetectionJobResource,
+		Name:   ComprehendPiiEntitiesDetectionJobResource,
 		Scope:  nuke.Account,
-		Lister: &ComprehendPiiEntititesDetectionJobLister{},
+		Lister: &ComprehendPiiEntitiesDetectionJobLister{},
+		DeprecatedAliases: []string{
+			"ComprehendPiiEntititesDetectionJob", //nolint:misspell
+		},
 	})
 }
 
-type ComprehendPiiEntititesDetectionJobLister struct{}
+type ComprehendPiiEntitiesDetectionJobLister struct{}
 
-func (l *ComprehendPiiEntititesDetectionJobLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *ComprehendPiiEntitiesDetectionJobLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 
 	svc := comprehend.New(opts.Session)
@@ -36,15 +39,15 @@ func (l *ComprehendPiiEntititesDetectionJobLister) List(_ context.Context, o int
 		if err != nil {
 			return nil, err
 		}
-		for _, piiEntititesDetectionJob := range resp.PiiEntitiesDetectionJobPropertiesList {
-			switch *piiEntititesDetectionJob.JobStatus {
+		for _, piiEntitiesDetectionJob := range resp.PiiEntitiesDetectionJobPropertiesList {
+			switch *piiEntitiesDetectionJob.JobStatus {
 			case "STOPPED", "FAILED", "COMPLETED":
 				// if the job has already been stopped, failed, or completed; do not try to stop it again
 				continue
 			}
 			resources = append(resources, &ComprehendPiiEntitiesDetectionJob{
-				svc:                      svc,
-				piiEntititesDetectionJob: piiEntititesDetectionJob,
+				svc:                     svc,
+				piiEntitiesDetectionJob: piiEntitiesDetectionJob,
 			})
 		}
 
@@ -59,29 +62,29 @@ func (l *ComprehendPiiEntititesDetectionJobLister) List(_ context.Context, o int
 }
 
 type ComprehendPiiEntitiesDetectionJob struct {
-	svc                      *comprehend.Comprehend
-	piiEntititesDetectionJob *comprehend.PiiEntitiesDetectionJobProperties
+	svc                     *comprehend.Comprehend
+	piiEntitiesDetectionJob *comprehend.PiiEntitiesDetectionJobProperties
 }
 
 func (ce *ComprehendPiiEntitiesDetectionJob) Remove(_ context.Context) error {
 	_, err := ce.svc.StopPiiEntitiesDetectionJob(&comprehend.StopPiiEntitiesDetectionJobInput{
-		JobId: ce.piiEntititesDetectionJob.JobId,
+		JobId: ce.piiEntitiesDetectionJob.JobId,
 	})
 	return err
 }
 
 func (ce *ComprehendPiiEntitiesDetectionJob) Properties() types.Properties {
 	properties := types.NewProperties()
-	properties.Set("JobName", ce.piiEntititesDetectionJob.JobName)
-	properties.Set("JobId", ce.piiEntititesDetectionJob.JobId)
+	properties.Set("JobName", ce.piiEntitiesDetectionJob.JobName)
+	properties.Set("JobId", ce.piiEntitiesDetectionJob.JobId)
 
 	return properties
 }
 
 func (ce *ComprehendPiiEntitiesDetectionJob) String() string {
-	if ce.piiEntititesDetectionJob.JobName == nil {
+	if ce.piiEntitiesDetectionJob.JobName == nil {
 		return "Unnamed job"
 	} else {
-		return *ce.piiEntititesDetectionJob.JobName
+		return *ce.piiEntitiesDetectionJob.JobName
 	}
 }
