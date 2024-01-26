@@ -1,10 +1,10 @@
-# Feature Flags
+# Experimental Features
 
 ## Overview
 
-These are the feature flags that are currently available in aws-nuke. They are all disabled by default. These are 
-switches that changes the actual behavior of the tool itself. Changing the behavior of a resource is done via resource
-settings.
+These are the experimental features hidden behind feature flags that are currently available in aws-nuke. They are all
+disabled by default. These are switches that changes the actual behavior of the tool itself. Changing the behavior of
+a resource is done via resource settings.
 
 !!! note
     The original tool had configuration options called `feature-flags` which were used to enable/disable certain

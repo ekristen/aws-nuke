@@ -26,9 +26,8 @@ func New(opts config.Options) (*Config, error) {
 	}
 
 	// Step 3 - Load the same config file against the extended config
-	if err := c.Load(opts.Path); err != nil {
-		return nil, err
-	}
+	// Intentionally ignored, this will never error because we already validated the file exists
+	_ = c.Load(opts.Path)
 
 	// Step 4 - Set the libnuke config on the extended config
 	c.Config = cfg
@@ -43,6 +42,11 @@ func New(opts config.Options) (*Config, error) {
 type Config struct {
 	// Config is the underlying libnuke configuration.
 	*config.Config `yaml:",inline"`
+
+	// BypassAliasCheckAccounts is a list of account IDs that will be allowed to bypass the alias check.
+	// This is useful for accounts that don't have an alias for a number of reasons, it must be used with a cli
+	// flag --no-alias-check to be effective.
+	BypassAliasCheckAccounts []string `yaml:"bypass-alias-check-accounts"`
 
 	// FeatureFlags is a collection of feature flags that can be used to enable or disable certain behaviors on
 	// resources. This is left over from the AWS Nuke tool and is deprecated. It was left to make the transition to the
@@ -70,24 +74,32 @@ func (c *Config) Load(path string) error {
 	return nil
 }
 
+// InBypassAliasCheckAccounts returns true if the specified account ID is in the bypass alias check accounts list.
+func (c *Config) InBypassAliasCheckAccounts(accountID string) bool {
+	for _, id := range c.BypassAliasCheckAccounts {
+		if id == accountID {
+			return true
+		}
+	}
+
+	return false
+}
+
 // ValidateAccount validates the account ID and aliases for the specified account. This will return an error if the
 // account ID is invalid, the account ID is blocklisted, the account doesn't have an alias, the account alias contains
 // the substring 'prod', or the account ID isn't listed in the config.
-func (c *Config) ValidateAccount(accountID string, aliases []string) error {
+func (c *Config) ValidateAccount(accountID string, aliases []string, skipAliasChecks bool) error {
 	// Call the libnuke config validation first
 	if err := c.Config.ValidateAccount(accountID); err != nil {
 		return err
 	}
 
-	if !c.HasBlocklist() {
-		return fmt.Errorf("The config file contains an empty blocklist. " +
-			"For safety reasons you need to specify at least one account ID. " +
-			"This should be your production account.")
-	}
+	if skipAliasChecks {
+		if c.InBypassAliasCheckAccounts(accountID) {
+			return nil
+		}
 
-	if c.InBlocklist(accountID) {
-		return fmt.Errorf("You are trying to nuke the account with the ID %s, "+
-			"but it is blocklisted. Aborting.", accountID)
+		c.Log.Warnf("--no-alias-check is set, but the account ID '%s' isn't in the bypass list.", accountID)
 	}
 
 	if len(aliases) == 0 {
@@ -101,11 +113,6 @@ func (c *Config) ValidateAccount(accountID string, aliases []string) error {
 			return fmt.Errorf("You are trying to nuke an account with the alias '%s', "+
 				"but it has the substring 'prod' in it. Aborting.", alias)
 		}
-	}
-
-	if _, ok := c.Accounts[accountID]; !ok {
-		return fmt.Errorf("Your account ID '%s' isn't listed in the config. "+
-			"Aborting.", accountID)
 	}
 
 	return nil

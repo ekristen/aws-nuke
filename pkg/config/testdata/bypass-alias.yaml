@@ -1,0 +1,20 @@
+---
+regions:
+  - "us-east-1"
+
+blocklist:
+  - 1234567890
+
+bypass-alias-check-accounts:
+  - 123654654
+
+accounts:
+  123654654:
+    resource-types:
+      targets:
+        - S3Bucket
+    filters:
+      IAMRole:
+        - "uber.admin"
+      IAMRolePolicyAttachment:
+        - "uber.admin -> AdministratorAccess"
