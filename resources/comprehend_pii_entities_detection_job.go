@@ -1,20 +1,35 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/comprehend"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
+const ComprehendPiiEntititesDetectionJobResource = "ComprehendPiiEntititesDetectionJob"
+
 func init() {
-	register("ComprehendPiiEntititesDetectionJob", ListComprehendPiiEntitiesDetectionJobs)
+	resource.Register(&resource.Registration{
+		Name:   ComprehendPiiEntititesDetectionJobResource,
+		Scope:  nuke.Account,
+		Lister: &ComprehendPiiEntititesDetectionJobLister{},
+	})
 }
 
-func ListComprehendPiiEntitiesDetectionJobs(sess *session.Session) ([]Resource, error) {
-	svc := comprehend.New(sess)
+type ComprehendPiiEntititesDetectionJobLister struct{}
+
+func (l *ComprehendPiiEntititesDetectionJobLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := comprehend.New(opts.Session)
 
 	params := &comprehend.ListPiiEntitiesDetectionJobsInput{}
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 
 	for {
 		resp, err := svc.ListPiiEntitiesDetectionJobs(params)
@@ -48,7 +63,7 @@ type ComprehendPiiEntitiesDetectionJob struct {
 	piiEntititesDetectionJob *comprehend.PiiEntitiesDetectionJobProperties
 }
 
-func (ce *ComprehendPiiEntitiesDetectionJob) Remove() error {
+func (ce *ComprehendPiiEntitiesDetectionJob) Remove(_ context.Context) error {
 	_, err := ce.svc.StopPiiEntitiesDetectionJob(&comprehend.StopPiiEntitiesDetectionJobInput{
 		JobId: ce.piiEntititesDetectionJob.JobId,
 	})
