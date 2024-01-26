@@ -15,9 +15,10 @@ var OriginalRegisterRegex = regexp.MustCompile("register\\(\"(?P<resource>.*)\",
 var NewRegisterRegex = regexp.MustCompile(`resource.Registration{\s+Name:\s+(?P<name>.*),`)
 
 var aliases = map[string]string{
-	"NetpuneSnapshot":    "NeptuneSnapshot",
-	"EKSFargateProfiles": "EKSFargateProfile",
-	"EKSNodegroups":      "EKSNodegroup",
+	"NetpuneSnapshot":                    "NeptuneSnapshot",
+	"EKSFargateProfiles":                 "EKSFargateProfile",
+	"EKSNodegroups":                      "EKSNodegroup",
+	"ComprehendPiiEntititesDetectionJob": "ComprehendPIIEntitiesDetectionJob",
 }
 
 func main() {
