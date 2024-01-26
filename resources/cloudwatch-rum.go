@@ -1,25 +1,33 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/cloudwatchrum"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type CloudWatchRumApp struct {
-	svc            *cloudwatchrum.CloudWatchRUM
-	appmonitorname *string
-	id             *string
-	state          *string
-}
+const CloudWatchRUMAppResource = "CloudWatchRUMApp"
 
 func init() {
-	register("CloudWatchRUMApp", ListCloudWatchRumApp)
+	resource.Register(&resource.Registration{
+		Name:   CloudWatchRUMAppResource,
+		Scope:  nuke.Account,
+		Lister: &CloudWatchRUMAppLister{},
+	})
 }
 
-func ListCloudWatchRumApp(sess *session.Session) ([]Resource, error) {
-	svc := cloudwatchrum.New(sess)
-	resources := []Resource{}
+type CloudWatchRUMAppLister struct{}
+
+func (l *CloudWatchRUMAppLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := cloudwatchrum.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &cloudwatchrum.ListAppMonitorsInput{}
 
@@ -32,7 +40,7 @@ func ListCloudWatchRumApp(sess *session.Session) ([]Resource, error) {
 		for _, appEntry := range output.AppMonitorSummaries {
 			resources = append(resources, &CloudWatchRumApp{
 				svc:            svc,
-				appmonitorname: appEntry.Name,
+				appMonitorName: appEntry.Name,
 				id:             appEntry.Id,
 				state:          appEntry.State,
 			})
@@ -48,10 +56,17 @@ func ListCloudWatchRumApp(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *CloudWatchRumApp) Remove() error {
+type CloudWatchRumApp struct {
+	svc            *cloudwatchrum.CloudWatchRUM
+	appMonitorName *string
+	id             *string
+	state          *string
+}
+
+func (f *CloudWatchRumApp) Remove(_ context.Context) error {
 
 	_, err := f.svc.DeleteAppMonitor(&cloudwatchrum.DeleteAppMonitorInput{
-		Name: f.appmonitorname,
+		Name: f.appMonitorName,
 	})
 
 	return err
@@ -59,7 +74,7 @@ func (f *CloudWatchRumApp) Remove() error {
 
 func (f *CloudWatchRumApp) Properties() types.Properties {
 	properties := types.NewProperties()
-	properties.Set("Name", *f.appmonitorname)
+	properties.Set("Name", *f.appMonitorName)
 	properties.Set("ID", *f.id)
 	properties.Set("State", *f.state)
 
@@ -67,5 +82,5 @@ func (f *CloudWatchRumApp) Properties() types.Properties {
 }
 
 func (f *CloudWatchRumApp) String() string {
-	return *f.appmonitorname
+	return *f.appMonitorName
 }

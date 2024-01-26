@@ -1,35 +1,35 @@
 package resources
 
 import (
+	"context"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type EC2InstanceConnectEndpoint struct {
-	svc         *ec2.EC2
-	az          *string
-	createdAt   *time.Time
-	dnsName     *string
-	fipsDNSName *string
-	id          *string
-	ownerID     *string
-	state       *string
-	subnetID    *string
-	tags        []*ec2.Tag
-	vpcID       *string
-}
+const EC2InstanceConnectEndpointResource = "EC2InstanceConnectEndpoint"
 
 func init() {
-	register("EC2InstanceConnectEndpoint", ListEC2InstanceConnectEndpoints)
+	resource.Register(&resource.Registration{
+		Name:   EC2InstanceConnectEndpointResource,
+		Scope:  nuke.Account,
+		Lister: &EC2InstanceConnectEndpointLister{},
+	})
 }
 
-func ListEC2InstanceConnectEndpoints(sess *session.Session) ([]Resource, error) {
-	svc := ec2.New(sess)
+type EC2InstanceConnectEndpointLister struct{}
+
+func (l *EC2InstanceConnectEndpointLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := ec2.New(opts.Session)
 	params := &ec2.DescribeInstanceConnectEndpointsInput{}
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 	for {
 		resp, err := svc.DescribeInstanceConnectEndpoints(params)
 		if err != nil {
@@ -62,7 +62,21 @@ func ListEC2InstanceConnectEndpoints(sess *session.Session) ([]Resource, error) 
 	return resources, nil
 }
 
-func (i *EC2InstanceConnectEndpoint) Remove() error {
+type EC2InstanceConnectEndpoint struct {
+	svc         *ec2.EC2
+	az          *string
+	createdAt   *time.Time
+	dnsName     *string
+	fipsDNSName *string
+	id          *string
+	ownerID     *string
+	state       *string
+	subnetID    *string
+	tags        []*ec2.Tag
+	vpcID       *string
+}
+
+func (i *EC2InstanceConnectEndpoint) Remove(_ context.Context) error {
 	params := &ec2.DeleteInstanceConnectEndpointInput{
 		InstanceConnectEndpointId: i.id,
 	}
