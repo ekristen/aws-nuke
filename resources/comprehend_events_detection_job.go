@@ -1,20 +1,35 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/comprehend"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
+const ComprehendEventsDetectionJobResource = "ComprehendEventsDetectionJob"
+
 func init() {
-	register("ComprehendEventsDetectionJob", ListComprehendEventsDetectionJobs)
+	resource.Register(&resource.Registration{
+		Name:   ComprehendEventsDetectionJobResource,
+		Scope:  nuke.Account,
+		Lister: &ComprehendEventsDetectionJobLister{},
+	})
 }
 
-func ListComprehendEventsDetectionJobs(sess *session.Session) ([]Resource, error) {
-	svc := comprehend.New(sess)
+type ComprehendEventsDetectionJobLister struct{}
+
+func (l *ComprehendEventsDetectionJobLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := comprehend.New(opts.Session)
 
 	params := &comprehend.ListEventsDetectionJobsInput{}
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 
 	for {
 		resp, err := svc.ListEventsDetectionJobs(params)
@@ -48,7 +63,7 @@ type ComprehendEventsDetectionJob struct {
 	eventsDetectionJob *comprehend.EventsDetectionJobProperties
 }
 
-func (ce *ComprehendEventsDetectionJob) Remove() error {
+func (ce *ComprehendEventsDetectionJob) Remove(_ context.Context) error {
 	_, err := ce.svc.StopEventsDetectionJob(&comprehend.StopEventsDetectionJobInput{
 		JobId: ce.eventsDetectionJob.JobId,
 	})

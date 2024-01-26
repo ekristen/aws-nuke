@@ -1,20 +1,35 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/comprehend"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
+const ComprehendTargetedSentimentDetectionJobResource = "ComprehendTargetedSentimentDetectionJob"
+
 func init() {
-	register("ComprehendTargetedSentimentDetectionJob", ListComprehendTargetedSentimentDetectionJobs)
+	resource.Register(&resource.Registration{
+		Name:   ComprehendTargetedSentimentDetectionJobResource,
+		Scope:  nuke.Account,
+		Lister: &ComprehendTargetedSentimentDetectionJobLister{},
+	})
 }
 
-func ListComprehendTargetedSentimentDetectionJobs(sess *session.Session) ([]Resource, error) {
-	svc := comprehend.New(sess)
+type ComprehendTargetedSentimentDetectionJobLister struct{}
+
+func (l *ComprehendTargetedSentimentDetectionJobLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := comprehend.New(opts.Session)
 
 	params := &comprehend.ListTargetedSentimentDetectionJobsInput{}
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 
 	for {
 		resp, err := svc.ListTargetedSentimentDetectionJobs(params)
@@ -48,7 +63,7 @@ type ComprehendTargetedSentimentDetectionJob struct {
 	targetedSentimentDetectionJob *comprehend.TargetedSentimentDetectionJobProperties
 }
 
-func (ce *ComprehendTargetedSentimentDetectionJob) Remove() error {
+func (ce *ComprehendTargetedSentimentDetectionJob) Remove(_ context.Context) error {
 	_, err := ce.svc.StopTargetedSentimentDetectionJob(&comprehend.StopTargetedSentimentDetectionJobInput{
 		JobId: ce.targetedSentimentDetectionJob.JobId,
 	})
