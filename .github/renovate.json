@@ -19,6 +19,18 @@
             ],
             "groupName": "golang",
             "groupSlug": "golang"
+        },
+        {
+            "matchFileNames": [
+                ".github/workflows/*.yml"
+            ],
+            "matchDepTypes": [
+                "action"
+            ],
+            "matchCurrentVersion": "!/^0/",
+            "automerge": true,
+            "labels": ["bot"],
+            "commitMessageSuffix": " [release skip]"
         }
     ],
     "regexManagers": [
