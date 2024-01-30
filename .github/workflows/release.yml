@@ -1,23 +1,20 @@
 name: goreleaser
 
 on:
-  #pull_request:
-  #  branches:
-  #    - main
+  workflow_dispatch:
   push:
-    branches:
-      - main
     tags:
-      - "*.*.*"
-      - "v*.*.*"
-      - "v*.*.*-*"
+      - "*"
+  release:
+    types:
+      - published
 
 permissions:
   contents: write
   packages: write
 
 jobs:
-  goreleaser:
+  release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,7 +23,7 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.ref }}
       - uses: actions/checkout@v4
-        if: github.event_name == 'push'
+        if: github.event_name != 'pull_request'
         with:
           fetch-depth: 0
       - name: setup-go
@@ -71,7 +68,7 @@ jobs:
         with:
           distribution: goreleaser
           version: latest
-          args: release --rm-dist ${{ env.GORELEASER_ARGS }}
+          args: release --clean ${{ env.GORELEASER_ARGS }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
