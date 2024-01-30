@@ -11,7 +11,8 @@
                 "pin",
                 "digest"
             ],
-            "automerge": true
+            "automerge": true,
+            "automergeStrategy": "squash"
         },
         {
             "matchPackagePatterns": [
@@ -29,6 +30,7 @@
             ],
             "matchCurrentVersion": "!/^0/",
             "automerge": true,
+            "automergeStrategy": "squash",
             "labels": ["bot"],
             "commitMessageSuffix": " [release skip]"
         }
