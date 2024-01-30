@@ -6,6 +6,5 @@ plugins:
 branches:
   - name: main
     prerelease: 'beta'
-  - name: next
-  - name: rc
-    prerelease: true
+    channel: beta
+  - name: v2
