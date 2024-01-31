@@ -3,7 +3,6 @@ package nuke
 import (
 	"context"
 	"fmt"
-	"os"
 	"slices"
 
 	"github.com/sirupsen/logrus"
@@ -23,22 +22,26 @@ import (
 	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
+func configureCreds(c *cli.Context) (creds awsutil.Credentials) {
+	creds.Profile = c.String("profile")
+	creds.AccessKeyID = c.String("access-key-id")
+	creds.SecretAccessKey = c.String("secret-access-key")
+	creds.SessionToken = c.String("session-token")
+	creds.AssumeRoleArn = c.String("assume-role-arn")
+	creds.RoleSessionName = c.String("assume-role-session-name")
+	creds.ExternalId = c.String("assume-role-external-id")
+
+	return creds
+}
+
 func execute(c *cli.Context) error {
 	ctx, cancel := context.WithCancel(c.Context)
 	defer cancel()
 
-	var (
-		err           error
-		creds         awsutil.Credentials
-		defaultRegion string
-	)
+	defaultRegion := c.String("default-region")
+	creds := configureCreds(c)
 
-	if !creds.HasKeys() && !creds.HasProfile() && defaultRegion != "" {
-		creds.AccessKeyID = os.Getenv("AWS_ACCESS_KEY_ID")
-		creds.SecretAccessKey = os.Getenv("AWS_SECRET_ACCESS_KEY")
-	}
-	err = creds.Validate()
-	if err != nil {
+	if err := creds.Validate(); err != nil {
 		return err
 	}
 
@@ -206,6 +209,38 @@ func init() {
 		&cli.StringSliceFlag{
 			Name:  "feature-flag",
 			Usage: "enable experimental behaviors that may not be fully tested or supported",
+		},
+		&cli.StringFlag{
+			Name:    "default-region",
+			EnvVars: []string{"AWS_DEFAULT_REGION"},
+		},
+		&cli.StringFlag{
+			Name:    "access-key-id",
+			EnvVars: []string{"AWS_ACCESS_KEY_ID"},
+		},
+		&cli.StringFlag{
+			Name:    "secret-access-key",
+			EnvVars: []string{"AWS_SECRET_ACCESS_KEY"},
+		},
+		&cli.StringFlag{
+			Name:    "session-token",
+			EnvVars: []string{"AWS_SESSION_TOKEN"},
+		},
+		&cli.StringFlag{
+			Name:    "profile",
+			EnvVars: []string{"AWS_PROFILE"},
+		},
+		&cli.StringFlag{
+			Name:    "assume-role-arn",
+			EnvVars: []string{"AWS_ASSUME_ROLE_ARN"},
+		},
+		&cli.StringFlag{
+			Name:    "assume-role-session-name",
+			EnvVars: []string{"AWS_ASSUME_ROLE_SESSION_NAME"},
+		},
+		&cli.StringFlag{
+			Name:    "assume-role-external-id",
+			EnvVars: []string{"AWS_ASSUME_ROLE_EXTERNAL_ID"},
 		},
 	}
 

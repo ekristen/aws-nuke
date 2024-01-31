@@ -40,6 +40,8 @@ type Credentials struct {
 	SecretAccessKey string
 	SessionToken    string
 	AssumeRoleArn   string
+	ExternalId      string
+	RoleSessionName string
 
 	Credentials *credentials.Credentials
 
@@ -116,7 +118,10 @@ func (c *Credentials) rootSession() (*session.Session, error) {
 
 		// if given a role to assume, overwrite the session credentials with assume role credentials
 		if c.AssumeRoleArn != "" {
-			sess.Config.Credentials = stscreds.NewCredentials(sess, c.AssumeRoleArn)
+			sess.Config.Credentials = stscreds.NewCredentials(sess, c.AssumeRoleArn, func(p *stscreds.AssumeRoleProvider) {
+				p.RoleSessionName = c.RoleSessionName
+				p.ExternalID = aws.String(c.ExternalId)
+			})
 		}
 
 		c.session = sess
