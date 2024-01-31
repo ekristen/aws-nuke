@@ -10,7 +10,6 @@ builds:
     env:
       - CGO_ENABLED=0
     goos:
-      - darwin
       - linux
       - windows
     goarch:
@@ -32,6 +31,25 @@ builds:
       - -X '{{ .ModulePath }}/cmd.BuildVersion={{ .Version }}'
       - -X '{{ .ModulePath }}/cmd.BuildDate={{ .Date }}'
       - -X '{{ .ModulePath }}/cmd.BuildHash={{ .Commit }}'
+  - id: darwin
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s
+      - -w
+      - -X '{{ .ModulePath }}/cmd.BuildVersion={{ .Version }}'
+      - -X '{{ .ModulePath }}/cmd.BuildDate={{ .Date }}'
+      - -X '{{ .ModulePath }}/cmd.BuildHash={{ .Commit }}'
+    hooks:
+      post:
+        - cmd: quill sign-and-notarize "{{ .Path }}" --dry-run={{ .IsSnapshot }} --ad-hoc={{ .IsSnapshot }} -vv
+          env:
+            - QUILL_LOG_FILE=/tmp/quill-{{ .Target }}.log
 archives:
   - id: default
     builds:
