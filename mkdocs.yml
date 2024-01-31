@@ -70,9 +70,12 @@ nav:
     - Install: installation.md
     - Authentication: auth.md
     - Quick Start: quick-start.md
+  - Features:
+      - Bypass Alias Check: features/bypass-alias-check.md
   - CLI:
     - Usage: cli-usage.md
-    - Feature Flags: cli-feature-flags.md
+    - Options: cli-options.md
+    - Experimental: cli-experimental.md
   - Config:
     - Overview: config.md
     - Filtering: config-filtering.md
@@ -81,6 +84,7 @@ nav:
     - Migration Guide: config-migration.md
   - Development:
     - Overview: development.md
+    - Stanards: standards.md
     - Resources: resources.md
     - Releases: releases.md
     - Testing: testing.md

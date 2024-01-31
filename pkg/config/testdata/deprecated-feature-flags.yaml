@@ -1,6 +1,9 @@
 feature-flags:
   disable-ec2-instance-stop-protection: true
+  force-delete-lightsail-addons: true
   disable-deletion-protection:
     RDSInstance: true
     EC2Instance: true
     CloudformationStack: true
+    ELBv2: true
+    QLDBLedger: true

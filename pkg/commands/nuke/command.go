@@ -108,7 +108,7 @@ func execute(c *cli.Context) error {
 
 	// Register our custom validate handler that validates the account and AWS nuke unique alias checks
 	n.RegisterValidateHandler(func() error {
-		return parsedConfig.ValidateAccount(account.ID(), account.Aliases())
+		return parsedConfig.ValidateAccount(account.ID(), account.Aliases(), c.Bool("no-alias-check"))
 	})
 
 	// Register our custom prompt handler that shows the account information
@@ -175,14 +175,18 @@ func init() {
 			Usage: "path to config file",
 			Value: "config.yaml",
 		},
-		&cli.BoolFlag{
-			Name:  "force",
-			Usage: "disable prompting for verification to run",
+		&cli.StringSliceFlag{
+			Name:    "include",
+			Usage:   "only run against these resource types",
+			Aliases: []string{"target"},
 		},
-		&cli.IntFlag{
-			Name:  "force-sleep",
-			Usage: "seconds to sleep",
-			Value: 10,
+		&cli.StringSliceFlag{
+			Name:  "exclude",
+			Usage: "exclude these resource types",
+		},
+		&cli.StringSliceFlag{
+			Name:  "cloud-control",
+			Usage: "use these resource types with the Cloud Control API instead of the default",
 		},
 		&cli.BoolFlag{
 			Name:  "quiet",
@@ -192,19 +196,20 @@ func init() {
 			Name:  "no-dry-run",
 			Usage: "actually run the removal of the resources after discovery",
 		},
-		&cli.StringSliceFlag{
-			Name:    "only-resource",
-			Usage:   "only run against these resource types",
-			Aliases: []string{"target", "include", "include-resource"},
+		&cli.BoolFlag{
+			Name:  "no-alias-check",
+			Usage: "disable aws account alias check - requires entry in config as well",
 		},
-		&cli.StringSliceFlag{
-			Name:    "exclude-resource",
-			Usage:   "exclude these resource types",
-			Aliases: []string{"exclude"},
+		&cli.BoolFlag{
+			Name:    "no-prompt",
+			Usage:   "disable prompting for verification to run",
+			Aliases: []string{"force"},
 		},
-		&cli.StringSliceFlag{
-			Name:  "cloud-control",
-			Usage: "use these resource types with the Cloud Control API instead of the default",
+		&cli.IntFlag{
+			Name:    "prompt-delay",
+			Usage:   "seconds to delay after prompt before running (minimum: 3 seconds)",
+			Value:   10,
+			Aliases: []string{"force-sleep"},
 		},
 		&cli.StringSliceFlag{
 			Name:  "feature-flag",

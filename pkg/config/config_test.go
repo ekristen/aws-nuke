@@ -16,7 +16,31 @@ import (
 	"github.com/ekristen/libnuke/pkg/types"
 )
 
-func TestLoadExampleConfig(t *testing.T) {
+// TestConfig_NewMissingFile tests the extended config loads functionality when the file is missing.
+func TestConfig_NewMissingFile(t *testing.T) {
+	_, err := New(libconfig.Options{
+		Path: "testdata/missing.yaml",
+	})
+	assert.Error(t, err)
+}
+
+// TestConfig_MissingFile tests the extended config loads functionality when the file is missing.
+// We do not use the New here because that would test the libnuke config loading functionality.
+func TestConfig_MissingFile(t *testing.T) {
+	cfg := Config{}
+	err := cfg.Load("testdata/missing.yaml")
+	assert.Error(t, err)
+}
+
+// TestConfig_InvalidFile tests the extended config loads functionality when the file is invalid.
+// We do not use the New here because that would test the libnuke config loading functionality.
+func TestConfig_InvalidFile(t *testing.T) {
+	cfg := Config{}
+	err := cfg.Load("testdata/invalid.yaml")
+	assert.Error(t, err)
+}
+
+func TestConfig_LoadExample(t *testing.T) {
 	logger := logrus.New()
 	logger.SetOutput(io.Discard)
 	entry := logrus.WithField("test", true)
@@ -91,7 +115,7 @@ func TestLoadExampleConfig(t *testing.T) {
 	assert.Equal(t, expect, *config)
 }
 
-func TestResolveDeprecations(t *testing.T) {
+func TestConfig_ResolveDeprecations(t *testing.T) {
 	logger := logrus.New()
 	logger.SetOutput(io.Discard)
 	entry := logrus.WithField("test", true)
@@ -190,42 +214,43 @@ func TestResolveDeprecations(t *testing.T) {
 	}
 }
 
-func TestConfigValidation(t *testing.T) {
-	config, err := New(libconfig.Options{
-		Path: "testdata/example.yaml",
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-
+func TestConfig_Validation(t *testing.T) {
 	cases := []struct {
-		ID         string
-		Aliases    []string
-		ShouldFail bool
+		ID             string
+		Aliases        []string
+		ShouldFail     bool
+		SkipAliasCheck bool
+		Config         string
 	}{
-		{ID: "555133742", Aliases: []string{"staging"}, ShouldFail: false},
-		{ID: "1234567890", Aliases: []string{"staging"}, ShouldFail: true},
-		{ID: "1111111111", Aliases: []string{"staging"}, ShouldFail: true},
-		{ID: "555133742", Aliases: []string{"production"}, ShouldFail: true},
-		{ID: "555133742", Aliases: []string{}, ShouldFail: true},
-		{ID: "555133742", Aliases: []string{"staging", "prod"}, ShouldFail: true},
+		{ID: "555133742", Aliases: []string{"staging"}, ShouldFail: false, Config: "testdata/example.yaml"},
+		{ID: "1234567890", Aliases: []string{"staging"}, ShouldFail: true, Config: "testdata/example.yaml"},
+		{ID: "1111111111", Aliases: []string{"staging"}, ShouldFail: true, Config: "testdata/example.yaml"},
+		{ID: "555133742", Aliases: []string{"production"}, ShouldFail: true, Config: "testdata/example.yaml"},
+		{ID: "555133742", Aliases: []string{}, ShouldFail: true, Config: "testdata/example.yaml"},
+		{ID: "555133742", Aliases: []string{"staging", "prod"}, ShouldFail: true, Config: "testdata/example.yaml"},
+		{ID: "555133742", Aliases: []string{}, ShouldFail: true, SkipAliasCheck: true, Config: "testdata/example.yaml"},
+		{ID: "123654654", Aliases: []string{}, ShouldFail: false, SkipAliasCheck: true, Config: "testdata/bypass-alias.yaml"},
 	}
 
 	for i, tc := range cases {
 		name := fmt.Sprintf("%d_%s/%v/%t", i, tc.ID, tc.Aliases, tc.ShouldFail)
 		t.Run(name, func(t *testing.T) {
-			err := config.ValidateAccount(tc.ID, tc.Aliases)
-			if tc.ShouldFail && err == nil {
-				t.Fatal("Expected an error but didn't get one.")
-			}
-			if !tc.ShouldFail && err != nil {
-				t.Fatalf("Didn't excpect an error, but got one: %v", err)
+			config, err := New(libconfig.Options{
+				Path: tc.Config,
+			})
+			assert.NoError(t, err)
+
+			vErr := config.ValidateAccount(tc.ID, tc.Aliases, tc.SkipAliasCheck)
+			if tc.ShouldFail {
+				assert.Error(t, vErr)
+			} else {
+				assert.NoError(t, vErr)
 			}
 		})
 	}
 }
 
-func TestDeprecatedConfigKeys(t *testing.T) {
+func TestConfig_DeprecatedKeys(t *testing.T) {
 	config, err := New(libconfig.Options{
 		Path: "testdata/deprecated-keys-config.yaml",
 	})
@@ -238,7 +263,7 @@ func TestDeprecatedConfigKeys(t *testing.T) {
 	}
 }
 
-func TestFilterMerge(t *testing.T) {
+func TestConfig_FilterMerge(t *testing.T) {
 	config, err := New(libconfig.Options{
 		Path: "testdata/example.yaml",
 	})
@@ -278,7 +303,7 @@ func TestFilterMerge(t *testing.T) {
 	}
 }
 
-func TestGetCustomRegion(t *testing.T) {
+func TestConfig_GetCustomRegion(t *testing.T) {
 	config, err := New(libconfig.Options{
 		Path: "testdata/example.yaml",
 	})
@@ -293,6 +318,12 @@ func TestGetCustomRegion(t *testing.T) {
 	if euWest1 != nil {
 		t.Fatal("Expected to euWest1 without a set of custom endpoints")
 	}
+
+	assert.Equal(t, "https://stratoscale.cloud.internal/api/v2/aws/ec2",
+		config.CustomEndpoints.GetURL("stratoscale", "ec2"))
+
+	assert.Equal(t, "", config.CustomEndpoints.GetURL("invalid", "rds"))
+	assert.Equal(t, "", config.CustomEndpoints.GetURL("stratoscale", "rds"))
 
 	t.Run("TestGetService", func(t *testing.T) {
 		ec2Service := stratoscale.Services.GetService("ec2")
