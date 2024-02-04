@@ -3,16 +3,14 @@ release:
   github:
     owner: ekristen
     name: aws-nuke
-  extra_files:
-    - glob: ./cosign.pub
 builds:
   - id: default
     env:
       - CGO_ENABLED=0
     goos:
-      - darwin
       - linux
       - windows
+      - darwin
     goarch:
       - amd64
       - arm64
@@ -29,9 +27,11 @@ builds:
     ldflags:
       - -s
       - -w
-      - -X '{{ .ModulePath }}/cmd.BuildVersion={{ .Version }}'
-      - -X '{{ .ModulePath }}/cmd.BuildDate={{ .Date }}'
-      - -X '{{ .ModulePath }}/cmd.BuildHash={{ .Commit }}'
+      - -extldflags="-static"
+      - -X '{{ .ModulePath }}/pkg/common.SUMMARY=v{{ .Version }}'
+      - -X '{{ .ModulePath }}/pkg/common.BRANCH={{ .Branch }}'
+      - -X '{{ .ModulePath }}/pkg/common.VERSION={{ .Tag }}'
+      - -X '{{ .ModulePath }}/pkg/common.COMMIT={{ .Commit }}'
 archives:
   - id: default
     builds:
@@ -63,14 +63,14 @@ dockers:
     image_templates:
       - ghcr.io/ekristen/aws-nuke:v{{ .Version }}-arm64
     build_flag_templates:
+      - "--platform=linux/arm64"
       - "--target=goreleaser"
       - "--pull"
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.title={{.ProjectName}}"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
-      - "--label=org.opencontainers.image.source=https://github.com/ekristen/aws-nuke"
-      - "--platform=linux/arm64"
+      - '--label=org.opencontainers.image.source={{replace (replace (replace .GitURL "git@" "https://") ".git" "") "github.com:" "github.com/"}}'
   - use: buildx
     goos: linux
     goarch: arm
@@ -79,14 +79,14 @@ dockers:
     image_templates:
       - ghcr.io/ekristen/aws-nuke:v{{ .Version }}-arm32v7
     build_flag_templates:
+      - "--platform=linux/arm/v7"
       - "--target=goreleaser"
       - "--pull"
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.title={{.ProjectName}}"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
-      - "--label=org.opencontainers.image.source=https://github.com/ekristen/aws-nuke"
-      - "--platform=linux/arm/v7"
+      - '--label=org.opencontainers.image.source={{replace (replace (replace .GitURL "git@" "https://") ".git" "") "github.com:" "github.com/"}}'
 docker_manifests:
   - use: docker
     name_template: ghcr.io/ekristen/aws-nuke:v{{ .Version }}
@@ -95,14 +95,19 @@ docker_manifests:
       - ghcr.io/ekristen/aws-nuke:v{{ .Version }}-arm64
       - ghcr.io/ekristen/aws-nuke:v{{ .Version }}-arm32v7
 signs:
-  - cmd: cosign
-    stdin: "{{ .Env.COSIGN_PASSWORD }}"
-    args:
-      ["sign-blob", "--yes", "--key=cosign.key", "--output=${signature}", "${artifact}"]
+  - ids:
+      - default
+    cmd: cosign
+    signature: "${artifact}.sig"
+    certificate: "${artifact}.pem"
+    args: ["sign-blob", "--yes", "--oidc-provider=github", "--oidc-issuer=https://token.actions.githubusercontent.com", "--output-certificate=${certificate}", "--output-signature=${signature}", "${artifact}"]
     artifacts: all
 docker_signs:
-  - artifacts: all
-    stdin: "{{ .Env.COSIGN_PASSWORD }}"
+  - ids:
+      - default
+    artifacts: all
+    cmd: cosign
+    args: ["sign", "--yes", "--oidc-provider=github", "--oidc-issuer=https://token.actions.githubusercontent.com", "--output-certificate=${certificate}", "--output-signature=${signature}", "${artifact}"]
 checksum:
   name_template: "checksums.txt"
 snapshot:
