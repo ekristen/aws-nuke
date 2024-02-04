@@ -1,10 +1,11 @@
 package list
 
 import (
-	"github.com/ekristen/aws-nuke/pkg/nuke"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/fatih/color"
 	"github.com/urfave/cli/v2"
+	"sort"
+	"strings"
 
 	"github.com/ekristen/aws-nuke/pkg/commands/global"
 	"github.com/ekristen/aws-nuke/pkg/common"
@@ -13,10 +14,24 @@ import (
 )
 
 func execute(c *cli.Context) error {
-	ls := resource.GetListersForScope(nuke.Account)
+	ls := resource.GetNames()
 
-	for name, _ := range ls {
-		color.New(color.Bold).Printf("%-55s\n", name)
+	sort.Strings(ls)
+
+	for _, name := range ls {
+		if strings.HasPrefix(name, "AWS::") {
+			continue
+		}
+
+		reg := resource.GetRegistration(name)
+
+		if reg.AlternativeResource != "" {
+			color.New(color.Bold).Printf("%-55s\n", name)
+			color.New(color.Bold, color.FgYellow).Printf("  > %-55s", reg.AlternativeResource)
+			color.New(color.FgCyan).Printf("alternative cloud-control resource\n")
+		} else {
+			color.New(color.Bold).Printf("%-55s\n", name)
+		}
 	}
 
 	return nil
