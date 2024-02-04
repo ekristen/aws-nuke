@@ -5,3 +5,5 @@ cosign.key
 /config*.yaml
 /*-config.yaml
 /config.*.yaml
+*.p12
+*.p8
