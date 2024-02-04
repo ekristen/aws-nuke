@@ -1,14 +1,16 @@
 package list
 
 import (
-	"github.com/ekristen/libnuke/pkg/resource"
-	"github.com/fatih/color"
-	"github.com/urfave/cli/v2"
 	"sort"
 	"strings"
 
+	"github.com/fatih/color"
+	"github.com/urfave/cli/v2"
+
 	"github.com/ekristen/aws-nuke/pkg/commands/global"
 	"github.com/ekristen/aws-nuke/pkg/common"
+
+	"github.com/ekristen/libnuke/pkg/resource"
 
 	_ "github.com/ekristen/aws-nuke/resources"
 )
