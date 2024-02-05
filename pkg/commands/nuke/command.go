@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"slices"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
@@ -104,6 +105,7 @@ func execute(c *cli.Context) error {
 	// Instantiate libnuke
 	n := libnuke.New(params, filters, parsedConfig.Settings)
 
+	n.SetRunSleep(5 * time.Second)
 	n.RegisterVersion(common.AppVersion.Summary)
 
 	// Register our custom validate handler that validates the account and AWS nuke unique alias checks
