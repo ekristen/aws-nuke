@@ -22,39 +22,55 @@ import (
 	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-const {{.ResourceType}}Resource = "{{.ResourceType}}"
+const {{.Combined}}Resource = "{{.Combined}}"
 
 func init() {
 	resource.Register(&resource.Registration{
-		Name:   {{.ResourceType}}Resource,
+		Name:   {{.Combined}}Resource,
 		Scope:  nuke.Account,
-		Lister: &{{.ResourceType}}Lister{},
+		Lister: &{{.Combined}}Lister{},
 	})
 }
 
-type {{.ResourceType}}Lister struct{}
+type {{.Combined}}Lister struct{}
 
-func (l *{{.ResourceType}}Lister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *{{.Combined}}Lister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 	svc := {{.Service}}.New(opts.Session)
 	var resources []resource.Resource
 
-	// INSERT CODE HERE TO ITERATE AND ADD RESOURCES
+	// NOTE: you might have to modify the code below to actually work, this currently does not 
+	// inspect the aws sdk instead is a jumping off point
+	res, err := svc.List{{.ResourceTypeTitle}}s(&{{.Service}}.List{{.ResourceTypeTitle}}sInput{})
+	if err != nil {
+		return nil, err
+	}
+
+	for _, p := range res.{{.ResourceTypeTitle}}s {
+		resources = append(resources, &{{.Combined}}{
+			svc:  svc,
+			id:   p.Id,
+			tags: p.Tags,
+		})
+	}
 
 	return resources, nil
 }
 
-type {{.ResourceType}} struct {
-	svc  *{{.Service}}.{{.ResourceType}}
+type {{.Combined}} struct {
+	svc  *{{.Service}}.{{.ServiceTitle}}
 	id   *string
 	tags []*{{.Service}}.Tag
 }
 
-func (r *{{.ResourceType}}) Remove(_ context.Context) error {
-	return nil
+func (r *{{.Combined}}) Remove(_ context.Context) error {
+	_, err := r.svc.Delete{{.ResourceTypeTitle}}(&{{.Service}}.Delete{{.ResourceTypeTitle}}Input{
+		{{.ResourceTypeTitle}}Id: r.id, 
+	})
+	return err
 }
 
-func (r *{{.ResourceType}}) Properties() types.Properties {
+func (r *{{.Combined}}) Properties() types.Properties {
 	properties := types.NewProperties()
 	for _, tag := range f.tags {
 		properties.SetTag(tag.Key, tag.Value)
@@ -62,7 +78,7 @@ func (r *{{.ResourceType}}) Properties() types.Properties {
 	return properties
 }
 
-func (r *{{.ResourceType}}) String() string {
+func (r *{{.Combined}}) String() string {
 	return *r.id
 }
 `
@@ -79,11 +95,17 @@ func main() {
 	resourceType := args[1]
 
 	data := struct {
-		Service      string
-		ResourceType string
+		Service           string
+		ServiceTitle      string
+		ResourceType      string
+		ResourceTypeTitle string
+		Combined          string
 	}{
-		Service:      strings.ToLower(service),
-		ResourceType: resourceType,
+		Service:           strings.ToLower(service),
+		ServiceTitle:      strings.Title(service),
+		ResourceType:      resourceType,
+		ResourceTypeTitle: strings.Title(resourceType),
+		Combined:          fmt.Sprintf("%s%s", strings.Title(service), strings.Title(resourceType)),
 	}
 
 	tmpl, err := template.New("resource").Parse(resourceTemplate)
