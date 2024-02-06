@@ -12,6 +12,31 @@ Remove all resources from an AWS account.
 *aws-nuke* is stable, but it is likely that not all AWS resources are covered by it. Be encouraged to add missing
 resources and create a Pull Request or to create an [Issue](https://github.com/ekristen/aws-nuke/issues/new).
 
+## What's New in Version 3!
+
+Version 3 is a rewrite of this tool using [libnuke](https://github.com/ekristen/libnuke) with a focus on improving a number of the outstanding things
+that I couldn't get done with the original project without separating out the core code into a library. See Goals
+below for more.
+
+### Notable Changes
+
+- The root command will result in help now, the primary nuke command moved to `run` (alias: `nuke`). **Breaking Change**
+- CloudFormation Stacks now support a hold and wait for parent deletion process. **New Behavior, Breaking Change**
+- Nested CloudFormation Stacks are now eligible for deletion and no longer omitted. **New Behavior, Breaking Change**
+- The entire resource lister format has changed and requires a struct to allow for more options going forward.
+- Context is passed throughout the entire library now, including the listing function and the removal function.
+  - This is in preparation for supporting AWS SDK Go v2
+
+### Goals
+
+- [x] Easier maintainability and bug fixing, see go report and code climate badges above
+- [x] Adding additional tests around the core library
+- [ ] Adding more tests around specific resource types
+- [x] Adding additional resources and tooling to make adding resources easier
+- [x] Adding documentation for adding resources and using the tool
+- [ ] Consider adding DAG for dependencies between resource types and individual resources
+- [ ] Support for AWS SDK Go v2
+
 ## Documentation
 
 All documentation is in the [docs/](docs) directory and is built using [Material for Mkdocs](https://squidfunk.github.io/mkdocs-material/). 
@@ -48,28 +73,4 @@ tool was rewritten to use [libnuke](https://github.com/ekristen/libnuke) which w
 You can contribute to *aws-nuke* by forking this repository, making your changes and creating a Pull Request against
 this repository. If you are unsure how to solve a problem or have other questions about a contributions, please create
 a GitHub issue.
-
-## Version 3
-
-Version 3 is a rewrite of this tool using [libnuke](https://github.com/ekristen/libnuke) with a focus on improving a number of the outstanding things
-that I couldn't get done with the original project without separating out the core code into a library. See Goals 
-below for more.
-
-### Changes
-
-- The root command will result in help now on v3, the primary nuke command moved to `nuke`. **Breaking**
-- CloudFormation Stacks now support a hold and wait for parent deletion process. **Quasi-Breaking**
-- Nested CloudFormation Stacks are now eligible for deletion and no longer omitted. **Quasi-Breaking**
-- The entire resource lister format has changed and requires a struct.
-- Context is passed throughout the entire library now, including the listing function and the removal function.
-  - This is in preparation for supporting AWS SDK Go v2
-
-### Goals
-
-- Adding additional tests
-- Adding additional resources
-- Adding documentation for adding resources and using the tool
-- Consider adding DAG for dependencies between resource types and individual resources
-  - This will improve the process of deleting resources that have dependencies on other resources and reduce 
-    errors and unnecessary API calls.
 
