@@ -51,8 +51,8 @@ func execute(c *cli.Context) error {
 		ForceSleep:   c.Int("force-sleep"),
 		Quiet:        c.Bool("quiet"),
 		NoDryRun:     c.Bool("no-dry-run"),
-		Includes:     c.StringSlice("only-resource"),
-		Excludes:     c.StringSlice("exclude-resource"),
+		Includes:     c.StringSlice("include"),
+		Excludes:     c.StringSlice("exclude"),
 		Alternatives: c.StringSlice("cloud-control"),
 	}
 
@@ -181,8 +181,9 @@ func init() {
 			Aliases: []string{"target"},
 		},
 		&cli.StringSliceFlag{
-			Name:  "exclude",
-			Usage: "exclude these resource types",
+			Name:    "exclude",
+			Aliases: []string{"exclude-resource"},
+			Usage:   "exclude these resource types",
 		},
 		&cli.StringSliceFlag{
 			Name:  "cloud-control",
