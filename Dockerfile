@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.6-labs
-FROM alpine:3.19.0 as base
+FROM alpine:3.19.1 as base
 RUN apk add --no-cache ca-certificates
 RUN adduser -D aws-nuke
 
