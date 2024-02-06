@@ -13,6 +13,7 @@ import (
 	libconfig "github.com/ekristen/libnuke/pkg/config"
 	libnuke "github.com/ekristen/libnuke/pkg/nuke"
 	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/scanner"
 	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/pkg/awsutil"
@@ -145,21 +146,21 @@ func execute(c *cli.Context) error {
 		// Step 1 - Create the region object
 		region := nuke.NewRegion(regionName, account.ResourceTypeToServiceType, account.NewSession)
 
-		// Step 2 - Create the scanner object
-		scanner := libnuke.NewScanner(regionName, resourceTypes, &nuke.ListerOpts{
+		// Step 2 - Create the scannerActual object
+		scannerActual := scanner.New(regionName, resourceTypes, &nuke.ListerOpts{
 			Region: region,
 		})
 
 		// Step 3 - Register a mutate function that will be called to modify the lister options for each resource type
 		// see pkg/nuke/resource.go for the MutateOpts function. Its purpose is to create the proper session for the
 		// proper region.
-		regMutateErr := scanner.RegisterMutateOptsFunc(nuke.MutateOpts)
+		regMutateErr := scannerActual.RegisterMutateOptsFunc(nuke.MutateOpts)
 		if regMutateErr != nil {
 			return regMutateErr
 		}
 
-		// Step 4 - Register the scanner with the nuke object
-		regScanErr := n.RegisterScanner(nuke.Account, scanner)
+		// Step 4 - Register the scannerActual with the nuke object
+		regScanErr := n.RegisterScanner(nuke.Account, scannerActual)
 		if regScanErr != nil {
 			return regScanErr
 		}
