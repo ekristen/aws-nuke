@@ -1,6 +1,7 @@
 package awsutil
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -76,6 +77,10 @@ func (a *Account) ID() string {
 }
 
 func (a *Account) Alias() string {
+	if len(a.aliases) == 0 {
+		return fmt.Sprintf("no-alias-%s", a.ID())
+	}
+
 	return a.aliases[0]
 }
 
