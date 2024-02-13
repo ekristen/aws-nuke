@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 
 	"github.com/ekristen/aws-nuke/pkg/nuke"
@@ -16,7 +17,7 @@ import (
 const EC2SpotFleetRequestResource = "EC2SpotFleetRequest"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   EC2SpotFleetRequestResource,
 		Scope:  nuke.Account,
 		Lister: &EC2SpotFleetRequestLister{},

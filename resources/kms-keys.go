@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/kms"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
@@ -17,7 +18,7 @@ import (
 const KMSKeyResource = "KMSKey"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   KMSKeyResource,
 		Scope:  nuke.Account,
 		Lister: &KMSKeyLister{},

@@ -6,13 +6,14 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/resourceexplorer2"
 	"github.com/ekristen/aws-nuke/pkg/nuke"
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 )
 
 const ResourceExplorer2ViewResource = "ResourceExplorer2View"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   ResourceExplorer2ViewResource,
 		Scope:  nuke.Account,
 		Lister: &ResourceExplorer2ViewLister{},

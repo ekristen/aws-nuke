@@ -8,6 +8,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/backup"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
@@ -25,7 +26,7 @@ type BackupPlan struct {
 const AWSBackupPlanResource = "AWSBackupPlan"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   AWSBackupPlanResource,
 		Scope:  nuke.Account,
 		Lister: &AWSBackupPlanLister{},

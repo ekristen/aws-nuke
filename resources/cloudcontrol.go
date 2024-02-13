@@ -15,6 +15,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudcontrolapi"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
@@ -53,7 +54,7 @@ func init() {
 }
 
 func registerCloudControl(typeName string) {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:  typeName,
 		Scope: nuke.Account,
 		Lister: &CloudControlResourceLister{

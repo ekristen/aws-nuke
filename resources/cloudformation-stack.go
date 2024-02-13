@@ -16,6 +16,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudformation/cloudformationiface"
 
 	liberrors "github.com/ekristen/libnuke/pkg/errors"
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
@@ -27,7 +28,7 @@ const CloudformationMaxDeleteAttempt = 3
 const CloudFormationStackResource = "CloudFormationStack"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   CloudFormationStackResource,
 		Scope:  nuke.Account,
 		Lister: &CloudFormationStackLister{},

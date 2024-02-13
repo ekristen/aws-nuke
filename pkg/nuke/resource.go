@@ -3,11 +3,11 @@ package nuke
 import (
 	"github.com/aws/aws-sdk-go/aws/session"
 
-	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/registry"
 )
 
 // Account is the resource scope that all resources in AWS Nuke are registered against.
-const Account resource.Scope = "account"
+const Account registry.Scope = "account"
 
 // ListerOpts are the options for the Lister functions of each individual resource. It is passed in as an interface{}
 // so that each implementing tool can define their own options for the lister. Each resource then asserts the type on

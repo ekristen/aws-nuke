@@ -5,6 +5,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/globalaccelerator"
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
@@ -20,7 +21,7 @@ type GlobalAccelerator struct {
 const GlobalAcceleratorResource = "GlobalAccelerator"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   GlobalAcceleratorResource,
 		Scope:  nuke.Account,
 		Lister: &GlobalAcceleratorLister{},

@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/elasticache"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
@@ -23,7 +24,7 @@ type ElasticacheUser struct {
 const ElasticacheUserResource = "ElasticacheUser"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   ElasticacheUserResource,
 		Scope:  nuke.Account,
 		Lister: &ElasticacheUserLister{},

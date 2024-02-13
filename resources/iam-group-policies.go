@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 
 	"github.com/ekristen/aws-nuke/pkg/nuke"
@@ -16,7 +17,7 @@ import (
 const IAMGroupPolicyResource = "IAMGroupPolicy"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   IAMGroupPolicyResource,
 		Scope:  nuke.Account,
 		Lister: &IAMGroupPolicyLister{},

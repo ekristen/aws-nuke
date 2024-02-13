@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/ekristen/aws-nuke/pkg/nuke"
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"time"
 
@@ -19,7 +20,7 @@ import (
 const EC2InstanceResource = "EC2Instance"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   EC2InstanceResource,
 		Scope:  nuke.Account,
 		Lister: &EC2InstanceLister{},

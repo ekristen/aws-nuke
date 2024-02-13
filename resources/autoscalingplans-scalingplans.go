@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscalingplans"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 
 	"github.com/ekristen/aws-nuke/pkg/nuke"
@@ -14,7 +15,7 @@ import (
 const AutoScalingPlansScalingPlanResource = "AutoScalingPlansScalingPlan"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   AutoScalingPlansScalingPlanResource,
 		Scope:  nuke.Account,
 		Lister: &AutoScalingPlansScalingPlanLister{},

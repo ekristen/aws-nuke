@@ -5,6 +5,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/xray"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
@@ -14,7 +15,7 @@ import (
 const XRayGroupResource = "XRayGroup"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   XRayGroupResource,
 		Scope:  nuke.Account,
 		Lister: &XRayGroupLister{},

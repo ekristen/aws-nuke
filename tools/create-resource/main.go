@@ -17,6 +17,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/{{.Service}}"
 
 	"github.com/ekristen/libnuke/pkg/resource"
+"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/pkg/nuke"
@@ -25,7 +26,7 @@ import (
 const {{.Combined}}Resource = "{{.Combined}}"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   {{.Combined}}Resource,
 		Scope:  nuke.Account,
 		Lister: &{{.Combined}}Lister{},

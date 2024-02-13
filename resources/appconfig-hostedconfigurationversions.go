@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/appconfig"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
@@ -24,7 +25,7 @@ type AppConfigHostedConfigurationVersion struct {
 const AppConfigHostedConfigurationVersionResource = "AppConfigHostedConfigurationVersion"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   AppConfigHostedConfigurationVersionResource,
 		Scope:  nuke.Account,
 		Lister: &AppConfigHostedConfigurationVersionLister{},

@@ -7,6 +7,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/sns"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
@@ -16,7 +17,7 @@ import (
 const SNSTopicResource = "SNSTopic"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   SNSTopicResource,
 		Scope:  nuke.Account,
 		Lister: &SNSTopicLister{},

@@ -5,6 +5,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/redshift"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
@@ -14,7 +15,7 @@ import (
 const RedshiftScheduledActionResource = "RedshiftScheduledAction"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   RedshiftScheduledActionResource,
 		Scope:  nuke.Account,
 		Lister: &RedshiftScheduledActionLister{},

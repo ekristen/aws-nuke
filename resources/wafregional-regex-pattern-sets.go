@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/waf"
 	"github.com/aws/aws-sdk-go/service/wafregional"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
@@ -16,7 +17,7 @@ import (
 const WAFRegionalRegexPatternSetResource = "WAFRegionalRegexPatternSet"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   WAFRegionalRegexPatternSetResource,
 		Scope:  nuke.Account,
 		Lister: &WAFRegionalRegexPatternSetLister{},

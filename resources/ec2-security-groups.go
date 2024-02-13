@@ -11,6 +11,7 @@ import (
 
 	"github.com/ekristen/aws-nuke/pkg/nuke"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 )
@@ -18,7 +19,7 @@ import (
 const EC2SecurityGroupResource = "EC2SecurityGroup"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   EC2SecurityGroupResource,
 		Scope:  nuke.Account,
 		Lister: &EC2SecurityGroupLister{},

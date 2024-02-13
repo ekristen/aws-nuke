@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/ekristen/aws-nuke/pkg/nuke"
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -20,7 +21,7 @@ type CognitoIdentityPool struct {
 const CognitoIdentityPoolResource = "CognitoIdentityPool"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   CognitoIdentityPoolResource,
 		Scope:  nuke.Account,
 		Lister: &CognitoIdentityPoolLister{},

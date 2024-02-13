@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/memorydb"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
@@ -21,7 +22,7 @@ type MemoryDBSubnetGroup struct {
 const MemoryDBSubnetGroupResource = "MemoryDBSubnetGroup"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   MemoryDBSubnetGroupResource,
 		Scope:  nuke.Account,
 		Lister: &MemoryDBSubnetGroupLister{},

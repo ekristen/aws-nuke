@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudfront"
 
 	"github.com/ekristen/aws-nuke/pkg/nuke"
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 )
 
@@ -24,7 +25,7 @@ type CloudFrontDistributionDeployment struct {
 const CloudFrontDistributionDeploymentResource = "CloudFrontDistributionDeployment"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   CloudFrontDistributionDeploymentResource,
 		Scope:  nuke.Account,
 		Lister: &CloudFrontDistributionDeploymentLister{},

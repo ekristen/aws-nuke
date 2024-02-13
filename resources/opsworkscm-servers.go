@@ -5,6 +5,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/opsworkscm"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 
 	"github.com/ekristen/aws-nuke/pkg/nuke"
@@ -13,7 +14,7 @@ import (
 const OpsWorksCMServerResource = "OpsWorksCMServer"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   OpsWorksCMServerResource,
 		Scope:  nuke.Account,
 		Lister: &OpsWorksCMServerLister{},

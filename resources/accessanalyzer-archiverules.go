@@ -5,6 +5,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/accessanalyzer"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
@@ -14,7 +15,7 @@ import (
 const AccessAnalyzerArchiveRuleResource = "ArchiveRule"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   AccessAnalyzerArchiveRuleResource,
 		Scope:  nuke.Account,
 		Lister: &AccessAnalyzerArchiveRuleLister{},

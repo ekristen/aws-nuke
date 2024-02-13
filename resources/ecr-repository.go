@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ecr"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
@@ -19,7 +20,7 @@ const ECRRepositoryResource = "ECRRepository"
 const ECRRepositoryCloudControlResource = "AWS::ECR::Repository"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:                ECRRepositoryResource,
 		Scope:               nuke.Account,
 		Lister:              &ECRRepositoryLister{},

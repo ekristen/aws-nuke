@@ -5,6 +5,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/appmesh"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
@@ -20,7 +21,7 @@ type AppMeshVirtualService struct {
 const AppMeshVirtualServiceResource = "AppMeshVirtualService"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   AppMeshVirtualServiceResource,
 		Scope:  nuke.Account,
 		Lister: &AppMeshVirtualServiceLister{},

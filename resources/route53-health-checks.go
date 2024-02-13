@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/route53"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
@@ -17,7 +18,7 @@ import (
 const Route53HealthCheckResource = "Route53HealthCheck"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   Route53HealthCheckResource,
 		Scope:  nuke.Account,
 		Lister: &Route53HealthCheckLister{},

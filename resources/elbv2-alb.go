@@ -11,6 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
@@ -27,7 +28,7 @@ type ELBv2LoadBalancer struct {
 const ELBv2Resource = "ELBv2"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   ELBv2Resource,
 		Scope:  nuke.Account,
 		Lister: &ELBv2Lister{},

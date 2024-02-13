@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/redshift"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
@@ -15,7 +16,7 @@ import (
 const RedshiftSnapshotResource = "RedshiftSnapshot"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   RedshiftSnapshotResource,
 		Scope:  nuke.Account,
 		Lister: &RedshiftSnapshotLister{},

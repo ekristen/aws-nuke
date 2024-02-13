@@ -5,6 +5,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/codecommit"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 
 	"github.com/ekristen/aws-nuke/pkg/nuke"
@@ -13,7 +14,7 @@ import (
 const CodeCommitRepositoryResource = "CodeCommitRepository"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   CodeCommitRepositoryResource,
 		Scope:  nuke.Account,
 		Lister: &CodeCommitRepositoryLister{},

@@ -5,6 +5,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/codedeploy"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 
 	"github.com/ekristen/aws-nuke/pkg/nuke"
@@ -13,7 +14,7 @@ import (
 const CodeDeployApplicationResource = "CodeDeployApplication"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   CodeDeployApplicationResource,
 		Scope:  nuke.Account,
 		Lister: &CodeDeployApplicationLister{},

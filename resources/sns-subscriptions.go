@@ -7,6 +7,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/sns"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 
 	"github.com/ekristen/aws-nuke/pkg/nuke"
@@ -15,7 +16,7 @@ import (
 const SNSSubscriptionResource = "SNSSubscription"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   SNSSubscriptionResource,
 		Scope:  nuke.Account,
 		Lister: &SNSSubscriptionLister{},

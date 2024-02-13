@@ -7,6 +7,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/backup"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
@@ -22,7 +23,7 @@ type BackupRecoveryPoint struct {
 const AWSBackupRecoveryPointResource = "AWSBackupRecoveryPoint"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   AWSBackupRecoveryPointResource,
 		Scope:  nuke.Account,
 		Lister: &AWSBackupRecoveryPointLister{},
