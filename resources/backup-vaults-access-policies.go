@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/ekristen/aws-nuke/pkg/nuke"
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 
 	"github.com/aws/aws-sdk-go/service/backup"
@@ -17,7 +18,7 @@ type BackupVaultAccessPolicy struct {
 const AWSBackupVaultAccessPolicyResource = "AWSBackupVaultAccessPolicy"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   AWSBackupVaultAccessPolicyResource,
 		Scope:  nuke.Account,
 		Lister: &AWSBackupVaultAccessPolicyLister{},

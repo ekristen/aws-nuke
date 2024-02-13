@@ -12,6 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/athena"
 	"github.com/aws/aws-sdk-go/service/sts"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
@@ -21,7 +22,7 @@ import (
 const AthenaWorkGroupResource = "AthenaWorkGroup"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   AthenaWorkGroupResource,
 		Scope:  nuke.Account,
 		Lister: &AthenaWorkGroupLister{},

@@ -5,6 +5,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/managedgrafana"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
@@ -14,7 +15,7 @@ import (
 const AMGWorkspaceResource = "AMGWorkspace"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   AMGWorkspaceResource,
 		Scope:  nuke.Account,
 		Lister: &AMGWorkspaceLister{},

@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/cloudformation/cloudformationiface"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
@@ -19,7 +20,7 @@ import (
 const CloudFormationTypeResource = "CloudFormationType"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   CloudFormationTypeResource,
 		Scope:  nuke.Account,
 		Lister: &CloudFormationTypeLister{},

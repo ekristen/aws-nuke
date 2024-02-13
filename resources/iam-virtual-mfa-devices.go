@@ -9,18 +9,18 @@ import (
 
 	"github.com/gotidy/ptr"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 
 	"github.com/ekristen/aws-nuke/pkg/nuke"
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 )
 
 const IAMVirtualMFADeviceResource = "IAMVirtualMFADevice"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   IAMVirtualMFADeviceResource,
 		Scope:  nuke.Account,
 		Lister: &IAMVirtualMFADeviceLister{},
@@ -45,8 +45,8 @@ func (l *IAMVirtualMFADeviceLister) List(_ context.Context, o interface{}) ([]re
 			svc:          svc,
 			userId:       out.User.UserId,
 			userArn:      out.User.Arn,
-			userName:     *out.User.UserName,
-			serialNumber: *out.SerialNumber,
+			userName:     out.User.UserName,
+			serialNumber: out.SerialNumber,
 		})
 	}
 
@@ -57,8 +57,8 @@ type IAMVirtualMFADevice struct {
 	svc          iamiface.IAMAPI
 	userId       *string
 	userArn      *string
-	userName     string
-	serialNumber string
+	userName     *string
+	serialNumber *string
 }
 
 func (v *IAMVirtualMFADevice) Filter() error {
@@ -66,7 +66,7 @@ func (v *IAMVirtualMFADevice) Filter() error {
 	if ptr.ToString(v.userArn) == fmt.Sprintf("arn:aws:iam::%s:root", ptr.ToString(v.userId)) {
 		isRoot = true
 	}
-	if strings.HasSuffix(v.serialNumber, "/root-account-mfa-device") {
+	if strings.HasSuffix(ptr.ToString(v.serialNumber), "/root-account-mfa-device") {
 		isRoot = true
 	}
 
@@ -79,14 +79,14 @@ func (v *IAMVirtualMFADevice) Filter() error {
 
 func (v *IAMVirtualMFADevice) Remove(_ context.Context) error {
 	if _, err := v.svc.DeactivateMFADevice(&iam.DeactivateMFADeviceInput{
-		UserName:     aws.String(v.userName),
-		SerialNumber: aws.String(v.serialNumber),
+		UserName:     v.userName,
+		SerialNumber: v.serialNumber,
 	}); err != nil {
 		return err
 	}
 
 	if _, err := v.svc.DeleteVirtualMFADevice(&iam.DeleteVirtualMFADeviceInput{
-		SerialNumber: &v.serialNumber,
+		SerialNumber: v.serialNumber,
 	}); err != nil {
 		return err
 	}
@@ -95,5 +95,5 @@ func (v *IAMVirtualMFADevice) Remove(_ context.Context) error {
 }
 
 func (v *IAMVirtualMFADevice) String() string {
-	return v.serialNumber
+	return ptr.ToString(v.serialNumber)
 }

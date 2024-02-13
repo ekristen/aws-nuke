@@ -12,6 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
@@ -21,7 +22,7 @@ import (
 const IAMInstanceProfileRoleResource = "IAMInstanceProfileRole"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   IAMInstanceProfileRoleResource,
 		Scope:  nuke.Account,
 		Lister: &IAMInstanceProfileRoleLister{},

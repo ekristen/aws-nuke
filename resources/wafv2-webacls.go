@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/wafv2"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
@@ -15,7 +16,7 @@ import (
 const WAFv2WebACLResource = "WAFv2WebACL"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   WAFv2WebACLResource,
 		Scope:  nuke.Account,
 		Lister: &WAFv2WebACLLister{},

@@ -9,6 +9,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/route53resolver"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
@@ -18,7 +19,7 @@ import (
 const Route53ResolverRuleResource = "Route53ResolverRule"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   Route53ResolverRuleResource,
 		Scope:  nuke.Account,
 		Lister: &Route53ResolverRuleLister{},

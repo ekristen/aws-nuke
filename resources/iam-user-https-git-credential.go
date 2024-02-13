@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
@@ -18,7 +19,7 @@ import (
 const IAMUserHTTPSGitCredentialResource = "IAMUserHTTPSGitCredential"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   IAMUserHTTPSGitCredentialResource,
 		Scope:  nuke.Account,
 		Lister: &IAMUserHTTPSGitCredentialLister{},

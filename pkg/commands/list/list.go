@@ -10,13 +10,12 @@ import (
 	"github.com/ekristen/aws-nuke/pkg/commands/global"
 	"github.com/ekristen/aws-nuke/pkg/common"
 
-	"github.com/ekristen/libnuke/pkg/resource"
-
 	_ "github.com/ekristen/aws-nuke/resources"
+	"github.com/ekristen/libnuke/pkg/registry"
 )
 
 func execute(c *cli.Context) error {
-	ls := resource.GetNames()
+	ls := registry.GetNames()
 
 	sort.Strings(ls)
 
@@ -25,7 +24,7 @@ func execute(c *cli.Context) error {
 			continue
 		}
 
-		reg := resource.GetRegistration(name)
+		reg := registry.GetRegistration(name)
 
 		if reg.AlternativeResource != "" {
 			color.New(color.Bold).Printf("%-55s\n", name)

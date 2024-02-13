@@ -5,6 +5,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/lambda"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
@@ -14,7 +15,7 @@ import (
 const LambdaLayerResource = "LambdaLayer"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   LambdaLayerResource,
 		Scope:  nuke.Account,
 		Lister: &LambdaLayerLister{},

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/ekristen/aws-nuke/pkg/nuke"
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 
 	"fmt"
@@ -21,7 +22,7 @@ import (
 const CloudFormationStackSetResource = "CloudFormationStackSet"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   CloudFormationStackSetResource,
 		Scope:  nuke.Account,
 		Lister: &CloudFormationStackSetLister{},

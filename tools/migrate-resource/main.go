@@ -13,7 +13,7 @@ import (
 var resourceTemplate = `const {{.ResourceType}}Resource = "{{.ResourceType}}"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   {{.ResourceType}}Resource,
 		Scope:  nuke.Account,
 		Lister: &{{.ResourceType}}Lister{},
@@ -30,6 +30,7 @@ var imports = `import (
 	"context"
 
 	"github.com/ekristen/libnuke/pkg/resource"
+"github.com/ekristen/libnuke/pkg/registry"
 
 	"github.com/ekristen/aws-nuke/pkg/nuke"
 `

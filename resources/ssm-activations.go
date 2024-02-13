@@ -7,6 +7,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/ssm"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 
 	"github.com/ekristen/aws-nuke/pkg/nuke"
@@ -15,7 +16,7 @@ import (
 const SSMActivationResource = "SSMActivation"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   SSMActivationResource,
 		Scope:  nuke.Account,
 		Lister: &SSMActivationLister{},

@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/mediastore"
 	"github.com/aws/aws-sdk-go/service/mediastoredata"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 
 	"github.com/ekristen/aws-nuke/pkg/nuke"
@@ -15,7 +16,7 @@ import (
 const MediaStoreDataItemsResource = "MediaStoreDataItems"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   MediaStoreDataItemsResource,
 		Scope:  nuke.Account,
 		Lister: &MediaStoreDataItemsLister{},

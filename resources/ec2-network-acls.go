@@ -9,6 +9,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/ec2"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
@@ -18,7 +19,7 @@ import (
 const EC2NetworkACLResource = "EC2NetworkACL"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   EC2NetworkACLResource,
 		Scope:  nuke.Account,
 		Lister: &EC2NetworkACLLister{},

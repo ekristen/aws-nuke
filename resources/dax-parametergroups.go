@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dax"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 
 	"github.com/ekristen/aws-nuke/pkg/nuke"
@@ -21,7 +22,7 @@ type DAXParameterGroup struct {
 const DAXParameterGroupResource = "DAXParameterGroup"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   DAXParameterGroupResource,
 		Scope:  nuke.Account,
 		Lister: &DAXParameterGroupLister{},

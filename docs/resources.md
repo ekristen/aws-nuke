@@ -30,6 +30,7 @@ import (
     "context"
     
     "github.com/ekristen/libnuke/pkg/resource"
+"github.com/ekristen/libnuke/pkg/registry"
     "github.com/ekristen/libnuke/pkg/types"
 
     "github.com/ekristen/aws-nuke/pkg/nuke"
@@ -70,6 +71,7 @@ import (
 	"context"
 
 	"github.com/ekristen/libnuke/pkg/resource"
+"github.com/ekristen/libnuke/pkg/registry"
 
 	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
@@ -96,6 +98,7 @@ import (
 	"context"
 	
 	"github.com/ekristen/libnuke/pkg/resource"
+"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/pkg/nuke"

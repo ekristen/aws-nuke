@@ -5,6 +5,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/rds"
 	"github.com/ekristen/aws-nuke/pkg/nuke"
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 )
@@ -12,7 +13,7 @@ import (
 const RDSProxyResource = "RDSProxy"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   RDSProxyResource,
 		Scope:  nuke.Account,
 		Lister: &RDSProxyLister{},

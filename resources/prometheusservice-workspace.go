@@ -5,6 +5,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/prometheusservice"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
@@ -14,7 +15,7 @@ import (
 const AMPWorkspaceResource = "AMPWorkspace"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   AMPWorkspaceResource,
 		Scope:  nuke.Account,
 		Lister: &AMPWorkspaceLister{},

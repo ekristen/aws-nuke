@@ -6,6 +6,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/cloudfront"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
@@ -22,7 +23,7 @@ type CloudFrontKeyGroup struct {
 const CloudFrontKeyGroupResource = "CloudFrontKeyGroup"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   CloudFrontKeyGroupResource,
 		Scope:  nuke.Account,
 		Lister: &CloudFrontKeyGroupLister{},

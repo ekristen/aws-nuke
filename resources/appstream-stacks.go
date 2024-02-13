@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/appstream"
 
 	"github.com/ekristen/aws-nuke/pkg/nuke"
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 )
 
@@ -17,7 +18,7 @@ type AppStreamStack struct {
 const AppStreamStackResource = "AppStreamStack"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   AppStreamStackResource,
 		Scope:  nuke.Account,
 		Lister: &AppStreamStackLister{},

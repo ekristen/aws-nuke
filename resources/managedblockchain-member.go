@@ -10,6 +10,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/managedblockchain"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
@@ -19,7 +20,7 @@ import (
 const ManagedBlockchainMemberResource = "ManagedBlockchainMember"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   ManagedBlockchainMemberResource,
 		Scope:  nuke.Account,
 		Lister: &ManagedBlockchainMemberLister{},

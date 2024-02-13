@@ -5,6 +5,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/macie2"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 
 	"github.com/ekristen/aws-nuke/pkg/nuke"
@@ -13,7 +14,7 @@ import (
 const MacieResource = "Macie"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   MacieResource,
 		Scope:  nuke.Account,
 		Lister: &MacieLister{},

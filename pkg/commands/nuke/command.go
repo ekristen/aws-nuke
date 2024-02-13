@@ -3,6 +3,7 @@ package nuke
 import (
 	"context"
 	"fmt"
+	"github.com/ekristen/libnuke/pkg/registry"
 	"slices"
 	"time"
 
@@ -13,7 +14,6 @@ import (
 
 	libconfig "github.com/ekristen/libnuke/pkg/config"
 	libnuke "github.com/ekristen/libnuke/pkg/nuke"
-	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/scanner"
 	"github.com/ekristen/libnuke/pkg/types"
 
@@ -67,7 +67,7 @@ func execute(c *cli.Context) error {
 	// Parse the user supplied configuration file to pass in part to configure the nuke process.
 	parsedConfig, err := config.New(libconfig.Options{
 		Path:         c.Path("config"),
-		Deprecations: resource.GetDeprecatedResourceTypeMapping(),
+		Deprecations: registry.GetDeprecatedResourceTypeMapping(),
 	})
 	if err != nil {
 		logrus.Errorf("Failed to parse config file %s", c.Path("config"))
@@ -124,7 +124,7 @@ func execute(c *cli.Context) error {
 	// Resolve the resource types to be used for the nuke process based on the parameters, global configuration, and
 	// account level configuration.
 	resourceTypes := types.ResolveResourceTypes(
-		resource.GetNames(),
+		registry.GetNames(),
 		[]types.Collection{
 			n.Parameters.Includes,
 			parsedConfig.ResourceTypes.GetIncludes(),
@@ -140,7 +140,7 @@ func execute(c *cli.Context) error {
 			parsedConfig.ResourceTypes.GetAlternatives(),
 			accountConfig.ResourceTypes.GetAlternatives(),
 		},
-		resource.GetAlternativeResourceTypeMapping(),
+		registry.GetAlternativeResourceTypeMapping(),
 	)
 
 	// Register the scanners for each region that is defined in the configuration.

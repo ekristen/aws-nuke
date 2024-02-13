@@ -7,6 +7,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/appstream"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 
 	"github.com/ekristen/aws-nuke/pkg/nuke"
@@ -21,7 +22,7 @@ type AppStreamStackFleetAttachment struct {
 const AppStreamStackFleetAttachmentResource = "AppStreamStackFleetAttachment"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   AppStreamStackFleetAttachmentResource,
 		Scope:  nuke.Account,
 		Lister: &AppStreamStackFleetAttachmentLister{},

@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ses"
 
 	sdkerrors "github.com/ekristen/libnuke/pkg/errors"
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 
 	"github.com/ekristen/aws-nuke/pkg/nuke"
@@ -17,7 +18,7 @@ import (
 const SESReceiptFilterResource = "SESReceiptFilter"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   SESReceiptFilterResource,
 		Scope:  nuke.Account,
 		Lister: &SESReceiptFilterLister{},

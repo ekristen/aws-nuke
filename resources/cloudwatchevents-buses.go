@@ -5,6 +5,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/cloudwatchevents"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 
 	"github.com/ekristen/aws-nuke/pkg/nuke"
@@ -13,7 +14,7 @@ import (
 const CloudWatchEventsBusesResource = "CloudWatchEventsBuses"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   CloudWatchEventsBusesResource,
 		Scope:  nuke.Account,
 		Lister: &CloudWatchEventsBusesLister{},

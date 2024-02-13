@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/apigateway"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
@@ -15,7 +16,7 @@ import (
 const APIGatewayUsagePlanResource = "APIGatewayUsagePlan"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:                APIGatewayUsagePlanResource,
 		Scope:               nuke.Account,
 		Lister:              &APIGatewayUsagePlanLister{},

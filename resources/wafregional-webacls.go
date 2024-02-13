@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/waf"
 	"github.com/aws/aws-sdk-go/service/wafregional"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
@@ -22,7 +23,7 @@ type WAFRegionalWebACL struct {
 const WAFRegionalWebACLResource = "WAFRegionalWebACL"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   WAFRegionalWebACLResource,
 		Scope:  nuke.Account,
 		Lister: &WAFRegionalWebACLLister{},

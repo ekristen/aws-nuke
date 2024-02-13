@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/appconfig"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
@@ -24,7 +25,7 @@ type AppConfigConfigurationProfile struct {
 const AppConfigConfigurationProfileResource = "AppConfigConfigurationProfile"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   AppConfigConfigurationProfileResource,
 		Scope:  nuke.Account,
 		Lister: &AppConfigConfigurationProfileLister{},

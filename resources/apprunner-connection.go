@@ -5,6 +5,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/apprunner"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
@@ -20,7 +21,7 @@ type AppRunnerConnection struct {
 const AppRunnerConnectionResource = "AppRunnerConnection"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   AppRunnerConnectionResource,
 		Scope:  nuke.Account,
 		Lister: &AppRunnerConnectionLister{},

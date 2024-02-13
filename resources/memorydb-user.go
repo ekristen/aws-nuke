@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/memorydb"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
@@ -23,7 +24,7 @@ type MemoryDBUser struct {
 const MemoryDBUserResource = "MemoryDBUser"
 
 func init() {
-	resource.Register(&resource.Registration{
+	registry.Register(&registry.Registration{
 		Name:   MemoryDBUserResource,
 		Scope:  nuke.Account,
 		Lister: &MemoryDBUserLister{},
