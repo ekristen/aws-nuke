@@ -10,6 +10,8 @@ github.com/ekristen/libnuke v0.8.0 h1:dxs+RosOcstbzvxnLyWN4mq1mAuOqMRUi7LEBC8rk4
 github.com/ekristen/libnuke v0.8.0/go.mod h1:WhYx7LDAkvkXwwfhWCASRn7fbifF8kfyhNsUj5zCCVs=
 github.com/ekristen/libnuke v0.9.1 h1:AoX1cggVTanP671Xuh6kJRv0HEp26NLqqPTzwYbz9I0=
 github.com/ekristen/libnuke v0.9.1/go.mod h1:WhYx7LDAkvkXwwfhWCASRn7fbifF8kfyhNsUj5zCCVs=
+github.com/ekristen/libnuke v0.10.0 h1:MBtly8gdZ8EBU/RPE1gI1aDpJlqWKKGxURcW7f8HVxY=
+github.com/ekristen/libnuke v0.10.0/go.mod h1:WhYx7LDAkvkXwwfhWCASRn7fbifF8kfyhNsUj5zCCVs=
 github.com/fatih/color v1.16.0 h1:zmkK9Ngbjj+K0yRhTVONQh1p/HknKYSlNT+vZCzyokM=
 github.com/fatih/color v1.16.0/go.mod h1:fL2Sau1YI5c0pdGEVCbKQbLXB6edEj1ZgiY4NijnWvE=
 github.com/golang/mock v1.6.0 h1:ErTB+efbowRARo13NNdxyJji2egdxLGQhRaY+DUumQc=
