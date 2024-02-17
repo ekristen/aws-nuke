@@ -1,7 +1,48 @@
+!!! warning
+    Filtering is a powerful tool, but it is also a double-edged sword. It is easy to make mistakes in the filter
+    configuration. Also, since aws-nuke is in continuous development, there is always a possibility to introduce new
+    bugs, no matter how careful we review new code.
+
 # Filtering
 
 Filtering is used to exclude or include resources from being deleted. This is important for a number of reasons to
 include but limited to removing the user that runs the tool.
+
+!!! note
+    Filters are `OR'd` together. This means that if a resource matches any filter, it will be excluded from deletion.
+    Currently, there is no way to do `AND'ing` of filters.
+
+## Global
+
+Filters are traditionally done against a specific resource. However, `__global__` as been introduced as a unique
+resource type that can be used to apply filters to all defined resources. It's all or nothing, global cannot be used to
+against some resources and not others.
+
+Global works by taking all filters defined under `__global__` and prepends to any filters found for a resource type. If
+a resource does NOT have any filters defined, the `__global__` ones will still be used.
+
+### Example
+
+In this example, we are ignoring all resources that have the tag `aws-nuke` set to `ignore`. Additionally filtering
+a specific instance by its `id`. When the `EC2Instance` resource is processed, it will have both filters applied. These
+
+```yaml
+__global__:
+  - property: tag:aws-nuke
+    value: "ignore"
+
+EC2Instance:
+  - "i-01b489457a60298dd"
+```
+
+This will ultimately render as the following filters for the `EC2Instance` resource:
+
+```yaml
+EC2Instance:
+  - "i-01b489457a60298dd"
+  - property: tag:aws-nuke
+    value: "ignore"
+```
 
 ## Types
 
