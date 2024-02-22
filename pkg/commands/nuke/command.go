@@ -174,9 +174,10 @@ func execute(c *cli.Context) error {
 func init() {
 	flags := []cli.Flag{
 		&cli.PathFlag{
-			Name:  "config",
-			Usage: "path to config file",
-			Value: "config.yaml",
+			Name:    "config",
+			Aliases: []string{"c"},
+			Usage:   "path to config file",
+			Value:   "config.yaml",
 		},
 		&cli.StringSliceFlag{
 			Name:    "include",
