@@ -1,15 +1,35 @@
 # Authentication
 
-There are multiple ways to authenticate to AWS for *aws-nuke*.
+The authentication for aws-nuke is a bit custom but still done through the AWS SDK. In a future version, we will 
+likely switch to using the AWS SDK directly to handle authentication.
 
-## Using CLI Flags
+## CLI Flags
+
+The following flags are available for authentication:
+
+- `--access-key-id` - The AWS access key ID
+- `--secret-access-key` - The AWS secret access key
+- `--session-token` - The AWS session token
+- `--profile` - The AWS profile to use
+- `--region` - The AWS region to use
+- `--assume-role` - The ARN of the role to assume
+- `--assume-role-session-name` - The session name to use when assuming a role
+- `--assume-role-external-id` - The external ID to use when assuming a role
+
+### Static Credentials (CLI)
 
 To use *static credentials* the command line flags `--access-key-id` and `--secret-access-key`
-are required. The flag `--session-token` is only required for temporary sessions.
+are required. The flag `--session-token` is only required for temporary sessions provided to you by the AWS STS service.
+
+**Note:** this is mutually exclusive with `--profile`.
+
+### Static Credentials (Profiles)
 
 `--profile` is also available if you are using the [AWS Config](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html)
 
-### AWS Config
+**Note:** this is mutually exclusive with `--access-key-id` and `--secret-access-key`.
+
+#### AWS Config
 
 You can also authenticate using the [AWS Config](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html)
 file. This can also have static credentials in them, but you can also use profiles. These files are generally located
@@ -20,6 +40,13 @@ credentials in the [shared credential file](https://docs.aws.amazon.com/cli/late
 
 ## Environment Variables
 
-To use *static credentials* via environment variables, export `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` and
-optionally if using a temporary session `AWS_SESSION_TOKEN`.
+The following environment variables are available for authentication:
 
+- `AWS_ACCESS_KEY_ID` - The AWS access key ID
+- `AWS_SECRET_ACCESS_KEY` - The AWS secret access key
+- `AWS_SESSION_TOKEN` - The AWS session token
+- `AWS_PROFILE` - The AWS profile to use
+- `AWS_REGION` - The AWS region to use
+- `AWS_ASSUME_ROLE` - The ARN of the role to assume
+- `AWS_ASSUME_ROLE_SESSION_NAME` - The session name to use when assuming a role
+- `AWS_ASSUME_ROLE_EXTERNAL_ID` - The external ID to use when assuming a role
