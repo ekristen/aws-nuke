@@ -119,8 +119,13 @@ func (c *Credentials) rootSession() (*session.Session, error) {
 		// if given a role to assume, overwrite the session credentials with assume role credentials
 		if c.AssumeRoleArn != "" {
 			sess.Config.Credentials = stscreds.NewCredentials(sess, c.AssumeRoleArn, func(p *stscreds.AssumeRoleProvider) {
-				p.RoleSessionName = c.RoleSessionName
-				p.ExternalID = aws.String(c.ExternalId)
+				if c.RoleSessionName == "" {
+					p.RoleSessionName = c.RoleSessionName
+				}
+
+				if c.ExternalId == "" {
+					p.ExternalID = aws.String(c.ExternalId)
+				}
 			})
 		}
 

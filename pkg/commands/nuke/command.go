@@ -174,9 +174,10 @@ func execute(c *cli.Context) error {
 func init() {
 	flags := []cli.Flag{
 		&cli.PathFlag{
-			Name:  "config",
-			Usage: "path to config file",
-			Value: "config.yaml",
+			Name:    "config",
+			Aliases: []string{"c"},
+			Usage:   "path to config file",
+			Value:   "config.yaml",
 		},
 		&cli.StringSliceFlag{
 			Name:    "include",
@@ -222,34 +223,42 @@ func init() {
 		&cli.StringFlag{
 			Name:    "default-region",
 			EnvVars: []string{"AWS_DEFAULT_REGION"},
+			Usage:   "the default aws region to use when setting up the aws auth session",
 		},
 		&cli.StringFlag{
 			Name:    "access-key-id",
 			EnvVars: []string{"AWS_ACCESS_KEY_ID"},
+			Usage:   "the aws access key id to use when setting up the aws auth session",
 		},
 		&cli.StringFlag{
 			Name:    "secret-access-key",
 			EnvVars: []string{"AWS_SECRET_ACCESS_KEY"},
+			Usage:   "the aws secret access key to use when setting up the aws auth session",
 		},
 		&cli.StringFlag{
 			Name:    "session-token",
 			EnvVars: []string{"AWS_SESSION_TOKEN"},
+			Usage:   "the aws session token to use when setting up the aws auth session, typically used for temporary credentials",
 		},
 		&cli.StringFlag{
 			Name:    "profile",
 			EnvVars: []string{"AWS_PROFILE"},
+			Usage:   "the aws profile to use when setting up the aws auth session, typically used for shared credentials files",
 		},
 		&cli.StringFlag{
 			Name:    "assume-role-arn",
 			EnvVars: []string{"AWS_ASSUME_ROLE_ARN"},
+			Usage:   "the role arn to assume using the credentials provided in the profile or statically set",
 		},
 		&cli.StringFlag{
 			Name:    "assume-role-session-name",
 			EnvVars: []string{"AWS_ASSUME_ROLE_SESSION_NAME"},
+			Usage:   "the session name to provide for the assumed role",
 		},
 		&cli.StringFlag{
 			Name:    "assume-role-external-id",
 			EnvVars: []string{"AWS_ASSUME_ROLE_EXTERNAL_ID"},
+			Usage:   "the external id to provide for the assumed role",
 		},
 	}
 
