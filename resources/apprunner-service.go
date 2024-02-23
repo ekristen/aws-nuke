@@ -14,8 +14,8 @@ import (
 
 type AppRunnerService struct {
 	svc         *apprunner.AppRunner
-	ServiceArn  *string
-	ServiceId   *string
+	ServiceARN  *string
+	ServiceID   *string
 	ServiceName *string
 }
 
@@ -48,8 +48,8 @@ func (l *AppRunnerServiceLister) List(_ context.Context, o interface{}) ([]resou
 		for _, item := range resp.ServiceSummaryList {
 			resources = append(resources, &AppRunnerService{
 				svc:         svc,
-				ServiceArn:  item.ServiceArn,
-				ServiceId:   item.ServiceId,
+				ServiceARN:  item.ServiceArn,
+				ServiceID:   item.ServiceId,
 				ServiceName: item.ServiceName,
 			})
 		}
@@ -66,7 +66,7 @@ func (l *AppRunnerServiceLister) List(_ context.Context, o interface{}) ([]resou
 
 func (f *AppRunnerService) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteService(&apprunner.DeleteServiceInput{
-		ServiceArn: f.ServiceArn,
+		ServiceArn: f.ServiceARN,
 	})
 
 	return err
@@ -74,8 +74,8 @@ func (f *AppRunnerService) Remove(_ context.Context) error {
 
 func (f *AppRunnerService) Properties() types.Properties {
 	properties := types.NewProperties()
-	properties.Set("ServiceArn", f.ServiceArn)
-	properties.Set("ServiceId", f.ServiceId)
+	properties.Set("ServiceARN", f.ServiceARN)
+	properties.Set("ServiceID", f.ServiceID)
 	properties.Set("ServiceName", f.ServiceName)
 	return properties
 }

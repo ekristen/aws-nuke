@@ -59,9 +59,7 @@ func (l *AppMeshVirtualServiceLister) List(_ context.Context, o interface{}) ([]
 				MeshName: meshName,
 			},
 			func(page *appmesh.ListVirtualServicesOutput, lastPage bool) bool {
-				for _, vs := range page.VirtualServices {
-					vss = append(vss, vs)
-				}
+				vss = append(vss, page.VirtualServices...)
 				return lastPage
 			},
 		)
