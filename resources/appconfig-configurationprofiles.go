@@ -17,7 +17,7 @@ import (
 
 type AppConfigConfigurationProfile struct {
 	svc           *appconfig.AppConfig
-	applicationId *string
+	applicationID *string
 	id            *string
 	name          *string
 }
@@ -63,7 +63,7 @@ func (l *AppConfigConfigurationProfileLister) List(ctx context.Context, o interf
 			for _, item := range page.Items {
 				resources = append(resources, &AppConfigConfigurationProfile{
 					svc:           svc,
-					applicationId: application.id,
+					applicationID: application.id,
 					id:            item.Id,
 					name:          item.Name,
 				})
@@ -79,7 +79,7 @@ func (l *AppConfigConfigurationProfileLister) List(ctx context.Context, o interf
 
 func (f *AppConfigConfigurationProfile) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteConfigurationProfile(&appconfig.DeleteConfigurationProfileInput{
-		ApplicationId:          f.applicationId,
+		ApplicationId:          f.applicationID,
 		ConfigurationProfileId: f.id,
 	})
 	return err
@@ -87,7 +87,7 @@ func (f *AppConfigConfigurationProfile) Remove(_ context.Context) error {
 
 func (f *AppConfigConfigurationProfile) Properties() types.Properties {
 	return types.NewProperties().
-		Set("ApplicationID", f.applicationId).
+		Set("ApplicationID", f.applicationID).
 		Set("ID", f.id).
 		Set("Name", f.name)
 }

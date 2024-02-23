@@ -17,8 +17,8 @@ import (
 
 type AppConfigHostedConfigurationVersion struct {
 	svc                    *appconfig.AppConfig
-	applicationId          *string
-	configurationProfileId *string
+	applicationID          *string
+	configurationProfileID *string
 	versionNumber          *int64
 }
 
@@ -52,7 +52,7 @@ func (l *AppConfigHostedConfigurationVersionLister) List(ctx context.Context, o 
 			continue
 		}
 		params := &appconfig.ListHostedConfigurationVersionsInput{
-			ApplicationId:          configurationProfile.applicationId,
+			ApplicationId:          configurationProfile.applicationID,
 			ConfigurationProfileId: configurationProfile.id,
 			MaxResults:             aws.Int64(50),
 		}
@@ -60,8 +60,8 @@ func (l *AppConfigHostedConfigurationVersionLister) List(ctx context.Context, o 
 			for _, item := range page.Items {
 				resources = append(resources, &AppConfigHostedConfigurationVersion{
 					svc:                    svc,
-					applicationId:          configurationProfile.applicationId,
-					configurationProfileId: configurationProfile.id,
+					applicationID:          configurationProfile.applicationID,
+					configurationProfileID: configurationProfile.id,
 					versionNumber:          item.VersionNumber,
 				})
 			}
@@ -76,8 +76,8 @@ func (l *AppConfigHostedConfigurationVersionLister) List(ctx context.Context, o 
 
 func (f *AppConfigHostedConfigurationVersion) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteHostedConfigurationVersion(&appconfig.DeleteHostedConfigurationVersionInput{
-		ApplicationId:          f.applicationId,
-		ConfigurationProfileId: f.configurationProfileId,
+		ApplicationId:          f.applicationID,
+		ConfigurationProfileId: f.configurationProfileID,
 		VersionNumber:          f.versionNumber,
 	})
 	return err
@@ -85,7 +85,7 @@ func (f *AppConfigHostedConfigurationVersion) Remove(_ context.Context) error {
 
 func (f *AppConfigHostedConfigurationVersion) Properties() types.Properties {
 	return types.NewProperties().
-		Set("ApplicationID", f.applicationId).
-		Set("ConfigurationProfileID", f.configurationProfileId).
+		Set("ApplicationID", f.applicationID).
+		Set("ConfigurationProfileID", f.configurationProfileID).
 		Set("VersionNumber", f.versionNumber)
 }
