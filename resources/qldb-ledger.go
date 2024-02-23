@@ -2,8 +2,6 @@ package resources
 
 import (
 	"context"
-	"github.com/ekristen/libnuke/pkg/settings"
-
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -11,6 +9,7 @@ import (
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	libsettings "github.com/ekristen/libnuke/pkg/settings"
 	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/pkg/nuke"
@@ -67,10 +66,10 @@ type QLDBLedger struct {
 	svc    *qldb.QLDB
 	ledger *qldb.DescribeLedgerOutput
 
-	settings *settings.Setting
+	settings *libsettings.Setting
 }
 
-func (l *QLDBLedger) Settings(setting *settings.Setting) {
+func (l *QLDBLedger) Settings(setting *libsettings.Setting) {
 	l.settings = setting
 }
 
