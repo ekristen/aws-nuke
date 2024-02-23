@@ -2,6 +2,8 @@ package resources
 
 import (
 	"context"
+	"fmt"
+	"github.com/gotidy/ptr"
 
 	"github.com/sirupsen/logrus"
 
@@ -105,5 +107,5 @@ func (p *CognitoIdentityProvider) Properties() types.Properties {
 }
 
 func (p *CognitoIdentityProvider) String() string {
-	return *p.userPoolName + " -> " + *p.name
+	return fmt.Sprintf("%s -> %s", ptr.ToString(p.userPoolName), ptr.ToString(p.name))
 }
