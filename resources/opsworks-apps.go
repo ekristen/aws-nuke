@@ -51,8 +51,8 @@ func (l *OpsWorksAppLister) List(_ context.Context, o interface{}) ([]resource.R
 				ID:  app.AppId,
 			})
 		}
-
 	}
+
 	return resources, nil
 }
 
