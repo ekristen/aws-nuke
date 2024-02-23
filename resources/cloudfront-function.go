@@ -50,8 +50,8 @@ func (l *CloudFrontFunctionLister) List(_ context.Context, o interface{}) ([]res
 		}
 
 		params.Marker = resp.FunctionList.NextMarker
-
 	}
+
 	return resources, nil
 }
 

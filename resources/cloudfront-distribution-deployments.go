@@ -2,8 +2,8 @@ package resources
 
 import (
 	"context"
-
 	"fmt"
+
 	"github.com/gotidy/ptr"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -51,11 +51,9 @@ func (l *CloudFrontDistributionDeploymentLister) List(_ context.Context, o inter
 			return nil, err
 		}
 
-		for _, item := range resp.DistributionList.Items {
-			distributions = append(distributions, item)
-		}
+		distributions = append(distributions, resp.DistributionList.Items...)
 
-		if *resp.DistributionList.IsTruncated == false {
+		if !ptr.ToBool(resp.DistributionList.IsTruncated) {
 			break
 		}
 
@@ -95,7 +93,7 @@ func (f *CloudFrontDistributionDeployment) Remove(_ context.Context) error {
 }
 
 func (f *CloudFrontDistributionDeployment) Filter() error {
-	if *f.distributionConfig.Enabled == false && f.status != "InProgress" {
+	if !ptr.ToBool(f.distributionConfig.Enabled) && f.status != "InProgress" {
 		return fmt.Errorf("already disabled")
 	}
 	return nil
