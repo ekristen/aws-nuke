@@ -77,7 +77,7 @@ func (l *MemoryDBParameterGroupLister) List(_ context.Context, o interface{}) ([
 
 func (i *MemoryDBParameterGroup) Filter() error {
 	if strings.HasPrefix(*i.name, "default.") {
-		return fmt.Errorf("Cannot delete default parameter group")
+		return fmt.Errorf("cannot delete default parameter group")
 	}
 	return nil
 }

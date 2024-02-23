@@ -84,15 +84,15 @@ func (c *MemoryDBCluster) Remove(_ context.Context) error {
 	return nil
 }
 
-func (i *MemoryDBCluster) String() string {
-	return *i.name
+func (c *MemoryDBCluster) String() string {
+	return *c.name
 }
 
-func (i *MemoryDBCluster) Properties() types.Properties {
+func (c *MemoryDBCluster) Properties() types.Properties {
 	properties := types.NewProperties()
-	properties.Set("Name", i.name)
+	properties.Set("Name", c.name)
 
-	for _, tag := range i.tags {
+	for _, tag := range c.tags {
 		properties.SetTag(tag.Key, tag.Value)
 	}
 
