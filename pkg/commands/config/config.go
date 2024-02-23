@@ -2,17 +2,20 @@ package config
 
 import (
 	"fmt"
+	"slices"
+
+	"github.com/sirupsen/logrus"
+	"github.com/urfave/cli/v2"
+
+	libconfig "github.com/ekristen/libnuke/pkg/config"
+	"github.com/ekristen/libnuke/pkg/registry"
+	"github.com/ekristen/libnuke/pkg/types"
+
 	"github.com/ekristen/aws-nuke/pkg/awsutil"
 	"github.com/ekristen/aws-nuke/pkg/commands/global"
 	"github.com/ekristen/aws-nuke/pkg/commands/nuke"
 	"github.com/ekristen/aws-nuke/pkg/common"
 	"github.com/ekristen/aws-nuke/pkg/config"
-	libconfig "github.com/ekristen/libnuke/pkg/config"
-	"github.com/ekristen/libnuke/pkg/registry"
-	"github.com/ekristen/libnuke/pkg/types"
-	"github.com/sirupsen/logrus"
-	"github.com/urfave/cli/v2"
-	"slices"
 )
 
 func execute(c *cli.Context) error {
@@ -54,17 +57,17 @@ func execute(c *cli.Context) error {
 	resourceTypes := types.ResolveResourceTypes(
 		registry.GetNames(),
 		[]types.Collection{
-			types.Collection{}, // note: empty collection since we are not capturing parameters
+			{}, // note: empty collection since we are not capturing parameters
 			parsedConfig.ResourceTypes.GetIncludes(),
 			accountConfig.ResourceTypes.GetIncludes(),
 		},
 		[]types.Collection{
-			types.Collection{}, // note: empty collection since we are not capturing parameters
+			{}, // note: empty collection since we are not capturing parameters
 			parsedConfig.ResourceTypes.Excludes,
 			accountConfig.ResourceTypes.Excludes,
 		},
 		[]types.Collection{
-			types.Collection{}, // note: empty collection since we are not capturing parameters
+			{}, // note: empty collection since we are not capturing parameters
 			parsedConfig.ResourceTypes.GetAlternatives(),
 			accountConfig.ResourceTypes.GetAlternatives(),
 		},

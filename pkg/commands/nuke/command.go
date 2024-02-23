@@ -3,7 +3,6 @@ package nuke
 import (
 	"context"
 	"fmt"
-	"github.com/ekristen/libnuke/pkg/registry"
 	"slices"
 	"strings"
 	"time"
@@ -15,6 +14,7 @@ import (
 
 	libconfig "github.com/ekristen/libnuke/pkg/config"
 	libnuke "github.com/ekristen/libnuke/pkg/nuke"
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/scanner"
 	"github.com/ekristen/libnuke/pkg/types"
 
@@ -25,19 +25,22 @@ import (
 	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-func ConfigureCreds(c *cli.Context) (creds awsutil.Credentials) {
+// ConfigureCreds is a helper function to configure the awsutil.Credentials object from the cli.Context
+func ConfigureCreds(c *cli.Context) (creds *awsutil.Credentials) {
+	creds = &awsutil.Credentials{}
+
 	creds.Profile = c.String("profile")
 	creds.AccessKeyID = c.String("access-key-id")
 	creds.SecretAccessKey = c.String("secret-access-key")
 	creds.SessionToken = c.String("session-token")
 	creds.AssumeRoleArn = c.String("assume-role-arn")
 	creds.RoleSessionName = c.String("assume-role-session-name")
-	creds.ExternalId = c.String("assume-role-external-id")
+	creds.ExternalID = c.String("assume-role-external-id")
 
 	return creds
 }
 
-func execute(c *cli.Context) error {
+func execute(c *cli.Context) error { //nolint:funlen,gocyclo
 	ctx, cancel := context.WithCancel(c.Context)
 	defer cancel()
 
@@ -198,7 +201,7 @@ func execute(c *cli.Context) error {
 	return n.Run(ctx)
 }
 
-func init() {
+func init() { //nolint:funlen
 	flags := []cli.Flag{
 		&cli.PathFlag{
 			Name:    "config",
