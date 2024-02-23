@@ -197,5 +197,5 @@ func TestCloudformationStackSet_Remove_DeleteStackInstanceFailed(t *testing.T) {
 	}, nil)
 
 	err := stackSet.Remove(context.TODO())
-	a.EqualError(err, "unable to delete stackSet=foobar operationId=o1 status=FAILED")
+	a.EqualError(err, "unable to delete stackSet=foobar operationID=o1 status=FAILED")
 }
