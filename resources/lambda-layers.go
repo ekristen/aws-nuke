@@ -34,9 +34,7 @@ func (l *LambdaLayerLister) List(_ context.Context, o interface{}) ([]resource.R
 	params := &lambda.ListLayersInput{}
 
 	err := svc.ListLayersPages(params, func(page *lambda.ListLayersOutput, lastPage bool) bool {
-		for _, out := range page.Layers {
-			layers = append(layers, out)
-		}
+		layers = append(layers, page.Layers...)
 		return true
 	})
 	if err != nil {
@@ -74,7 +72,6 @@ type LambdaLayer struct {
 }
 
 func (l *LambdaLayer) Remove(_ context.Context) error {
-
 	_, err := l.svc.DeleteLayerVersion(&lambda.DeleteLayerVersionInput{
 		LayerName:     l.layerName,
 		VersionNumber: &l.version,
