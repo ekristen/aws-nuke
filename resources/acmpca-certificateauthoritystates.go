@@ -88,7 +88,6 @@ type ACMPCACertificateAuthorityState struct {
 }
 
 func (f *ACMPCACertificateAuthorityState) Remove(_ context.Context) error {
-
 	_, err := f.svc.UpdateCertificateAuthority(&acmpca.UpdateCertificateAuthorityInput{
 		CertificateAuthorityArn: f.ARN,
 		Status:                  aws.String("DISABLED"),
@@ -102,7 +101,6 @@ func (f *ACMPCACertificateAuthorityState) String() string {
 }
 
 func (f *ACMPCACertificateAuthorityState) Filter() error {
-
 	switch *f.status {
 	case "CREATING":
 		return fmt.Errorf("available for deletion")
@@ -115,7 +113,6 @@ func (f *ACMPCACertificateAuthorityState) Filter() error {
 	default:
 		return nil
 	}
-
 }
 
 func (f *ACMPCACertificateAuthorityState) Properties() types.Properties {
