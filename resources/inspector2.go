@@ -39,7 +39,7 @@ func (l *Inspector2Lister) List(_ context.Context, o interface{}) ([]resource.Re
 		if *a.State.Status != inspector2.StatusDisabled {
 			resources = append(resources, &Inspector2{
 				svc:       svc,
-				accountId: a.AccountId,
+				accountID: a.AccountId,
 			})
 		}
 	}
@@ -49,12 +49,12 @@ func (l *Inspector2Lister) List(_ context.Context, o interface{}) ([]resource.Re
 
 type Inspector2 struct {
 	svc       *inspector2.Inspector2
-	accountId *string
+	accountID *string
 }
 
 func (e *Inspector2) Remove(_ context.Context) error {
 	_, err := e.svc.Disable(&inspector2.DisableInput{
-		AccountIds:    []*string{e.accountId},
+		AccountIds:    []*string{e.accountID},
 		ResourceTypes: aws.StringSlice(inspector2.ResourceScanType_Values()),
 	})
 	if err != nil {
@@ -65,5 +65,5 @@ func (e *Inspector2) Remove(_ context.Context) error {
 }
 
 func (e *Inspector2) String() string {
-	return *e.accountId
+	return *e.accountID
 }
