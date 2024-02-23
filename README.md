@@ -12,20 +12,30 @@ Remove all resources from an AWS account.
 *aws-nuke* is stable, but it is likely that not all AWS resources are covered by it. Be encouraged to add missing
 resources and create a Pull Request or to create an [Issue](https://github.com/ekristen/aws-nuke/issues/new).
 
-## What's New in Version 3!
+## What's New in Version 3
 
 Version 3 is a rewrite of this tool using [libnuke](https://github.com/ekristen/libnuke) with a focus on improving a number of the outstanding things
 that I couldn't get done with the original project without separating out the core code into a library. See Goals
 below for more.
 
-### Notable Changes
+This is not a comprehensive list, but here are some of the highlights:
 
-- The root command will result in help now, the primary nuke command moved to `run` (alias: `nuke`). **Breaking Change**
-- CloudFormation Stacks now support a hold and wait for parent deletion process. **New Behavior, Breaking Change**
-- Nested CloudFormation Stacks are now eligible for deletion and no longer omitted. **New Behavior, Breaking Change**
-- The entire resource lister format has changed and requires a struct to allow for more options going forward.
-- Context is passed throughout the entire library now, including the listing function and the removal function.
-  - This is in preparation for supporting AWS SDK Go v2
+* New Feature: Signed Darwin Binaries for MacOS
+* New Feature: Published Homebrew Tap (ekristen/tap/aws-nuke@3)
+* New Feature: Global Filters
+* New Feature: Run Against All Enabled Regions
+* New Feature: Explain Account and Explain Config Commands
+* Upcoming Feature: Filter Groups (**in progress**)
+* Breaking Change: `root` command no longer triggers the run, must use subcommand `run` (alias: `nuke`)
+* Breaking Change: CloudFormation Stacks now support a hold and wait for parent deletion process
+* Breaking Change: Nested CloudFormation Stacks are now eligible for deletion and no longer omitted
+* Completely rewrote the core of the tool as a dedicated library [libnuke](https://github.com/ekristen/libnuke)
+  * This library has over 95% test coverage which makes iteration and new features easier to implement.
+* Semantic Releases with notifications on issues / pull requests
+* Context is passed throughout the entire library now, including the listing function and the removal function
+  * This is in preparation for supporting AWS SDK Go v2
+* New Resources
+* Broke away from rebuy-de/aws-nuke project as a fork for reasons outlined in the history section
 
 ### Goals
 
