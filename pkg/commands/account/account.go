@@ -140,12 +140,12 @@ func init() {
 	}
 
 	cmd := &cli.Command{
-		Name:    "account-details",
-		Aliases: []string{"account"},
-		Usage:   "list details about the AWS account that the tool is authenticated to",
-		Flags:   append(flags, global.Flags()...),
-		Before:  global.Before,
-		Action:  execute,
+		Name:        "explain-account",
+		Usage:       "explain the account and authentication method used to authenticate against AWS",
+		Description: `explain the account and authentication method used to authenticate against AWS`,
+		Flags:       append(flags, global.Flags()...),
+		Before:      global.Before,
+		Action:      execute,
 	}
 
 	common.RegisterCommand(cmd)
