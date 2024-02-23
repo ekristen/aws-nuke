@@ -2,11 +2,11 @@ package resources
 
 import (
 	"context"
-
 	"fmt"
 	"time"
 
 	"github.com/gotidy/ptr"
+	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -118,7 +118,7 @@ type S3Bucket struct {
 	tags         []*s3.Tag
 }
 
-func (e *S3Bucket) Remove(_ context.Context) error {
+func (e *S3Bucket) Remove(ctx context.Context) error {
 	_, err := e.svc.DeleteBucketPolicy(&s3.DeleteBucketPolicyInput{
 		Bucket: &e.name,
 	})
@@ -134,12 +134,12 @@ func (e *S3Bucket) Remove(_ context.Context) error {
 		return err
 	}
 
-	err = e.RemoveAllVersions()
+	err = e.RemoveAllVersions(ctx)
 	if err != nil {
 		return err
 	}
 
-	err = e.RemoveAllObjects()
+	err = e.RemoveAllObjects(ctx)
 	if err != nil {
 		return err
 	}
@@ -151,22 +151,22 @@ func (e *S3Bucket) Remove(_ context.Context) error {
 	return err
 }
 
-func (e *S3Bucket) RemoveAllVersions() error {
+func (e *S3Bucket) RemoveAllVersions(ctx context.Context) error {
 	params := &s3.ListObjectVersionsInput{
 		Bucket: &e.name,
 	}
 
 	iterator := newS3DeleteVersionListIterator(e.svc, params)
-	return s3manager.NewBatchDeleteWithClient(e.svc).Delete(aws.BackgroundContext(), iterator)
+	return s3manager.NewBatchDeleteWithClient(e.svc).Delete(ctx, iterator)
 }
 
-func (e *S3Bucket) RemoveAllObjects() error {
+func (e *S3Bucket) RemoveAllObjects(ctx context.Context) error {
 	params := &s3.ListObjectsInput{
 		Bucket: &e.name,
 	}
 
 	iterator := s3manager.NewDeleteListIterator(e.svc, params)
-	return s3manager.NewBatchDeleteWithClient(e.svc).Delete(aws.BackgroundContext(), iterator)
+	return s3manager.NewBatchDeleteWithClient(e.svc).Delete(ctx, iterator)
 }
 
 func (e *S3Bucket) Properties() types.Properties {
@@ -186,9 +186,10 @@ func (e *S3Bucket) String() string {
 }
 
 type s3DeleteVersionListIterator struct {
-	Bucket    *string
-	Paginator request.Pagination
-	objects   []*s3.ObjectVersion
+	Bucket     *string
+	Paginator  request.Pagination
+	objects    []*s3.ObjectVersion
+	lastNotify time.Time
 }
 
 func newS3DeleteVersionListIterator(
@@ -213,6 +214,7 @@ func newS3DeleteVersionListIterator(
 	for _, opt := range opts {
 		opt(iter)
 	}
+
 	return iter
 }
 
@@ -232,6 +234,13 @@ func (iter *s3DeleteVersionListIterator) Next() bool {
 				VersionId: entry.VersionId,
 			})
 		}
+	}
+
+	if len(iter.objects) > 500 && (iter.lastNotify.IsZero() || time.Since(iter.lastNotify) > 120*time.Second) {
+		logrus.Infof(
+			"S3Bucket: %s - empty bucket operation in progress, this could take a while, please be patient",
+			*iter.Bucket)
+		iter.lastNotify = time.Now().UTC()
 	}
 
 	return len(iter.objects) > 0
