@@ -2,8 +2,9 @@ package resources
 
 import (
 	"context"
-
 	"fmt"
+
+	"github.com/gotidy/ptr"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/appstream"
@@ -67,7 +68,6 @@ func (l *AppStreamImageBuilderWaiterLister) List(_ context.Context, o interface{
 }
 
 func (f *AppStreamImageBuilderWaiter) Remove(_ context.Context) error {
-
 	return nil
 }
 
@@ -76,11 +76,11 @@ func (f *AppStreamImageBuilderWaiter) String() string {
 }
 
 func (f *AppStreamImageBuilderWaiter) Filter() error {
-	if *f.state == "STOPPED" {
+	if ptr.ToString(f.state) == appstream.ImageBuilderStateStopped {
 		return fmt.Errorf("already stopped")
-	} else if *f.state == "RUNNING" {
+	} else if ptr.ToString(f.state) == appstream.ImageBuilderStateRunning {
 		return fmt.Errorf("already running")
-	} else if *f.state == "DELETING" {
+	} else if ptr.ToString(f.state) == appstream.ImageBuilderStateDeleting {
 		return fmt.Errorf("already being deleted")
 	}
 
