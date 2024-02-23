@@ -2,10 +2,10 @@ package resources
 
 import (
 	"context"
+
 	"github.com/gotidy/ptr"
 
 	"github.com/aws/aws-sdk-go/aws"
-
 	"github.com/aws/aws-sdk-go/service/redshiftserverless"
 
 	"github.com/ekristen/libnuke/pkg/registry"

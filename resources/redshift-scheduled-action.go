@@ -61,7 +61,6 @@ type RedshiftScheduledAction struct {
 }
 
 func (f *RedshiftScheduledAction) Remove(_ context.Context) error {
-
 	_, err := f.svc.DeleteScheduledAction(&redshift.DeleteScheduledActionInput{
 		ScheduledActionName: f.scheduledActionName,
 	})
