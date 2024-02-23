@@ -38,6 +38,7 @@ func (l *SNSSubscriptionLister) List(_ context.Context, o interface{}) ([]resour
 		if err != nil {
 			return nil, err
 		}
+
 		for _, subscription := range resp.Subscriptions {
 			if *subscription.SubscriptionArn != "PendingConfirmation" {
 				resources = append(resources, &SNSSubscription{
@@ -46,7 +47,6 @@ func (l *SNSSubscriptionLister) List(_ context.Context, o interface{}) ([]resour
 					name: subscription.Owner,
 				})
 			}
-
 		}
 
 		if resp.NextToken == nil {

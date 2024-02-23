@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/glue"
 
@@ -48,7 +50,7 @@ func (l *GlueDevEndpointLister) List(_ context.Context, o interface{}) ([]resour
 		}
 
 		// This one API can and does return an empty string
-		if output.NextToken == nil || len(*output.NextToken) == 0 {
+		if output.NextToken == nil || ptr.ToString(output.NextToken) == "" {
 			break
 		}
 

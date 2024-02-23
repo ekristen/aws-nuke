@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go/service/comprehend"
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -37,9 +39,10 @@ func (l *ComprehendEventsDetectionJobLister) List(_ context.Context, o interface
 		if err != nil {
 			return nil, err
 		}
+
 		for _, eventsDetectionJob := range resp.EventsDetectionJobPropertiesList {
-			switch *eventsDetectionJob.JobStatus {
-			case "STOPPED", "FAILED", "COMPLETED":
+			switch ptr.ToString(eventsDetectionJob.JobStatus) {
+			case comprehend.JobStatusStopped, comprehend.JobStatusFailed, comprehend.JobStatusCompleted:
 				// if the job has already been stopped, failed, or completed; do not try to stop it again
 				continue
 			}
@@ -81,8 +84,8 @@ func (ce *ComprehendEventsDetectionJob) Properties() types.Properties {
 
 func (ce *ComprehendEventsDetectionJob) String() string {
 	if ce.eventsDetectionJob.JobName == nil {
-		return "Unnamed job"
+		return ComprehendUnnamedJob
 	} else {
-		return *ce.eventsDetectionJob.JobName
+		return ptr.ToString(ce.eventsDetectionJob.JobName)
 	}
 }

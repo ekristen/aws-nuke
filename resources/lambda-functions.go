@@ -34,9 +34,7 @@ func (l *LambdaFunctionLister) List(_ context.Context, o interface{}) ([]resourc
 	params := &lambda.ListFunctionsInput{}
 
 	err := svc.ListFunctionsPages(params, func(page *lambda.ListFunctionsOutput, lastPage bool) bool {
-		for _, out := range page.Functions {
-			functions = append(functions, out)
-		}
+		functions = append(functions, page.Functions...)
 		return true
 	})
 

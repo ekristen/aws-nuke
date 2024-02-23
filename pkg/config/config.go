@@ -103,15 +103,15 @@ func (c *Config) ValidateAccount(accountID string, aliases []string, skipAliasCh
 	}
 
 	if len(aliases) == 0 {
-		return fmt.Errorf("The specified account doesn't have an alias. " +
+		return fmt.Errorf("specified account doesn't have an alias. " +
 			"For safety reasons you need to specify an account alias. " +
-			"Your production account should contain the term 'prod'.")
+			"Your production account should contain the term 'prod'")
 	}
 
 	for _, alias := range aliases {
 		if strings.Contains(strings.ToLower(alias), "prod") {
-			return fmt.Errorf("You are trying to nuke an account with the alias '%s', "+
-				"but it has the substring 'prod' in it. Aborting.", alias)
+			return fmt.Errorf("you are trying to nuke an account with the alias '%s', "+
+				"but it has the substring 'prod' in it. Aborting", alias)
 		}
 	}
 

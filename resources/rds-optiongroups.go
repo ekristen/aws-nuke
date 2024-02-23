@@ -37,12 +37,12 @@ func (l *RDSOptionGroupLister) List(_ context.Context, o interface{}) ([]resourc
 	if err != nil {
 		return nil, err
 	}
+
 	var resources []resource.Resource
 	for _, optionGroup := range resp.OptionGroupsList {
 		tags, err := svc.ListTagsForResource(&rds.ListTagsForResourceInput{
 			ResourceName: optionGroup.OptionGroupArn,
 		})
-
 		if err != nil {
 			continue
 		}
@@ -52,7 +52,6 @@ func (l *RDSOptionGroupLister) List(_ context.Context, o interface{}) ([]resourc
 			name: optionGroup.OptionGroupName,
 			tags: tags.TagList,
 		})
-
 	}
 
 	return resources, nil

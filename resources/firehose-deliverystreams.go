@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/firehose"
 
@@ -49,7 +51,7 @@ func (l *FirehoseDeliveryStreamLister) List(_ context.Context, o interface{}) ([
 			lastDeliveryStreamName = deliveryStreamName
 		}
 
-		if *output.HasMoreDeliveryStreams == false {
+		if !ptr.ToBool(output.HasMoreDeliveryStreams) {
 			break
 		}
 

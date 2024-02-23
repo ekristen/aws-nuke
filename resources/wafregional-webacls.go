@@ -67,7 +67,6 @@ func (l *WAFRegionalWebACLLister) List(_ context.Context, o interface{}) ([]reso
 }
 
 func (f *WAFRegionalWebACL) Remove(_ context.Context) error {
-
 	tokenOutput, err := f.svc.GetChangeToken(&waf.GetChangeTokenInput{})
 	if err != nil {
 		return err

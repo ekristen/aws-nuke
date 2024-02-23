@@ -89,7 +89,6 @@ type ACMPCACertificateAuthority struct {
 }
 
 func (f *ACMPCACertificateAuthority) Remove(_ context.Context) error {
-
 	_, err := f.svc.DeleteCertificateAuthority(&acmpca.DeleteCertificateAuthorityInput{
 		CertificateAuthorityArn: f.ARN,
 	})

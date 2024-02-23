@@ -64,7 +64,6 @@ type SageMakerNotebookInstanceLifecycleConfig struct {
 }
 
 func (f *SageMakerNotebookInstanceLifecycleConfig) Remove(_ context.Context) error {
-
 	_, err := f.svc.DeleteNotebookInstanceLifecycleConfig(&sagemaker.DeleteNotebookInstanceLifecycleConfigInput{
 		NotebookInstanceLifecycleConfigName: f.Name,
 	})

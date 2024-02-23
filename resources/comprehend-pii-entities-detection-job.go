@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go/service/comprehend"
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -20,7 +22,7 @@ func init() {
 		Scope:  nuke.Account,
 		Lister: &ComprehendPiiEntitiesDetectionJobLister{},
 		DeprecatedAliases: []string{
-			"ComprehendPiiEntititesDetectionJob", //nolint:misspell
+			"ComprehendPiiEntititesDetectionJob",
 		},
 	})
 }
@@ -42,7 +44,7 @@ func (l *ComprehendPiiEntitiesDetectionJobLister) List(_ context.Context, o inte
 		}
 		for _, piiEntitiesDetectionJob := range resp.PiiEntitiesDetectionJobPropertiesList {
 			switch *piiEntitiesDetectionJob.JobStatus {
-			case "STOPPED", "FAILED", "COMPLETED":
+			case comprehend.JobStatusStopped, comprehend.JobStatusFailed, comprehend.JobStatusCompleted:
 				// if the job has already been stopped, failed, or completed; do not try to stop it again
 				continue
 			}
@@ -84,8 +86,8 @@ func (ce *ComprehendPiiEntitiesDetectionJob) Properties() types.Properties {
 
 func (ce *ComprehendPiiEntitiesDetectionJob) String() string {
 	if ce.piiEntitiesDetectionJob.JobName == nil {
-		return "Unnamed job"
+		return ComprehendUnnamedJob
 	} else {
-		return *ce.piiEntitiesDetectionJob.JobName
+		return ptr.ToString(ce.piiEntitiesDetectionJob.JobName)
 	}
 }

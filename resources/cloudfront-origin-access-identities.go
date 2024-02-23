@@ -30,20 +30,18 @@ func (l *CloudFrontOriginAccessIdentityLister) List(_ context.Context, o interfa
 	svc := cloudfront.New(opts.Session)
 	resources := make([]resource.Resource, 0)
 
-	for {
-		resp, err := svc.ListCloudFrontOriginAccessIdentities(nil)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, item := range resp.CloudFrontOriginAccessIdentityList.Items {
-			resources = append(resources, &CloudFrontOriginAccessIdentity{
-				svc: svc,
-				ID:  item.Id,
-			})
-		}
-		return resources, nil
+	resp, err := svc.ListCloudFrontOriginAccessIdentities(nil)
+	if err != nil {
+		return nil, err
 	}
+
+	for _, item := range resp.CloudFrontOriginAccessIdentityList.Items {
+		resources = append(resources, &CloudFrontOriginAccessIdentity{
+			svc: svc,
+			ID:  item.Id,
+		})
+	}
+	return resources, nil
 }
 
 type CloudFrontOriginAccessIdentity struct {

@@ -6,6 +6,9 @@ import (
 	"os"
 	"strings"
 	"text/template"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 const resourceTemplate = `package resources
@@ -95,6 +98,8 @@ func main() {
 	service := args[0]
 	resourceType := args[1]
 
+	caser := cases.Title(language.English)
+
 	data := struct {
 		Service           string
 		ServiceTitle      string
@@ -103,10 +108,10 @@ func main() {
 		Combined          string
 	}{
 		Service:           strings.ToLower(service),
-		ServiceTitle:      strings.Title(service),
+		ServiceTitle:      caser.String(service),
 		ResourceType:      resourceType,
-		ResourceTypeTitle: strings.Title(resourceType),
-		Combined:          fmt.Sprintf("%s%s", strings.Title(service), strings.Title(resourceType)),
+		ResourceTypeTitle: caser.String(resourceType),
+		Combined:          fmt.Sprintf("%s%s", caser.String(service), caser.String(resourceType)),
 	}
 
 	tmpl, err := template.New("resource").Parse(resourceTemplate)

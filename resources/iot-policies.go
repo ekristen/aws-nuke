@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/iot"
 
@@ -108,7 +110,7 @@ func listIoTPolicyDeprecatedVersions(f *IoTPolicy) (*IoTPolicy, error) {
 	}
 
 	for _, policyVersion := range output.PolicyVersions {
-		if *policyVersion.IsDefaultVersion != true {
+		if !ptr.ToBool(policyVersion.IsDefaultVersion) {
 			deprecatedVersions = append(deprecatedVersions, policyVersion.VersionId)
 		}
 	}

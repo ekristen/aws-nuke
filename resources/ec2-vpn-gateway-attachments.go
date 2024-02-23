@@ -58,8 +58,8 @@ func (l *EC2VPNGatewayAttachmentLister) List(_ context.Context, o interface{}) (
 		for _, vgw := range resp.VpnGateways {
 			resources = append(resources, &EC2VPNGatewayAttachment{
 				svc:     svc,
-				vpcId:   *vpc.VpcId,
-				vpnId:   *vgw.VpnGatewayId,
+				vpcID:   *vpc.VpcId,
+				vpnID:   *vgw.VpnGatewayId,
 				vpcTags: vpc.Tags,
 				vgwTags: vgw.Tags,
 			})
@@ -71,8 +71,8 @@ func (l *EC2VPNGatewayAttachmentLister) List(_ context.Context, o interface{}) (
 
 type EC2VPNGatewayAttachment struct {
 	svc     *ec2.EC2
-	vpcId   string
-	vpnId   string
+	vpcID   string
+	vpnID   string
 	state   string
 	vpcTags []*ec2.Tag
 	vgwTags []*ec2.Tag
@@ -87,8 +87,8 @@ func (v *EC2VPNGatewayAttachment) Filter() error {
 
 func (v *EC2VPNGatewayAttachment) Remove(_ context.Context) error {
 	params := &ec2.DetachVpnGatewayInput{
-		VpcId:        &v.vpcId,
-		VpnGatewayId: &v.vpnId,
+		VpcId:        &v.vpcID,
+		VpnGatewayId: &v.vpnID,
 	}
 
 	_, err := v.svc.DetachVpnGateway(params)
@@ -111,5 +111,5 @@ func (v *EC2VPNGatewayAttachment) Properties() types.Properties {
 }
 
 func (v *EC2VPNGatewayAttachment) String() string {
-	return fmt.Sprintf("%s -> %s", v.vpnId, v.vpcId)
+	return fmt.Sprintf("%s -> %s", v.vpnID, v.vpcID)
 }

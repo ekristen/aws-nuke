@@ -41,7 +41,7 @@ func (l *ServiceCatalogConstraintPortfolioAttachmentLister) List(_ context.Conte
 		PageSize: aws.Int64(20),
 	}
 
-	//List all Portfolios
+	// list all portfolios
 	for {
 		resp, err := svc.ListPortfolios(params)
 		if err != nil {
@@ -52,9 +52,7 @@ func (l *ServiceCatalogConstraintPortfolioAttachmentLister) List(_ context.Conte
 			return nil, err
 		}
 
-		for _, portfolioDetail := range resp.PortfolioDetails {
-			portfolios = append(portfolios, portfolioDetail)
-		}
+		portfolios = append(portfolios, resp.PortfolioDetails...)
 
 		if resp.NextPageToken == nil {
 			break
@@ -68,7 +66,6 @@ func (l *ServiceCatalogConstraintPortfolioAttachmentLister) List(_ context.Conte
 	}
 
 	for _, portfolio := range portfolios {
-
 		constraintParams.PortfolioId = portfolio.Id
 		resp, err := svc.ListConstraintsForPortfolio(constraintParams)
 		if err != nil {

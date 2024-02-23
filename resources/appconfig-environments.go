@@ -17,7 +17,7 @@ import (
 
 type AppConfigEnvironment struct {
 	svc           *appconfig.AppConfig
-	applicationId *string
+	applicationID *string
 	id            *string
 	name          *string
 }
@@ -59,7 +59,7 @@ func (l *AppConfigEnvironmentLister) List(ctx context.Context, o interface{}) ([
 			for _, item := range page.Items {
 				resources = append(resources, &AppConfigEnvironment{
 					svc:           svc,
-					applicationId: application.id,
+					applicationID: application.id,
 					id:            item.Id,
 					name:          item.Name,
 				})
@@ -75,7 +75,7 @@ func (l *AppConfigEnvironmentLister) List(ctx context.Context, o interface{}) ([
 
 func (f *AppConfigEnvironment) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteEnvironment(&appconfig.DeleteEnvironmentInput{
-		ApplicationId: f.applicationId,
+		ApplicationId: f.applicationID,
 		EnvironmentId: f.id,
 	})
 	return err
@@ -83,7 +83,7 @@ func (f *AppConfigEnvironment) Remove(_ context.Context) error {
 
 func (f *AppConfigEnvironment) Properties() types.Properties {
 	return types.NewProperties().
-		Set("ApplicationID", f.applicationId).
+		Set("ApplicationID", f.applicationID).
 		Set("ID", f.id).
 		Set("Name", f.name)
 }

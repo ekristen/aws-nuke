@@ -3,6 +3,7 @@ package resources
 import (
 	"context"
 
+	"github.com/gotidy/ptr"
 	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go/service/iam"
@@ -61,7 +62,7 @@ func (l *IAMInstanceProfileLister) List(_ context.Context, o interface{}) ([]res
 			})
 		}
 
-		if *resp.IsTruncated == false {
+		if !ptr.ToBool(resp.IsTruncated) {
 			break
 		}
 

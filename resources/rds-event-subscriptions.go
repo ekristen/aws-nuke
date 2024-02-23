@@ -43,12 +43,12 @@ func (l *RDSEventSubscriptionLister) List(_ context.Context, o interface{}) ([]r
 	if err != nil {
 		return nil, err
 	}
+
 	var resources []resource.Resource
 	for _, eventSubscription := range resp.EventSubscriptionsList {
 		tags, err := svc.ListTagsForResource(&rds.ListTagsForResourceInput{
 			ResourceName: eventSubscription.EventSubscriptionArn,
 		})
-
 		if err != nil {
 			continue
 		}
@@ -59,7 +59,6 @@ func (l *RDSEventSubscriptionLister) List(_ context.Context, o interface{}) ([]r
 			enabled: eventSubscription.Enabled,
 			tags:    tags.TagList,
 		})
-
 	}
 
 	return resources, nil

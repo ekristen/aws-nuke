@@ -85,7 +85,7 @@ func (r *WAFRegionalRegexPatternString) Remove(_ context.Context) error {
 		ChangeToken:       tokenOutput.ChangeToken,
 		RegexPatternSetId: r.patternSetID,
 		Updates: []*waf.RegexPatternSetUpdate{
-			&waf.RegexPatternSetUpdate{
+			{
 				Action:             aws.String("DELETE"),
 				RegexPatternString: r.patternString,
 			},

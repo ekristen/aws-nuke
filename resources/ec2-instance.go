@@ -2,19 +2,21 @@ package resources
 
 import (
 	"context"
-	"github.com/ekristen/libnuke/pkg/settings"
-
 	"errors"
 	"fmt"
-	"github.com/ekristen/aws-nuke/pkg/nuke"
-	"github.com/ekristen/libnuke/pkg/registry"
-	"github.com/ekristen/libnuke/pkg/resource"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ec2"
+
+	"github.com/ekristen/libnuke/pkg/registry"
+	"github.com/ekristen/libnuke/pkg/resource"
+	libsettings "github.com/ekristen/libnuke/pkg/settings"
 	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/awsutil"
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 const EC2InstanceResource = "EC2Instance"
@@ -66,10 +68,10 @@ type EC2Instance struct {
 	svc      *ec2.EC2
 	instance *ec2.Instance
 
-	settings *settings.Setting
+	settings *libsettings.Setting
 }
 
-func (i *EC2Instance) Settings(setting *settings.Setting) {
+func (i *EC2Instance) Settings(setting *libsettings.Setting) {
 	i.settings = setting
 }
 
@@ -90,7 +92,7 @@ func (i *EC2Instance) Remove(_ context.Context) error {
 		ok := errors.As(err, &awsErr)
 
 		// Check for Termination Protection, disable it, and try termination again.
-		if ok && awsErr.Code() == "OperationNotPermitted" &&
+		if ok && awsErr.Code() == awsutil.ErrCodeOperationNotPermitted &&
 			awsErr.Message() == "The instance '"+*i.instance.InstanceId+"' may not be "+
 				"terminated. Modify its 'disableApiTermination' instance attribute and "+
 				"try again." && i.settings.Get("DisableDeletionProtection").(bool) {

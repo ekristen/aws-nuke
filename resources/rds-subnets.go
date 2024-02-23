@@ -40,12 +40,12 @@ func (l *RDSDBSubnetGroupLister) List(_ context.Context, o interface{}) ([]resou
 	if err != nil {
 		return nil, err
 	}
+
 	var resources []resource.Resource
 	for _, subnetGroup := range resp.DBSubnetGroups {
 		tags, err := svc.ListTagsForResource(&rds.ListTagsForResourceInput{
 			ResourceName: subnetGroup.DBSubnetGroupArn,
 		})
-
 		if err != nil {
 			continue
 		}
@@ -55,7 +55,6 @@ func (l *RDSDBSubnetGroupLister) List(_ context.Context, o interface{}) ([]resou
 			name: subnetGroup.DBSubnetGroupName,
 			tags: tags.TagList,
 		})
-
 	}
 
 	return resources, nil

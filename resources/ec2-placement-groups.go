@@ -2,7 +2,6 @@ package resources
 
 import (
 	"context"
-
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -10,6 +9,7 @@ import (
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 
+	"github.com/ekristen/aws-nuke/pkg/awsutil"
 	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
@@ -55,7 +55,7 @@ type EC2PlacementGroup struct {
 }
 
 func (p *EC2PlacementGroup) Filter() error {
-	if p.state == "deleted" {
+	if p.state == awsutil.StateDeleted {
 		return fmt.Errorf("already deleted")
 	}
 	return nil

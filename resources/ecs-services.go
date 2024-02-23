@@ -44,9 +44,7 @@ func (l *ECSServiceLister) List(_ context.Context, o interface{}) ([]resource.Re
 			return nil, err
 		}
 
-		for _, clusterArn := range output.ClusterArns {
-			clusters = append(clusters, clusterArn)
-		}
+		clusters = append(clusters, output.ClusterArns...)
 
 		if output.NextToken == nil {
 			break

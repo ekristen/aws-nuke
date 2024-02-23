@@ -44,9 +44,7 @@ func (l *ECSClusterInstanceLister) List(_ context.Context, o interface{}) ([]res
 			return nil, err
 		}
 
-		for _, clusterArn := range output.ClusterArns {
-			clusters = append(clusters, clusterArn)
-		}
+		clusters = append(clusters, output.ClusterArns...)
 
 		if output.NextToken == nil {
 			break

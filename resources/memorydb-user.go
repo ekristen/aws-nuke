@@ -60,7 +60,6 @@ func (l *MemoryDBUserLister) List(_ context.Context, o interface{}) ([]resource.
 				name: user.Name,
 				tags: tags.TagList,
 			})
-
 		}
 
 		if resp.NextToken == nil {
@@ -75,7 +74,7 @@ func (l *MemoryDBUserLister) List(_ context.Context, o interface{}) ([]resource.
 
 func (i *MemoryDBUser) Filter() error {
 	if strings.EqualFold(*i.name, "default") {
-		return fmt.Errorf("Cannot delete default user")
+		return fmt.Errorf("cannot delete default user")
 	}
 	return nil
 }

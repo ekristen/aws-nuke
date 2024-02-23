@@ -52,9 +52,7 @@ func (l *AppMeshVirtualGatewayLister) List(_ context.Context, o interface{}) ([]
 				MeshName: meshName,
 			},
 			func(page *appmesh.ListVirtualGatewaysOutput, lastPage bool) bool {
-				for _, vg := range page.VirtualGateways {
-					vgs = append(vgs, vg)
-				}
+				vgs = append(vgs, page.VirtualGateways...)
 				return lastPage
 			},
 		)

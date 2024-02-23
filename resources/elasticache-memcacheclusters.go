@@ -47,8 +47,8 @@ func (l *ElasticacheCacheClusterLister) List(_ context.Context, o interface{}) (
 			clusterID: cacheCluster.CacheClusterId,
 			status:    cacheCluster.CacheClusterStatus,
 		})
-
 	}
+
 	return resources, nil
 }
 

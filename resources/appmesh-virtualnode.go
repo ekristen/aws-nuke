@@ -53,9 +53,7 @@ func (l *AppMeshVirtualNodeLister) List(_ context.Context, o interface{}) ([]res
 				MeshName: meshName,
 			},
 			func(page *appmesh.ListVirtualNodesOutput, lastPage bool) bool {
-				for _, vn := range page.VirtualNodes {
-					vns = append(vns, vn)
-				}
+				vns = append(vns, page.VirtualNodes...)
 				return lastPage
 			},
 		)

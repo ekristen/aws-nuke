@@ -63,7 +63,6 @@ type BatchJobQueue struct {
 }
 
 func (f *BatchJobQueue) Remove(_ context.Context) error {
-
 	_, err := f.svc.DeleteJobQueue(&batch.DeleteJobQueueInput{
 		JobQueue: f.jobQueue,
 	})

@@ -48,7 +48,7 @@ func (l *DAXParameterGroupLister) List(_ context.Context, o interface{}) ([]reso
 		}
 
 		for _, parameterGroup := range output.ParameterGroups {
-			//Ensure default is not deleted
+			// ensure default is not deleted
 			if !strings.Contains(*parameterGroup.ParameterGroupName, "default") {
 				resources = append(resources, &DAXParameterGroup{
 					svc:                svc,

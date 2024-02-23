@@ -41,7 +41,7 @@ func (l *ServiceCatalogTagOptionPortfolioAttachmentLister) List(_ context.Contex
 		PageSize: aws.Int64(20),
 	}
 
-	//List all Tag Options
+	// list all tag options
 	for {
 		resp, err := svc.ListTagOptions(params)
 		if err != nil {
@@ -52,9 +52,7 @@ func (l *ServiceCatalogTagOptionPortfolioAttachmentLister) List(_ context.Contex
 			return nil, err
 		}
 
-		for _, tagOptionDetail := range resp.TagOptionDetails {
-			tagOptions = append(tagOptions, tagOptionDetail)
-		}
+		tagOptions = append(tagOptions, resp.TagOptionDetails...)
 
 		if resp.PageToken == nil {
 			break
@@ -68,7 +66,6 @@ func (l *ServiceCatalogTagOptionPortfolioAttachmentLister) List(_ context.Contex
 	}
 
 	for _, tagOption := range tagOptions {
-
 		resourceParams.TagOptionId = tagOption.Id
 		resp, err := svc.ListResourcesForTagOption(resourceParams)
 		if err != nil {

@@ -45,9 +45,7 @@ func (l *ServiceCatalogPrincipalPortfolioAttachmentLister) List(_ context.Contex
 			return nil, err
 		}
 
-		for _, portfolioDetail := range resp.PortfolioDetails {
-			portfolios = append(portfolios, portfolioDetail)
-		}
+		portfolios = append(portfolios, resp.PortfolioDetails...)
 
 		if resp.NextPageToken == nil {
 			break

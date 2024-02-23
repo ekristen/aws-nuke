@@ -29,19 +29,6 @@ func (l *MediaConvertJobTemplateLister) List(_ context.Context, o interface{}) (
 
 	svc := mediaconvert.New(opts.Session)
 	resources := make([]resource.Resource, 0)
-	var mediaEndpoint *string
-
-	output, err := svc.DescribeEndpoints(&mediaconvert.DescribeEndpointsInput{})
-	if err != nil {
-		return nil, err
-	}
-
-	for _, endpoint := range output.Endpoints {
-		mediaEndpoint = endpoint.Url
-	}
-
-	// Update svc to use custom media endpoint
-	svc.Endpoint = *mediaEndpoint
 
 	params := &mediaconvert.ListJobTemplatesInput{
 		MaxResults: aws.Int64(20),

@@ -67,7 +67,6 @@ type RoboMakerSimulationApplication struct {
 }
 
 func (f *RoboMakerSimulationApplication) Remove(_ context.Context) error {
-
 	request := robomaker.DeleteSimulationApplicationInput{
 		Application: f.arn,
 	}

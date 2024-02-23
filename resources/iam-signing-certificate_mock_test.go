@@ -22,14 +22,14 @@ func Test_Mock_IAMSigningCertificate_Remove(t *testing.T) {
 
 	iamSigningCertificate := IAMSigningCertificate{
 		svc:           mockIAM,
-		certificateId: aws.String("certid:foobar"),
+		certificateID: aws.String("certid:foobar"),
 		userName:      aws.String("user:foobar"),
 		status:        aws.String("unknown"),
 	}
 
 	mockIAM.EXPECT().DeleteSigningCertificate(gomock.Eq(&iam.DeleteSigningCertificateInput{
 		UserName:      iamSigningCertificate.userName,
-		CertificateId: iamSigningCertificate.certificateId,
+		CertificateId: iamSigningCertificate.certificateID,
 	})).Return(&iam.DeleteSigningCertificateOutput{}, nil)
 
 	err := iamSigningCertificate.Remove(context.TODO())

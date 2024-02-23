@@ -56,7 +56,10 @@ func (l *ImageBuilderComponentLister) List(_ context.Context, o interface{}) ([]
 	return resources, nil
 }
 
-func ListImageBuilderComponentVersions(svc *imagebuilder.Imagebuilder, componentVersionArn *string, resources []resource.Resource) ([]resource.Resource, error) {
+func ListImageBuilderComponentVersions(
+	svc *imagebuilder.Imagebuilder,
+	componentVersionArn *string,
+	resources []resource.Resource) ([]resource.Resource, error) {
 	params := &imagebuilder.ListComponentBuildVersionsInput{
 		ComponentVersionArn: componentVersionArn,
 	}

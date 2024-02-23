@@ -2,8 +2,9 @@ package resources
 
 import (
 	"context"
-
 	"fmt"
+
+	"github.com/gotidy/ptr"
 
 	"github.com/aws/aws-sdk-go/service/appstream"
 
@@ -64,7 +65,6 @@ func (l *AppStreamFleetStateLister) List(_ context.Context, o interface{}) ([]re
 }
 
 func (f *AppStreamFleetState) Remove(_ context.Context) error {
-
 	_, err := f.svc.StopFleet(&appstream.StopFleetInput{
 		Name: f.name,
 	})
@@ -77,9 +77,9 @@ func (f *AppStreamFleetState) String() string {
 }
 
 func (f *AppStreamFleetState) Filter() error {
-	if *f.state == "STOPPED" {
+	if ptr.ToString(f.state) == appstream.FleetStateStopped {
 		return fmt.Errorf("already stopped")
-	} else if *f.state == "DELETING" {
+	} else if ptr.ToString(f.state) == "DELETING" {
 		return fmt.Errorf("already being deleted")
 	}
 

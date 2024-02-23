@@ -29,12 +29,12 @@ func (l *MSKClusterLister) List(_ context.Context, o interface{}) ([]resource.Re
 	opts := o.(*nuke.ListerOpts)
 
 	svc := kafka.New(opts.Session)
-	params := &kafka.ListClustersInput{}
-	resp, err := svc.ListClusters(params)
 
+	resp, err := svc.ListClusters(&kafka.ListClustersInput{})
 	if err != nil {
 		return nil, err
 	}
+
 	resources := make([]resource.Resource, 0)
 	for _, cluster := range resp.ClusterInfoList {
 		resources = append(resources, &MSKCluster{
@@ -43,8 +43,8 @@ func (l *MSKClusterLister) List(_ context.Context, o interface{}) ([]resource.Re
 			name: *cluster.ClusterName,
 			tags: cluster.Tags,
 		})
-
 	}
+
 	return resources, nil
 }
 

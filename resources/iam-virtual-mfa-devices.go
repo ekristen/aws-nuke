@@ -43,8 +43,8 @@ func (l *IAMVirtualMFADeviceLister) List(_ context.Context, o interface{}) ([]re
 	for _, out := range resp.VirtualMFADevices {
 		resources = append(resources, &IAMVirtualMFADevice{
 			svc:          svc,
-			userId:       out.User.UserId,
-			userArn:      out.User.Arn,
+			userID:       out.User.UserId,
+			userARN:      out.User.Arn,
 			userName:     out.User.UserName,
 			serialNumber: out.SerialNumber,
 		})
@@ -55,15 +55,15 @@ func (l *IAMVirtualMFADeviceLister) List(_ context.Context, o interface{}) ([]re
 
 type IAMVirtualMFADevice struct {
 	svc          iamiface.IAMAPI
-	userId       *string
-	userArn      *string
+	userID       *string
+	userARN      *string
 	userName     *string
 	serialNumber *string
 }
 
 func (v *IAMVirtualMFADevice) Filter() error {
 	isRoot := false
-	if ptr.ToString(v.userArn) == fmt.Sprintf("arn:aws:iam::%s:root", ptr.ToString(v.userId)) {
+	if ptr.ToString(v.userARN) == fmt.Sprintf("arn:aws:iam::%s:root", ptr.ToString(v.userID)) {
 		isRoot = true
 	}
 	if strings.HasSuffix(ptr.ToString(v.serialNumber), "/root-account-mfa-device") {

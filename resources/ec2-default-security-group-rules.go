@@ -69,7 +69,7 @@ func (l *EC2DefaultSecurityGroupRuleLister) List(_ context.Context, o interface{
 				resources = append(resources, &EC2DefaultSecurityGroupRule{
 					svc:      svc,
 					id:       rule.SecurityGroupRuleId,
-					groupId:  rule.GroupId,
+					groupID:  rule.GroupId,
 					isEgress: rule.IsEgress,
 				})
 			}
@@ -85,7 +85,7 @@ func (l *EC2DefaultSecurityGroupRuleLister) List(_ context.Context, o interface{
 type EC2DefaultSecurityGroupRule struct {
 	svc      *ec2.EC2
 	id       *string
-	groupId  *string
+	groupID  *string
 	isEgress *bool
 }
 
@@ -94,7 +94,7 @@ func (r *EC2DefaultSecurityGroupRule) Remove(_ context.Context) error {
 	rules[0] = r.id
 	if *r.isEgress {
 		params := &ec2.RevokeSecurityGroupEgressInput{
-			GroupId:              r.groupId,
+			GroupId:              r.groupID,
 			SecurityGroupRuleIds: rules,
 		}
 		_, err := r.svc.RevokeSecurityGroupEgress(params)
@@ -104,7 +104,7 @@ func (r *EC2DefaultSecurityGroupRule) Remove(_ context.Context) error {
 		}
 	} else {
 		params := &ec2.RevokeSecurityGroupIngressInput{
-			GroupId:              r.groupId,
+			GroupId:              r.groupID,
 			SecurityGroupRuleIds: rules,
 		}
 		_, err := r.svc.RevokeSecurityGroupIngress(params)
@@ -119,7 +119,7 @@ func (r *EC2DefaultSecurityGroupRule) Remove(_ context.Context) error {
 
 func (r *EC2DefaultSecurityGroupRule) Properties() types.Properties {
 	properties := types.NewProperties()
-	properties.Set("SecurityGroupId", r.groupId)
+	properties.Set("SecurityGroupId", r.groupID)
 	return properties
 }
 

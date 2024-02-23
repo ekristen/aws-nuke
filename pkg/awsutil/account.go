@@ -16,7 +16,7 @@ import (
 )
 
 type Account struct {
-	Credentials
+	*Credentials
 
 	id              string
 	arn             string
@@ -26,7 +26,7 @@ type Account struct {
 	disabledRegions []string
 }
 
-func NewAccount(creds Credentials, endpoints config.CustomEndpoints) (*Account, error) {
+func NewAccount(creds *Credentials, endpoints config.CustomEndpoints) (*Account, error) {
 	creds.CustomEndpoints = endpoints
 	account := Account{
 		Credentials: creds,

@@ -46,7 +46,6 @@ func (l *EFSFileSystemLister) List(_ context.Context, o interface{}) ([]resource
 			name:    *fs.CreationToken,
 			tagList: lto.Tags,
 		})
-
 	}
 
 	return resources, nil

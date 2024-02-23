@@ -22,7 +22,7 @@ func Test_Mock_IAMRolePolicy_Remove(t *testing.T) {
 
 	iamRolePolicy := IAMRolePolicy{
 		svc:        mockIAM,
-		roleId:     "role:foobar-id",
+		roleID:     "role:foobar-id",
 		roleName:   "role:foobar",
 		policyName: "policy:foobar",
 		roleTags:   []*iam.Tag{},

@@ -42,12 +42,11 @@ func (l *BillingCostandUsageReportLister) List(_ context.Context, o interface{})
 	}
 
 	reports := make([]*costandusagereportservice.ReportDefinition, 0)
-	err := svc.DescribeReportDefinitionsPages(params, func(page *costandusagereportservice.DescribeReportDefinitionsOutput, lastPage bool) bool {
-		for _, out := range page.ReportDefinitions {
-			reports = append(reports, out)
-		}
-		return true
-	})
+	err := svc.DescribeReportDefinitionsPages(
+		params, func(page *costandusagereportservice.DescribeReportDefinitionsOutput, lastPage bool) bool {
+			reports = append(reports, page.ReportDefinitions...)
+			return true
+		})
 	if err != nil {
 		return nil, err
 	}

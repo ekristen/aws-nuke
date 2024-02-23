@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"fmt"
 
 	"strings"
 
@@ -124,5 +125,5 @@ func (i *DynamoDBTableItem) Properties() types.Properties {
 }
 
 func (i *DynamoDBTableItem) String() string {
-	return i.table.String() + " -> " + i.keyValue
+	return fmt.Sprintf("%s -> %s", i.table.String(), i.keyValue)
 }

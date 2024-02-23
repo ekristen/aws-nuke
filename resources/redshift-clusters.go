@@ -75,7 +75,6 @@ func (f *RedshiftCluster) Properties() types.Properties {
 }
 
 func (f *RedshiftCluster) Remove(_ context.Context) error {
-
 	_, err := f.svc.DeleteCluster(&redshift.DeleteClusterInput{
 		ClusterIdentifier:        f.cluster.ClusterIdentifier,
 		SkipFinalClusterSnapshot: aws.Bool(true),

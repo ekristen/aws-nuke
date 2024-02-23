@@ -2,7 +2,6 @@ package resources
 
 import (
 	"context"
-
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -56,7 +55,7 @@ func (l *Route53TrafficPolicyLister) List(_ context.Context, o interface{}) ([]r
 			})
 		}
 
-		if aws.BoolValue(resp.IsTruncated) == false {
+		if !aws.BoolValue(resp.IsTruncated) {
 			break
 		}
 		params.TrafficPolicyIdMarker = resp.TrafficPolicyIdMarker
@@ -79,11 +78,9 @@ func instancesForPolicy(svc *route53.Route53, policyID *string, version *int64) 
 			return nil, err
 		}
 
-		for _, instance := range resp.TrafficPolicyInstances {
-			instances = append(instances, instance)
-		}
+		instances = append(instances, resp.TrafficPolicyInstances...)
 
-		if aws.BoolValue(resp.IsTruncated) == false {
+		if !aws.BoolValue(resp.IsTruncated) {
 			break
 		}
 

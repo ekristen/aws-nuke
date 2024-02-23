@@ -2,18 +2,20 @@ package account
 
 import (
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws/endpoints"
-	"github.com/ekristen/aws-nuke/pkg/awsutil"
-	"github.com/ekristen/aws-nuke/pkg/config"
-	libconfig "github.com/ekristen/libnuke/pkg/config"
-	"github.com/ekristen/libnuke/pkg/registry"
-	"github.com/sirupsen/logrus"
 
+	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 
+	"github.com/aws/aws-sdk-go/aws/endpoints"
+
+	libconfig "github.com/ekristen/libnuke/pkg/config"
+	"github.com/ekristen/libnuke/pkg/registry"
+
+	"github.com/ekristen/aws-nuke/pkg/awsutil"
 	"github.com/ekristen/aws-nuke/pkg/commands/global"
 	"github.com/ekristen/aws-nuke/pkg/commands/nuke"
 	"github.com/ekristen/aws-nuke/pkg/common"
+	"github.com/ekristen/aws-nuke/pkg/config"
 )
 
 func execute(c *cli.Context) error {
@@ -81,8 +83,8 @@ func execute(c *cli.Context) error {
 		if creds.RoleSessionName != "" {
 			fmt.Println("> Session Name:    ", creds.RoleSessionName)
 		}
-		if creds.ExternalId != "" {
-			fmt.Println("> External ID:     ", creds.ExternalId)
+		if creds.ExternalID != "" {
+			fmt.Println("> External ID:     ", creds.ExternalID)
 		}
 	}
 

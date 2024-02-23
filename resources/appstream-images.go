@@ -2,9 +2,10 @@ package resources
 
 import (
 	"context"
-
 	"fmt"
 	"strings"
+
+	"github.com/gotidy/ptr"
 
 	"github.com/aws/aws-sdk-go/service/appstream"
 
@@ -69,7 +70,7 @@ func (f *AppStreamImage) String() string {
 }
 
 func (f *AppStreamImage) Filter() error {
-	if strings.ToUpper(*f.visibility) == "PUBLIC" {
+	if strings.EqualFold(ptr.ToString(f.visibility), "PUBLIC") {
 		return fmt.Errorf("cannot delete public AWS images")
 	}
 	return nil

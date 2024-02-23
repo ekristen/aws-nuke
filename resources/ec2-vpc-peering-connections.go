@@ -2,7 +2,6 @@ package resources
 
 import (
 	"context"
-
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -10,6 +9,7 @@ import (
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 
+	"github.com/ekristen/aws-nuke/pkg/awsutil"
 	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
@@ -57,9 +57,10 @@ type EC2VPCPeeringConnection struct {
 }
 
 func (p *EC2VPCPeeringConnection) Filter() error {
-	if *p.status == "deleting" || *p.status == "deleted" {
+	if *p.status == awsutil.StateDeleting || *p.status == awsutil.StateDeleted {
 		return fmt.Errorf("already deleted")
 	}
+
 	return nil
 }
 

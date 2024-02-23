@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/sirupsen/logrus"
 
@@ -95,5 +96,5 @@ func (e *IAMServiceSpecificCredential) Properties() types.Properties {
 }
 
 func (e *IAMServiceSpecificCredential) String() string {
-	return e.userName + " -> " + e.name
+	return fmt.Sprintf("%s -> %s", e.userName, e.name)
 }

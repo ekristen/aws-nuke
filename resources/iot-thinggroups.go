@@ -40,9 +40,8 @@ func (l *IoTThingGroupLister) List(_ context.Context, o interface{}) ([]resource
 			return nil, err
 		}
 
-		for _, thingGroup := range output.ThingGroups {
-			thingGroups = append(thingGroups, thingGroup)
-		}
+		thingGroups = append(thingGroups, output.ThingGroups...)
+
 		if output.NextToken == nil {
 			break
 		}

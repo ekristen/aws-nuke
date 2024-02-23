@@ -123,7 +123,7 @@ func GetVPC(svc *ec2.EC2, vpcID *string) (*ec2.Vpc, error) {
 	}
 
 	if len(resp.Vpcs) == 0 {
-		return nil, nil
+		return nil, nil //nolint:nilnil
 	}
 
 	return resp.Vpcs[0], nil

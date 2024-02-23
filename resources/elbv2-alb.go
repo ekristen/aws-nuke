@@ -2,8 +2,6 @@ package resources
 
 import (
 	"context"
-	"github.com/ekristen/libnuke/pkg/settings"
-
 	"errors"
 	"time"
 
@@ -13,6 +11,7 @@ import (
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	libsettings "github.com/ekristen/libnuke/pkg/settings"
 	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/pkg/nuke"
@@ -22,7 +21,7 @@ type ELBv2LoadBalancer struct {
 	svc      *elbv2.ELBV2
 	tags     []*elbv2.Tag
 	elb      *elbv2.LoadBalancer
-	settings *settings.Setting
+	settings *libsettings.Setting
 }
 
 const ELBv2Resource = "ELBv2"
@@ -88,7 +87,7 @@ func (l *ELBv2Lister) List(_ context.Context, o interface{}) ([]resource.Resourc
 	return resources, nil
 }
 
-func (e *ELBv2LoadBalancer) Settings(setting *settings.Setting) {
+func (e *ELBv2LoadBalancer) Settings(setting *libsettings.Setting) {
 	e.settings = setting
 }
 

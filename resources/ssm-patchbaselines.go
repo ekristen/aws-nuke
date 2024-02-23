@@ -87,7 +87,6 @@ func (f *SSMPatchBaseline) Remove(_ context.Context) error {
 }
 
 func (f *SSMPatchBaseline) DeregisterFromPatchGroups() error {
-
 	patchBaseLine, err := f.svc.GetPatchBaseline(&ssm.GetPatchBaselineInput{
 		BaselineId: f.ID,
 	})

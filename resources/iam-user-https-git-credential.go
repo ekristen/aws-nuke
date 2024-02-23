@@ -16,7 +16,7 @@ import (
 	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-const IAMUserHTTPSGitCredentialResource = "IAMUserHTTPSGitCredential"
+const IAMUserHTTPSGitCredentialResource = "IAMUserHTTPSGitCredential" //nolint:gosec
 
 func init() {
 	registry.Register(&registry.Registration{

@@ -69,7 +69,6 @@ type EKSCluster struct {
 }
 
 func (f *EKSCluster) Remove(_ context.Context) error {
-
 	_, err := f.svc.DeleteCluster(&eks.DeleteClusterInput{
 		Name: f.name,
 	})

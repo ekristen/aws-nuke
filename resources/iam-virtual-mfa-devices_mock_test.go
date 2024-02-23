@@ -2,10 +2,10 @@ package resources
 
 import (
 	"context"
-	"github.com/gotidy/ptr"
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/aws/aws-sdk-go/service/iam"

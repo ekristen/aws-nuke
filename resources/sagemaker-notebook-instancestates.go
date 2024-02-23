@@ -2,9 +2,10 @@ package resources
 
 import (
 	"context"
-
 	"fmt"
 	"strings"
+
+	"github.com/gotidy/ptr"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sagemaker"
@@ -68,7 +69,6 @@ type SageMakerNotebookInstanceState struct {
 }
 
 func (f *SageMakerNotebookInstanceState) Remove(_ context.Context) error {
-
 	_, err := f.svc.StopNotebookInstance(&sagemaker.StopNotebookInstanceInput{
 		NotebookInstanceName: f.notebookInstanceName,
 	})
@@ -81,7 +81,7 @@ func (f *SageMakerNotebookInstanceState) String() string {
 }
 
 func (f *SageMakerNotebookInstanceState) Filter() error {
-	if strings.ToLower(*f.instanceStatus) == "stopped" {
+	if strings.EqualFold(ptr.ToString(f.instanceStatus), "stopped") {
 		return fmt.Errorf("already stopped")
 	}
 	return nil

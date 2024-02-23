@@ -59,7 +59,6 @@ func (l *MemoryDBACLLister) List(_ context.Context, o interface{}) ([]resource.R
 				name: acl.Name,
 				tags: tags.TagList,
 			})
-
 		}
 
 		if resp.NextToken == nil {

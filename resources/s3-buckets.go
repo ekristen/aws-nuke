@@ -191,7 +191,10 @@ type s3DeleteVersionListIterator struct {
 	objects   []*s3.ObjectVersion
 }
 
-func newS3DeleteVersionListIterator(svc s3iface.S3API, input *s3.ListObjectVersionsInput, opts ...func(*s3DeleteVersionListIterator)) s3manager.BatchDeleteIterator {
+func newS3DeleteVersionListIterator(
+	svc s3iface.S3API,
+	input *s3.ListObjectVersionsInput,
+	opts ...func(*s3DeleteVersionListIterator)) s3manager.BatchDeleteIterator {
 	iter := &s3DeleteVersionListIterator{
 		Bucket: input.Bucket,
 		Paginator: request.Pagination{

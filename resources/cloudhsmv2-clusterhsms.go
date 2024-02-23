@@ -48,7 +48,6 @@ func (l *CloudHSMV2ClusterHSMLister) List(_ context.Context, o interface{}) ([]r
 					hsmID:     hsm.HsmId,
 				})
 			}
-
 		}
 
 		if resp.NextToken == nil {

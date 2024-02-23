@@ -51,7 +51,7 @@ func (l *ManagedBlockchainMemberLister) List(_ context.Context, o interface{}) (
 			resources = append(resources, &ManagedBlockchainMember{
 				svc:       svc,
 				id:        r.Id,
-				networkId: n.Id,
+				networkID: n.Id,
 				name:      r.Name,
 				member:    r,
 			})
@@ -64,14 +64,14 @@ func (l *ManagedBlockchainMemberLister) List(_ context.Context, o interface{}) (
 type ManagedBlockchainMember struct {
 	svc       *managedblockchain.ManagedBlockchain
 	id        *string
-	networkId *string
+	networkID *string
 	name      *string
 	member    *managedblockchain.MemberSummary
 }
 
 func (r *ManagedBlockchainMember) Remove(_ context.Context) error {
 	_, err := r.svc.DeleteMember(&managedblockchain.DeleteMemberInput{
-		NetworkId: r.networkId,
+		NetworkId: r.networkID,
 		MemberId:  r.id,
 	})
 	if err != nil {

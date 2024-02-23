@@ -2,7 +2,6 @@ package resources
 
 import (
 	"context"
-
 	"fmt"
 
 	"github.com/gotidy/ptr"
@@ -13,6 +12,7 @@ import (
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
+	"github.com/ekristen/aws-nuke/pkg/awsutil"
 	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
@@ -58,7 +58,7 @@ type EC2NATGateway struct {
 }
 
 func (n *EC2NATGateway) Filter() error {
-	if *n.natgw.State == "deleted" {
+	if *n.natgw.State == awsutil.StateDeleted {
 		return fmt.Errorf("already deleted")
 	}
 	return nil

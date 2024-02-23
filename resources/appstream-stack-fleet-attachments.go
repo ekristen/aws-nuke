@@ -2,7 +2,6 @@ package resources
 
 import (
 	"context"
-
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/service/appstream"
@@ -45,9 +44,7 @@ func (l *AppStreamStackFleetAttachmentLister) List(_ context.Context, o interfac
 			return nil, err
 		}
 
-		for _, stack := range output.Stacks {
-			stacks = append(stacks, stack)
-		}
+		stacks = append(stacks, output.Stacks...)
 
 		if output.NextToken == nil {
 			break
@@ -58,7 +55,6 @@ func (l *AppStreamStackFleetAttachmentLister) List(_ context.Context, o interfac
 
 	stackAssocParams := &appstream.ListAssociatedFleetsInput{}
 	for _, stack := range stacks {
-
 		stackAssocParams.StackName = stack.Name
 		output, err := svc.ListAssociatedFleets(stackAssocParams)
 		if err != nil {
@@ -78,7 +74,6 @@ func (l *AppStreamStackFleetAttachmentLister) List(_ context.Context, o interfac
 }
 
 func (f *AppStreamStackFleetAttachment) Remove(_ context.Context) error {
-
 	_, err := f.svc.DisassociateFleet(&appstream.DisassociateFleetInput{
 		StackName: f.stackName,
 		FleetName: f.fleetName,

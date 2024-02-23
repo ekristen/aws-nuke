@@ -2,13 +2,13 @@ package resources
 
 import (
 	"context"
-	"github.com/ekristen/libnuke/pkg/settings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/lightsail"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	libsettings "github.com/ekristen/libnuke/pkg/settings"
 	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/pkg/nuke"
@@ -63,10 +63,10 @@ type LightsailInstance struct {
 	instanceName *string
 	tags         []*lightsail.Tag
 
-	settings *settings.Setting
+	settings *libsettings.Setting
 }
 
-func (f *LightsailInstance) Settings(setting *settings.Setting) {
+func (f *LightsailInstance) Settings(setting *libsettings.Setting) {
 	f.settings = setting
 }
 

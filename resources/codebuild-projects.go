@@ -30,7 +30,6 @@ func GetTags(svc *codebuild.CodeBuild, project *string) map[string]*string {
 
 	for _, project := range batchResult.Projects {
 		if len(project.Tags) > 0 {
-
 			for _, v := range project.Tags {
 				tags[*v.Key] = v.Value
 			}

@@ -3,10 +3,13 @@ package resources
 import (
 	"context"
 
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go/service/opsworkscm"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
@@ -61,5 +64,11 @@ func (f *OpsWorksCMServer) Remove(_ context.Context) error {
 }
 
 func (f *OpsWorksCMServer) String() string {
-	return *f.name
+	return ptr.ToString(f.name)
+}
+
+func (f *OpsWorksCMServer) Properties() types.Properties {
+	return types.NewProperties().
+		Set("Name", f.name).
+		Set("Status", f.status)
 }

@@ -58,7 +58,6 @@ func (l *MemoryDBSubnetGroupLister) List(_ context.Context, o interface{}) ([]re
 				name: subnetGroup.Name,
 				tags: tags.TagList,
 			})
-
 		}
 
 		if resp.NextToken == nil {

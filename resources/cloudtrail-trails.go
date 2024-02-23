@@ -33,14 +33,15 @@ func (l *CloudTrailTrailLister) List(_ context.Context, o interface{}) ([]resour
 	if err != nil {
 		return nil, err
 	}
+
 	resources := make([]resource.Resource, 0)
 	for _, trail := range resp.TrailList {
 		resources = append(resources, &CloudTrailTrail{
 			svc:  svc,
 			name: trail.Name,
 		})
-
 	}
+
 	return resources, nil
 }
 

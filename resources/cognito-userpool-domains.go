@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/sirupsen/logrus"
 
@@ -60,7 +61,7 @@ func (l *CognitoUserPoolDomainLister) List(ctx context.Context, o interface{}) (
 			svc:          svc,
 			name:         userPoolDetails.UserPool.Domain,
 			userPoolName: userPool.name,
-			userPoolId:   userPool.id,
+			userPoolID:   userPool.id,
 		})
 	}
 
@@ -71,13 +72,13 @@ type CognitoUserPoolDomain struct {
 	svc          *cognitoidentityprovider.CognitoIdentityProvider
 	name         *string
 	userPoolName *string
-	userPoolId   *string
+	userPoolID   *string
 }
 
 func (f *CognitoUserPoolDomain) Remove(_ context.Context) error {
 	params := &cognitoidentityprovider.DeleteUserPoolDomainInput{
 		Domain:     f.name,
-		UserPoolId: f.userPoolId,
+		UserPoolId: f.userPoolID,
 	}
 	_, err := f.svc.DeleteUserPoolDomain(params)
 
@@ -85,5 +86,5 @@ func (f *CognitoUserPoolDomain) Remove(_ context.Context) error {
 }
 
 func (f *CognitoUserPoolDomain) String() string {
-	return *f.userPoolName + " -> " + *f.name
+	return fmt.Sprintf("%s -> %s", *f.userPoolName, *f.name)
 }

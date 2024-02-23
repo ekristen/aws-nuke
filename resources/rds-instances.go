@@ -2,8 +2,6 @@ package resources
 
 import (
 	"context"
-	"github.com/ekristen/libnuke/pkg/settings"
-
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -11,6 +9,7 @@ import (
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	libsettings "github.com/ekristen/libnuke/pkg/settings"
 	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/pkg/nuke"
@@ -31,7 +30,7 @@ type RDSInstance struct {
 	instance *rds.DBInstance
 	tags     []*rds.Tag
 
-	settings *settings.Setting
+	settings *libsettings.Setting
 }
 
 type RDSInstanceLister struct{}
@@ -67,7 +66,7 @@ func (l *RDSInstanceLister) List(_ context.Context, o interface{}) ([]resource.R
 	return resources, nil
 }
 
-func (i *RDSInstance) Settings(settings *settings.Setting) {
+func (i *RDSInstance) Settings(settings *libsettings.Setting) {
 	i.settings = settings
 }
 

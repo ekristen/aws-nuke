@@ -2,10 +2,10 @@ package resources
 
 import (
 	"context"
-
 	"fmt"
-	"github.com/gotidy/ptr"
 	"strings"
+
+	"github.com/gotidy/ptr"
 
 	"github.com/aws/aws-sdk-go/service/route53resolver"
 

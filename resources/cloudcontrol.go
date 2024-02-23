@@ -2,19 +2,18 @@ package resources
 
 import (
 	"context"
-
 	"encoding/json"
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	sdkerrors "github.com/ekristen/libnuke/pkg/errors"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/cloudcontrolapi"
 
+	liberrors "github.com/ekristen/libnuke/pkg/errors"
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
@@ -106,7 +105,7 @@ func (l *CloudControlResourceLister) List(_ context.Context, o interface{}) ([]r
 		var awsError awserr.Error
 		if errors.As(err, &awsError) {
 			if awsError.Code() == "TypeNotFoundException" {
-				return nil, sdkerrors.ErrSkipRequest(
+				return nil, liberrors.ErrSkipRequest(
 					"cloudformation type not available in region: " + *opts.Session.Config.Region)
 			}
 		}

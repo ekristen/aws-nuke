@@ -41,13 +41,13 @@ func (l *SignerSigningJobLister) List(_ context.Context, o interface{}) ([]resou
 		for _, job := range page.Jobs {
 			resources = append(resources, &SignerSigningJob{
 				svc:                 svc,
-				jobId:               job.JobId,
+				jobID:               job.JobId,
 				reason:              reason,
 				isRevoked:           job.IsRevoked,
 				createdAt:           *job.CreatedAt,
 				profileName:         job.ProfileName,
 				profileVersion:      job.ProfileVersion,
-				platformId:          job.PlatformId,
+				platformID:          job.PlatformId,
 				platformDisplayName: job.PlatformDisplayName,
 				jobOwner:            job.JobOwner,
 				jobInvoker:          job.JobInvoker,
@@ -63,13 +63,13 @@ func (l *SignerSigningJobLister) List(_ context.Context, o interface{}) ([]resou
 
 type SignerSigningJob struct {
 	svc                 *signer.Signer
-	jobId               *string
+	jobID               *string
 	reason              string
 	isRevoked           *bool
 	createdAt           time.Time
 	profileName         *string
 	profileVersion      *string
-	platformId          *string
+	platformID          *string
 	platformDisplayName *string
 	jobOwner            *string
 	jobInvoker          *string
@@ -88,7 +88,7 @@ func (j *SignerSigningJob) Remove(_ context.Context) error {
 	// As a precaution we are updating Signing jobs statuses to revoked. This indicates that the signature is no longer valid.
 	// [1] https://awscli.amazonaws.com/v2/documentation/api/latest/reference/signer/start-signing-job.html
 	revokeInput := &signer.RevokeSignatureInput{
-		JobId:  j.jobId,
+		JobId:  j.jobID,
 		Reason: aws.String(j.reason),
 	}
 	_, err := j.svc.RevokeSignature(revokeInput)
@@ -97,11 +97,11 @@ func (j *SignerSigningJob) Remove(_ context.Context) error {
 
 func (j *SignerSigningJob) Properties() types.Properties {
 	properties := types.NewProperties()
-	properties.Set("JobId", j.jobId)
+	properties.Set("JobId", j.jobID)
 	properties.Set("CreatedAt", j.createdAt.Format(time.RFC3339))
 	properties.Set("ProfileName", j.profileName)
 	properties.Set("ProfileVersion", j.profileVersion)
-	properties.Set("PlatformId", j.platformId)
+	properties.Set("PlatformId", j.platformID)
 	properties.Set("PlatformDisplayName", j.platformDisplayName)
 	properties.Set("JobOwner", j.jobOwner)
 	properties.Set("JobInvoker", j.jobInvoker)

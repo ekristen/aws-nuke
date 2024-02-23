@@ -50,9 +50,9 @@ func main() {
 
 	originalSourceDir := filepath.Join(args[0], "resources")
 
-	repl := regexp.MustCompile("func init\\(\\) {\\s+.*[\\s+].*\\s}")
-	match := regexp.MustCompile("register\\(\"(?P<resource>.*)\",\\s?(?P<function>\\w+)(,)?(\\s+mapCloudControl\\(\"(?P<cc>.*)\"\\))?")
-	funcMatch := regexp.MustCompile("func List.*{")
+	repl := regexp.MustCompile(`func init\(\) {\s+.*[\s+].*\s}`)
+	match := regexp.MustCompile(`register\("(?P<resource>.*)",\s?(?P<function>\w+)(,)?(\s+mapCloudControl\("(?P<cc>.*)"\))?`)
+	funcMatch := regexp.MustCompile(`func List.*{`)
 
 	filename := filepath.Join(originalSourceDir, args[1]+".go")
 
@@ -95,14 +95,23 @@ func main() {
 	}
 
 	newContents := repl.ReplaceAllString(string(originalFileContents), tpl.String())
-	newContents = strings.ReplaceAll(newContents, "github.com/rebuy-de/aws-nuke/v2/pkg/types", "github.com/ekristen/libnuke/pkg/types")
+
+	newContents = strings.ReplaceAll(newContents,
+		"github.com/rebuy-de/aws-nuke/v2/pkg/types", "github.com/ekristen/libnuke/pkg/types")
+
 	newContents = funcMatch.ReplaceAllString(newContents, funcTpl.String())
 	newContents = strings.ReplaceAll(newContents, "[]Resource", "[]resource.Resource")
 	newContents = strings.ReplaceAll(newContents, "(sess)", "(opts.Session)")
-	newContents = strings.ReplaceAll(newContents, "resources := []resource.Resource{}", "resources := make([]resource.Resource, 0)")
+
+	newContents = strings.ReplaceAll(newContents,
+		"resources := []resource.Resource{}", "resources := make([]resource.Resource, 0)")
+
 	newContents = strings.ReplaceAll(newContents, "import (", imports)
 	newContents = strings.ReplaceAll(newContents, "\"github.com/aws/aws-sdk-go/aws/session\"", "")
-	newContents = strings.ReplaceAll(newContents, "\"github.com/rebuy-de/aws-nuke/v2/pkg/config\"", "\"github.com/ekristen/libnuke/pkg/featureflag\"")
+
+	newContents = strings.ReplaceAll(newContents,
+		"\"github.com/rebuy-de/aws-nuke/v2/pkg/config\"", "\"github.com/ekristen/libnuke/pkg/featureflag\"")
+
 	newContents = strings.ReplaceAll(newContents, "config.FeatureFlags", "*featureflag.FeatureFlags")
 	newContents = strings.ReplaceAll(newContents, ") Remove() error {", ") Remove(_ context.Context) error {")
 
@@ -111,7 +120,7 @@ func main() {
 		panic(err)
 	}
 
-	if err := os.WriteFile(
+	if err := os.WriteFile( //nolint:gosec
 		filepath.Join(cwd, "resources", args[1]+".go"), []byte(newContents), 0644); err != nil {
 		panic(err)
 	}

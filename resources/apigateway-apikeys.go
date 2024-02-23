@@ -64,7 +64,6 @@ type APIGatewayAPIKey struct {
 }
 
 func (f *APIGatewayAPIKey) Remove(_ context.Context) error {
-
 	_, err := f.svc.DeleteApiKey(&apigateway.DeleteApiKeyInput{
 		ApiKey: f.APIKey,
 	})

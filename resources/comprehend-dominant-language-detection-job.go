@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go/service/comprehend"
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -37,9 +39,10 @@ func (l *ComprehendDominantLanguageDetectionJobLister) List(_ context.Context, o
 		if err != nil {
 			return nil, err
 		}
+
 		for _, dominantLanguageDetectionJob := range resp.DominantLanguageDetectionJobPropertiesList {
 			switch *dominantLanguageDetectionJob.JobStatus {
-			case "STOPPED", "FAILED", "COMPLETED":
+			case comprehend.JobStatusStopped, comprehend.JobStatusFailed, comprehend.JobStatusCompleted:
 				// if the job has already been stopped, failed, or completed; do not try to stop it again
 				continue
 			}
@@ -81,8 +84,8 @@ func (ce *ComprehendDominantLanguageDetectionJob) Properties() types.Properties 
 
 func (ce *ComprehendDominantLanguageDetectionJob) String() string {
 	if ce.dominantLanguageDetectionJob.JobName == nil {
-		return "Unnamed job"
+		return ComprehendUnnamedJob
 	} else {
-		return *ce.dominantLanguageDetectionJob.JobName
+		return ptr.ToString(ce.dominantLanguageDetectionJob.JobName)
 	}
 }

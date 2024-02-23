@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go/service/comprehend"
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -81,8 +83,8 @@ func (ce *ComprehendSentimentDetectionJob) Properties() types.Properties {
 
 func (ce *ComprehendSentimentDetectionJob) String() string {
 	if ce.sentimentDetectionJob.JobName == nil {
-		return "Unnamed job"
+		return ComprehendUnnamedJob
 	} else {
-		return *ce.sentimentDetectionJob.JobName
+		return ptr.ToString(ce.sentimentDetectionJob.JobName)
 	}
 }

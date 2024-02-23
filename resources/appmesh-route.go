@@ -52,9 +52,7 @@ func (l *AppMeshRouteLister) List(_ context.Context, o interface{}) ([]resource.
 				MeshName: meshName,
 			},
 			func(page *appmesh.ListVirtualRoutersOutput, lastPage bool) bool {
-				for _, vr := range page.VirtualRouters {
-					virtualRouters = append(virtualRouters, vr)
-				}
+				virtualRouters = append(virtualRouters, page.VirtualRouters...)
 				return lastPage
 			},
 		)

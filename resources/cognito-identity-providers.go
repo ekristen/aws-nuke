@@ -2,6 +2,9 @@ package resources
 
 import (
 	"context"
+	"fmt"
+
+	"github.com/gotidy/ptr"
 
 	"github.com/sirupsen/logrus"
 
@@ -64,7 +67,7 @@ func (l *CognitoIdentityProviderLister) List(ctx context.Context, o interface{})
 					name:         provider.ProviderName,
 					providerType: provider.ProviderType,
 					userPoolName: userPool.name,
-					userPoolId:   userPool.id,
+					userPoolID:   userPool.id,
 				})
 			}
 
@@ -84,12 +87,12 @@ type CognitoIdentityProvider struct {
 	name         *string
 	providerType *string
 	userPoolName *string
-	userPoolId   *string
+	userPoolID   *string
 }
 
 func (p *CognitoIdentityProvider) Remove(_ context.Context) error {
 	_, err := p.svc.DeleteIdentityProvider(&cognitoidentityprovider.DeleteIdentityProviderInput{
-		UserPoolId:   p.userPoolId,
+		UserPoolId:   p.userPoolID,
 		ProviderName: p.name,
 	})
 
@@ -105,5 +108,5 @@ func (p *CognitoIdentityProvider) Properties() types.Properties {
 }
 
 func (p *CognitoIdentityProvider) String() string {
-	return *p.userPoolName + " -> " + *p.name
+	return fmt.Sprintf("%s -> %s", ptr.ToString(p.userPoolName), ptr.ToString(p.name))
 }

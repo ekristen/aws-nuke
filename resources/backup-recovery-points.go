@@ -3,8 +3,6 @@ package resources
 import (
 	"context"
 
-	"fmt"
-
 	"github.com/aws/aws-sdk-go/service/backup"
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -47,7 +45,9 @@ func (l *AWSBackupRecoveryPointLister) List(_ context.Context, o interface{}) ([
 
 	resources := make([]resource.Resource, 0)
 	for _, out := range resp.BackupVaultList {
-		recoveryPointsOutput, _ := svc.ListRecoveryPointsByBackupVault(&backup.ListRecoveryPointsByBackupVaultInput{BackupVaultName: out.BackupVaultName})
+		recoveryPointsOutput, _ := svc.ListRecoveryPointsByBackupVault(
+			&backup.ListRecoveryPointsByBackupVaultInput{BackupVaultName: out.BackupVaultName})
+
 		for _, rp := range recoveryPointsOutput.RecoveryPoints {
 			resources = append(resources, &BackupRecoveryPoint{
 				svc:             svc,
@@ -75,5 +75,5 @@ func (b *BackupRecoveryPoint) Remove(_ context.Context) error {
 }
 
 func (b *BackupRecoveryPoint) String() string {
-	return fmt.Sprintf("%s", b.arn)
+	return b.arn
 }

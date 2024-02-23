@@ -64,7 +64,6 @@ type CloudDirectoryDirectory struct {
 }
 
 func (f *CloudDirectoryDirectory) Remove(_ context.Context) error {
-
 	_, err := f.svc.DisableDirectory(&clouddirectory.DisableDirectoryInput{
 		DirectoryArn: f.directoryARN,
 	})
