@@ -3,13 +3,13 @@ package resources
 import (
 	"context"
 
-	"github.com/ekristen/aws-nuke/pkg/nuke"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/cognitoidentity"
+
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 
-	"github.com/aws/aws-sdk-go/aws"
-
-	"github.com/aws/aws-sdk-go/service/cognitoidentity"
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 type CognitoIdentityPool struct {
@@ -65,7 +65,6 @@ func (l *CognitoIdentityPoolLister) List(_ context.Context, o interface{}) ([]re
 }
 
 func (f *CognitoIdentityPool) Remove(_ context.Context) error {
-
 	_, err := f.svc.DeleteIdentityPool(&cognitoidentity.DeleteIdentityPoolInput{
 		IdentityPoolId: f.id,
 	})

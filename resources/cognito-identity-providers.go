@@ -64,7 +64,7 @@ func (l *CognitoIdentityProviderLister) List(ctx context.Context, o interface{})
 					name:         provider.ProviderName,
 					providerType: provider.ProviderType,
 					userPoolName: userPool.name,
-					userPoolId:   userPool.id,
+					userPoolID:   userPool.id,
 				})
 			}
 
@@ -84,12 +84,12 @@ type CognitoIdentityProvider struct {
 	name         *string
 	providerType *string
 	userPoolName *string
-	userPoolId   *string
+	userPoolID   *string
 }
 
 func (p *CognitoIdentityProvider) Remove(_ context.Context) error {
 	_, err := p.svc.DeleteIdentityProvider(&cognitoidentityprovider.DeleteIdentityProviderInput{
-		UserPoolId:   p.userPoolId,
+		UserPoolId:   p.userPoolID,
 		ProviderName: p.name,
 	})
 
