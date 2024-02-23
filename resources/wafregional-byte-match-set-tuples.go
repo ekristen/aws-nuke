@@ -43,7 +43,6 @@ func (l *WAFRegionalByteMatchSetIPLister) List(_ context.Context, o interface{})
 		}
 
 		for _, set := range resp.ByteMatchSets {
-
 			details, err := svc.GetByteMatchSet(&waf.GetByteMatchSetInput{
 				ByteMatchSetId: set.ByteMatchSetId,
 			})
@@ -86,7 +85,7 @@ func (r *WAFRegionalByteMatchSetIP) Remove(_ context.Context) error {
 		ChangeToken:    tokenOutput.ChangeToken,
 		ByteMatchSetId: r.matchSetID,
 		Updates: []*waf.ByteMatchSetUpdate{
-			&waf.ByteMatchSetUpdate{
+			{
 				Action:         aws.String("DELETE"),
 				ByteMatchTuple: r.tuple,
 			},

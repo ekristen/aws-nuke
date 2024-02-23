@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/service/wafv2"
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -43,7 +44,7 @@ func (l *WAFv2RegexPatternSetLister) List(_ context.Context, o interface{}) ([]r
 
 	resources = append(resources, output...)
 
-	if *opts.Session.Config.Region == "us-east-1" {
+	if *opts.Session.Config.Region == endpoints.UsEast1RegionID {
 		params.Scope = aws.String("CLOUDFRONT")
 
 		output, err := getRegexPatternSets(svc, params)

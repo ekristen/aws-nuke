@@ -37,16 +37,14 @@ func (l *WAFWebACLRuleAttachmentLister) List(_ context.Context, o interface{}) (
 		Limit: aws.Int64(50),
 	}
 
-	//List All Web ACLs
+	// List All Web ACLs
 	for {
 		resp, err := svc.ListWebACLs(params)
 		if err != nil {
 			return nil, err
 		}
 
-		for _, webACL := range resp.WebACLs {
-			webACLs = append(webACLs, webACL)
-		}
+		webACLs = append(webACLs, resp.WebACLs...)
 
 		if resp.NextMarker == nil {
 			break
@@ -68,11 +66,10 @@ func (l *WAFWebACLRuleAttachmentLister) List(_ context.Context, o interface{}) (
 		for _, webACLRule := range resp.WebACL.Rules {
 			resources = append(resources, &WAFWebACLRuleAttachment{
 				svc:           svc,
-				webAclID:      webACL.WebACLId,
+				webACLID:      webACL.WebACLId,
 				activatedRule: webACLRule,
 			})
 		}
-
 	}
 
 	return resources, nil
@@ -80,12 +77,11 @@ func (l *WAFWebACLRuleAttachmentLister) List(_ context.Context, o interface{}) (
 
 type WAFWebACLRuleAttachment struct {
 	svc           *waf.WAF
-	webAclID      *string
+	webACLID      *string
 	activatedRule *waf.ActivatedRule
 }
 
 func (f *WAFWebACLRuleAttachment) Remove(_ context.Context) error {
-
 	tokenOutput, err := f.svc.GetChangeToken(&waf.GetChangeTokenInput{})
 	if err != nil {
 		return err
@@ -97,7 +93,7 @@ func (f *WAFWebACLRuleAttachment) Remove(_ context.Context) error {
 	}
 
 	_, err = f.svc.UpdateWebACL(&waf.UpdateWebACLInput{
-		WebACLId:    f.webAclID,
+		WebACLId:    f.webACLID,
 		ChangeToken: tokenOutput.ChangeToken,
 		Updates:     []*waf.WebACLUpdate{webACLUpdate},
 	})
@@ -106,5 +102,5 @@ func (f *WAFWebACLRuleAttachment) Remove(_ context.Context) error {
 }
 
 func (f *WAFWebACLRuleAttachment) String() string {
-	return fmt.Sprintf("%s -> %s", *f.webAclID, *f.activatedRule.RuleId)
+	return fmt.Sprintf("%s -> %s", *f.webACLID, *f.activatedRule.RuleId)
 }

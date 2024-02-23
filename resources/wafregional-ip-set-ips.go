@@ -43,7 +43,6 @@ func (l *WAFRegionalIPSetIPLister) List(_ context.Context, o interface{}) ([]res
 		}
 
 		for _, set := range resp.IPSets {
-
 			details, err := svc.GetIPSet(&waf.GetIPSetInput{
 				IPSetId: set.IPSetId,
 			})
@@ -86,7 +85,7 @@ func (r *WAFRegionalIPSetIP) Remove(_ context.Context) error {
 		ChangeToken: tokenOutput.ChangeToken,
 		IPSetId:     r.ipSetID,
 		Updates: []*waf.IPSetUpdate{
-			&waf.IPSetUpdate{
+			{
 				Action:          aws.String("DELETE"),
 				IPSetDescriptor: r.descriptor,
 			},

@@ -85,7 +85,7 @@ func (r *WAFRegionalRulePredicate) Remove(_ context.Context) error {
 		ChangeToken: tokenOutput.ChangeToken,
 		RuleId:      r.ruleID,
 		Updates: []*waf.RuleUpdate{
-			&waf.RuleUpdate{
+			{
 				Action:    aws.String("DELETE"),
 				Predicate: r.predicate,
 			},

@@ -88,7 +88,7 @@ func (r *WAFRegionalRateBasedRulePredicate) Remove(_ context.Context) error {
 		RuleId:      r.ruleID,
 		RateLimit:   r.rateLimit,
 		Updates: []*waf.RuleUpdate{
-			&waf.RuleUpdate{
+			{
 				Action:    aws.String("DELETE"),
 				Predicate: r.predicate,
 			},
