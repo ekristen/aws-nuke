@@ -2,21 +2,21 @@ package resources
 
 import (
 	"context"
-
-	"github.com/ekristen/aws-nuke/pkg/nuke"
-	"github.com/ekristen/libnuke/pkg/registry"
-	"github.com/ekristen/libnuke/pkg/resource"
-
 	"fmt"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/sirupsen/logrus"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/cloudformation/cloudformationiface"
+
+	"github.com/ekristen/libnuke/pkg/registry"
+	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
-	"github.com/sirupsen/logrus"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 const CloudFormationStackSetResource = "CloudFormationStackSet"
@@ -100,29 +100,35 @@ func (cfs *CloudFormationStackSet) findStackInstances() (map[string][]string, er
 	return accounts, nil
 }
 
-func (cfs *CloudFormationStackSet) waitForStackSetOperation(operationId string) error {
+func (cfs *CloudFormationStackSet) waitForStackSetOperation(operationID string) error {
 	for {
 		result, err := cfs.svc.DescribeStackSetOperation(&cloudformation.DescribeStackSetOperationInput{
 			StackSetName: cfs.stackSetSummary.StackSetName,
-			OperationId:  &operationId,
+			OperationId:  &operationID,
 		})
 		if err != nil {
 			return err
 		}
-		logrus.Infof("Got stackInstance operation status on stackSet=%s operationId=%s status=%s", *cfs.stackSetSummary.StackSetName, operationId, *result.StackSetOperation.Status)
+		logrus.Infof("Got stackInstance operation status on stackSet=%s operationID=%s status=%s",
+			*cfs.stackSetSummary.StackSetName, operationID, *result.StackSetOperation.Status)
+
 		if *result.StackSetOperation.Status == cloudformation.StackSetOperationResultStatusSucceeded {
 			return nil
-		} else if *result.StackSetOperation.Status == cloudformation.StackSetOperationResultStatusFailed || *result.StackSetOperation.Status == cloudformation.StackSetOperationResultStatusCancelled {
-			return fmt.Errorf("unable to delete stackSet=%s operationId=%s status=%s", *cfs.stackSetSummary.StackSetName, operationId, *result.StackSetOperation.Status)
+		} else if *result.StackSetOperation.Status == cloudformation.StackSetOperationResultStatusFailed ||
+			*result.StackSetOperation.Status == cloudformation.StackSetOperationResultStatusCancelled {
+			return fmt.Errorf("unable to delete stackSet=%s operationID=%s status=%s",
+				*cfs.stackSetSummary.StackSetName, operationID, *result.StackSetOperation.Status)
 		} else {
-			logrus.Infof("Waiting on stackSet=%s operationId=%s status=%s", *cfs.stackSetSummary.StackSetName, operationId, *result.StackSetOperation.Status)
+			logrus.Infof("Waiting on stackSet=%s operationID=%s status=%s",
+				*cfs.stackSetSummary.StackSetName, operationID, *result.StackSetOperation.Status)
+
 			time.Sleep(cfs.sleepDuration)
 		}
 	}
 }
 
-func (cfs *CloudFormationStackSet) deleteStackInstances(accountId string, regions []string) error {
-	logrus.Infof("Deleting stack instance accountId=%s regions=%s", accountId, strings.Join(regions, ","))
+func (cfs *CloudFormationStackSet) deleteStackInstances(accountID string, regions []string) error {
+	logrus.Infof("Deleting stack instance accountID=%s regions=%s", accountID, strings.Join(regions, ","))
 	regionsInput := make([]*string, len(regions))
 	for i, region := range regions {
 		regionsInput[i] = aws.String(region)
@@ -130,9 +136,11 @@ func (cfs *CloudFormationStackSet) deleteStackInstances(accountId string, region
 	}
 	result, err := cfs.svc.DeleteStackInstances(&cloudformation.DeleteStackInstancesInput{
 		StackSetName: cfs.stackSetSummary.StackSetName,
-		Accounts:     []*string{&accountId},
+		Accounts:     []*string{&accountID},
 		Regions:      regionsInput,
-		RetainStacks: aws.Bool(true), //this will remove the stack set instance from the stackset, but will leave the stack in the account/region it was deployed to
+		// this will remove the stack set instance from the stackset, but will leave the stack
+		// in the account/region it was deployed to
+		RetainStacks: aws.Bool(true),
 	})
 
 	fmt.Printf("got result=%v err=%v\n", result, err)
@@ -152,8 +160,8 @@ func (cfs *CloudFormationStackSet) Remove(_ context.Context) error {
 	if err != nil {
 		return err
 	}
-	for accountId, regions := range accounts {
-		err := cfs.deleteStackInstances(accountId, regions)
+	for accountID, regions := range accounts {
+		err := cfs.deleteStackInstances(accountID, regions)
 		if err != nil {
 			return err
 		}

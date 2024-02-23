@@ -2,7 +2,7 @@ package resources
 
 import (
 	"context"
-	"github.com/ekristen/libnuke/pkg/settings"
+
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -11,6 +11,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
+
+	libsettings "github.com/ekristen/libnuke/pkg/settings"
 
 	"github.com/ekristen/aws-nuke/mocks/mock_cloudformationiface"
 )
@@ -27,7 +29,7 @@ func TestCloudformationStack_Remove_StackAlreadyDeleted(t *testing.T) {
 		stack: &cloudformation.Stack{
 			StackName: aws.String("foobar"),
 		},
-		settings: &settings.Setting{
+		settings: &libsettings.Setting{
 			"DisableDeletionProtection": true,
 		},
 	}
@@ -58,7 +60,7 @@ func TestCloudformationStack_Remove_StackDoesNotExist(t *testing.T) {
 		stack: &cloudformation.Stack{
 			StackName: aws.String("foobar"),
 		},
-		settings: &settings.Setting{
+		settings: &libsettings.Setting{
 			"DisableDeletionProtection": true,
 		},
 	}
@@ -83,7 +85,7 @@ func TestCloudformationStack_Remove_DeleteFailed(t *testing.T) {
 		stack: &cloudformation.Stack{
 			StackName: aws.String("foobar"),
 		},
-		settings: &settings.Setting{
+		settings: &libsettings.Setting{
 			"DisableDeletionProtection": true,
 		},
 	}
@@ -140,7 +142,7 @@ func TestCloudformationStack_Remove_DeleteInProgress(t *testing.T) {
 		stack: &cloudformation.Stack{
 			StackName: aws.String("foobar"),
 		},
-		settings: &settings.Setting{
+		settings: &libsettings.Setting{
 			"DisableDeletionProtection": true,
 		},
 	}
@@ -190,7 +192,7 @@ func TestCloudformationStack_Remove_Stack_InCompletedStatus(t *testing.T) {
 				stack: &cloudformation.Stack{
 					StackName: aws.String("foobar"),
 				},
-				settings: &settings.Setting{
+				settings: &libsettings.Setting{
 					"DisableDeletionProtection": true,
 				},
 			}
@@ -240,7 +242,7 @@ func TestCloudformationStack_Remove_Stack_CreateInProgress(t *testing.T) {
 				stack: &cloudformation.Stack{
 					StackName: aws.String("foobar"),
 				},
-				settings: &settings.Setting{
+				settings: &libsettings.Setting{
 					"DisableDeletionProtection": true,
 				},
 			}
@@ -295,7 +297,7 @@ func TestCloudformationStack_Remove_Stack_UpdateInProgress(t *testing.T) {
 				stack: &cloudformation.Stack{
 					StackName: aws.String("foobar"),
 				},
-				settings: &settings.Setting{
+				settings: &libsettings.Setting{
 					"DisableDeletionProtection": true,
 				},
 			}

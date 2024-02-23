@@ -58,10 +58,11 @@ func TestCloudformationStackSet_Remove(t *testing.T) {
 	}
 	describeStackSetOperationCalls := make([]*gomock.Call, len(describeStackSetStatuses))
 	for i, status := range describeStackSetStatuses {
-		describeStackSetOperationCalls[i] = mockCloudformation.EXPECT().DescribeStackSetOperation(gomock.Eq(&cloudformation.DescribeStackSetOperationInput{
-			OperationId:  aws.String("o1"),
-			StackSetName: aws.String("foobar"),
-		})).Return(&cloudformation.DescribeStackSetOperationOutput{
+		describeStackSetOperationCalls[i] = mockCloudformation.EXPECT().
+			DescribeStackSetOperation(gomock.Eq(&cloudformation.DescribeStackSetOperationInput{
+				OperationId:  aws.String("o1"),
+				StackSetName: aws.String("foobar"),
+			})).Return(&cloudformation.DescribeStackSetOperationOutput{
 			StackSetOperation: &cloudformation.StackSetOperation{
 				Status: aws.String(status),
 			},

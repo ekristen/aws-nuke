@@ -76,12 +76,14 @@ func (cfs *CloudFormationType) findAllVersionSummaries() ([]*cloudformation.Type
 		if err != nil {
 			return nil, err
 		}
+
 		typeVersionSummaries = append(typeVersionSummaries, resp.TypeVersionSummaries...)
 		if resp.NextToken == nil {
 			return typeVersionSummaries, nil
 		}
+
 		params.NextToken = resp.NextToken
-		page = page + 1
+		page++
 	}
 }
 
@@ -94,15 +96,19 @@ func (cfs *CloudFormationType) Remove(_ context.Context) error {
 	failed := false
 	for _, typeVersionSummary := range typeVersionSummaries {
 		if *typeVersionSummary.IsDefaultVersion {
-			logrus.Infof("CloudFormationType ignoring default version type=%s version=%s", *cfs.typeSummary.TypeArn, *typeVersionSummary.VersionId)
+			logrus.Infof("CloudFormationType ignoring default version type=%s version=%s",
+				*cfs.typeSummary.TypeArn, *typeVersionSummary.VersionId)
 		} else {
-			logrus.Infof("CloudFormationType removing type=%s version=%s", *cfs.typeSummary.TypeArn, *typeVersionSummary.VersionId)
+			logrus.Infof("CloudFormationType removing type=%s version=%s",
+				*cfs.typeSummary.TypeArn, *typeVersionSummary.VersionId)
 			if _, err := cfs.svc.DeregisterType(&cloudformation.DeregisterTypeInput{
 				VersionId: typeVersionSummary.VersionId,
 				TypeName:  typeVersionSummary.TypeName,
 				Type:      typeVersionSummary.Type,
 			}); err != nil {
-				logrus.Errorf("CloudFormationType failed removing type=%s version=%s type=%s arn=%s error=%s", *cfs.typeSummary.TypeName, *typeVersionSummary.VersionId, *typeVersionSummary.Type, *cfs.typeSummary.TypeArn, err.Error())
+				logrus.Errorf("CloudFormationType failed removing type=%s version=%s type=%s arn=%s error=%s",
+					*cfs.typeSummary.TypeName, *typeVersionSummary.VersionId, *typeVersionSummary.Type,
+					*cfs.typeSummary.TypeArn, err.Error())
 				failed = true
 			}
 		}
