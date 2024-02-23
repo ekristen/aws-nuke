@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/sirupsen/logrus"
 
@@ -85,5 +86,5 @@ func (f *CognitoUserPoolDomain) Remove(_ context.Context) error {
 }
 
 func (f *CognitoUserPoolDomain) String() string {
-	return *f.userPoolName + " -> " + *f.name
+	return fmt.Sprintf("%s -> %s", *f.userPoolName, *f.name)
 }

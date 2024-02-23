@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/sirupsen/logrus"
 
@@ -105,5 +106,5 @@ func (p *CognitoUserPoolClient) Properties() types.Properties {
 }
 
 func (p *CognitoUserPoolClient) String() string {
-	return *p.userPoolName + " -> " + *p.name
+	return fmt.Sprintf("%s -> %s", *p.userPoolName, *p.name)
 }
