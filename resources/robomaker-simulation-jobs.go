@@ -8,6 +8,7 @@ import (
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
@@ -85,4 +86,11 @@ func (f *RoboMakerSimulationJob) Remove(_ context.Context) error {
 
 func (f *RoboMakerSimulationJob) String() string {
 	return *f.arn
+}
+
+func (f *RoboMakerSimulationJob) Properties() types.Properties {
+	properties := types.NewProperties()
+	properties.Set("Name", f.name)
+	properties.Set("ARN", f.arn)
+	return properties
 }
