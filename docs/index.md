@@ -11,6 +11,7 @@ This is not a comprehensive list, but here are some of the highlights:
 
 * New Feature: Global Filters
 * New Feature: Run Against All Enabled Regions
+* New Feature: Bypass Alias Check - Allow the skip of an alias on an account
 * Upcoming Feature: Filter Groups (**in progress**)
 * Breaking Change: `root` command no longer triggers the run, must use subcommand `run` (alias: `nuke`)
 * Completely rewrote the core of the tool as a dedicated library [libnuke](https://github.com/ekristen/libnuke)
