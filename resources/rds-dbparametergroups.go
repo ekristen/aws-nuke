@@ -43,12 +43,12 @@ func (l *RDSDBParameterGroupLister) List(_ context.Context, o interface{}) ([]re
 	if err != nil {
 		return nil, err
 	}
+
 	var resources []resource.Resource
 	for _, group := range resp.DBParameterGroups {
 		tags, err := svc.ListTagsForResource(&rds.ListTagsForResourceInput{
 			ResourceName: group.DBParameterGroupArn,
 		})
-
 		if err != nil {
 			continue
 		}
@@ -58,7 +58,6 @@ func (l *RDSDBParameterGroupLister) List(_ context.Context, o interface{}) ([]re
 			name: group.DBParameterGroupName,
 			tags: tags.TagList,
 		})
-
 	}
 
 	return resources, nil

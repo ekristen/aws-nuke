@@ -37,6 +37,7 @@ func (l *RDSSnapshotLister) List(_ context.Context, o interface{}) ([]resource.R
 	if err != nil {
 		return nil, err
 	}
+
 	var resources []resource.Resource
 	for _, snapshot := range resp.DBSnapshots {
 		tags, err := svc.ListTagsForResource(&rds.ListTagsForResourceInput{
@@ -51,7 +52,6 @@ func (l *RDSSnapshotLister) List(_ context.Context, o interface{}) ([]resource.R
 			snapshot: snapshot,
 			tags:     tags.TagList,
 		})
-
 	}
 
 	return resources, nil
