@@ -56,7 +56,7 @@ func (l *CloudWatchEventsTargetLister) List(_ context.Context, o interface{}) ([
 				resources = append(resources, &CloudWatchEventsTarget{
 					svc:      svc,
 					ruleName: rule.Name,
-					targetId: target.Id,
+					targetID: target.Id,
 					busName:  bus.Name,
 				})
 			}
@@ -68,13 +68,13 @@ func (l *CloudWatchEventsTargetLister) List(_ context.Context, o interface{}) ([
 
 type CloudWatchEventsTarget struct {
 	svc      *cloudwatchevents.CloudWatchEvents
-	targetId *string
+	targetID *string
 	ruleName *string
 	busName  *string
 }
 
 func (target *CloudWatchEventsTarget) Remove(_ context.Context) error {
-	ids := []*string{target.targetId}
+	ids := []*string{target.targetID}
 	_, err := target.svc.RemoveTargets(&cloudwatchevents.RemoveTargetsInput{
 		Ids:          ids,
 		Rule:         target.ruleName,
@@ -87,5 +87,5 @@ func (target *CloudWatchEventsTarget) Remove(_ context.Context) error {
 func (target *CloudWatchEventsTarget) String() string {
 	// TODO: change this to IAM format rule -> target and mark as breaking change for filters
 	// TODO: add properties for rule and target separately
-	return fmt.Sprintf("Rule: %s Target ID: %s", *target.ruleName, *target.targetId)
+	return fmt.Sprintf("Rule: %s Target ID: %s", *target.ruleName, *target.targetID)
 }

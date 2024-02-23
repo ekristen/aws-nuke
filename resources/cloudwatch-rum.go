@@ -65,7 +65,6 @@ type CloudWatchRumApp struct {
 }
 
 func (f *CloudWatchRumApp) Remove(_ context.Context) error {
-
 	_, err := f.svc.DeleteAppMonitor(&cloudwatchrum.DeleteAppMonitorInput{
 		Name: f.appMonitorName,
 	})

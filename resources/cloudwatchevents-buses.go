@@ -3,11 +3,14 @@ package resources
 import (
 	"context"
 
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go/service/cloudwatchevents"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 
+	"github.com/ekristen/aws-nuke/pkg/awsutil"
 	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
@@ -35,7 +38,7 @@ func (l *CloudWatchEventsBusesLister) List(_ context.Context, o interface{}) ([]
 
 	resources := make([]resource.Resource, 0)
 	for _, bus := range resp.EventBuses {
-		if *bus.Name == "default" {
+		if ptr.ToString(bus.Name) == awsutil.Default {
 			continue
 		}
 
