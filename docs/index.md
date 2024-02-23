@@ -9,11 +9,12 @@ resources and create a Pull Request or to create an [Issue](https://github.com/e
 
 This is not a comprehensive list, but here are some of the highlights:
 
-* Completely rewrote the core of the tool as a dedicated library [libnuke](https://github.com/ekristen/libnuke) with 95%+ test coverage
 * New Feature: Global Filters
 * New Feature: Run Against All Enabled Regions
 * Upcoming Feature: Filter Groups (**in progress**)
 * Breaking Change: `root` command no longer triggers the run, must use subcommand `run` (alias: `nuke`)
+* Completely rewrote the core of the tool as a dedicated library [libnuke](https://github.com/ekristen/libnuke)
+  * This library has over 95% test coverage which makes iteration and new features easier to implement.
 * Semantic Releases with notifications on issues / pull requests
 * New Resources
 * Broke away from rebuy-de/aws-nuke project as a fork for reasons outlined in the history section
