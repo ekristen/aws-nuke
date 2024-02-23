@@ -57,7 +57,6 @@ func (l *EFSMountTargetLister) List(_ context.Context, o interface{}) ([]resourc
 				fsID:   *t.FileSystemId,
 				fsTags: lto.Tags,
 			})
-
 		}
 	}
 
