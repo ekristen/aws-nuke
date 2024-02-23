@@ -18,7 +18,7 @@ import (
 	"github.com/ekristen/aws-nuke/pkg/config"
 )
 
-func execute(c *cli.Context) error {
+func execute(c *cli.Context) error { //nolint:funlen
 	accountID := c.String("account-id")
 
 	parsedConfig, err := config.New(libconfig.Options{
