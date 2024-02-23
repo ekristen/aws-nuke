@@ -2,9 +2,10 @@ package resources
 
 import (
 	"context"
-
 	"fmt"
 	"strings"
+
+	"github.com/gotidy/ptr"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/batch"
@@ -68,7 +69,6 @@ func (l *BatchJobQueueStateLister) List(_ context.Context, o interface{}) ([]res
 }
 
 func (f *BatchJobQueueState) Remove(_ context.Context) error {
-
 	_, err := f.svc.UpdateJobQueue(&batch.UpdateJobQueueInput{
 		JobQueue: f.jobQueue,
 		State:    aws.String("DISABLED"),
@@ -82,7 +82,7 @@ func (f *BatchJobQueueState) String() string {
 }
 
 func (f *BatchJobQueueState) Filter() error {
-	if strings.ToLower(*f.state) == "disabled" {
+	if strings.EqualFold(ptr.ToString(f.state), "disabled") {
 		return fmt.Errorf("already disabled")
 	}
 	return nil

@@ -2,9 +2,10 @@ package resources
 
 import (
 	"context"
-
 	"fmt"
 	"strings"
+
+	"github.com/gotidy/ptr"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/batch"
@@ -81,7 +82,7 @@ func (f *BatchComputeEnvironmentState) String() string {
 }
 
 func (f *BatchComputeEnvironmentState) Filter() error {
-	if strings.ToLower(*f.state) == "disabled" {
+	if strings.EqualFold(ptr.ToString(f.state), "disabled") {
 		return fmt.Errorf("already disabled")
 	}
 	return nil
