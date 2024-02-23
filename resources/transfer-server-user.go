@@ -70,7 +70,6 @@ func (l *TransferServerUserLister) List(_ context.Context, o interface{}) ([]res
 						serverID: item.ServerId,
 						tags:     descOutput.User.Tags,
 					})
-
 				}
 
 				if userOutput.NextToken == nil {
