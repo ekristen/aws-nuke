@@ -17,7 +17,7 @@ func TestCloudControlParseProperties(t *testing.T) {
 	}{
 		{
 			name:    "ActualEC2VPC",
-			payload: `{"VpcId":"vpc-456","InstanceTenancy":"default","CidrBlockAssociations":["vpc-cidr-assoc-1234", "vpc-cidr-assoc-5678"],"CidrBlock":"10.10.0.0/16","Tags":[{"Value":"Kubernetes VPC","Key":"Name"}]}`,
+			payload: `{"VpcId":"vpc-456","InstanceTenancy":"default","CidrBlockAssociations":["vpc-cidr-assoc-1234", "vpc-cidr-assoc-5678"],"CidrBlock":"10.10.0.0/16","Tags":[{"Value":"Kubernetes VPC","Key":"Name"}]}`, //nolint:lll
 			want: []string{
 				`CidrBlock: "10.10.0.0/16"`,
 				`Tags.["Name"]: "Kubernetes VPC"`,
