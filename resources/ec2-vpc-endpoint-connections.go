@@ -15,7 +15,7 @@ import (
 	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-const EC2VPCEndpointConnectionResource = "EC2VPCEndpointConnection" //nolint:gosec
+const EC2VPCEndpointConnectionResource = "EC2VPCEndpointConnection" //nolint:gosec,nolintlint
 
 func init() {
 	registry.Register(&registry.Registration{
