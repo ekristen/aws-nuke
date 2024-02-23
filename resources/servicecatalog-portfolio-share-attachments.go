@@ -38,16 +38,14 @@ func (l *ServiceCatalogPortfolioShareAttachmentLister) List(_ context.Context, o
 		PageSize: aws.Int64(20),
 	}
 
-	//List all Portfolios
+	// list all portfolios
 	for {
 		resp, err := svc.ListPortfolios(params)
 		if err != nil {
 			return nil, err
 		}
 
-		for _, portfolioDetail := range resp.PortfolioDetails {
-			portfolios = append(portfolios, portfolioDetail)
-		}
+		portfolios = append(portfolios, resp.PortfolioDetails...)
 
 		if resp.NextPageToken == nil {
 			break
@@ -60,7 +58,6 @@ func (l *ServiceCatalogPortfolioShareAttachmentLister) List(_ context.Context, o
 
 	// Get all accounts which have shared access to the portfolio
 	for _, portfolio := range portfolios {
-
 		accessParams.PortfolioId = portfolio.Id
 
 		resp, err := svc.ListPortfolioAccess(accessParams)
@@ -76,7 +73,6 @@ func (l *ServiceCatalogPortfolioShareAttachmentLister) List(_ context.Context, o
 				portfolioName: portfolio.DisplayName,
 			})
 		}
-
 	}
 
 	return resources, nil

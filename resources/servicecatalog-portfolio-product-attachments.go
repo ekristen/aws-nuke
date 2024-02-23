@@ -61,7 +61,6 @@ func (l *ServiceCatalogPortfolioProductAttachmentLister) List(_ context.Context,
 	}
 
 	for productID, productName := range products {
-
 		portfolioParams.ProductId = productID
 
 		resp, err := svc.ListPortfoliosForProduct(portfolioParams)
