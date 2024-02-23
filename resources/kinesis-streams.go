@@ -50,7 +50,7 @@ func (l *KinesisStreamLister) List(_ context.Context, o interface{}) ([]resource
 			lastStreamName = streamName
 		}
 
-		if *output.HasMoreStreams == false {
+		if !aws.BoolValue(output.HasMoreStreams) {
 			break
 		}
 
