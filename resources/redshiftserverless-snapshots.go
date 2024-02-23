@@ -1,10 +1,18 @@
 package resources
 
 import (
+	"context"
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
+
 	"github.com/aws/aws-sdk-go/service/redshiftserverless"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/registry"
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 type RedshiftServerlessSnapshot struct {
@@ -12,13 +20,23 @@ type RedshiftServerlessSnapshot struct {
 	snapshot *redshiftserverless.Snapshot
 }
 
+const RedshiftServerlessSnapshotResource = "RedshiftServerlessSnapshot"
+
 func init() {
-	register("RedshiftServerlessSnapshot", ListRedshiftServerlessSnapshots)
+	registry.Register(&registry.Registration{
+		Name:   RedshiftServerlessSnapshotResource,
+		Scope:  nuke.Account,
+		Lister: &RedshiftServerlessSnapshotLister{},
+	})
 }
 
-func ListRedshiftServerlessSnapshots(sess *session.Session) ([]Resource, error) {
-	svc := redshiftserverless.New(sess)
-	resources := []Resource{}
+type RedshiftServerlessSnapshotLister struct{}
+
+func (l *RedshiftServerlessSnapshotLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := redshiftserverless.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &redshiftserverless.ListSnapshotsInput{
 		MaxResults: aws.Int64(100),
@@ -56,7 +74,7 @@ func (s *RedshiftServerlessSnapshot) Properties() types.Properties {
 	return properties
 }
 
-func (s *RedshiftServerlessSnapshot) Remove() error {
+func (s *RedshiftServerlessSnapshot) Remove(_ context.Context) error {
 	_, err := s.svc.DeleteSnapshot(&redshiftserverless.DeleteSnapshotInput{
 		SnapshotName: s.snapshot.SnapshotName,
 	})
@@ -65,5 +83,5 @@ func (s *RedshiftServerlessSnapshot) Remove() error {
 }
 
 func (s *RedshiftServerlessSnapshot) String() string {
-	return *s.snapshot.SnapshotName
+	return ptr.ToString(s.snapshot.SnapshotName)
 }

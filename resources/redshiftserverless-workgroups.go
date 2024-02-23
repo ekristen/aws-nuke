@@ -1,10 +1,18 @@
 package resources
 
 import (
+	"context"
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
+
 	"github.com/aws/aws-sdk-go/service/redshiftserverless"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/registry"
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 type RedshiftServerlessWorkgroup struct {
@@ -12,13 +20,23 @@ type RedshiftServerlessWorkgroup struct {
 	workgroup *redshiftserverless.Workgroup
 }
 
+const RedshiftServerlessWorkgroupResource = "RedshiftServerlessWorkgroup"
+
 func init() {
-	register("RedshiftServerlessWorkgroup", ListRedshiftServerlessWorkgroups)
+	registry.Register(&registry.Registration{
+		Name:   RedshiftServerlessWorkgroupResource,
+		Scope:  nuke.Account,
+		Lister: &RedshiftServerlessWorkgroupLister{},
+	})
 }
 
-func ListRedshiftServerlessWorkgroups(sess *session.Session) ([]Resource, error) {
-	svc := redshiftserverless.New(sess)
-	resources := []Resource{}
+type RedshiftServerlessWorkgroupLister struct{}
+
+func (l *RedshiftServerlessWorkgroupLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := redshiftserverless.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &redshiftserverless.ListWorkgroupsInput{
 		MaxResults: aws.Int64(100),
@@ -56,7 +74,7 @@ func (w *RedshiftServerlessWorkgroup) Properties() types.Properties {
 	return properties
 }
 
-func (w *RedshiftServerlessWorkgroup) Remove() error {
+func (w *RedshiftServerlessWorkgroup) Remove(_ context.Context) error {
 	_, err := w.svc.DeleteWorkgroup(&redshiftserverless.DeleteWorkgroupInput{
 		WorkgroupName: w.workgroup.WorkgroupName,
 	})
@@ -65,5 +83,5 @@ func (w *RedshiftServerlessWorkgroup) Remove() error {
 }
 
 func (w *RedshiftServerlessWorkgroup) String() string {
-	return *w.workgroup.WorkgroupName
+	return ptr.ToString(w.workgroup.WorkgroupName)
 }

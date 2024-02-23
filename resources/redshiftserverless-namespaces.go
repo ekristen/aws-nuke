@@ -1,10 +1,18 @@
 package resources
 
 import (
+	"context"
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
+
 	"github.com/aws/aws-sdk-go/service/redshiftserverless"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/registry"
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 type RedshiftServerlessNamespace struct {
@@ -12,13 +20,23 @@ type RedshiftServerlessNamespace struct {
 	namespace *redshiftserverless.Namespace
 }
 
+const RedshiftServerlessNamespaceResource = "RedshiftServerlessNamespace"
+
 func init() {
-	register("RedshiftServerlessNamespace", ListRedshiftServerlessNamespaces)
+	registry.Register(&registry.Registration{
+		Name:   RedshiftServerlessNamespaceResource,
+		Scope:  nuke.Account,
+		Lister: &RedshiftServerlessNamespaceLister{},
+	})
 }
 
-func ListRedshiftServerlessNamespaces(sess *session.Session) ([]Resource, error) {
-	svc := redshiftserverless.New(sess)
-	resources := []Resource{}
+type RedshiftServerlessNamespaceLister struct{}
+
+func (l *RedshiftServerlessNamespaceLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := redshiftserverless.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &redshiftserverless.ListNamespacesInput{
 		MaxResults: aws.Int64(100),
@@ -55,7 +73,7 @@ func (n *RedshiftServerlessNamespace) Properties() types.Properties {
 	return properties
 }
 
-func (n *RedshiftServerlessNamespace) Remove() error {
+func (n *RedshiftServerlessNamespace) Remove(_ context.Context) error {
 	_, err := n.svc.DeleteNamespace(&redshiftserverless.DeleteNamespaceInput{
 		NamespaceName: n.namespace.NamespaceName,
 	})
@@ -64,5 +82,5 @@ func (n *RedshiftServerlessNamespace) Remove() error {
 }
 
 func (n *RedshiftServerlessNamespace) String() string {
-	return *n.namespace.NamespaceName
+	return ptr.ToString(n.namespace.NamespaceName)
 }
