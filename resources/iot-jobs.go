@@ -64,7 +64,6 @@ type IoTJob struct {
 }
 
 func (f *IoTJob) Remove(_ context.Context) error {
-
 	_, err := f.svc.CancelJob(&iot.CancelJobInput{
 		JobId: f.ID,
 	})

@@ -2,9 +2,10 @@ package resources
 
 import (
 	"context"
-
 	"fmt"
 	"time"
+
+	"github.com/gotidy/ptr"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/iot"
@@ -68,8 +69,8 @@ type IoTThingTypeState struct {
 }
 
 func (f *IoTThingTypeState) Filter() error {
-	//Ensure we don't inspect time unless its already deprecated
-	if *f.deprecated == true {
+	// ensure we don't inspect time unless its already deprecated
+	if ptr.ToBool(f.deprecated) {
 		currentTime := time.Now()
 		timeDiff := currentTime.Sub(*f.deprecatedEpoch)
 		// Must wait for 300 seconds before deleting a ThingType after deprecation
