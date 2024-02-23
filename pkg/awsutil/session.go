@@ -40,7 +40,7 @@ type Credentials struct {
 	SecretAccessKey string
 	SessionToken    string
 	AssumeRoleArn   string
-	ExternalId      string
+	ExternalID      string
 	RoleSessionName string
 
 	Credentials *credentials.Credentials
@@ -65,9 +65,9 @@ func (c *Credentials) HasKeys() bool {
 
 func (c *Credentials) Validate() error {
 	if c.HasProfile() && c.HasKeys() {
-		return fmt.Errorf("You have to specify either the --profile flag or " +
+		return fmt.Errorf("specify either the --profile flag or " +
 			"--access-key-id with --secret-access-key and optionally " +
-			"--session-token.\n")
+			"--session-token, but not both")
 	}
 
 	return nil
@@ -98,7 +98,7 @@ func (c *Credentials) rootSession() (*session.Session, error) {
 			}
 
 		case c.HasProfile():
-			fallthrough
+			fallthrough //nolint:gocritic
 
 		default:
 			opts = session.Options{
@@ -123,8 +123,8 @@ func (c *Credentials) rootSession() (*session.Session, error) {
 					p.RoleSessionName = c.RoleSessionName
 				}
 
-				if c.ExternalId != "" {
-					p.ExternalID = aws.String(c.ExternalId)
+				if c.ExternalID != "" {
+					p.ExternalID = aws.String(c.ExternalID)
 				}
 			})
 		}
@@ -172,16 +172,16 @@ func (c *Credentials) NewSession(region, serviceType string) (*session.Session, 
 		}
 		if customService.TLSInsecureSkipVerify {
 			conf.HTTPClient = &http.Client{Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, //nolint:gosec
 			}}
 		}
-		// ll := aws.LogDebugWithEventStreamBody
-		// conf.LogLevel = &ll
+
 		var err error
 		sess, err = session.NewSession(conf)
 		if err != nil {
 			return nil, err
 		}
+
 		isCustom = true
 	}
 
@@ -246,25 +246,30 @@ func skipGlobalHandler(global bool) func(r *request.Request) {
 		if !ok {
 			// This means that the service does not exist in the endpoints list.
 			if global {
-				r.Error = liberrors.ErrSkipRequest(fmt.Sprintf("service '%s' is was not found in the endpoint list; assuming it is not global", service))
+				r.Error = liberrors.ErrSkipRequest(
+					fmt.Sprintf("service '%s' is was not found in the endpoint list; assuming it is not global",
+						service))
 			} else {
 				host := r.HTTPRequest.URL.Hostname()
 				_, err := net.LookupHost(host)
 				if err != nil {
 					log.Debug(err)
-					r.Error = liberrors.ErrUnknownEndpoint(fmt.Sprintf("DNS lookup failed for %s; assuming it does not exist in this region", host))
+					r.Error = liberrors.ErrUnknownEndpoint(
+						fmt.Sprintf("DNS lookup failed for %s; assuming it does not exist in this region", host))
 				}
 			}
 			return
 		}
 
 		if len(rs) == 0 && !global {
-			r.Error = liberrors.ErrSkipRequest(fmt.Sprintf("service '%s' is global, but the session is not", service))
+			r.Error = liberrors.ErrSkipRequest(
+				fmt.Sprintf("service '%s' is global, but the session is not", service))
 			return
 		}
 
 		if (len(rs) > 0 && global) && service != "sts" {
-			r.Error = liberrors.ErrSkipRequest(fmt.Sprintf("service '%s' is not global, but the session is", service))
+			r.Error = liberrors.ErrSkipRequest(
+				fmt.Sprintf("service '%s' is not global, but the session is", service))
 			return
 		}
 	}
