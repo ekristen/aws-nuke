@@ -29,8 +29,9 @@ var funcTemplate = `func (l *{{.ResourceType}}Lister) List(_ context.Context, o 
 var imports = `import (
 	"context"
 
+	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
-"github.com/ekristen/libnuke/pkg/registry"
+	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/pkg/nuke"
 `
