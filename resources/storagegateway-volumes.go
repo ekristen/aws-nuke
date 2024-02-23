@@ -63,7 +63,6 @@ type StorageGatewayVolume struct {
 }
 
 func (f *StorageGatewayVolume) Remove(_ context.Context) error {
-
 	_, err := f.svc.DeleteVolume(&storagegateway.DeleteVolumeInput{
 		VolumeARN: f.ARN,
 	})
