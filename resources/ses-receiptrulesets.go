@@ -2,7 +2,6 @@ package resources
 
 import (
 	"context"
-
 	"errors"
 	"fmt"
 
@@ -13,6 +12,7 @@ import (
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 
+	"github.com/ekristen/aws-nuke/pkg/awsutil"
 	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
@@ -43,7 +43,7 @@ func (l *SESReceiptRuleSetLister) List(_ context.Context, o interface{}) ([]reso
 		// should we need to troubleshoot.
 		var awsError awserr.Error
 		if errors.As(err, &awsError) {
-			if awsError.Code() == "InvalidAction" {
+			if awsError.Code() == awsutil.ErrCodeInvalidAction {
 				return nil, sdkerrors.ErrSkipRequest(
 					"Listing of SESReceiptFilter not supported in this region: " + *opts.Session.Config.Region)
 			}
@@ -84,7 +84,7 @@ type SESReceiptRuleSet struct {
 }
 
 func (f *SESReceiptRuleSet) Filter() error {
-	if f.activeRuleSet == true {
+	if f.activeRuleSet {
 		return fmt.Errorf("cannot delete active ruleset")
 	}
 	return nil
