@@ -2,10 +2,10 @@ package resources
 
 import (
 	"context"
-
 	"errors"
 	"fmt"
 
+	"github.com/gotidy/ptr"
 	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -108,6 +108,9 @@ func (a *AthenaWorkGroup) Remove(_ context.Context) error {
 			Description: aws.String(""),
 			WorkGroup:   a.name,
 		})
+		if err != nil {
+			return err
+		}
 
 		// Remove any tags
 		wgTagsRes, err := a.svc.ListTagsForResource(&athena.ListTagsForResourceInput{
@@ -116,10 +119,12 @@ func (a *AthenaWorkGroup) Remove(_ context.Context) error {
 		if err != nil {
 			return err
 		}
+
 		var tagKeys []*string
 		for _, tag := range wgTagsRes.Tags {
 			tagKeys = append(tagKeys, tag.Key)
 		}
+
 		_, err = a.svc.UntagResource(&athena.UntagResourceInput{
 			ResourceARN: a.arn,
 			TagKeys:     tagKeys,
@@ -163,9 +168,9 @@ func (a *AthenaWorkGroup) Filter() error {
 		// don't add it to our plan
 		wgConfig := wgConfigRes.WorkGroup.Configuration
 		isCleanConfig := wgConfig.BytesScannedCutoffPerQuery == nil &&
-			*wgConfig.EnforceWorkGroupConfiguration == false &&
-			*wgConfig.PublishCloudWatchMetricsEnabled == false &&
-			*wgConfig.RequesterPaysEnabled == false &&
+			!ptr.ToBool(wgConfig.EnforceWorkGroupConfiguration) &&
+			!ptr.ToBool(wgConfig.PublishCloudWatchMetricsEnabled) &&
+			!ptr.ToBool(wgConfig.RequesterPaysEnabled) &&
 			*wgConfig.ResultConfiguration == athena.ResultConfiguration{} &&
 			len(wgTagsRes.Tags) == 0
 
