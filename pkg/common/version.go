@@ -1,10 +1,12 @@
 package common
 
+import "fmt"
+
 // NAME of the App
 var NAME = "aws-nuke"
 
 // SUMMARY of the Version
-var SUMMARY = "3.0.0-beta.4"
+var SUMMARY = "3.0.0-dev"
 
 // BRANCH of the Version
 var BRANCH = "dev"
@@ -20,6 +22,10 @@ type AppVersionInfo struct {
 	Branch  string
 	Summary string
 	Commit  string
+}
+
+func (a *AppVersionInfo) String() string {
+	return fmt.Sprintf("%s - %s - %s", a.Name, a.Summary, a.Commit)
 }
 
 func init() {

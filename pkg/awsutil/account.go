@@ -4,8 +4,11 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/gotidy/ptr"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 
+	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/sts"
 
@@ -15,8 +18,10 @@ import (
 type Account struct {
 	Credentials
 
-	id      string
-	aliases []string
+	id              string
+	aliases         []string
+	regions         []string
+	disabledRegions []string
 }
 
 func NewAccount(creds Credentials, endpoints config.CustomEndpoints) (*Account, error) {
@@ -49,6 +54,13 @@ func NewAccount(creds Credentials, endpoints config.CustomEndpoints) (*Account, 
 		return nil, errors.Wrap(err, "failed get caller identity")
 	}
 
+	regionsOutput, err := ec2.New(defaultSession).DescribeRegions(&ec2.DescribeRegionsInput{
+		AllRegions: ptr.Bool(true),
+	})
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get regions")
+	}
+
 	globalSession, err := account.NewSession(GlobalRegionID, "")
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to create global session in %s", GlobalRegionID)
@@ -66,16 +78,33 @@ func NewAccount(creds Credentials, endpoints config.CustomEndpoints) (*Account, 
 		}
 	}
 
-	account.id = *identityOutput.Account
+	regions := []string{"global"}
+	var disabledRegions []string
+	for _, region := range regionsOutput.Regions {
+		logrus.Debugf("region: %s, status: %s",
+			ptr.ToString(region.RegionName), ptr.ToString(region.OptInStatus))
+
+		if ptr.ToString(region.OptInStatus) == "not-opted-in" {
+			disabledRegions = append(disabledRegions, *region.RegionName)
+		} else {
+			regions = append(regions, *region.RegionName)
+		}
+	}
+
+	account.id = ptr.ToString(identityOutput.Account)
 	account.aliases = aliases
+	account.regions = regions
+	account.disabledRegions = disabledRegions
 
 	return &account, nil
 }
 
+// ID returns the account ID
 func (a *Account) ID() string {
 	return a.id
 }
 
+// Alias returns the first alias for the account
 func (a *Account) Alias() string {
 	if len(a.aliases) == 0 {
 		return fmt.Sprintf("no-alias-%s", a.ID())
@@ -84,6 +113,7 @@ func (a *Account) Alias() string {
 	return a.aliases[0]
 }
 
+// Aliases returns the list of aliases for the account
 func (a *Account) Aliases() []string {
 	return a.aliases
 }
@@ -99,4 +129,14 @@ func (a *Account) ResourceTypeToServiceType(regionName, resourceType string) str
 		}
 	}
 	return ""
+}
+
+// Regions returns the list of regions that are enabled for the account
+func (a *Account) Regions() []string {
+	return a.regions
+}
+
+// DisabledRegions returns the list of regions that are disabled for the account
+func (a *Account) DisabledRegions() []string {
+	return a.disabledRegions
 }

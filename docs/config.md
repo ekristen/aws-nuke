@@ -70,6 +70,16 @@ The regions is a list of AWS regions that the tool will run against. The tool wi
 configuration. If no regions are listed, then the tool will **NOT** run against any region. Regions must be explicitly
 provided.
 
+### All Enabled Regions
+
+You may specify the special region `all` to run against all enabled regions. This will run against all regions that are
+enabled in the account. It will not run against regions that are disabled. It will also automatically include the 
+special region `global` which is for specific global resources.
+
+!!! important
+    The use of `all` will ignore all other regions specified in the configuration. It will only run against regions
+    that are enabled in the account.
+
 ## Accounts
 
 The accounts section is a map of AWS Account IDs to their configuration. The account ID is the key and the value is the

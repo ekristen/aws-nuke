@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/ekristen/libnuke/pkg/registry"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -107,7 +108,7 @@ func execute(c *cli.Context) error {
 	n := libnuke.New(params, filters, parsedConfig.Settings)
 
 	n.SetRunSleep(5 * time.Second)
-	n.RegisterVersion(common.AppVersion.Summary)
+	n.RegisterVersion(fmt.Sprintf("> %s", common.AppVersion.String()))
 
 	// Register our custom validate handler that validates the account and AWS nuke unique alias checks
 	n.RegisterValidateHandler(func() error {
@@ -142,6 +143,32 @@ func execute(c *cli.Context) error {
 		},
 		registry.GetAlternativeResourceTypeMapping(),
 	)
+
+	// If the user has specified the "all" region, then we need to get the enabled regions for the account
+	// and use those. Otherwise, we will use the regions that are specified in the configuration.
+	if slices.Contains(parsedConfig.Regions, "all") {
+		parsedConfig.Regions = account.Regions()
+
+		logrus.Info(
+			`"all" detected in region list, only enabled regions and "global" will be used, all others ignored`)
+
+		if len(parsedConfig.Regions) > 1 {
+			logrus.Warnf(`additional regions defined along with "all", these will be ignored!`)
+		}
+
+		logrus.Infof("The following regions are enabled for the account (%d total):", len(parsedConfig.Regions))
+
+		printableRegions := make([]string, 0)
+		for i, region := range parsedConfig.Regions {
+			printableRegions = append(printableRegions, region)
+			if i%6 == 0 { // print 5 regions per line
+				logrus.Infof("> %s", strings.Join(printableRegions, ", "))
+				printableRegions = make([]string, 0)
+			} else if i == len(parsedConfig.Regions)-1 {
+				logrus.Infof("> %s", strings.Join(printableRegions, ", "))
+			}
+		}
+	}
 
 	// Register the scanners for each region that is defined in the configuration.
 	for _, regionName := range parsedConfig.Regions {
