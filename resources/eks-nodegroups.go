@@ -49,9 +49,7 @@ func (l *EKSNodegroupLister) List(_ context.Context, o interface{}) ([]resource.
 			return nil, err
 		}
 
-		for _, cluster := range resp.Clusters {
-			clusterNames = append(clusterNames, cluster)
-		}
+		clusterNames = append(clusterNames, resp.Clusters...)
 
 		if resp.NextToken == nil {
 			break

@@ -47,9 +47,7 @@ func (l *EKSFargateProfileLister) List(_ context.Context, o interface{}) ([]reso
 			return nil, err
 		}
 
-		for _, cluster := range resp.Clusters {
-			clusterNames = append(clusterNames, cluster)
-		}
+		clusterNames = append(clusterNames, resp.Clusters...)
 
 		if resp.NextToken == nil {
 			break
@@ -87,7 +85,6 @@ func (l *EKSFargateProfileLister) List(_ context.Context, o interface{}) ([]reso
 
 			fargateInputParams.NextToken = resp.NextToken
 		}
-
 	}
 
 	return resources, nil
