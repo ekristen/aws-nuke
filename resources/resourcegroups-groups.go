@@ -37,10 +37,10 @@ func (l *ResourceGroupGroupLister) List(_ context.Context, o interface{}) ([]res
 			return nil, err
 		}
 
-		for _, group := range output.Groups {
+		for _, group := range output.GroupIdentifiers {
 			resources = append(resources, &ResourceGroupGroup{
 				svc:       svc,
-				groupName: group.Name,
+				groupName: group.GroupName,
 			})
 		}
 
@@ -60,7 +60,6 @@ type ResourceGroupGroup struct {
 }
 
 func (f *ResourceGroupGroup) Remove(_ context.Context) error {
-
 	_, err := f.svc.DeleteGroup(&resourcegroups.DeleteGroupInput{
 		Group: f.groupName,
 	})
