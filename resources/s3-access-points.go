@@ -35,13 +35,13 @@ func (l *S3AccessPointLister) List(_ context.Context, o interface{}) ([]resource
 	if err != nil {
 		return nil, err
 	}
-	accountId := callerID.Account
+	accountID := callerID.Account
 
 	var resources []resource.Resource
 	svc := s3control.New(opts.Session)
 	for {
 		params := &s3control.ListAccessPointsInput{
-			AccountId: accountId,
+			AccountId: accountID,
 		}
 
 		resp, err := svc.ListAccessPoints(params)
@@ -52,7 +52,7 @@ func (l *S3AccessPointLister) List(_ context.Context, o interface{}) ([]resource
 		for _, accessPoint := range resp.AccessPointList {
 			resources = append(resources, &S3AccessPoint{
 				svc:         svc,
-				accountId:   accountId,
+				accountID:   accountID,
 				accessPoint: accessPoint,
 			})
 		}
@@ -68,13 +68,13 @@ func (l *S3AccessPointLister) List(_ context.Context, o interface{}) ([]resource
 
 type S3AccessPoint struct {
 	svc         *s3control.S3Control
-	accountId   *string
+	accountID   *string
 	accessPoint *s3control.AccessPoint
 }
 
 func (e *S3AccessPoint) Remove(_ context.Context) error {
 	_, err := e.svc.DeleteAccessPoint(&s3control.DeleteAccessPointInput{
-		AccountId: e.accountId,
+		AccountId: e.accountID,
 		Name:      aws.String(*e.accessPoint.Name),
 	})
 	return err
