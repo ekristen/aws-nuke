@@ -63,31 +63,28 @@ type ComprehendEntityRecognizer struct {
 
 func (ce *ComprehendEntityRecognizer) Remove(_ context.Context) error {
 	switch *ce.entityRecognizer.Status {
-	case "IN_ERROR":
-		fallthrough
-	case "TRAINED":
-		{
-			logrus.Infof("ComprehendEntityRecognizer deleteEntityRecognizer arn=%s status=%s", *ce.entityRecognizer.EntityRecognizerArn, *ce.entityRecognizer.Status)
-			_, err := ce.svc.DeleteEntityRecognizer(&comprehend.DeleteEntityRecognizerInput{
-				EntityRecognizerArn: ce.entityRecognizer.EntityRecognizerArn,
-			})
-			return err
-		}
-	case "SUBMITTED":
-		fallthrough
-	case "TRAINING":
-		{
-			logrus.Infof("ComprehendEntityRecognizer stopTrainingEntityRecognizer arn=%s status=%s", *ce.entityRecognizer.EntityRecognizerArn, *ce.entityRecognizer.Status)
-			_, err := ce.svc.StopTrainingEntityRecognizer(&comprehend.StopTrainingEntityRecognizerInput{
-				EntityRecognizerArn: ce.entityRecognizer.EntityRecognizerArn,
-			})
-			return err
-		}
+	case comprehend.ModelStatusInError, comprehend.ModelStatusTrained:
+		logrus.Infof("ComprehendEntityRecognizer deleteEntityRecognizer arn=%s status=%s",
+			*ce.entityRecognizer.EntityRecognizerArn, *ce.entityRecognizer.Status)
+
+		_, err := ce.svc.DeleteEntityRecognizer(&comprehend.DeleteEntityRecognizerInput{
+			EntityRecognizerArn: ce.entityRecognizer.EntityRecognizerArn,
+		})
+
+		return err
+	case comprehend.ModelStatusSubmitted, comprehend.ModelStatusTraining:
+		logrus.Infof("ComprehendEntityRecognizer stopTrainingEntityRecognizer arn=%s status=%s",
+			*ce.entityRecognizer.EntityRecognizerArn, *ce.entityRecognizer.Status)
+
+		_, err := ce.svc.StopTrainingEntityRecognizer(&comprehend.StopTrainingEntityRecognizerInput{
+			EntityRecognizerArn: ce.entityRecognizer.EntityRecognizerArn,
+		})
+
+		return err
 	default:
-		{
-			logrus.Infof("ComprehendEntityRecognizer already deleting arn=%s status=%s", *ce.entityRecognizer.EntityRecognizerArn, *ce.entityRecognizer.Status)
-			return nil
-		}
+		logrus.Infof("ComprehendEntityRecognizer already deleting arn=%s status=%s",
+			*ce.entityRecognizer.EntityRecognizerArn, *ce.entityRecognizer.Status)
+		return nil
 	}
 }
 

@@ -3,6 +3,7 @@ package resources
 import (
 	"context"
 
+	"github.com/gotidy/ptr"
 	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go/service/comprehend"
@@ -62,32 +63,27 @@ type ComprehendDocumentClassifier struct {
 }
 
 func (ce *ComprehendDocumentClassifier) Remove(_ context.Context) error {
-	switch *ce.documentClassifier.Status {
-	case "IN_ERROR":
-		fallthrough
-	case "TRAINED":
-		{
-			logrus.Infof("ComprehendDocumentClassifier deleteDocumentClassifier arn=%s status=%s", *ce.documentClassifier.DocumentClassifierArn, *ce.documentClassifier.Status)
-			_, err := ce.svc.DeleteDocumentClassifier(&comprehend.DeleteDocumentClassifierInput{
-				DocumentClassifierArn: ce.documentClassifier.DocumentClassifierArn,
-			})
-			return err
-		}
-	case "SUBMITTED":
-		fallthrough
-	case "TRAINING":
-		{
-			logrus.Infof("ComprehendDocumentClassifier stopTrainingDocumentClassifier arn=%s status=%s", *ce.documentClassifier.DocumentClassifierArn, *ce.documentClassifier.Status)
-			_, err := ce.svc.StopTrainingDocumentClassifier(&comprehend.StopTrainingDocumentClassifierInput{
-				DocumentClassifierArn: ce.documentClassifier.DocumentClassifierArn,
-			})
-			return err
-		}
+	switch ptr.ToString(ce.documentClassifier.Status) {
+	case comprehend.ModelStatusInError, comprehend.ModelStatusTrained:
+		logrus.Infof("ComprehendDocumentClassifier deleteDocumentClassifier arn=%s status=%s",
+			*ce.documentClassifier.DocumentClassifierArn, *ce.documentClassifier.Status)
+
+		_, err := ce.svc.DeleteDocumentClassifier(&comprehend.DeleteDocumentClassifierInput{
+			DocumentClassifierArn: ce.documentClassifier.DocumentClassifierArn,
+		})
+		return err
+	case comprehend.ModelStatusSubmitted, comprehend.ModelStatusTraining:
+		logrus.Infof("ComprehendDocumentClassifier stopTrainingDocumentClassifier arn=%s status=%s",
+			*ce.documentClassifier.DocumentClassifierArn, *ce.documentClassifier.Status)
+
+		_, err := ce.svc.StopTrainingDocumentClassifier(&comprehend.StopTrainingDocumentClassifierInput{
+			DocumentClassifierArn: ce.documentClassifier.DocumentClassifierArn,
+		})
+		return err
 	default:
-		{
-			logrus.Infof("ComprehendDocumentClassifier already deleting arn=%s status=%s", *ce.documentClassifier.DocumentClassifierArn, *ce.documentClassifier.Status)
-			return nil
-		}
+		logrus.Infof("ComprehendDocumentClassifier already deleting arn=%s status=%s",
+			*ce.documentClassifier.DocumentClassifierArn, *ce.documentClassifier.Status)
+		return nil
 	}
 }
 
