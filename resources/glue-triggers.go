@@ -63,7 +63,6 @@ type GlueTrigger struct {
 }
 
 func (f *GlueTrigger) Remove(_ context.Context) error {
-
 	_, err := f.svc.DeleteTrigger(&glue.DeleteTriggerInput{
 		Name: f.name,
 	})
