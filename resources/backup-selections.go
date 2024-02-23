@@ -17,8 +17,8 @@ import (
 
 type BackupSelection struct {
 	svc           *backup.Backup
-	planId        string
-	selectionId   string
+	planID        string
+	selectionID   string
 	selectionName string
 }
 
@@ -57,8 +57,8 @@ func (l *AWSBackupSelectionLister) List(_ context.Context, o interface{}) ([]res
 			for _, selection := range selectionsOutput.BackupSelectionsList {
 				resources = append(resources, &BackupSelection{
 					svc:           svc,
-					planId:        *selection.BackupPlanId,
-					selectionId:   *selection.SelectionId,
+					planID:        *selection.BackupPlanId,
+					selectionID:   *selection.SelectionId,
 					selectionName: *selection.SelectionName,
 				})
 			}
@@ -77,21 +77,21 @@ func (l *AWSBackupSelectionLister) List(_ context.Context, o interface{}) ([]res
 func (b *BackupSelection) Properties() types.Properties {
 	properties := types.NewProperties()
 	properties.Set("Name", b.selectionName)
-	properties.Set("ID", b.selectionId)
-	properties.Set("PlanID", b.planId)
+	properties.Set("ID", b.selectionID)
+	properties.Set("PlanID", b.planID)
 	return properties
 }
 
 func (b *BackupSelection) Remove(_ context.Context) error {
 	_, err := b.svc.DeleteBackupSelection(&backup.DeleteBackupSelectionInput{
-		BackupPlanId: &b.planId,
-		SelectionId:  &b.selectionId,
+		BackupPlanId: &b.planID,
+		SelectionId:  &b.selectionID,
 	})
 	return err
 }
 
 func (b *BackupSelection) String() string {
-	return fmt.Sprintf("%s (%s)", b.planId, b.selectionId)
+	return fmt.Sprintf("%s (%s)", b.planID, b.selectionID)
 }
 
 func (b *BackupSelection) Filter() error {
