@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"github.com/aws/aws-sdk-go/aws/endpoints"
 
 	"time"
 
@@ -35,6 +36,11 @@ func (l *ECRPublicRepositoryLister) List(_ context.Context, o interface{}) ([]re
 	opts := o.(*nuke.ListerOpts)
 	svc := ecrpublic.New(opts.Session)
 	var resources []resource.Resource
+
+	// ECRPublicRepository is only supported in us-east-1, only run if the region is us-east-1
+	if opts.Session.Config.Region == nil || *opts.Session.Config.Region != endpoints.UsEast1RegionID {
+		return resources, nil
+	}
 
 	input := &ecrpublic.DescribeRepositoriesInput{
 		MaxResults: aws.Int64(100),
