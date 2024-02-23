@@ -151,6 +151,11 @@ func execute(c *cli.Context) error {
 
 		logrus.Info(
 			`"all" detected in region list, only enabled regions and "global" will be used, all others ignored`)
+
+		if len(parsedConfig.Regions) > 1 {
+			logrus.Warnf(`additional regions defined along with "all", these will be ignored!`)
+		}
+
 		logrus.Infof("The following regions are enabled for the account (%d total):", len(parsedConfig.Regions))
 
 		printableRegions := make([]string, 0)
