@@ -7,6 +7,8 @@ import (
 
 	"github.com/ekristen/aws-nuke/pkg/common"
 
+	_ "github.com/ekristen/aws-nuke/pkg/commands/account"
+	_ "github.com/ekristen/aws-nuke/pkg/commands/config"
 	_ "github.com/ekristen/aws-nuke/pkg/commands/list"
 	_ "github.com/ekristen/aws-nuke/pkg/commands/nuke"
 

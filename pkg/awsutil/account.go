@@ -19,6 +19,8 @@ type Account struct {
 	Credentials
 
 	id              string
+	arn             string
+	userID          string
 	aliases         []string
 	regions         []string
 	disabledRegions []string
@@ -92,6 +94,8 @@ func NewAccount(creds Credentials, endpoints config.CustomEndpoints) (*Account, 
 	}
 
 	account.id = ptr.ToString(identityOutput.Account)
+	account.arn = ptr.ToString(identityOutput.Arn)
+	account.userID = ptr.ToString(identityOutput.UserId)
 	account.aliases = aliases
 	account.regions = regions
 	account.disabledRegions = disabledRegions
@@ -102,6 +106,16 @@ func NewAccount(creds Credentials, endpoints config.CustomEndpoints) (*Account, 
 // ID returns the account ID
 func (a *Account) ID() string {
 	return a.id
+}
+
+// ARN returns the STS Authenticated ARN for the account
+func (a *Account) ARN() string {
+	return a.arn
+}
+
+// UserID returns the authenticated user ID
+func (a *Account) UserID() string {
+	return a.userID
 }
 
 // Alias returns the first alias for the account

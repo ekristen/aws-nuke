@@ -76,7 +76,6 @@ nav:
     - Usage: cli-usage.md
     - Options: cli-options.md
     - Experimental: cli-experimental.md
-    - Feature Flags: cli-feature-flags.md
     - Examples: cli-examples.md
   - Config:
     - Overview: config.md

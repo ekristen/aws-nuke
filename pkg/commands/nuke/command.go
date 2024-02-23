@@ -25,7 +25,7 @@ import (
 	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-func configureCreds(c *cli.Context) (creds awsutil.Credentials) {
+func ConfigureCreds(c *cli.Context) (creds awsutil.Credentials) {
 	creds.Profile = c.String("profile")
 	creds.AccessKeyID = c.String("access-key-id")
 	creds.SecretAccessKey = c.String("secret-access-key")
@@ -42,7 +42,7 @@ func execute(c *cli.Context) error {
 	defer cancel()
 
 	defaultRegion := c.String("default-region")
-	creds := configureCreds(c)
+	creds := ConfigureCreds(c)
 
 	if err := creds.Validate(); err != nil {
 		return err
