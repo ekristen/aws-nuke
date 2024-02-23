@@ -43,7 +43,7 @@ func (l *OSVPCEndpointLister) List(_ context.Context, o interface{}) ([]resource
 		for _, vpcEndpoint := range listResp.VpcEndpointSummaryList {
 			resources = append(resources, &OSVPCEndpoint{
 				svc:           svc,
-				vpcEndpointId: vpcEndpoint.VpcEndpointId,
+				vpcEndpointID: vpcEndpoint.VpcEndpointId,
 			})
 		}
 
@@ -61,12 +61,12 @@ func (l *OSVPCEndpointLister) List(_ context.Context, o interface{}) ([]resource
 
 type OSVPCEndpoint struct {
 	svc           *opensearchservice.OpenSearchService
-	vpcEndpointId *string
+	vpcEndpointID *string
 }
 
 func (o *OSVPCEndpoint) Remove(_ context.Context) error {
 	_, err := o.svc.DeleteVpcEndpoint(&opensearchservice.DeleteVpcEndpointInput{
-		VpcEndpointId: o.vpcEndpointId,
+		VpcEndpointId: o.vpcEndpointID,
 	})
 
 	return err
@@ -74,10 +74,10 @@ func (o *OSVPCEndpoint) Remove(_ context.Context) error {
 
 func (o *OSVPCEndpoint) Properties() types.Properties {
 	properties := types.NewProperties()
-	properties.Set("VpcEndpointId", o.vpcEndpointId)
+	properties.Set("VpcEndpointId", o.vpcEndpointID)
 	return properties
 }
 
 func (o *OSVPCEndpoint) String() string {
-	return *o.vpcEndpointId
+	return *o.vpcEndpointID
 }
