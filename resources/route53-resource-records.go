@@ -2,8 +2,9 @@ package resources
 
 import (
 	"context"
-
 	"fmt"
+
+	"github.com/gotidy/ptr"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/route53"
@@ -53,9 +54,9 @@ func (l *Route53ResourceRecordSetLister) List(ctx context.Context, o interface{}
 	return resources, nil
 }
 
-func ListResourceRecordsForZone(svc *route53.Route53, zoneId *string, zoneName *string) ([]resource.Resource, error) {
+func ListResourceRecordsForZone(svc *route53.Route53, zoneID, zoneName *string) ([]resource.Resource, error) {
 	params := &route53.ListResourceRecordSetsInput{
-		HostedZoneId: zoneId,
+		HostedZoneId: zoneID,
 	}
 
 	resources := make([]resource.Resource, 0)
@@ -69,14 +70,14 @@ func ListResourceRecordsForZone(svc *route53.Route53, zoneId *string, zoneName *
 		for _, rrs := range resp.ResourceRecordSets {
 			resources = append(resources, &Route53ResourceRecordSet{
 				svc:            svc,
-				hostedZoneId:   zoneId,
+				hostedZoneID:   zoneID,
 				hostedZoneName: zoneName,
 				data:           rrs,
 			})
 		}
 
 		// make sure to list all with more than 100 records
-		if *resp.IsTruncated {
+		if ptr.ToBool(resp.IsTruncated) {
 			params.StartRecordName = resp.NextRecordName
 			continue
 		}
@@ -89,10 +90,10 @@ func ListResourceRecordsForZone(svc *route53.Route53, zoneId *string, zoneName *
 
 type Route53ResourceRecordSet struct {
 	svc            *route53.Route53
-	hostedZoneId   *string
+	hostedZoneID   *string
 	hostedZoneName *string
 	data           *route53.ResourceRecordSet
-	changeId       *string
+	changeID       *string
 }
 
 func (r *Route53ResourceRecordSet) Filter() error {
@@ -109,10 +110,10 @@ func (r *Route53ResourceRecordSet) Filter() error {
 
 func (r *Route53ResourceRecordSet) Remove(_ context.Context) error {
 	params := &route53.ChangeResourceRecordSetsInput{
-		HostedZoneId: r.hostedZoneId,
+		HostedZoneId: r.hostedZoneID,
 		ChangeBatch: &route53.ChangeBatch{
 			Changes: []*route53.Change{
-				&route53.Change{
+				{
 					Action:            aws.String("DELETE"),
 					ResourceRecordSet: r.data,
 				},
@@ -125,7 +126,7 @@ func (r *Route53ResourceRecordSet) Remove(_ context.Context) error {
 		return err
 	}
 
-	r.changeId = resp.ChangeInfo.Id
+	r.changeID = resp.ChangeInfo.Id
 
 	return nil
 }
@@ -137,5 +138,5 @@ func (r *Route53ResourceRecordSet) Properties() types.Properties {
 }
 
 func (r *Route53ResourceRecordSet) String() string {
-	return *r.data.Name
+	return ptr.ToString(r.data.Name)
 }

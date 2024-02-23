@@ -3,7 +3,7 @@ package resources
 import (
 	"context"
 
-	"fmt"
+	"github.com/gotidy/ptr"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/route53"
@@ -46,9 +46,11 @@ func (l *Route53HealthCheckLister) List(_ context.Context, o interface{}) ([]res
 				id:  check.Id,
 			})
 		}
-		if aws.BoolValue(resp.IsTruncated) == false {
+
+		if !aws.BoolValue(resp.IsTruncated) {
 			break
 		}
+
 		params.Marker = resp.NextMarker
 	}
 
@@ -79,5 +81,5 @@ func (hz *Route53HealthCheck) Properties() types.Properties {
 }
 
 func (hz *Route53HealthCheck) String() string {
-	return fmt.Sprintf("%s", *hz.id)
+	return ptr.ToString(hz.id)
 }
