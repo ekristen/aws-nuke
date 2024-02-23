@@ -35,7 +35,7 @@ func (l *MediaStoreDataItemsLister) List(_ context.Context, o interface{}) ([]re
 	resources := make([]resource.Resource, 0)
 	var containers []*mediastore.Container
 
-	//List all containers
+	// list all containers
 	containerParams := &mediastore.ListContainersInput{
 		MaxResults: aws.Int64(100),
 	}
@@ -46,9 +46,7 @@ func (l *MediaStoreDataItemsLister) List(_ context.Context, o interface{}) ([]re
 			return nil, err
 		}
 
-		for _, container := range output.Containers {
-			containers = append(containers, container)
-		}
+		containers = append(containers, output.Containers...)
 
 		if output.NextToken == nil {
 			break
