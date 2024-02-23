@@ -2,7 +2,6 @@ package resources
 
 import (
 	"context"
-
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -10,6 +9,7 @@ import (
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 
+	"github.com/ekristen/aws-nuke/pkg/awsutil"
 	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
@@ -54,7 +54,7 @@ type EC2CustomerGateway struct {
 }
 
 func (c *EC2CustomerGateway) Filter() error {
-	if c.state == "deleted" {
+	if c.state == awsutil.StateDeleted {
 		return fmt.Errorf("already deleted")
 	}
 	return nil

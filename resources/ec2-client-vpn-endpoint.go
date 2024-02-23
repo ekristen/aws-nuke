@@ -36,13 +36,13 @@ func (l *EC2ClientVpnEndpointLister) List(_ context.Context, o interface{}) ([]r
 
 	err := svc.DescribeClientVpnEndpointsPages(params,
 		func(page *ec2.DescribeClientVpnEndpointsOutput, lastPage bool) bool {
-
 			for _, out := range page.ClientVpnEndpoints {
 				resources = append(resources, &EC2ClientVpnEndpoint{
 					svc: svc,
 					id:  *out.ClientVpnEndpointId,
 				})
 			}
+
 			return true
 		})
 	if err != nil {

@@ -2,7 +2,6 @@ package resources
 
 import (
 	"context"
-
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -12,10 +11,11 @@ import (
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
+	"github.com/ekristen/aws-nuke/pkg/awsutil"
 	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-const EC2VPCEndpointConnectionResource = "EC2VPCEndpointConnection"
+const EC2VPCEndpointConnectionResource = "EC2VPCEndpointConnection" //nolint:gosec
 
 func init() {
 	registry.Register(&registry.Registration{
@@ -71,9 +71,10 @@ type EC2VPCEndpointConnection struct {
 }
 
 func (c *EC2VPCEndpointConnection) Filter() error {
-	if *c.state == "deleting" || *c.state == "deleted" {
+	if *c.state == awsutil.StateDeleting || *c.state == awsutil.StateDeleted {
 		return fmt.Errorf("already deleted")
 	}
+
 	return nil
 }
 

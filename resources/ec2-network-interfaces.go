@@ -40,7 +40,6 @@ func (l *EC2NetworkInterfaceLister) List(_ context.Context, o interface{}) ([]re
 
 	resources := make([]resource.Resource, 0)
 	for _, out := range resp.NetworkInterfaces {
-
 		resources = append(resources, &EC2NetworkInterface{
 			svc: svc,
 			eni: out,
@@ -68,7 +67,6 @@ func (e *EC2NetworkInterface) Remove(_ context.Context) error {
 					return err
 				}
 			}
-
 		}
 	}
 

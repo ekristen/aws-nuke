@@ -55,8 +55,8 @@ type EC2SpotFleetRequest struct {
 }
 
 func (i *EC2SpotFleetRequest) Filter() error {
-	if i.state == "cancelled" {
-		return fmt.Errorf("already cancelled")
+	if i.state == ec2.CancelSpotInstanceRequestStateCancelled {
+		return fmt.Errorf("already canceled")
 	}
 	return nil
 }

@@ -2,7 +2,6 @@ package resources
 
 import (
 	"context"
-
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -11,6 +10,7 @@ import (
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
+	"github.com/ekristen/aws-nuke/pkg/awsutil"
 	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
@@ -80,7 +80,7 @@ func (e *EC2TGW) Remove(_ context.Context) error {
 }
 
 func (e *EC2TGW) Filter() error {
-	if *e.tgw.State == "deleted" {
+	if *e.tgw.State == awsutil.StateDeleted {
 		return fmt.Errorf("already deleted")
 	}
 

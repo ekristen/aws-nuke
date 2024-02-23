@@ -47,18 +47,18 @@ func (l *EC2ClientVpnEndpointAttachmentLister) List(_ context.Context, o interfa
 	}
 
 	resources := make([]resource.Resource, 0)
-	for _, clientVpnEndpointId := range endpoints {
+	for _, clientVpnEndpointID := range endpoints {
 		params := &ec2.DescribeClientVpnTargetNetworksInput{
-			ClientVpnEndpointId: clientVpnEndpointId,
+			ClientVpnEndpointId: clientVpnEndpointID,
 		}
 		err := svc.DescribeClientVpnTargetNetworksPages(params,
 			func(page *ec2.DescribeClientVpnTargetNetworksOutput, lastPage bool) bool {
 				for _, out := range page.ClientVpnTargetNetworks {
 					resources = append(resources, &EC2ClientVpnEndpointAttachments{
 						svc:                 svc,
-						associationId:       out.AssociationId,
-						clientVpnEndpointId: out.ClientVpnEndpointId,
-						vpcId:               out.VpcId,
+						associationID:       out.AssociationId,
+						clientVpnEndpointID: out.ClientVpnEndpointId,
+						vpcID:               out.VpcId,
 					})
 				}
 				return true
@@ -73,15 +73,15 @@ func (l *EC2ClientVpnEndpointAttachmentLister) List(_ context.Context, o interfa
 
 type EC2ClientVpnEndpointAttachments struct {
 	svc                 *ec2.EC2
-	associationId       *string
-	clientVpnEndpointId *string
-	vpcId               *string
+	associationID       *string
+	clientVpnEndpointID *string
+	vpcID               *string
 }
 
 func (e *EC2ClientVpnEndpointAttachments) Remove(_ context.Context) error {
 	params := &ec2.DisassociateClientVpnTargetNetworkInput{
-		AssociationId:       e.associationId,
-		ClientVpnEndpointId: e.clientVpnEndpointId,
+		AssociationId:       e.associationID,
+		ClientVpnEndpointId: e.clientVpnEndpointID,
 	}
 
 	_, err := e.svc.DisassociateClientVpnTargetNetwork(params)
@@ -93,5 +93,5 @@ func (e *EC2ClientVpnEndpointAttachments) Remove(_ context.Context) error {
 }
 
 func (e *EC2ClientVpnEndpointAttachments) String() string {
-	return fmt.Sprintf("%s -> %s", ptr.ToString(e.clientVpnEndpointId), ptr.ToString(e.vpcId))
+	return fmt.Sprintf("%s -> %s", ptr.ToString(e.clientVpnEndpointID), ptr.ToString(e.vpcID))
 }

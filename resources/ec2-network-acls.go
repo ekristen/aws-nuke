@@ -2,7 +2,6 @@ package resources
 
 import (
 	"context"
-
 	"fmt"
 
 	"github.com/gotidy/ptr"
@@ -40,7 +39,6 @@ func (l *EC2NetworkACLLister) List(_ context.Context, o interface{}) ([]resource
 
 	resources := make([]resource.Resource, 0)
 	for _, out := range resp.NetworkAcls {
-
 		resources = append(resources, &EC2NetworkACL{
 			svc:       svc,
 			id:        out.NetworkAclId,

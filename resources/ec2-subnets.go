@@ -44,9 +44,9 @@ func (l *EC2SubnetLister) List(_ context.Context, o interface{}) ([]resource.Res
 		return nil, err
 	}
 
-	defVpcId := ""
+	defVpcID := ""
 	if defVpc := DefaultVpc(svc); defVpc != nil {
-		defVpcId = *defVpc.VpcId
+		defVpcID = *defVpc.VpcId
 	}
 
 	resources := make([]resource.Resource, 0)
@@ -54,7 +54,7 @@ func (l *EC2SubnetLister) List(_ context.Context, o interface{}) ([]resource.Res
 		resources = append(resources, &EC2Subnet{
 			svc:        svc,
 			subnet:     out,
-			defaultVPC: defVpcId == *out.VpcId,
+			defaultVPC: defVpcID == *out.VpcId,
 		})
 	}
 

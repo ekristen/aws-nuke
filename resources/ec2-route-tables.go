@@ -2,8 +2,8 @@ package resources
 
 import (
 	"context"
-
 	"fmt"
+
 	"github.com/gotidy/ptr"
 
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -47,9 +47,9 @@ func (l *EC2RouteTableLister) List(_ context.Context, o interface{}) ([]resource
 		return nil, err
 	}
 
-	defVpcId := ""
+	defVpcID := ""
 	if defVpc := DefaultVpc(svc); defVpc != nil {
-		defVpcId = ptr.ToString(defVpc.VpcId)
+		defVpcID = ptr.ToString(defVpc.VpcId)
 	}
 
 	resources := make([]resource.Resource, 0)
@@ -62,7 +62,7 @@ func (l *EC2RouteTableLister) List(_ context.Context, o interface{}) ([]resource
 		resources = append(resources, &EC2RouteTable{
 			svc:        svc,
 			routeTable: out,
-			defaultVPC: defVpcId == ptr.ToString(out.VpcId),
+			defaultVPC: defVpcID == ptr.ToString(out.VpcId),
 			vpc:        vpc,
 		})
 	}

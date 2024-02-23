@@ -2,8 +2,8 @@ package resources
 
 import (
 	"context"
-
 	"fmt"
+
 	"github.com/gotidy/ptr"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -60,9 +60,9 @@ func (l *EC2InternetGatewayAttachmentLister) List(_ context.Context, o interface
 		for _, igw := range resp.InternetGateways {
 			resources = append(resources, &EC2InternetGatewayAttachment{
 				svc:        svc,
-				vpcId:      vpc.VpcId,
+				vpcID:      vpc.VpcId,
 				vpcTags:    vpc.Tags,
-				igwId:      igw.InternetGatewayId,
+				igwID:      igw.InternetGatewayId,
 				igwTags:    igw.Tags,
 				defaultVPC: *vpc.IsDefault,
 			})
@@ -74,17 +74,17 @@ func (l *EC2InternetGatewayAttachmentLister) List(_ context.Context, o interface
 
 type EC2InternetGatewayAttachment struct {
 	svc        *ec2.EC2
-	vpcId      *string
+	vpcID      *string
 	vpcTags    []*ec2.Tag
-	igwId      *string
+	igwID      *string
 	igwTags    []*ec2.Tag
 	defaultVPC bool
 }
 
 func (e *EC2InternetGatewayAttachment) Remove(_ context.Context) error {
 	params := &ec2.DetachInternetGatewayInput{
-		VpcId:             e.vpcId,
-		InternetGatewayId: e.igwId,
+		VpcId:             e.vpcID,
+		InternetGatewayId: e.igwID,
 	}
 
 	_, err := e.svc.DetachInternetGateway(params)
@@ -108,5 +108,5 @@ func (e *EC2InternetGatewayAttachment) Properties() types.Properties {
 }
 
 func (e *EC2InternetGatewayAttachment) String() string {
-	return fmt.Sprintf("%s -> %s", ptr.ToString(e.igwId), ptr.ToString(e.vpcId))
+	return fmt.Sprintf("%s -> %s", ptr.ToString(e.igwID), ptr.ToString(e.vpcID))
 }

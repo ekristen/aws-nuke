@@ -35,9 +35,9 @@ func (l *EC2InternetGatewayLister) List(_ context.Context, o interface{}) ([]res
 		return nil, err
 	}
 
-	defVpcId := ""
+	defVpcID := ""
 	if defVpc := DefaultVpc(svc); defVpc != nil {
-		defVpcId = *defVpc.VpcId
+		defVpcID = *defVpc.VpcId
 	}
 
 	resources := make([]resource.Resource, 0)
@@ -45,20 +45,20 @@ func (l *EC2InternetGatewayLister) List(_ context.Context, o interface{}) ([]res
 		resources = append(resources, &EC2InternetGateway{
 			svc:        svc,
 			igw:        igw,
-			defaultVPC: HasVpcAttachment(&defVpcId, igw.Attachments),
+			defaultVPC: HasVpcAttachment(&defVpcID, igw.Attachments),
 		})
 	}
 
 	return resources, nil
 }
 
-func HasVpcAttachment(vpcId *string, attachments []*ec2.InternetGatewayAttachment) bool {
-	if *vpcId == "" {
+func HasVpcAttachment(vpcID *string, attachments []*ec2.InternetGatewayAttachment) bool {
+	if *vpcID == "" {
 		return false
 	}
 
 	for _, attach := range attachments {
-		if *vpcId == *attach.VpcId {
+		if *vpcID == *attach.VpcId {
 			return true
 		}
 	}
