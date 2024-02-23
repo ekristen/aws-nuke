@@ -45,9 +45,7 @@ func (l *ServiceDiscoveryInstanceLister) List(_ context.Context, o interface{}) 
 			return nil, err
 		}
 
-		for _, service := range output.Services {
-			services = append(services, service)
-		}
+		services = append(services, output.Services...)
 
 		if output.NextToken == nil {
 			break
@@ -56,7 +54,7 @@ func (l *ServiceDiscoveryInstanceLister) List(_ context.Context, o interface{}) 
 		params.NextToken = output.NextToken
 	}
 
-	//Collect Instances for de-registration
+	// collect instances for de-registration
 	for _, service := range services {
 		instanceParams := &servicediscovery.ListInstancesInput{
 			ServiceId:  service.Id,
