@@ -47,7 +47,7 @@ func (l *AMPWorkspaceLister) List(_ context.Context, o interface{}) ([]resource.
 			svc:            svc,
 			workspaceAlias: ws.Alias,
 			workspaceARN:   ws.Arn,
-			workspaceId:    ws.WorkspaceId,
+			workspaceID:    ws.WorkspaceId,
 		})
 	}
 
@@ -58,12 +58,12 @@ type AMPWorkspace struct {
 	svc            *prometheusservice.PrometheusService
 	workspaceAlias *string
 	workspaceARN   *string
-	workspaceId    *string
+	workspaceID    *string
 }
 
 func (f *AMPWorkspace) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteWorkspace(&prometheusservice.DeleteWorkspaceInput{
-		WorkspaceId: f.workspaceId,
+		WorkspaceId: f.workspaceID,
 	})
 
 	return err
@@ -74,7 +74,7 @@ func (f *AMPWorkspace) Properties() types.Properties {
 	properties.
 		Set("WorkspaceAlias", f.workspaceAlias).
 		Set("WorkspaceARN", f.workspaceARN).
-		Set("WorkspaceId", f.workspaceId)
+		Set("WorkspaceId", f.workspaceID)
 
 	return properties
 }
