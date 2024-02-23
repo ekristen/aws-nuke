@@ -2,16 +2,18 @@ package main
 
 import (
 	"fmt"
-	"github.com/fatih/color"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"regexp"
 	"slices"
 	"strings"
+
+	"github.com/fatih/color"
 )
 
-var OriginalRegisterRegex = regexp.MustCompile("register\\(\"(?P<resource>.*)\",\\s?(?P<function>\\w+)(,)?(\\s+mapCloudControl\\(\"(?P<cc>.*)\"\\))?")
+var OriginalRegisterRegex = regexp.MustCompile(
+	`register\("(?P<resource>.*)",\s?(?P<function>\w+)(,)?(\s+mapCloudControl\("(?P<cc>.*)"\))?`)
 var NewRegisterRegex = regexp.MustCompile(`resource.Registration{\s+Name:\s+(?P<name>.*),`)
 
 var aliases = map[string]string{
@@ -21,7 +23,7 @@ var aliases = map[string]string{
 	"ComprehendPiiEntititesDetectionJob": "ComprehendPIIEntitiesDetectionJob",
 }
 
-func main() {
+func main() { //nolint:funlen,gocyclo
 	args := os.Args[1:]
 
 	if len(args) == 0 {
@@ -70,7 +72,7 @@ func main() {
 		upstreamTypeToFile[resourceType] = file
 	}
 
-	var localResourcesPath = filepath.Join("resources")
+	var localResourcesPath = "resources"
 	var localResourceFiles []string
 	var localResourceTypes []string
 
@@ -134,5 +136,4 @@ func main() {
 			color.New(color.FgYellow).Println(upstreamTypeToFile[resource])
 		}
 	}
-
 }
