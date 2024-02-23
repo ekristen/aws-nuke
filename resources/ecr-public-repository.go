@@ -2,11 +2,10 @@ package resources
 
 import (
 	"context"
-	"github.com/aws/aws-sdk-go/aws/endpoints"
-
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/service/ecrpublic"
 
 	"github.com/ekristen/libnuke/pkg/registry"
