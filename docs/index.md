@@ -5,16 +5,31 @@ Remove all resources from an AWS account.
 *aws-nuke* is stable, but it is likely that not all AWS resources are covered by it. Be encouraged to add missing
 resources and create a Pull Request or to create an [Issue](https://github.com/ekristen/aws-nuke/issues/new).
 
+## What's New in Version 3
+
+This is not a comprehensive list, but here are some of the highlights:
+
+* Completely rewrote the core of the tool as a dedicated library [libnuke](https://github.com/ekristen/libnuke) with 95%+ test coverage
+* New Feature: Global Filters
+* New Feature: Run Against All Enabled Regions
+* Upcoming Feature: Filter Groups (**in progress**)
+* Breaking Change: `root` command no longer triggers the run, must use subcommand `run` (alias: `nuke`)
+* Semantic Releases with notifications on issues / pull requests
+* New Resources
+* Broke away from rebuy-de/aws-nuke project as a fork for reasons outlined in the history section
+
 ## History of this Fork
 
 This is a full fork of the original tool written by the folks over at [rebuy-de](https://github.com/rebuy-de). This fork became necessary
 after attempting to make contributions and respond to issues to learn that the current maintainers only have time to
 work on the project about once a month and while receptive to bringing in other people to help maintain, made it clear
-it would take time. Considering the feedback cycle was already weeks on initial communications, I had to make the hard
-decision to fork and maintain it.
+it would take time, but overall got the feeling that they wanted to maintain full control, which is understandable.
+Considering the feedback cycle was already weeks on initial communications, I had to make the hard decision to fork
+and maintain it.
 
-Since then the rebuy-de team has taken up interest in responding to their issues and pull requests, but I have decided
-to continue maintaining this fork as I have a few things I want to do with it that I don't think they will be interested.
+Since then the rebuy-de team has taken up interest in responding to their issues and pull requests, however there are a
+lot of outstanding feature requests and other tasks not being tackled, therefore I have decided to continue
+maintaining this fork as I have a few things I want to do with it that I don't think they will be interested.
 
 ### Continued Attribution
 
