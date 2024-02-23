@@ -89,7 +89,6 @@ type CloudDirectorySchema struct {
 }
 
 func (f *CloudDirectorySchema) Remove(_ context.Context) error {
-
 	_, err := f.svc.DeleteSchema(&clouddirectory.DeleteSchemaInput{
 		SchemaArn: f.schemaARN,
 	})
