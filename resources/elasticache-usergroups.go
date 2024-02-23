@@ -15,7 +15,7 @@ import (
 
 type ElasticacheUserGroup struct {
 	svc     *elasticache.ElastiCache
-	groupId *string
+	groupID *string
 }
 
 const ElasticacheUserGroupResource = "ElasticacheUserGroup"
@@ -50,7 +50,7 @@ func (l *ElasticacheUserGroupLister) List(_ context.Context, o interface{}) ([]r
 		for _, userGroup := range resp.UserGroups {
 			resources = append(resources, &ElasticacheUserGroup{
 				svc:     svc,
-				groupId: userGroup.UserGroupId,
+				groupID: userGroup.UserGroupId,
 			})
 		}
 
@@ -68,7 +68,7 @@ func (l *ElasticacheUserGroupLister) List(_ context.Context, o interface{}) ([]r
 
 func (i *ElasticacheUserGroup) Remove(_ context.Context) error {
 	params := &elasticache.DeleteUserGroupInput{
-		UserGroupId: i.groupId,
+		UserGroupId: i.groupID,
 	}
 
 	_, err := i.svc.DeleteUserGroup(params)
@@ -81,10 +81,10 @@ func (i *ElasticacheUserGroup) Remove(_ context.Context) error {
 
 func (i *ElasticacheUserGroup) Properties() types.Properties {
 	properties := types.NewProperties()
-	properties.Set("ID", i.groupId)
+	properties.Set("ID", i.groupID)
 	return properties
 }
 
 func (i *ElasticacheUserGroup) String() string {
-	return *i.groupId
+	return *i.groupID
 }

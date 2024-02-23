@@ -17,7 +17,7 @@ import (
 
 type ElasticacheUser struct {
 	svc      *elasticache.ElastiCache
-	userId   *string
+	userID   *string
 	userName *string
 }
 
@@ -53,7 +53,7 @@ func (l *ElasticacheUserLister) List(_ context.Context, o interface{}) ([]resour
 		for _, user := range resp.Users {
 			resources = append(resources, &ElasticacheUser{
 				svc:      svc,
-				userId:   user.UserId,
+				userID:   user.UserId,
 				userName: user.UserName,
 			})
 		}
@@ -79,7 +79,7 @@ func (i *ElasticacheUser) Filter() error {
 
 func (i *ElasticacheUser) Remove(_ context.Context) error {
 	params := &elasticache.DeleteUserInput{
-		UserId: i.userId,
+		UserId: i.userID,
 	}
 
 	_, err := i.svc.DeleteUser(params)
@@ -92,11 +92,11 @@ func (i *ElasticacheUser) Remove(_ context.Context) error {
 
 func (i *ElasticacheUser) Properties() types.Properties {
 	properties := types.NewProperties()
-	properties.Set("ID", i.userId)
+	properties.Set("ID", i.userID)
 	properties.Set("UserName", i.userName)
 	return properties
 }
 
 func (i *ElasticacheUser) String() string {
-	return *i.userId
+	return *i.userID
 }

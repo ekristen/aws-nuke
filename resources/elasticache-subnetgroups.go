@@ -36,13 +36,13 @@ func (l *ElasticacheSubnetGroupLister) List(_ context.Context, o interface{}) ([
 	if err != nil {
 		return nil, err
 	}
+
 	var resources []resource.Resource
 	for _, subnetGroup := range resp.CacheSubnetGroups {
 		resources = append(resources, &ElasticacheSubnetGroup{
 			svc:  svc,
 			name: subnetGroup.CacheSubnetGroupName,
 		})
-
 	}
 
 	return resources, nil
