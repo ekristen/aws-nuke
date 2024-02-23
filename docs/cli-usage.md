@@ -115,16 +115,15 @@ USAGE:
 DESCRIPTION:
    explain the configuration file and the resources that will be nuked for an account that
    is defined within the configuration. You may either specific an account using the --account-id flag or
-   leave it empty to use the default account that can be authenticated against. If you want to see the
-   resource types that will be nuked, use the --with-resource-types flag. If you want to see the resources
-   that have filters defined, use the --with-resource-filters flag.
+   leave it empty to use the default account that can be authenticated against. You can optionally list out included,
+   excluded and resources with filters with their respective with flags.
 
 OPTIONS:
-   --config value, -c value  path to config file (default: "config.yaml")
-   --account-id value        the account id to check against the configuration file, if empty, it will use whatever account
-      can be authenticated against
-   --with-resource-filters           include resource with filters defined in the output (default: false)
-   --with-resource-types             include resource types defined in the output (default: false)
+   --config value, -c value          path to config file (default: "config.yaml")
+   --account-id value                the account id to check against the configuration file, if empty, it will use whatever account can be authenticated against
+   --with-filtered                   print out resource types that have filters defined against them (default: false)
+   --with-included                   print out the included resource types (default: false)
+   --with-excluded                   print out the excluded resource types (default: false)
    --default-region value            the default aws region to use when setting up the aws auth session [$AWS_DEFAULT_REGION]
    --access-key-id value             the aws access key id to use when setting up the aws auth session [$AWS_ACCESS_KEY_ID]
    --secret-access-key value         the aws secret access key to use when setting up the aws auth session [$AWS_SECRET_ACCESS_KEY]
@@ -145,10 +144,15 @@ OPTIONS:
 ```console
 Configuration Details
 
-Resource Types:   426
+Account ID:       012345678912
+Resource Types:   442 (total)
+      Included:   429
+      Excluded:   13
 Filter Presets:   2
 Resource Filters: 24
 
-Note: use --with-resource-filters to see resources with filters defined
-Note: use --with-resource-types to see included resource types that will be nuked
+Note: use --with-filtered to see resources with filters defined
+Note: use --with-included to see included resource types that will be nuked
+Note: use --with-excluded to see excluded resource types
+
 ```

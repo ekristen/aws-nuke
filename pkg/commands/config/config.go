@@ -18,7 +18,7 @@ import (
 	"github.com/ekristen/aws-nuke/pkg/config"
 )
 
-func execute(c *cli.Context) error {
+func execute(c *cli.Context) error { //nolint:funlen,gocyclo
 	accountID := c.String("account-id")
 
 	parsedConfig, err := config.New(libconfig.Options{
@@ -30,7 +30,8 @@ func execute(c *cli.Context) error {
 		return err
 	}
 
-	if accountID != "" {
+	if accountID == "" {
+		logrus.Info("no account id provided, attempting to authenticate and get account id")
 		creds := nuke.ConfigureCreds(c)
 		if err := creds.Validate(); err != nil {
 			return err
@@ -49,7 +50,7 @@ func execute(c *cli.Context) error {
 	accountConfig := parsedConfig.Accounts[accountID]
 
 	if accountConfig == nil {
-		return fmt.Errorf("account is not configured in the config file")
+		return fmt.Errorf("account %s is not configured in the config file", accountID)
 	}
 
 	// Resolve the resource types to be used for the nuke process based on the parameters, global configuration, and
@@ -90,30 +91,49 @@ func execute(c *cli.Context) error {
 
 	fmt.Printf("Configuration Details\n\n")
 
-	fmt.Printf("Resource Types:   %d\n", len(resourceTypes))
+	fmt.Printf("Account ID:       %s\n", accountID)
+	fmt.Printf("Resource Types:   %d (total)\n", len(registry.GetNames()))
+	fmt.Printf("      Included:   %d\n", len(resourceTypes))
+	fmt.Printf("      Excluded:   %d\n", len(registry.GetNames())-len(resourceTypes))
 	fmt.Printf("Filter Presets:   %d\n", len(accountConfig.Presets))
 	fmt.Printf("Resource Filters: %d\n", filtersTotal)
 
 	fmt.Println("")
 
-	if c.Bool("with-resource-filters") {
+	if c.Bool("with-filtered") {
 		fmt.Println("Resources with Filters Defined:")
 		for _, resource := range resourcesWithFilters {
 			fmt.Printf("  %s\n", resource)
 		}
 		fmt.Println("")
-	} else {
-		fmt.Printf("Note: use --with-resource-filters to see resources with filters defined\n")
 	}
 
-	if c.Bool("with-resource-types") {
+	if c.Bool("with-included") {
 		fmt.Println("Resource Types:")
 		for _, resourceType := range resourceTypes {
 			fmt.Printf("  %s\n", resourceType)
 		}
 		fmt.Println("")
-	} else {
-		fmt.Printf("Note: use --with-resource-types to see included resource types that will be nuked\n")
+	}
+
+	if c.Bool("with-excluded") {
+		fmt.Println("Excluded Resource Types:")
+		for _, resourceType := range registry.GetNames() {
+			if !slices.Contains(resourceTypes, resourceType) {
+				fmt.Printf("  %s\n", resourceType)
+			}
+		}
+		fmt.Println("")
+	}
+
+	if !c.Bool("with-filtered") {
+		fmt.Printf("Note: use --with-filtered to see resources with filters defined\n")
+	}
+	if !c.Bool("with-included") {
+		fmt.Printf("Note: use --with-included to see included resource types that will be nuked\n")
+	}
+	if !c.Bool("with-excluded") {
+		fmt.Printf("Note: use --with-excluded to see excluded resource types\n")
 	}
 
 	return nil
@@ -132,12 +152,16 @@ func init() {
 			Usage: `the account id to check against the configuration file, if empty, it will use whatever account can be authenticated against`,
 		},
 		&cli.BoolFlag{
-			Name:  "with-resource-filters",
-			Usage: "include resource with filters defined in the output",
+			Name:  "with-filtered",
+			Usage: "print out resource types that have filters defined against them",
 		},
 		&cli.BoolFlag{
-			Name:  "with-resource-types",
-			Usage: "include resource types defined in the output",
+			Name:  "with-included",
+			Usage: "print out the included resource types",
+		},
+		&cli.BoolFlag{
+			Name:  "with-excluded",
+			Usage: "print out the excluded resource types",
 		},
 		&cli.StringFlag{
 			Name:    "default-region",
@@ -186,9 +210,8 @@ func init() {
 		Usage: "explain the configuration file and the resources that will be nuked for an account",
 		Description: `explain the configuration file and the resources that will be nuked for an account that
 is defined within the configuration. You may either specific an account using the --account-id flag or
-leave it empty to use the default account that can be authenticated against. If you want to see the
-resource types that will be nuked, use the --with-resource-types flag. If you want to see the resources
-that have filters defined, use the --with-resource-filters flag.`,
+leave it empty to use the default account that can be authenticated against. You can optionally list out included,
+excluded and resources with filters with their respective with flags.`,
 		Flags:  append(flags, global.Flags()...),
 		Before: global.Before,
 		Action: execute,
