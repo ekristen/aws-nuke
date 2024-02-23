@@ -2,8 +2,8 @@ package resources
 
 import (
 	"context"
-
 	"errors"
+
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/sns"
 
@@ -39,30 +39,27 @@ func (l *SNSEndpointLister) List(_ context.Context, o interface{}) ([]resource.R
 		if err != nil {
 			var awsErr awserr.Error
 			ok := errors.As(err, &awsErr)
-			if ok && awsErr.Code() == "InvalidAction" && awsErr.Message() == "Operation (ListPlatformApplications) is not supported in this region" {
-				// AWS answers with InvalidAction on regions that do not
-				// support ListPlatformApplications.
+			if ok && awsErr.Code() == "InvalidAction" &&
+				awsErr.Message() == "Operation (ListPlatformApplications) is not supported in this region" {
+				// AWS answers with InvalidAction on regions that do not support ListPlatformApplications.
 				break
 			}
 
 			return nil, err
 		}
 
-		for _, platformApplication := range resp.PlatformApplications {
-			platformApplications = append(platformApplications, platformApplication)
-		}
+		platformApplications = append(platformApplications, resp.PlatformApplications...)
+
 		if resp.NextToken == nil {
 			break
 		}
 
 		platformParams.NextToken = resp.NextToken
-
 	}
 
 	params := &sns.ListEndpointsByPlatformApplicationInput{}
 
 	for _, platformApplication := range platformApplications {
-
 		params.PlatformApplicationArn = platformApplication.PlatformApplicationArn
 
 		resp, err := svc.ListEndpointsByPlatformApplication(params)

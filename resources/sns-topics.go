@@ -36,9 +36,7 @@ func (l *SNSTopicLister) List(_ context.Context, o interface{}) ([]resource.Reso
 	params := &sns.ListTopicsInput{}
 
 	err := svc.ListTopicsPages(params, func(page *sns.ListTopicsOutput, lastPage bool) bool {
-		for _, out := range page.Topics {
-			topics = append(topics, out)
-		}
+		topics = append(topics, page.Topics...)
 		return true
 	})
 	if err != nil {
