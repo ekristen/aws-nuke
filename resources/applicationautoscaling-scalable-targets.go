@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go/service/applicationautoscaling"
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -34,7 +36,7 @@ func (l *ApplicationAutoScalingScalableTargetLister) List(_ context.Context, o i
 	resources := make([]resource.Resource, 0)
 	for _, namespace := range namespaces {
 		for {
-			params.ServiceNamespace = &namespace
+			params.ServiceNamespace = ptr.String(namespace)
 			resp, err := svc.DescribeScalableTargets(params)
 			if err != nil {
 				return nil, err
