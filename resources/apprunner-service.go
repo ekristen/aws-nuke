@@ -74,8 +74,8 @@ func (f *AppRunnerService) Remove(_ context.Context) error {
 
 func (f *AppRunnerService) Properties() types.Properties {
 	properties := types.NewProperties()
-	properties.Set("ServiceARN", f.ServiceARN)
-	properties.Set("ServiceID", f.ServiceID)
+	properties.Set("ServiceArn", f.ServiceARN)
+	properties.Set("ServiceId", f.ServiceID)
 	properties.Set("ServiceName", f.ServiceName)
 	return properties
 }
