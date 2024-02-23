@@ -46,10 +46,7 @@ func (l *IAMLoginProfileLister) List(_ context.Context, o interface{}) ([]resour
 		if err != nil {
 			var awsError awserr.Error
 			if errors.As(err, &awsError) {
-				switch awsError.Code() {
-				case iam.ErrCodeNoSuchEntityException:
-					// The user does not have a login profile and we do not
-					// need to print an error for that.
+				if awsError.Code() == iam.ErrCodeNoSuchEntityException {
 					continue
 				}
 			}

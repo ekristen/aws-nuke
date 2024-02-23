@@ -30,7 +30,7 @@ func init() {
 
 type IAMUserAccessKey struct {
 	svc         iamiface.IAMAPI
-	accessKeyId string
+	accessKeyID string
 	userName    string
 	status      string
 	userTags    []*iam.Tag
@@ -39,7 +39,7 @@ type IAMUserAccessKey struct {
 func (e *IAMUserAccessKey) Remove(_ context.Context) error {
 	_, err := e.svc.DeleteAccessKey(
 		&iam.DeleteAccessKeyInput{
-			AccessKeyId: &e.accessKeyId,
+			AccessKeyId: &e.accessKeyID,
 			UserName:    &e.userName,
 		})
 	if err != nil {
@@ -52,7 +52,7 @@ func (e *IAMUserAccessKey) Remove(_ context.Context) error {
 func (e *IAMUserAccessKey) Properties() types.Properties {
 	properties := types.NewProperties()
 	properties.Set("UserName", e.userName)
-	properties.Set("AccessKeyID", e.accessKeyId)
+	properties.Set("AccessKeyID", e.accessKeyID)
 
 	for _, tag := range e.userTags {
 		properties.SetTag(tag.Key, tag.Value)
@@ -62,7 +62,7 @@ func (e *IAMUserAccessKey) Properties() types.Properties {
 }
 
 func (e *IAMUserAccessKey) String() string {
-	return fmt.Sprintf("%s -> %s", e.userName, e.accessKeyId)
+	return fmt.Sprintf("%s -> %s", e.userName, e.accessKeyID)
 }
 
 // --------------
@@ -96,7 +96,7 @@ func (l *IAMUserAccessKeyLister) List(_ context.Context, o interface{}) ([]resou
 		for _, meta := range resp.AccessKeyMetadata {
 			resources = append(resources, &IAMUserAccessKey{
 				svc:         svc,
-				accessKeyId: *meta.AccessKeyId,
+				accessKeyID: *meta.AccessKeyId,
 				userName:    *meta.UserName,
 				status:      *meta.Status,
 				userTags:    userTags.Tags,

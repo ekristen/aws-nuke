@@ -22,13 +22,13 @@ func Test_Mock_IAMUserAccessKey_Remove(t *testing.T) {
 
 	iamUserAccessKey := IAMUserAccessKey{
 		svc:         mockIAM,
-		accessKeyId: "EXAMPLEfoobar",
+		accessKeyID: "EXAMPLEfoobar",
 		userName:    "foobar",
 		status:      "unknown",
 	}
 
 	mockIAM.EXPECT().DeleteAccessKey(gomock.Eq(&iam.DeleteAccessKeyInput{
-		AccessKeyId: aws.String(iamUserAccessKey.accessKeyId),
+		AccessKeyId: aws.String(iamUserAccessKey.accessKeyID),
 		UserName:    aws.String(iamUserAccessKey.userName),
 	})).Return(&iam.DeleteAccessKeyOutput{}, nil)
 

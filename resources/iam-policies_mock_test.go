@@ -23,7 +23,7 @@ func Test_Mock_IAMPolicy_Remove(t *testing.T) {
 	iamPolicy := IAMPolicy{
 		svc:      mockIAM,
 		name:     "foobar",
-		policyId: "foobar",
+		policyID: "foobar",
 		arn:      "foobar",
 	}
 
@@ -56,7 +56,7 @@ func Test_Mock_IAMPolicy_WithVersions_Remove(t *testing.T) {
 	iamPolicy := IAMPolicy{
 		svc:      mockIAM,
 		name:     "foobar",
-		policyId: "foobar",
+		policyID: "foobar",
 		arn:      "foobar",
 	}
 

@@ -30,7 +30,7 @@ func init() {
 
 type IAMRolePolicy struct {
 	svc        iamiface.IAMAPI
-	roleId     string
+	roleID     string
 	rolePath   string
 	roleName   string
 	policyName string
@@ -61,7 +61,7 @@ func (e *IAMRolePolicy) Properties() types.Properties {
 	properties := types.NewProperties()
 	properties.Set("PolicyName", e.policyName)
 	properties.Set("role:RoleName", e.roleName)
-	properties.Set("role:RoleID", e.roleId)
+	properties.Set("role:RoleID", e.roleID)
 	properties.Set("role:Path", e.rolePath)
 
 	for _, tagValue := range e.roleTags {
@@ -115,7 +115,7 @@ func (l *IAMRolePolicyLister) List(_ context.Context, o interface{}) ([]resource
 				for _, policyName := range policies.PolicyNames {
 					resources = append(resources, &IAMRolePolicy{
 						svc:        svc,
-						roleId:     *role.RoleId,
+						roleID:     *role.RoleId,
 						roleName:   *role.RoleName,
 						rolePath:   *role.Path,
 						policyName: *policyName,
