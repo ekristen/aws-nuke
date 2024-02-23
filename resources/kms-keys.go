@@ -74,11 +74,7 @@ func (l *KMSKeyLister) List(_ context.Context, o interface{}) ([]resource.Resour
 			resources = append(resources, kmsKey)
 		}
 
-		if lastPage {
-			return false
-		}
-
-		return true
+		return !lastPage
 	}); err != nil {
 		return nil, err
 	}
