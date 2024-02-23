@@ -56,7 +56,10 @@ func (l *ImageBuilderImageLister) List(_ context.Context, o interface{}) ([]reso
 	return resources, nil
 }
 
-func ImageBuildVersions(svc *imagebuilder.Imagebuilder, imageVersionArn *string, resources []resource.Resource) ([]resource.Resource, error) {
+func ImageBuildVersions(
+	svc *imagebuilder.Imagebuilder,
+	imageVersionArn *string,
+	resources []resource.Resource) ([]resource.Resource, error) {
 	params := &imagebuilder.ListImageBuildVersionsInput{
 		ImageVersionArn: imageVersionArn,
 	}
@@ -83,6 +86,7 @@ func ImageBuildVersions(svc *imagebuilder.Imagebuilder, imageVersionArn *string,
 			NextToken:       resp.NextToken,
 		}
 	}
+
 	return resources, nil
 }
 
