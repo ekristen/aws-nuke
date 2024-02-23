@@ -1,9 +1,10 @@
 package main
 
 import (
+	"os"
+
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
-	"os"
 
 	"github.com/ekristen/aws-nuke/pkg/common"
 
