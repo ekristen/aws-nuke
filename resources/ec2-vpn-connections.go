@@ -2,8 +2,9 @@ package resources
 
 import (
 	"context"
-
 	"fmt"
+
+	"github.com/gotidy/ptr"
 
 	"github.com/aws/aws-sdk-go/service/ec2"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
+	"github.com/ekristen/aws-nuke/pkg/awsutil"
 	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
@@ -56,9 +58,10 @@ type EC2VPNConnection struct {
 }
 
 func (v *EC2VPNConnection) Filter() error {
-	if *v.conn.State == "deleted" {
+	if ptr.ToString(v.conn.State) == awsutil.StateDeleted {
 		return fmt.Errorf("already deleted")
 	}
+
 	return nil
 }
 

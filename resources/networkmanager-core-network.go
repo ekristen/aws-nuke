@@ -5,12 +5,15 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go/service/networkmanager"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
+	"github.com/ekristen/aws-nuke/pkg/awsutil"
 	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
@@ -64,11 +67,10 @@ func (n *NetworkManagerCoreNetwork) Remove(_ context.Context) error {
 	}
 
 	return nil
-
 }
 
 func (n *NetworkManagerCoreNetwork) Filter() error {
-	if strings.ToLower(*n.network.State) == "deleted" {
+	if strings.EqualFold(ptr.ToString(n.network.State), awsutil.StateDeleted) {
 		return fmt.Errorf("already deleted")
 	}
 

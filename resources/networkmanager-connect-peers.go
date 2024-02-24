@@ -5,12 +5,15 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go/service/networkmanager"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
+	"github.com/ekristen/aws-nuke/pkg/awsutil"
 	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
@@ -64,11 +67,10 @@ func (n *NetworkManagerConnectPeer) Remove(_ context.Context) error {
 	}
 
 	return nil
-
 }
 
 func (n *NetworkManagerConnectPeer) Filter() error {
-	if strings.ToLower(*n.peer.ConnectPeerState) == "deleted" {
+	if strings.EqualFold(ptr.ToString(n.peer.ConnectPeerState), awsutil.StateDeleted) {
 		return fmt.Errorf("already deleted")
 	}
 
