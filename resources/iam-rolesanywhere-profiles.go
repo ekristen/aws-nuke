@@ -1,25 +1,41 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/rolesanywhere"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/registry"
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type Profile struct {
-	svc  *rolesanywhere.RolesAnywhere
-	ProfileId   string
+type IAMRolesAnywhereProfile struct {
+	svc       *rolesanywhere.RolesAnywhere
+	ProfileID string
 }
+
+const IAMRolesAnywhereProfilesResource = "IAMRolesAnywhereProfile"
 
 func init() {
-	register("IAMRolesAnywhereProfiles", ListProfiles)
+	registry.Register(&registry.Registration{
+		Name:   IAMRolesAnywhereProfilesResource,
+		Scope:  nuke.Account,
+		Lister: &IAMRolesAnywhereProfilesLister{},
+	})
 }
 
-func ListProfiles(sess *session.Session) ([]Resource, error) {
-	svc := rolesanywhere.New(sess)
+type IAMRolesAnywhereProfilesLister struct{}
+
+func (l *IAMRolesAnywhereProfilesLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := rolesanywhere.New(opts.Session)
 
 	params := &rolesanywhere.ListProfilesInput{}
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 
 	for {
 		resp, err := svc.ListProfiles(params)
@@ -27,9 +43,9 @@ func ListProfiles(sess *session.Session) ([]Resource, error) {
 			return nil, err
 		}
 		for _, profile := range resp.Profiles {
-			resources = append(resources, &Profile{
-				svc:      svc,
-				ProfileId: *profile.ProfileId,
+			resources = append(resources, &IAMRolesAnywhereProfile{
+				svc:       svc,
+				ProfileID: *profile.ProfileId,
 			})
 		}
 
@@ -43,9 +59,9 @@ func ListProfiles(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (e *Profile) Remove() error {
+func (e *IAMRolesAnywhereProfile) Remove(_ context.Context) error {
 	_, err := e.svc.DeleteProfile(&rolesanywhere.DeleteProfileInput{
-		ProfileId: &e.ProfileId,
+		ProfileId: &e.ProfileID,
 	})
 	if err != nil {
 		return err
@@ -54,11 +70,11 @@ func (e *Profile) Remove() error {
 	return nil
 }
 
-func (e *Profile) String() string {
-	return e.ProfileId
+func (e *IAMRolesAnywhereProfile) String() string {
+	return e.ProfileID
 }
 
-func (e *Profile) Properties() types.Properties {
+func (e *IAMRolesAnywhereProfile) Properties() types.Properties {
 	return types.NewProperties().
-		Set("ProfileId", e.ProfileId)
+		Set("ProfileId", e.ProfileID)
 }

@@ -1,25 +1,41 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/rolesanywhere"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/registry"
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type TrustAnchor struct {
-	svc  *rolesanywhere.RolesAnywhere
-	TrustAnchorId   string
+type IAMRolesAnywhereTrustAnchor struct {
+	svc           *rolesanywhere.RolesAnywhere
+	TrustAnchorID string
 }
+
+const IAMRolesAnywhereTrustAnchorResource = "IAMRolesAnywhereTrustAnchor"
 
 func init() {
-	register("IAMRolesAnywhereTrustAnchors", ListTrustAnchors)
+	registry.Register(&registry.Registration{
+		Name:   IAMRolesAnywhereTrustAnchorResource,
+		Scope:  nuke.Account,
+		Lister: &IAMRolesAnywhereTrustAnchorLister{},
+	})
 }
 
-func ListTrustAnchors(sess *session.Session) ([]Resource, error) {
-	svc := rolesanywhere.New(sess)
+type IAMRolesAnywhereTrustAnchorLister struct{}
+
+func (l *IAMRolesAnywhereTrustAnchorLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := rolesanywhere.New(opts.Session)
 
 	params := &rolesanywhere.ListTrustAnchorsInput{}
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 
 	for {
 		resp, err := svc.ListTrustAnchors(params)
@@ -27,9 +43,9 @@ func ListTrustAnchors(sess *session.Session) ([]Resource, error) {
 			return nil, err
 		}
 		for _, trustAnchor := range resp.TrustAnchors {
-			resources = append(resources, &TrustAnchor{
-				svc:      svc,
-				TrustAnchorId: *trustAnchor.TrustAnchorId,
+			resources = append(resources, &IAMRolesAnywhereTrustAnchor{
+				svc:           svc,
+				TrustAnchorID: *trustAnchor.TrustAnchorId,
 			})
 		}
 
@@ -43,9 +59,9 @@ func ListTrustAnchors(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (e *TrustAnchor) Remove() error {
+func (e *IAMRolesAnywhereTrustAnchor) Remove(_ context.Context) error {
 	_, err := e.svc.DeleteTrustAnchor(&rolesanywhere.DeleteTrustAnchorInput{
-		TrustAnchorId: &e.TrustAnchorId,
+		TrustAnchorId: &e.TrustAnchorID,
 	})
 	if err != nil {
 		return err
@@ -54,11 +70,11 @@ func (e *TrustAnchor) Remove() error {
 	return nil
 }
 
-func (e *TrustAnchor) String() string {
-	return e.TrustAnchorId
+func (e *IAMRolesAnywhereTrustAnchor) String() string {
+	return e.TrustAnchorID
 }
 
-func (e *TrustAnchor) Properties() types.Properties {
+func (e *IAMRolesAnywhereTrustAnchor) Properties() types.Properties {
 	return types.NewProperties().
-		Set("TrustAnchorId", e.TrustAnchorId)
+		Set("TrustAnchorId", e.TrustAnchorID)
 }

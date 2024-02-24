@@ -1,25 +1,41 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
+	"github.com/ekristen/libnuke/pkg/registry"
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
+
 	"github.com/aws/aws-sdk-go/service/rolesanywhere"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
 )
 
-type Crl struct {
-	svc  *rolesanywhere.RolesAnywhere
-	CrlId   string
+type IAMRolesAnywhereCRL struct {
+	svc   *rolesanywhere.RolesAnywhere
+	CrlID string
 }
+
+const IAMRolesAnywhereCRLResource = "IAMRolesAnywhereCRL"
 
 func init() {
-	register("IAMRolesAnywhereCrls", ListCRLs)
+	registry.Register(&registry.Registration{
+		Name:   IAMRolesAnywhereCRLResource,
+		Scope:  nuke.Account,
+		Lister: &IAMRolesAnywhereCRLLister{},
+	})
 }
 
-func ListCRLs(sess *session.Session) ([]Resource, error) {
-	svc := rolesanywhere.New(sess)
+type IAMRolesAnywhereCRLLister struct{}
+
+func (l *IAMRolesAnywhereCRLLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := rolesanywhere.New(opts.Session)
 
 	params := &rolesanywhere.ListCrlsInput{}
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 
 	for {
 		resp, err := svc.ListCrls(params)
@@ -27,9 +43,9 @@ func ListCRLs(sess *session.Session) ([]Resource, error) {
 			return nil, err
 		}
 		for _, crl := range resp.Crls {
-			resources = append(resources, &Crl{
-				svc:      svc,
-				CrlId: *crl.CrlId,
+			resources = append(resources, &IAMRolesAnywhereCRL{
+				svc:   svc,
+				CrlID: *crl.CrlId,
 			})
 		}
 
@@ -43,9 +59,9 @@ func ListCRLs(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (e *Crl) Remove() error {
+func (e *IAMRolesAnywhereCRL) Remove(_ context.Context) error {
 	_, err := e.svc.DeleteCrl(&rolesanywhere.DeleteCrlInput{
-		CrlId: &e.CrlId,
+		CrlId: &e.CrlID,
 	})
 	if err != nil {
 		return err
@@ -54,11 +70,11 @@ func (e *Crl) Remove() error {
 	return nil
 }
 
-func (e *Crl) String() string {
-	return e.CrlId
+func (e *IAMRolesAnywhereCRL) String() string {
+	return e.CrlID
 }
 
-func (e *Crl) Properties() types.Properties {
+func (e *IAMRolesAnywhereCRL) Properties() types.Properties {
 	return types.NewProperties().
-		Set("CrlId", e.CrlId)
+		Set("CrlId", e.CrlID)
 }
