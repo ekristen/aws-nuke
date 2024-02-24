@@ -45,6 +45,7 @@ func (l *EC2VPCEndpointServiceConfigurationLister) List(_ context.Context, o int
 				svc:  svc,
 				id:   serviceConfig.ServiceId,
 				name: serviceConfig.ServiceName,
+				tags: serviceConfig.Tags,
 			})
 		}
 
@@ -62,6 +63,7 @@ type EC2VPCEndpointServiceConfiguration struct {
 	svc  *ec2.EC2
 	id   *string
 	name *string
+	tags []*ec2.Tag
 }
 
 func (e *EC2VPCEndpointServiceConfiguration) Remove(_ context.Context) error {
@@ -73,12 +75,19 @@ func (e *EC2VPCEndpointServiceConfiguration) Remove(_ context.Context) error {
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
 func (e *EC2VPCEndpointServiceConfiguration) Properties() types.Properties {
 	properties := types.NewProperties()
+	properties.Set("ID", e.id)
 	properties.Set("Name", e.name)
+
+	for _, tag := range e.tags {
+		properties.SetTag(tag.Key, tag.Value)
+	}
+
 	return properties
 }
 
