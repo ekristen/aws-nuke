@@ -1,12 +1,17 @@
 package resources
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/networkmanager"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/registry"
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 type NetworkManagerCoreNetwork struct {
@@ -14,14 +19,24 @@ type NetworkManagerCoreNetwork struct {
 	network *networkmanager.CoreNetworkSummary
 }
 
+const NetworkManagerCoreNetworkResource = "NetworkManagerCoreNetwork"
+
 func init() {
-	register("NetworkManagerCoreNetwork", ListNetworkManagerCoreNetworks)
+	registry.Register(&registry.Registration{
+		Name:   NetworkManagerCoreNetworkResource,
+		Scope:  nuke.Account,
+		Lister: &NetworkManagerCoreNetworkLister{},
+	})
 }
 
-func ListNetworkManagerCoreNetworks(sess *session.Session) ([]Resource, error) {
-	svc := networkmanager.New(sess)
+type NetworkManagerCoreNetworkLister struct{}
+
+func (l *NetworkManagerCoreNetworkLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := networkmanager.New(opts.Session)
 	params := &networkmanager.ListCoreNetworksInput{}
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 
 	resp, err := svc.ListCoreNetworks(params)
 	if err != nil {
@@ -38,7 +53,7 @@ func ListNetworkManagerCoreNetworks(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (n *NetworkManagerCoreNetwork) Remove() error {
+func (n *NetworkManagerCoreNetwork) Remove(_ context.Context) error {
 	params := &networkmanager.DeleteCoreNetworkInput{
 		CoreNetworkId: n.network.CoreNetworkId,
 	}
@@ -62,12 +77,13 @@ func (n *NetworkManagerCoreNetwork) Filter() error {
 
 func (n *NetworkManagerCoreNetwork) Properties() types.Properties {
 	properties := types.NewProperties()
+	properties.Set("ID", n.network.CoreNetworkId)
+	properties.Set("ARN", n.network.CoreNetworkArn)
+
 	for _, tagValue := range n.network.Tags {
 		properties.SetTag(tagValue.Key, tagValue.Value)
 	}
-	properties.
-		Set("ID", n.network.CoreNetworkId).
-		Set("ARN", n.network.CoreNetworkArn)
+
 	return properties
 }
 

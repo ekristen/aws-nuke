@@ -1,12 +1,17 @@
 package resources
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/networkmanager"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/registry"
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 type NetworkManagerNetworkAttachment struct {
@@ -14,14 +19,24 @@ type NetworkManagerNetworkAttachment struct {
 	attachment *networkmanager.Attachment
 }
 
+const NetworkManagerNetworkAttachmentResource = "NetworkManagerNetworkAttachment"
+
 func init() {
-	register("NetworkManagerNetworkAttachment", ListNetworkManagerNetworkAttachments)
+	registry.Register(&registry.Registration{
+		Name:   NetworkManagerNetworkAttachmentResource,
+		Scope:  nuke.Account,
+		Lister: &NetworkManagerNetworkAttachmentLister{},
+	})
 }
 
-func ListNetworkManagerNetworkAttachments(sess *session.Session) ([]Resource, error) {
-	svc := networkmanager.New(sess)
+type NetworkManagerNetworkAttachmentLister struct{}
+
+func (l *NetworkManagerNetworkAttachmentLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := networkmanager.New(opts.Session)
 	params := &networkmanager.ListAttachmentsInput{}
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 
 	resp, err := svc.ListAttachments(params)
 	if err != nil {
@@ -38,7 +53,7 @@ func ListNetworkManagerNetworkAttachments(sess *session.Session) ([]Resource, er
 	return resources, nil
 }
 
-func (n *NetworkManagerNetworkAttachment) Remove() error {
+func (n *NetworkManagerNetworkAttachment) Remove(_ context.Context) error {
 	params := &networkmanager.DeleteAttachmentInput{
 		AttachmentId: n.attachment.AttachmentId,
 	}
@@ -62,12 +77,14 @@ func (n *NetworkManagerNetworkAttachment) Filter() error {
 
 func (n *NetworkManagerNetworkAttachment) Properties() types.Properties {
 	properties := types.NewProperties()
+
+	properties.Set("ID", n.attachment.AttachmentId)
+	properties.Set("ARN", n.attachment.ResourceArn)
+
 	for _, tagValue := range n.attachment.Tags {
 		properties.SetTag(tagValue.Key, tagValue.Value)
 	}
-	properties.
-		Set("ID", n.attachment.AttachmentId).
-		Set("ARN", n.attachment.ResourceArn)
+
 	return properties
 }
 

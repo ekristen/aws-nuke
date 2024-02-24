@@ -1,13 +1,18 @@
 package resources
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/networkmanager"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/registry"
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 type NetworkManagerGlobalNetwork struct {
@@ -15,13 +20,23 @@ type NetworkManagerGlobalNetwork struct {
 	network *networkmanager.GlobalNetwork
 }
 
+const NetworkManagerGlobalNetworkResource = "NetworkManagerGlobalNetwork"
+
 func init() {
-	register("NetworkManagerGlobalNetwork", ListNetworkManagerGlobalNetworks)
+	registry.Register(&registry.Registration{
+		Name:   NetworkManagerGlobalNetworkResource,
+		Scope:  nuke.Account,
+		Lister: &NetworkManagerGlobalNetworkLister{},
+	})
 }
 
-func ListNetworkManagerGlobalNetworks(sess *session.Session) ([]Resource, error) {
-	svc := networkmanager.New(sess)
-	resources := []Resource{}
+type NetworkManagerGlobalNetworkLister struct{}
+
+func (l *NetworkManagerGlobalNetworkLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := networkmanager.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &networkmanager.DescribeGlobalNetworksInput{
 		MaxResults: aws.Int64(100),
@@ -45,10 +60,11 @@ func ListNetworkManagerGlobalNetworks(sess *session.Session) ([]Resource, error)
 
 		params.NextToken = resp.NextToken
 	}
+
 	return resources, nil
 }
 
-func (n *NetworkManagerGlobalNetwork) Remove() error {
+func (n *NetworkManagerGlobalNetwork) Remove(_ context.Context) error {
 	params := &networkmanager.DeleteGlobalNetworkInput{
 		GlobalNetworkId: n.network.GlobalNetworkId,
 	}
@@ -72,12 +88,14 @@ func (n *NetworkManagerGlobalNetwork) Filter() error {
 
 func (n *NetworkManagerGlobalNetwork) Properties() types.Properties {
 	properties := types.NewProperties()
+
+	properties.Set("ID", n.network.GlobalNetworkId)
+	properties.Set("ARN", n.network.GlobalNetworkArn)
+
 	for _, tagValue := range n.network.Tags {
 		properties.SetTag(tagValue.Key, tagValue.Value)
 	}
-	properties.
-		Set("ID", n.network.GlobalNetworkId).
-		Set("ARN", n.network.GlobalNetworkArn)
+
 	return properties
 }
 

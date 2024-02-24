@@ -1,12 +1,17 @@
 package resources
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/networkmanager"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/registry"
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 type NetworkManagerConnectPeer struct {
@@ -14,14 +19,24 @@ type NetworkManagerConnectPeer struct {
 	peer *networkmanager.ConnectPeerSummary
 }
 
+const NetworkManagerConnectPeerResource = "NetworkManagerConnectPeer"
+
 func init() {
-	register("NetworkManagerConnectPeer", ListNetworkManagerConnectPeers)
+	registry.Register(&registry.Registration{
+		Name:   NetworkManagerConnectPeerResource,
+		Scope:  nuke.Account,
+		Lister: &NetworkManagerConnectPeerLister{},
+	})
 }
 
-func ListNetworkManagerConnectPeers(sess *session.Session) ([]Resource, error) {
-	svc := networkmanager.New(sess)
+type NetworkManagerConnectPeerLister struct{}
+
+func (l *NetworkManagerConnectPeerLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := networkmanager.New(opts.Session)
 	params := &networkmanager.ListConnectPeersInput{}
-	resources := make([]Resource, 0)
+	resources := make([]resource.Resource, 0)
 
 	resp, err := svc.ListConnectPeers(params)
 	if err != nil {
@@ -38,7 +53,7 @@ func ListNetworkManagerConnectPeers(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (n *NetworkManagerConnectPeer) Remove() error {
+func (n *NetworkManagerConnectPeer) Remove(_ context.Context) error {
 	params := &networkmanager.DeleteConnectPeerInput{
 		ConnectPeerId: n.peer.ConnectPeerId,
 	}
@@ -62,10 +77,12 @@ func (n *NetworkManagerConnectPeer) Filter() error {
 
 func (n *NetworkManagerConnectPeer) Properties() types.Properties {
 	properties := types.NewProperties()
+	properties.Set("ID", n.peer.ConnectPeerId)
+
 	for _, tagValue := range n.peer.Tags {
 		properties.SetTag(tagValue.Key, tagValue.Value)
 	}
-	properties.Set("ID", n.peer.ConnectPeerId)
+
 	return properties
 }
 
