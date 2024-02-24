@@ -1,33 +1,20 @@
 {
-    "extends": [
-        "config:base"
-    ],
+    "extends": ["config:recommended"],
     "packageRules": [
         {
-            "matchManagers": [
-                "dockerfile"
-            ],
-            "matchUpdateTypes": [
-                "pin",
-                "digest"
-            ],
+            "matchManagers": ["dockerfile"],
+            "matchUpdateTypes": ["pin", "digest"],
             "automerge": true,
             "automergeStrategy": "squash"
         },
         {
-            "matchPackagePatterns": [
-                "^golang.*"
-            ],
+            "matchPackagePatterns": ["^golang.*"],
             "groupName": "golang",
             "groupSlug": "golang"
         },
         {
-            "matchFileNames": [
-                ".github/workflows/*.yml"
-            ],
-            "matchDepTypes": [
-                "action"
-            ],
+            "matchFileNames": [".github/workflows/*.yml"],
+            "matchDepTypes": ["action"],
             "matchCurrentVersion": "!/^0/",
             "automerge": true,
             "automergeStrategy": "squash",
@@ -35,14 +22,11 @@
             "commitMessageSuffix": " [release skip]"
         }
     ],
-    "regexManagers": [
+    "customManagers": [
         {
-            "fileMatch": [
-                "^.github/workflows/.*"
-            ],
-            "matchStrings": [
-                "go-version: (?<currentValue>.*?)\n"
-            ],
+            "customType": "regex",
+            "fileMatch": ["^.github/workflows/.*"],
+            "matchStrings": ["go-version: (?<currentValue>.*?)\n"],
             "depNameTemplate": "golang",
             "datasourceTemplate": "docker"
         }
