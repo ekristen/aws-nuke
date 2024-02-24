@@ -72,6 +72,9 @@ nav:
     - Quick Start: quick-start.md
   - Features:
       - Bypass Alias Check: features/bypass-alias-check.md
+      - Global Filters: features/global-filters.md
+      - Enabled Regions: features/enabled-regions.md
+      - Signed Binaries: features/signed-binaries.md
   - CLI:
     - Usage: cli-usage.md
     - Options: cli-options.md
