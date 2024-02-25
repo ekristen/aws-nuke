@@ -14,7 +14,7 @@ import (
 
 var OriginalRegisterRegex = regexp.MustCompile(
 	`register\("(?P<resource>.*)",\s?(?P<function>\w+)(,)?(\s+mapCloudControl\("(?P<cc>.*)"\))?`)
-var NewRegisterRegex = regexp.MustCompile(`resource.Registration{\s+Name:\s+(?P<name>.*),`)
+var NewRegisterRegex = regexp.MustCompile(`registry.Registration{\s+Name:\s+(?P<name>.*),`)
 
 var aliases = map[string]string{
 	"NetpuneSnapshot":                    "NeptuneSnapshot",
@@ -99,6 +99,10 @@ func main() { //nolint:funlen,gocyclo
 
 		matches := NewRegisterRegex.FindStringSubmatch(string(originalFileContents))
 
+		if len(matches) == 0 {
+			continue
+		}
+
 		var NameRegex = regexp.MustCompile(fmt.Sprintf(`const %s = "(?P<name>.*)"`, matches[1]))
 
 		nameMatches := NameRegex.FindStringSubmatch(string(originalFileContents))
@@ -111,10 +115,10 @@ func main() { //nolint:funlen,gocyclo
 		localResourceTypes = append(localResourceTypes, resourceType)
 	}
 
-	fmt.Println("\naws-nuke resource count:", len(upstreamResourceTypes))
-	fmt.Println("local resource count:", len(localResourceTypes))
+	fmt.Println("\nrebuy-de/aws-nuke resource count:", len(upstreamResourceTypes))
+	fmt.Println("ekristen/aws-nuke resource count:", len(localResourceTypes))
 
-	fmt.Println("\nResources not in aws-nuke:")
+	fmt.Println("\nResources unique to ekristen/aws-nuke:")
 	for _, resource := range localResourceTypes {
 		found := false
 		for _, v := range aliases {
@@ -124,11 +128,11 @@ func main() { //nolint:funlen,gocyclo
 		}
 
 		if !slices.Contains(upstreamResourceTypes, resource) && !found {
-			fmt.Println("+>", resource)
+			color.New(color.Bold, color.FgGreen).Printf("%-55s\n", resource)
 		}
 	}
 
-	fmt.Println("\nResources not in local aws-nuke:")
+	fmt.Println("\nResources not in ekristen/aws-nuke:")
 	for _, resource := range upstreamResourceTypes {
 		_, ok := aliases[resource]
 		if !slices.Contains(localResourceTypes, resource) && !ok {

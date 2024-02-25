@@ -96,8 +96,7 @@ func main() {
 
 	newContents := repl.ReplaceAllString(string(originalFileContents), tpl.String())
 
-	newContents = strings.ReplaceAll(newContents,
-		"github.com/rebuy-de/aws-nuke/v2/pkg/types", "github.com/ekristen/libnuke/pkg/types")
+	newContents = strings.ReplaceAll(newContents, "github.com/rebuy-de/aws-nuke/v2/pkg/types", "")
 
 	newContents = funcMatch.ReplaceAllString(newContents, funcTpl.String())
 	newContents = strings.ReplaceAll(newContents, "[]Resource", "[]resource.Resource")
