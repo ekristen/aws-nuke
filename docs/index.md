@@ -1,9 +1,11 @@
-# AWS Nuke
-
 Remove all resources from an AWS account.
 
-*aws-nuke* is stable, but it is likely that not all AWS resources are covered by it. Be encouraged to add missing
+**aws-nuke** is stable, but it is likely that not all AWS resources are covered by it. Be encouraged to add missing
 resources and create a Pull Request or to create an [Issue](https://github.com/ekristen/aws-nuke/issues/new).
+
+!!! danger
+    Be aware that this is a very destructive tool, hence you have to be very careful while using it. Otherwise,
+    you might delete production data.
 
 ## What's New in Version 3
 

@@ -39,6 +39,7 @@ theme:
     - navigation.indexes
     - navigation.path
     - navigation.sections
+    - navigation.tabs
     - toc.follow
     - toc.integrate
     - content.code.annotate
@@ -65,12 +66,14 @@ markdown_extensions:
 # Page tree
 nav:
   - Getting Started:
-    - Introduction: index.md
+    - Overview: index.md
     - Warning: warning.md
     - Install: installation.md
     - Authentication: auth.md
     - Quick Start: quick-start.md
+    - Migration Guide: migration-guide.md
   - Features:
+      - Overview: features/overview.md
       - Bypass Alias Check: features/bypass-alias-check.md
       - Global Filters: features/global-filters.md
       - Enabled Regions: features/enabled-regions.md
@@ -88,6 +91,7 @@ nav:
     - Migration Guide: config-migration.md
   - Development:
     - Overview: development.md
+    - Contributing: contributing.md
     - Standards: standards.md
     - Resources: resources.md
     - Releases: releases.md
