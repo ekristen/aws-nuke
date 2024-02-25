@@ -9,7 +9,7 @@ resources and create a Pull Request or to create an [Issue](https://github.com/e
 
 This is not a comprehensive list, but here are some of the highlights:
 
-* New Feature: [Global Filters](features/global-filters.md
+* New Feature: [Global Filters](features/global-filters.md)
 * New Feature: [Run Against All Enabled Regions](features/enabled-regions.md)
 * New Feature: [Bypass Alias Check - Allow the skip of an alias on an account](features/bypass-alias-check.md)
 * Upcoming Feature: Filter Groups (**in progress**)
