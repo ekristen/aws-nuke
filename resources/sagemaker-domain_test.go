@@ -2,15 +2,19 @@ package resources
 
 import (
 	"context"
-	"github.com/aws/aws-sdk-go/service/sagemaker"
-	"github.com/ekristen/aws-nuke/mocks/mock_sagemakeriface"
-	"github.com/ekristen/aws-nuke/pkg/nuke"
-	"github.com/ekristen/libnuke/pkg/resource"
+	"testing"
+	"time"
+
 	"github.com/golang/mock/gomock"
 	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/assert"
-	"testing"
-	"time"
+
+	"github.com/aws/aws-sdk-go/service/sagemaker"
+
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/mocks/mock_sagemakeriface"
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 // TestSageMakerDomain_List is a unit test function to test the list of SageMakerDomain via mocked interface
