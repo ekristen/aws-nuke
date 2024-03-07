@@ -1,8 +1,5 @@
 # Caution and Warning
 
-!!! danger
-    Be aware that *aws-nuke* is a very destructive tool, hence you have to be very careful while using it. Otherwise,
-    you might delete production data.
 
 !!! warning
     **We strongly advise you to not run this application on any AWS account, where you cannot afford to lose
