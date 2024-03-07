@@ -224,8 +224,9 @@ func init() { //nolint:funlen
 			Usage: "use these resource types with the Cloud Control API instead of the default",
 		},
 		&cli.BoolFlag{
-			Name:  "quiet",
-			Usage: "hide filtered messages",
+			Name:    "quiet",
+			Aliases: []string{"q"},
+			Usage:   "hide filtered messages",
 		},
 		&cli.BoolFlag{
 			Name:  "no-dry-run",
