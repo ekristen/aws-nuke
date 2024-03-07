@@ -76,11 +76,23 @@ func TestSageMakerDomain_Remove(t *testing.T) {
 
 	mockSageMaker := mock_sagemakeriface.NewMockSageMakerAPI(ctrl)
 
+	testTime := time.Now().UTC()
+
 	sagemakerDomain := SageMakerDomain{
 		svc:          mockSageMaker,
 		domainID:     ptr.String("test"),
-		creationTime: ptr.Time(time.Now().UTC()),
+		creationTime: ptr.Time(testTime),
+		tags: []*sagemaker.Tag{
+			{
+				Key:   ptr.String("testKey"),
+				Value: ptr.String("testValue"),
+			},
+		},
 	}
+
+	a.Equal("test", sagemakerDomain.String())
+	a.Equal(testTime.Format(time.RFC3339), sagemakerDomain.Properties().Get("CreationTime"))
+	a.Equal("testValue", sagemakerDomain.Properties().Get("tag:testKey"))
 
 	mockSageMaker.EXPECT().DeleteDomain(gomock.Eq(&sagemaker.DeleteDomainInput{
 		DomainId: sagemakerDomain.domainID,
