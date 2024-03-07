@@ -30,6 +30,6 @@ To compile **aws-nuke** from source you need a working [Golang](https://golang.o
 **aws-nuke** uses go modules and so the clone path should not matter. Then simply change directory into the clone and run:
 
 ```bash
-goreleaser --clean --snapshot --single-target
+goreleaser build --clean --snapshot --single-target
 ```
 
