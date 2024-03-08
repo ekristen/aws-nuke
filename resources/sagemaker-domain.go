@@ -2,9 +2,14 @@ package resources
 
 import (
 	"context"
+	"time"
+
+	"github.com/gotidy/ptr"
+	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sagemaker"
+	"github.com/aws/aws-sdk-go/service/sagemaker/sagemakeriface"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
@@ -23,12 +28,18 @@ func init() {
 	})
 }
 
-type SageMakerDomainLister struct{}
+type SageMakerDomainLister struct {
+	svc sagemakeriface.SageMakerAPI
+}
 
 func (l *SageMakerDomainLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 
-	svc := sagemaker.New(opts.Session)
+	// Note: this allows us to override svc in tests with a mock
+	if l.svc == nil {
+		l.svc = sagemaker.New(opts.Session)
+	}
+
 	resources := make([]resource.Resource, 0)
 
 	params := &sagemaker.ListDomainsInput{
@@ -36,15 +47,29 @@ func (l *SageMakerDomainLister) List(_ context.Context, o interface{}) ([]resour
 	}
 
 	for {
-		resp, err := svc.ListDomains(params)
+		resp, err := l.svc.ListDomains(params)
 		if err != nil {
 			return nil, err
 		}
 
 		for _, domain := range resp.Domains {
+			tags := make([]*sagemaker.Tag, 0)
+			tagParams := &sagemaker.ListTagsInput{
+				ResourceArn: domain.DomainArn,
+			}
+			tagOutput, err := l.svc.ListTags(tagParams)
+			if err != nil {
+				logrus.WithError(err).Errorf("unable to get tags for SageMakerDomain: %s", ptr.ToString(domain.DomainId))
+			}
+			if tagOutput != nil {
+				tags = tagOutput.Tags
+			}
+
 			resources = append(resources, &SageMakerDomain{
-				svc:      svc,
-				domainID: domain.DomainId,
+				svc:          l.svc,
+				domainID:     domain.DomainId,
+				creationTime: domain.CreationTime,
+				tags:         tags,
 			})
 		}
 
@@ -59,8 +84,10 @@ func (l *SageMakerDomainLister) List(_ context.Context, o interface{}) ([]resour
 }
 
 type SageMakerDomain struct {
-	svc      *sagemaker.SageMaker
-	domainID *string
+	svc          sagemakeriface.SageMakerAPI
+	domainID     *string
+	creationTime *time.Time
+	tags         []*sagemaker.Tag
 }
 
 func (f *SageMakerDomain) Remove(_ context.Context) error {
@@ -78,7 +105,13 @@ func (f *SageMakerDomain) String() string {
 
 func (f *SageMakerDomain) Properties() types.Properties {
 	properties := types.NewProperties()
-	properties.
-		Set("DomainID", f.domainID)
+
+	properties.Set("DomainID", f.domainID)
+	properties.Set("CreationTime", f.creationTime.Format(time.RFC3339))
+
+	for _, tag := range f.tags {
+		properties.SetTag(tag.Key, tag.Value)
+	}
+
 	return properties
 }
