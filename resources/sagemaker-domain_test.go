@@ -26,7 +26,7 @@ func TestSageMakerDomain_List(t *testing.T) {
 	mockSageMaker := mock_sagemakeriface.NewMockSageMakerAPI(ctrl)
 
 	sagemakerDomainLister := SageMakerDomainLister{
-		svc: mockSageMaker,
+		mockSvc: mockSageMaker,
 	}
 
 	sagemakerDomain := SageMakerDomain{
