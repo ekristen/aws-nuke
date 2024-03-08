@@ -28,13 +28,6 @@ func init() {
 	})
 }
 
-type EC2RouteTable struct {
-	svc        *ec2.EC2
-	routeTable *ec2.RouteTable
-	defaultVPC bool
-	vpc        *ec2.Vpc
-}
-
 type EC2RouteTableLister struct{}
 
 func (l *EC2RouteTableLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
@@ -64,10 +57,19 @@ func (l *EC2RouteTableLister) List(_ context.Context, o interface{}) ([]resource
 			routeTable: out,
 			defaultVPC: defVpcID == ptr.ToString(out.VpcId),
 			vpc:        vpc,
+			ownerID:    out.OwnerId,
 		})
 	}
 
 	return resources, nil
+}
+
+type EC2RouteTable struct {
+	svc        *ec2.EC2
+	routeTable *ec2.RouteTable
+	defaultVPC bool
+	vpc        *ec2.Vpc
+	ownerID    *string
 }
 
 func (e *EC2RouteTable) Filter() error {
@@ -97,7 +99,9 @@ func (e *EC2RouteTable) Properties() types.Properties {
 	properties := types.NewProperties()
 
 	properties.Set("DefaultVPC", e.defaultVPC)
-	properties.Set("vpcID", e.routeTable.VpcId)
+	properties.Set("OwnerID", e.ownerID)
+	properties.SetWithPrefix("vpc", "vpcID", e.vpc.VpcId)
+	properties.SetWithPrefix("vpc", "ID", e.vpc.VpcId)
 
 	for _, tagValue := range e.routeTable.Tags {
 		properties.SetTag(tagValue.Key, tagValue.Value)

@@ -4,14 +4,14 @@ go 1.21.6
 
 require (
 	github.com/aws/aws-sdk-go v1.50.24
-	github.com/ekristen/libnuke v0.10.1
+	github.com/ekristen/libnuke v0.11.0
 	github.com/fatih/color v1.16.0
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.6.0
 	github.com/gotidy/ptr v1.4.0
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.3
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
 	github.com/urfave/cli/v2 v2.27.1
 	gopkg.in/yaml.v3 v3.0.1
 )

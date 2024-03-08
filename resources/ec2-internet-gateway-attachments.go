@@ -61,8 +61,10 @@ func (l *EC2InternetGatewayAttachmentLister) List(_ context.Context, o interface
 			resources = append(resources, &EC2InternetGatewayAttachment{
 				svc:        svc,
 				vpcID:      vpc.VpcId,
+				vpcOwnerID: vpc.OwnerId,
 				vpcTags:    vpc.Tags,
 				igwID:      igw.InternetGatewayId,
+				igwOwnerID: igw.OwnerId,
 				igwTags:    igw.Tags,
 				defaultVPC: *vpc.IsDefault,
 			})
@@ -75,8 +77,10 @@ func (l *EC2InternetGatewayAttachmentLister) List(_ context.Context, o interface
 type EC2InternetGatewayAttachment struct {
 	svc        *ec2.EC2
 	vpcID      *string
+	vpcOwnerID *string
 	vpcTags    []*ec2.Tag
 	igwID      *string
+	igwOwnerID *string
 	igwTags    []*ec2.Tag
 	defaultVPC bool
 }
@@ -97,13 +101,18 @@ func (e *EC2InternetGatewayAttachment) Remove(_ context.Context) error {
 
 func (e *EC2InternetGatewayAttachment) Properties() types.Properties {
 	properties := types.NewProperties()
+
+	properties.Set("DefaultVPC", e.defaultVPC)
+	properties.SetWithPrefix("vpc", "OwnerID", e.vpcOwnerID)
+	properties.SetWithPrefix("igw", "OwnerID", e.igwOwnerID)
+
 	for _, tagValue := range e.igwTags {
 		properties.SetTagWithPrefix("igw", tagValue.Key, tagValue.Value)
 	}
 	for _, tagValue := range e.vpcTags {
 		properties.SetTagWithPrefix("vpc", tagValue.Key, tagValue.Value)
 	}
-	properties.Set("DefaultVPC", e.defaultVPC)
+
 	return properties
 }
 
