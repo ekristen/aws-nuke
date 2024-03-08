@@ -29,15 +29,18 @@ func init() {
 }
 
 type SageMakerDomainLister struct {
-	svc sagemakeriface.SageMakerAPI
+	mockSvc sagemakeriface.SageMakerAPI
 }
 
 func (l *SageMakerDomainLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 
 	// Note: this allows us to override svc in tests with a mock
-	if l.svc == nil {
-		l.svc = sagemaker.New(opts.Session)
+	var svc sagemakeriface.SageMakerAPI
+	if l.mockSvc != nil {
+		svc = l.mockSvc
+	} else {
+		svc = sagemaker.New(opts.Session)
 	}
 
 	resources := make([]resource.Resource, 0)
@@ -47,7 +50,7 @@ func (l *SageMakerDomainLister) List(_ context.Context, o interface{}) ([]resour
 	}
 
 	for {
-		resp, err := l.svc.ListDomains(params)
+		resp, err := svc.ListDomains(params)
 		if err != nil {
 			return nil, err
 		}
@@ -57,7 +60,7 @@ func (l *SageMakerDomainLister) List(_ context.Context, o interface{}) ([]resour
 			tagParams := &sagemaker.ListTagsInput{
 				ResourceArn: domain.DomainArn,
 			}
-			tagOutput, err := l.svc.ListTags(tagParams)
+			tagOutput, err := svc.ListTags(tagParams)
 			if err != nil {
 				logrus.WithError(err).Errorf("unable to get tags for SageMakerDomain: %s", ptr.ToString(domain.DomainId))
 			}
@@ -66,7 +69,7 @@ func (l *SageMakerDomainLister) List(_ context.Context, o interface{}) ([]resour
 			}
 
 			resources = append(resources, &SageMakerDomain{
-				svc:          l.svc,
+				svc:          svc,
 				domainID:     domain.DomainId,
 				creationTime: domain.CreationTime,
 				tags:         tags,
