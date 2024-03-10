@@ -1,27 +1,36 @@
 package resources
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cloudfront"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/registry"
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
-type CloudFrontResponseHeadersPolicy struct {
-	svc  *cloudfront.CloudFront
-	ID   *string
-	name *string
-}
+const CloudFrontResponseHeadersPolicyResource = "CloudFrontResponseHeadersPolicy"
 
 func init() {
-	register("CloudFrontResponseHeadersPolicy", ListCloudFrontResponseHeadersPolicies)
+	registry.Register(&registry.Registration{
+		Name:   CloudFrontResponseHeadersPolicyResource,
+		Scope:  nuke.Account,
+		Lister: &CloudFrontResponseHeadersPolicyLister{},
+	})
 }
 
-func ListCloudFrontResponseHeadersPolicies(sess *session.Session) ([]Resource, error) {
-	svc := cloudfront.New(sess)
-	resources := []Resource{}
+type CloudFrontResponseHeadersPolicyLister struct{}
+
+func (l *CloudFrontResponseHeadersPolicyLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := cloudfront.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 	params := &cloudfront.ListResponseHeadersPoliciesInput{}
 
 	for {
@@ -48,14 +57,20 @@ func ListCloudFrontResponseHeadersPolicies(sess *session.Session) ([]Resource, e
 	return resources, nil
 }
 
+type CloudFrontResponseHeadersPolicy struct {
+	svc  *cloudfront.CloudFront
+	ID   *string
+	name *string
+}
+
 func (f *CloudFrontResponseHeadersPolicy) Filter() error {
 	if strings.HasPrefix(*f.name, "Managed-") {
-		return fmt.Errorf("Cannot delete default CloudFront Response headers policy")
+		return fmt.Errorf("cannot delete default CloudFront Response headers policy")
 	}
 	return nil
 }
 
-func (f *CloudFrontResponseHeadersPolicy) Remove() error {
+func (f *CloudFrontResponseHeadersPolicy) Remove(_ context.Context) error {
 	resp, err := f.svc.GetResponseHeadersPolicy(&cloudfront.GetResponseHeadersPolicyInput{
 		Id: f.ID,
 	})
