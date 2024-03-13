@@ -53,13 +53,14 @@ func execute(c *cli.Context) error { //nolint:funlen,gocyclo
 
 	// Create the parameters object that will be used to configure the nuke process.
 	params := &libnuke.Parameters{
-		Force:        c.Bool("force"),
-		ForceSleep:   c.Int("force-sleep"),
-		Quiet:        c.Bool("quiet"),
-		NoDryRun:     c.Bool("no-dry-run"),
-		Includes:     c.StringSlice("include"),
-		Excludes:     c.StringSlice("exclude"),
-		Alternatives: c.StringSlice("cloud-control"),
+		Force:          c.Bool("force"),
+		ForceSleep:     c.Int("force-sleep"),
+		Quiet:          c.Bool("quiet"),
+		NoDryRun:       c.Bool("no-dry-run"),
+		Includes:       c.StringSlice("include"),
+		Excludes:       c.StringSlice("exclude"),
+		Alternatives:   c.StringSlice("cloud-control"),
+		MaxWaitRetries: c.Int("max-wait-retries"),
 	}
 
 	if len(c.StringSlice("feature-flag")) > 0 {
@@ -233,10 +234,6 @@ func init() { //nolint:funlen
 			Usage: "actually run the removal of the resources after discovery",
 		},
 		&cli.BoolFlag{
-			Name:  "no-alias-check",
-			Usage: "disable aws account alias check - requires entry in config as well",
-		},
-		&cli.BoolFlag{
 			Name:    "no-prompt",
 			Usage:   "disable prompting for verification to run",
 			Aliases: []string{"force"},
@@ -246,6 +243,14 @@ func init() { //nolint:funlen
 			Usage:   "seconds to delay after prompt before running (minimum: 3 seconds)",
 			Value:   10,
 			Aliases: []string{"force-sleep"},
+		},
+		&cli.IntFlag{
+			Name:  "max-wait-retries",
+			Usage: "maximum number of retries to wait for dependencies to be removed",
+		},
+		&cli.BoolFlag{
+			Name:  "no-alias-check",
+			Usage: "disable aws account alias check - requires entry in config as well",
 		},
 		&cli.StringSliceFlag{
 			Name:  "feature-flag",
