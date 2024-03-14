@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"github.com/aws/aws-sdk-go/service/ecs/ecsiface"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ecs"
@@ -22,12 +23,20 @@ func init() {
 	})
 }
 
-type ECSClusterLister struct{}
+type ECSClusterLister struct {
+	mockSvc ecsiface.ECSAPI
+}
 
 func (l *ECSClusterLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 
-	svc := ecs.New(opts.Session)
+	var svc ecsiface.ECSAPI
+	if l.mockSvc != nil {
+		svc = l.mockSvc
+	} else {
+		svc = ecs.New(opts.Session)
+	}
+
 	resources := make([]resource.Resource, 0)
 
 	params := &ecs.ListClustersInput{
@@ -58,7 +67,7 @@ func (l *ECSClusterLister) List(_ context.Context, o interface{}) ([]resource.Re
 }
 
 type ECSCluster struct {
-	svc *ecs.ECS
+	svc ecsiface.ECSAPI
 	ARN *string
 }
 
