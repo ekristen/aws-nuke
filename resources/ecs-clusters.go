@@ -2,13 +2,17 @@ package resources
 
 import (
 	"context"
-	"github.com/aws/aws-sdk-go/service/ecs/ecsiface"
+
+	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ecs"
+	"github.com/aws/aws-sdk-go/service/ecs/ecsiface"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/slices"
+	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
@@ -49,11 +53,21 @@ func (l *ECSClusterLister) List(_ context.Context, o interface{}) ([]resource.Re
 			return nil, err
 		}
 
-		for _, clusterArn := range output.ClusterArns {
-			resources = append(resources, &ECSCluster{
-				svc: svc,
-				ARN: clusterArn,
+		for _, clusterChunk := range slices.Chunk(output.ClusterArns, 100) {
+			clusters, err := svc.DescribeClusters(&ecs.DescribeClustersInput{
+				Clusters: clusterChunk,
 			})
+			if err != nil {
+				logrus.WithError(err).Error("unable to retrieve clusters")
+			}
+
+			for _, cluster := range clusters.Clusters {
+				resources = append(resources, &ECSCluster{
+					svc:  svc,
+					ARN:  cluster.ClusterArn,
+					tags: cluster.Tags,
+				})
+			}
 		}
 
 		if output.NextToken == nil {
@@ -67,8 +81,9 @@ func (l *ECSClusterLister) List(_ context.Context, o interface{}) ([]resource.Re
 }
 
 type ECSCluster struct {
-	svc ecsiface.ECSAPI
-	ARN *string
+	svc  ecsiface.ECSAPI
+	ARN  *string
+	tags []*ecs.Tag
 }
 
 func (f *ECSCluster) Remove(_ context.Context) error {
@@ -81,4 +96,15 @@ func (f *ECSCluster) Remove(_ context.Context) error {
 
 func (f *ECSCluster) String() string {
 	return *f.ARN
+}
+
+func (f *ECSCluster) Properties() types.Properties {
+	properties := types.NewProperties()
+	properties.Set("ARN", f.ARN)
+
+	for _, tag := range f.tags {
+		properties.SetTag(tag.Key, tag.Value)
+	}
+
+	return properties
 }
