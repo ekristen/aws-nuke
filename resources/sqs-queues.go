@@ -2,16 +2,17 @@ package resources
 
 import (
 	"context"
-	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
-	"github.com/ekristen/libnuke/pkg/types"
+
 	"github.com/sirupsen/logrus"
 
 	"github.com/gotidy/ptr"
 
 	"github.com/aws/aws-sdk-go/service/sqs"
+	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
