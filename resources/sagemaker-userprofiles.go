@@ -2,6 +2,8 @@ package resources
 
 import (
 	"context"
+	"github.com/aws/aws-sdk-go/service/sagemaker/sagemakeriface"
+	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sagemaker"
@@ -23,12 +25,20 @@ func init() {
 	})
 }
 
-type SageMakerUserProfilesLister struct{}
+type SageMakerUserProfilesLister struct {
+	mockSvc sagemakeriface.SageMakerAPI
+}
 
 func (l *SageMakerUserProfilesLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 
-	svc := sagemaker.New(opts.Session)
+	var svc sagemakeriface.SageMakerAPI
+	if l.mockSvc != nil {
+		svc = l.mockSvc
+	} else {
+		svc = sagemaker.New(opts.Session)
+	}
+
 	resources := make([]resource.Resource, 0)
 
 	params := &sagemaker.ListUserProfilesInput{
@@ -42,10 +52,33 @@ func (l *SageMakerUserProfilesLister) List(_ context.Context, o interface{}) ([]
 		}
 
 		for _, userProfile := range resp.UserProfiles {
+			var tags []*sagemaker.Tag
+			up, err := svc.DescribeUserProfile(&sagemaker.DescribeUserProfileInput{
+				DomainId:        userProfile.DomainId,
+				UserProfileName: userProfile.UserProfileName,
+			})
+			if err != nil {
+				logrus.WithError(err).Error("unable to get user profile")
+				continue
+			}
+
+			upTags, err := svc.ListTags(&sagemaker.ListTagsInput{
+				ResourceArn: up.UserProfileArn,
+				MaxResults:  aws.Int64(100),
+			})
+			if err != nil {
+				logrus.WithError(err).Error("unable to get tags")
+				continue
+			}
+			if upTags.Tags != nil {
+				tags = upTags.Tags
+			}
+
 			resources = append(resources, &SageMakerUserProfile{
 				svc:             svc,
 				domainID:        userProfile.DomainId,
 				userProfileName: userProfile.UserProfileName,
+				tags:            tags,
 			})
 		}
 
@@ -60,9 +93,10 @@ func (l *SageMakerUserProfilesLister) List(_ context.Context, o interface{}) ([]
 }
 
 type SageMakerUserProfile struct {
-	svc             *sagemaker.SageMaker
+	svc             sagemakeriface.SageMakerAPI
 	domainID        *string
 	userProfileName *string
+	tags            []*sagemaker.Tag
 }
 
 func (f *SageMakerUserProfile) Remove(_ context.Context) error {
@@ -80,8 +114,13 @@ func (f *SageMakerUserProfile) String() string {
 
 func (f *SageMakerUserProfile) Properties() types.Properties {
 	properties := types.NewProperties()
-	properties.
-		Set("DomainID", f.domainID).
-		Set("UserProfileName", f.userProfileName)
+
+	properties.Set("DomainID", f.domainID)
+	properties.Set("UserProfileName", f.userProfileName)
+
+	for _, tag := range f.tags {
+		properties.SetTag(tag.Key, tag.Value)
+	}
+
 	return properties
 }
