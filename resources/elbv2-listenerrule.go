@@ -40,9 +40,8 @@ func (l *ELBv2ListenerRuleLister) List(_ context.Context, o interface{}) ([]reso
 	err := svc.DescribeLoadBalancersPages(
 		nil,
 		func(page *elbv2.DescribeLoadBalancersOutput, lastPage bool) bool {
-			for _, elbv2lb := range page.LoadBalancers {
-				lbs = append(lbs, elbv2lb)
-			}
+			lbs = append(lbs, page.LoadBalancers...)
+
 			return !lastPage
 		},
 	)
