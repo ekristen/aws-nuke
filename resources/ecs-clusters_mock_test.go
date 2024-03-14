@@ -2,17 +2,18 @@ package resources
 
 import (
 	"context"
-	"github.com/ekristen/aws-nuke/pkg/nuke"
-	"github.com/gotidy/ptr"
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ecs"
 
 	"github.com/ekristen/aws-nuke/mocks/mock_ecsiface"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 func Test_Mock_ECSCluster_List(t *testing.T) {
@@ -32,9 +33,32 @@ func Test_Mock_ECSCluster_List(t *testing.T) {
 		},
 	}, nil)
 
+	mockECS.EXPECT().DescribeClusters(gomock.Any()).Return(&ecs.DescribeClustersOutput{
+		Clusters: []*ecs.Cluster{
+			{
+				ClusterArn: aws.String("foobar"),
+				Tags: []*ecs.Tag{
+					{
+						Key:   aws.String("Name"),
+						Value: aws.String("foobar"),
+					},
+					{
+						Key:   aws.String("aws-nuke"),
+						Value: aws.String("test"),
+					},
+				},
+			},
+		},
+	}, nil)
+
 	resources, err := ecsClusterLister.List(context.TODO(), &nuke.ListerOpts{})
 	a.Nil(err)
 	a.Len(resources, 1)
+
+	ecsCluster := resources[0].(*ECSCluster)
+	a.Equal("foobar", ecsCluster.String())
+	a.Equal("foobar", ecsCluster.Properties().Get("tag:Name"))
+	a.Equal("test", ecsCluster.Properties().Get("tag:aws-nuke"))
 }
 
 func Test_Mock_ECSCluster_Remove(t *testing.T) {
@@ -44,15 +68,17 @@ func Test_Mock_ECSCluster_Remove(t *testing.T) {
 
 	mockECS := mock_ecsiface.NewMockECSAPI(ctrl)
 
-	iamUser := ECSCluster{
+	ecsCluster := ECSCluster{
 		svc: mockECS,
 		ARN: ptr.String("foobar"),
 	}
+
+	a.Equal("foobar", ecsCluster.String())
 
 	mockECS.EXPECT().DeleteCluster(gomock.Eq(&ecs.DeleteClusterInput{
 		Cluster: aws.String("foobar"),
 	})).Return(&ecs.DeleteClusterOutput{}, nil)
 
-	err := iamUser.Remove(context.TODO())
+	err := ecsCluster.Remove(context.TODO())
 	a.Nil(err)
 }
