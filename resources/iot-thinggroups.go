@@ -2,13 +2,13 @@ package resources
 
 import (
 	"context"
-	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/iot"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
