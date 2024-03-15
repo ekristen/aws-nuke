@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/iot"
@@ -57,10 +58,16 @@ func (l *IoTThingGroupLister) List(_ context.Context, o interface{}) ([]resource
 			return nil, err
 		}
 
+		thingGroupType := "static"
+		if output.IndexName != nil {
+			thingGroupType = "dynamic"
+		}
+
 		resources = append(resources, &IoTThingGroup{
-			svc:     svc,
-			name:    thingGroup.GroupName,
-			version: output.Version,
+			svc:       svc,
+			name:      thingGroup.GroupName,
+			version:   output.Version,
+			groupType: thingGroupType,
 		})
 	}
 
@@ -68,12 +75,22 @@ func (l *IoTThingGroupLister) List(_ context.Context, o interface{}) ([]resource
 }
 
 type IoTThingGroup struct {
-	svc     *iot.IoT
-	name    *string
-	version *int64
+	svc       *iot.IoT
+	name      *string
+	version   *int64
+	groupType string
 }
 
 func (f *IoTThingGroup) Remove(_ context.Context) error {
+	if f.groupType == "dynamic" {
+		_, err := f.svc.DeleteDynamicThingGroup(&iot.DeleteDynamicThingGroupInput{
+			ThingGroupName:  f.name,
+			ExpectedVersion: f.version,
+		})
+
+		return err
+	}
+
 	_, err := f.svc.DeleteThingGroup(&iot.DeleteThingGroupInput{
 		ThingGroupName:  f.name,
 		ExpectedVersion: f.version,
@@ -84,4 +101,13 @@ func (f *IoTThingGroup) Remove(_ context.Context) error {
 
 func (f *IoTThingGroup) String() string {
 	return *f.name
+}
+
+func (f *IoTThingGroup) Properties() types.Properties {
+	properties := types.NewProperties()
+
+	properties.Set("Name", f.name)
+	properties.Set("Type", f.groupType)
+
+	return properties
 }
