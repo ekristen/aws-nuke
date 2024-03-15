@@ -102,6 +102,12 @@ func (f *ServiceDiscoveryNamespace) String() string {
 }
 
 func (f *ServiceDiscoveryNamespace) Properties() types.Properties {
-	return types.NewProperties().
-		Set("ID", f.ID)
+	properties := types.NewProperties()
+	properties.Set("ID", f.ID)
+
+	for _, tag := range f.tags {
+		properties.SetTag(tag.Key, tag.Value)
+	}
+
+	return properties
 }
