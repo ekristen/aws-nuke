@@ -5,6 +5,7 @@ plugins:
 
 branches:
   - name: main
+  - name: v2
+  - name: next
     prerelease: 'beta'
     channel: beta
-  - name: v2
