@@ -2,12 +2,15 @@ package resources
 
 import (
 	"context"
+
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go/service/glue"
 	"github.com/aws/aws-sdk-go/service/glue/glueiface"
+
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
-	"github.com/gotidy/ptr"
 
 	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
