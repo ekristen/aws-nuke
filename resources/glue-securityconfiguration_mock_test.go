@@ -11,6 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/glue"
 
 	"github.com/ekristen/aws-nuke/mocks/mock_glueiface"
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 func Test_Mock_GlueSecurityConfiguration_Remove(t *testing.T) {
@@ -31,4 +32,66 @@ func Test_Mock_GlueSecurityConfiguration_Remove(t *testing.T) {
 
 	err := resource.Remove(context.TODO())
 	a.Nil(err)
+}
+
+func Test_Mock_GlueSecurityConfiguration_List(t *testing.T) {
+	a := assert.New(t)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockSvc := mock_glueiface.NewMockGlueAPI(ctrl)
+
+	resource := GlueSecurityConfigurationLister{
+		mockSvc: mockSvc,
+	}
+
+	mockSvc.EXPECT().GetSecurityConfigurations(gomock.Any()).Return(&glue.GetSecurityConfigurationsOutput{
+		SecurityConfigurations: []*glue.SecurityConfiguration{
+			{
+				Name: ptr.String("foobar"),
+			},
+		},
+	}, nil)
+
+	resources, err := resource.List(context.TODO(), &nuke.ListerOpts{})
+	a.Nil(err)
+	a.Len(resources, 1)
+	a.Equal("foobar", *resources[0].(*GlueSecurityConfiguration).name)
+}
+
+func Test_Mock_GlueSecurityConfiguration_ListNext(t *testing.T) {
+	a := assert.New(t)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockSvc := mock_glueiface.NewMockGlueAPI(ctrl)
+
+	resource := GlueSecurityConfigurationLister{
+		mockSvc: mockSvc,
+	}
+
+	mockSvc.EXPECT().GetSecurityConfigurations(gomock.Any()).Return(&glue.GetSecurityConfigurationsOutput{
+		SecurityConfigurations: []*glue.SecurityConfiguration{
+			{
+				Name: ptr.String("foobar1"),
+			},
+		},
+		NextToken: ptr.String("once"),
+	}, nil)
+
+	mockSvc.EXPECT().GetSecurityConfigurations(&glue.GetSecurityConfigurationsInput{
+		NextToken: ptr.String("once"),
+	}).Return(&glue.GetSecurityConfigurationsOutput{
+		SecurityConfigurations: []*glue.SecurityConfiguration{
+			{
+				Name: ptr.String("foobar2"),
+			},
+		},
+		NextToken: &[]string{""}[0], // empty string to break the loop or nil
+	}, nil)
+
+	resources, err := resource.List(context.TODO(), &nuke.ListerOpts{})
+	a.Nil(err)
+	a.Len(resources, 2)
+	a.Equal("foobar1", *resources[0].(*GlueSecurityConfiguration).name)
 }

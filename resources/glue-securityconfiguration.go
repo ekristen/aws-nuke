@@ -2,13 +2,12 @@ package resources
 
 import (
 	"context"
-	"github.com/aws/aws-sdk-go/service/glue/glueiface"
-
 	"github.com/aws/aws-sdk-go/service/glue"
-
+	"github.com/aws/aws-sdk-go/service/glue/glueiface"
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
+	"github.com/gotidy/ptr"
 
 	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
@@ -23,12 +22,20 @@ func init() {
 	})
 }
 
-type GlueSecurityConfigurationLister struct{}
+type GlueSecurityConfigurationLister struct {
+	mockSvc glueiface.GlueAPI
+}
 
 func (l *GlueSecurityConfigurationLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
-	svc := glue.New(opts.Session)
 	var resources []resource.Resource
+
+	var svc glueiface.GlueAPI
+	if l.mockSvc != nil {
+		svc = l.mockSvc
+	} else {
+		svc = glue.New(opts.Session)
+	}
 
 	var nextToken *string
 	for {
@@ -48,7 +55,7 @@ func (l *GlueSecurityConfigurationLister) List(_ context.Context, o interface{})
 			})
 		}
 
-		if res.NextToken == nil {
+		if res.NextToken == nil || ptr.ToString(res.NextToken) == "" {
 			break
 		}
 
