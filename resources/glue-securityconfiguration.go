@@ -59,6 +59,10 @@ func (l *GlueSecurityConfigurationLister) List(_ context.Context, o interface{})
 			break
 		}
 
+		if len(res.SecurityConfigurations) == 0 {
+			break
+		}
+
 		nextToken = res.NextToken
 	}
 
