@@ -1,9 +1,15 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/cloudfront"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/registry"
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 type CloudFrontCachePolicy struct {
@@ -11,13 +17,23 @@ type CloudFrontCachePolicy struct {
 	ID  *string
 }
 
+const CloudFrontCachePolicyResource = "CloudFrontCachePolicy"
+
 func init() {
-	register("CloudFrontCachePolicy", ListCloudFrontCachePolicy)
+	registry.Register(&registry.Registration{
+		Name:   CloudFrontCachePolicyResource,
+		Scope:  nuke.Account,
+		Lister: &CloudFrontCachePolicyLister{},
+	})
 }
 
-func ListCloudFrontCachePolicy(sess *session.Session) ([]Resource, error) {
-	svc := cloudfront.New(sess)
-	resources := []Resource{}
+type CloudFrontCachePolicyLister struct{}
+
+func (l *CloudFrontCachePolicyLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := cloudfront.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 	params := &cloudfront.ListCachePoliciesInput{}
 
 	for {
@@ -45,7 +61,7 @@ func ListCloudFrontCachePolicy(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *CloudFrontCachePolicy) Remove() error {
+func (f *CloudFrontCachePolicy) Remove(_ context.Context) error {
 	resp, err := f.svc.GetCachePolicy(&cloudfront.GetCachePolicyInput{
 		Id: f.ID,
 	})
