@@ -13,8 +13,9 @@ import (
 )
 
 type CloudFrontCachePolicy struct {
-	svc *cloudfront.CloudFront
-	ID  *string
+	svc  *cloudfront.CloudFront
+	ID   *string
+	Name *string
 }
 
 const CloudFrontCachePolicyResource = "CloudFrontCachePolicy"
@@ -45,8 +46,9 @@ func (l *CloudFrontCachePolicyLister) List(_ context.Context, o interface{}) ([]
 		for _, item := range resp.CachePolicyList.Items {
 			if *item.Type == "custom" { //nolint:goconst
 				resources = append(resources, &CloudFrontCachePolicy{
-					svc: svc,
-					ID:  item.CachePolicy.Id,
+					svc:  svc,
+					ID:   item.CachePolicy.Id,
+					Name: item.CachePolicy.CachePolicyConfig.Name,
 				})
 			}
 		}
@@ -80,5 +82,10 @@ func (f *CloudFrontCachePolicy) Remove(_ context.Context) error {
 func (f *CloudFrontCachePolicy) Properties() types.Properties {
 	properties := types.NewProperties()
 	properties.Set("ID", f.ID)
+	properties.Set("Name", f.Name)
 	return properties
+}
+
+func (f *CloudFrontCachePolicy) String() string {
+	return *f.Name
 }
