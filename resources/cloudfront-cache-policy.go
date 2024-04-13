@@ -43,7 +43,7 @@ func (l *CloudFrontCachePolicyLister) List(_ context.Context, o interface{}) ([]
 		}
 
 		for _, item := range resp.CachePolicyList.Items {
-			if *item.Type == "custom" {
+			if *item.Type == "custom" { //nolint:goconst
 				resources = append(resources, &CloudFrontCachePolicy{
 					svc: svc,
 					ID:  item.CachePolicy.Id,
