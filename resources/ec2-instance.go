@@ -83,6 +83,13 @@ func (i *EC2Instance) Filter() error {
 }
 
 func (i *EC2Instance) Remove(_ context.Context) error {
+	deleteTagsParams := &ec2.DeleteTagsInput{
+		Resources: []*string{i.instance.InstanceId},
+	}
+	if _, err := i.svc.DeleteTags(deleteTagsParams); err != nil {
+		return err
+	}
+
 	params := &ec2.TerminateInstancesInput{
 		InstanceIds: []*string{i.instance.InstanceId},
 	}
