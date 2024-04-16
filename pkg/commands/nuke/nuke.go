@@ -86,8 +86,10 @@ func execute(c *cli.Context) error { //nolint:funlen,gocyclo
 		partition, ok := endpoints.PartitionForRegion(endpoints.DefaultPartitions(), defaultRegion)
 		if !ok {
 			if parsedConfig.CustomEndpoints.GetRegion(defaultRegion) == nil {
-				err = fmt.Errorf("the custom region '%s' must be specified in the configuration 'endpoints'", defaultRegion)
-				logrus.WithError(err).Error("unable to resolve partition for region: %s", defaultRegion)
+				err = fmt.Errorf(
+					"the custom region '%s' must be specified in the configuration 'endpoints'"+
+						" to determine its partition", defaultRegion)
+				logrus.WithError(err).Errorf("unable to resolve partition for region: %s", defaultRegion)
 				return err
 			}
 		}

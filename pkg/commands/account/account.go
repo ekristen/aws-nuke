@@ -46,7 +46,7 @@ func execute(c *cli.Context) error {
 				err = fmt.Errorf(
 					"the custom region '%s' must be specified in the configuration 'endpoints'"+
 						" to determine its partition", defaultRegion)
-				logrus.WithError(err).Error("unable to resolve partition for region: %s", defaultRegion)
+				logrus.WithError(err).Errorf("unable to resolve partition for region: %s", defaultRegion)
 				return err
 			}
 		}
