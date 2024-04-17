@@ -39,18 +39,19 @@ func execute(c *cli.Context) error {
 	// Set the default region for the AWS SDK to use.
 	if defaultRegion != "" {
 		awsutil.DefaultRegionID = defaultRegion
-		switch defaultRegion {
-		case endpoints.UsEast1RegionID, endpoints.UsEast2RegionID, endpoints.UsWest1RegionID, endpoints.UsWest2RegionID:
-			awsutil.DefaultAWSPartitionID = endpoints.AwsPartitionID
-		case endpoints.UsGovEast1RegionID, endpoints.UsGovWest1RegionID:
-			awsutil.DefaultAWSPartitionID = endpoints.AwsUsGovPartitionID
-		default:
+
+		partition, ok := endpoints.PartitionForRegion(endpoints.DefaultPartitions(), defaultRegion)
+		if !ok {
 			if parsedConfig.CustomEndpoints.GetRegion(defaultRegion) == nil {
-				err = fmt.Errorf("the custom region '%s' must be specified in the configuration 'endpoints'", defaultRegion)
-				logrus.Error(err.Error())
+				err = fmt.Errorf(
+					"the custom region '%s' must be specified in the configuration 'endpoints'"+
+						" to determine its partition", defaultRegion)
+				logrus.WithError(err).Errorf("unable to resolve partition for region: %s", defaultRegion)
 				return err
 			}
 		}
+
+		awsutil.DefaultAWSPartitionID = partition.ID()
 	}
 
 	// Create the AWS Account object. This will be used to get the account ID and aliases for the account.
