@@ -30,5 +30,6 @@
             "depNameTemplate": "golang",
             "datasourceTemplate": "docker"
         }
-    ]
+    ],
+    "gitIgnoredAuthors": ["github-actions@github.com"]
 }
