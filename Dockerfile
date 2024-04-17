@@ -12,7 +12,7 @@ RUN \
   --mount=type=cache,target=/root/.cache/go-build \
   go build -ldflags '-s -w -extldflags="-static"' -o bin/aws-nuke main.go
 
-FROM base AS gorelease
+FROM base AS goreleaser
 ENTRYPOINT ["/usr/local/bin/aws-nuke"]
 COPY aws-nuke /usr/local/bin/aws-nuke
 USER aws-nuke
