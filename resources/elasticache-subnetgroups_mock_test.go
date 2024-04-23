@@ -1,6 +1,7 @@
 package resources
 
 import (
+	"context"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -25,9 +26,11 @@ func Test_Mock_ElastiCache_SubnetGroup_Remove(t *testing.T) {
 		name: aws.String("foobar"),
 	}
 
-	mockElastiCache.EXPECT().DeleteCacheSubnetGroup(gomock.Any()).Return(&elasticache.DeleteCacheSubnetGroupOutput{}, nil)
+	mockElastiCache.EXPECT().DeleteCacheSubnetGroup(&elasticache.DeleteCacheSubnetGroupInput{
+		CacheSubnetGroupName: aws.String("foobar"),
+	}).Return(&elasticache.DeleteCacheSubnetGroupOutput{}, nil)
 
-	err := subnetGroup.Remove(nil)
+	err := subnetGroup.Remove(context.TODO())
 	a.Nil(err)
 	a.Equal("foobar", *subnetGroup.name)
 }
@@ -55,7 +58,7 @@ func Test_Mock_ElastiCache_SubnetGroup_List_NoTags(t *testing.T) {
 		ResourceName: aws.String("foobar"),
 	}).Return(&elasticache.TagListMessage{}, nil)
 
-	resources, err := subnetGroupsLister.List(nil, &nuke.ListerOpts{})
+	resources, err := subnetGroupsLister.List(context.TODO(), &nuke.ListerOpts{})
 	a.Nil(err)
 	a.Len(resources, 1)
 
@@ -99,7 +102,7 @@ func Test_Mock_ElastiCache_SubnetGroup_List_WithTags(t *testing.T) {
 		},
 	}, nil)
 
-	resources, err := subnetGroupsLister.List(nil, &nuke.ListerOpts{})
+	resources, err := subnetGroupsLister.List(context.TODO(), &nuke.ListerOpts{})
 	a.Nil(err)
 
 	a.Len(resources, 1)

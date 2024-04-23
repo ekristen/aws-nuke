@@ -1,13 +1,17 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/elasticache"
-	"github.com/ekristen/aws-nuke/mocks/mock_elasticacheiface"
-	"github.com/ekristen/aws-nuke/pkg/nuke"
+	"context"
+	"testing"
+
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"testing"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/elasticache"
+
+	"github.com/ekristen/aws-nuke/mocks/mock_elasticacheiface"
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 func Test_Mock_ElastiCache_CacheCluster_Remove(t *testing.T) {
@@ -26,7 +30,7 @@ func Test_Mock_ElastiCache_CacheCluster_Remove(t *testing.T) {
 		CacheClusterId: aws.String("foobar"),
 	}).Return(&elasticache.DeleteCacheClusterOutput{}, nil)
 
-	err := cacheCluster.Remove(nil)
+	err := cacheCluster.Remove(context.TODO())
 	a.Nil(err)
 }
 
@@ -54,7 +58,7 @@ func Test_Mock_ElastiCache_CacheCluster_List_NoTags(t *testing.T) {
 		ResourceName: aws.String("foobar"),
 	}).Return(&elasticache.TagListMessage{}, nil)
 
-	resources, err := cacheClusterLister.List(nil, &nuke.ListerOpts{})
+	resources, err := cacheClusterLister.List(context.TODO(), &nuke.ListerOpts{})
 	a.Nil(err)
 	a.Len(resources, 1)
 
@@ -96,7 +100,7 @@ func Test_Mock_ElastiCache_CacheCluster_List_WithTags(t *testing.T) {
 		},
 	}, nil)
 
-	resources, err := cacheClusterLister.List(nil, &nuke.ListerOpts{})
+	resources, err := cacheClusterLister.List(context.TODO(), &nuke.ListerOpts{})
 	a.Nil(err)
 	a.Len(resources, 1)
 
@@ -105,5 +109,4 @@ func Test_Mock_ElastiCache_CacheCluster_List_WithTags(t *testing.T) {
 	a.Equal("foobar", resource.String())
 	a.Equal("foobar", resource.Properties().Get("tag:Name"))
 	a.Equal("test", resource.Properties().Get("tag:aws-nuke"))
-
 }
