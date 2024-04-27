@@ -3,11 +3,15 @@ package resources
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/servicediscovery"
+	"github.com/aws/aws-sdk-go/service/servicediscovery/servicediscoveryiface"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
@@ -22,12 +26,20 @@ func init() {
 	})
 }
 
-type ServiceDiscoveryNamespaceLister struct{}
+type ServiceDiscoveryNamespaceLister struct {
+	mockSvc servicediscoveryiface.ServiceDiscoveryAPI
+}
 
 func (l *ServiceDiscoveryNamespaceLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 
-	svc := servicediscovery.New(opts.Session)
+	var svc servicediscoveryiface.ServiceDiscoveryAPI
+	if l.mockSvc != nil {
+		svc = l.mockSvc
+	} else {
+		svc = servicediscovery.New(opts.Session)
+	}
+
 	resources := make([]resource.Resource, 0)
 
 	params := &servicediscovery.ListNamespacesInput{
@@ -43,9 +55,21 @@ func (l *ServiceDiscoveryNamespaceLister) List(_ context.Context, o interface{})
 		}
 
 		for _, namespace := range output.Namespaces {
+			var tags []*servicediscovery.Tag
+			tagsOutput, err := svc.ListTagsForResource(&servicediscovery.ListTagsForResourceInput{
+				ResourceARN: namespace.Arn,
+			})
+			if err != nil {
+				logrus.WithError(err).Error("unable to list tags for namespace")
+			}
+			if tagsOutput.Tags != nil {
+				tags = tagsOutput.Tags
+			}
+
 			resources = append(resources, &ServiceDiscoveryNamespace{
-				svc: svc,
-				ID:  namespace.Id,
+				svc:  svc,
+				ID:   namespace.Id,
+				tags: tags,
 			})
 		}
 
@@ -60,8 +84,9 @@ func (l *ServiceDiscoveryNamespaceLister) List(_ context.Context, o interface{})
 }
 
 type ServiceDiscoveryNamespace struct {
-	svc *servicediscovery.ServiceDiscovery
-	ID  *string
+	svc  servicediscoveryiface.ServiceDiscoveryAPI
+	ID   *string
+	tags []*servicediscovery.Tag
 }
 
 func (f *ServiceDiscoveryNamespace) Remove(_ context.Context) error {
@@ -74,4 +99,15 @@ func (f *ServiceDiscoveryNamespace) Remove(_ context.Context) error {
 
 func (f *ServiceDiscoveryNamespace) String() string {
 	return *f.ID
+}
+
+func (f *ServiceDiscoveryNamespace) Properties() types.Properties {
+	properties := types.NewProperties()
+	properties.Set("ID", f.ID)
+
+	for _, tag := range f.tags {
+		properties.SetTag(tag.Key, tag.Value)
+	}
+
+	return properties
 }
