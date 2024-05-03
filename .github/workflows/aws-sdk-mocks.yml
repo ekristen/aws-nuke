@@ -1,11 +1,7 @@
 name: aws-sdk-update-mocks
 
 on:
-  pull_request:
-    types:
-      - opened
-      - edited
-      - synchronize
+  push:
     branches:
       - 'renovate/aws-sdk-go-monorepo'
 
