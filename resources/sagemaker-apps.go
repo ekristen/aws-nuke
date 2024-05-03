@@ -50,6 +50,7 @@ func (l *SageMakerAppLister) List(_ context.Context, o interface{}) ([]resource.
 				appName:         app.AppName,
 				appType:         app.AppType,
 				userProfileName: app.UserProfileName,
+				spaceName:       app.SpaceName,
 				status:          app.Status,
 			})
 		}
@@ -70,6 +71,7 @@ type SageMakerApp struct {
 	appName         *string
 	appType         *string
 	userProfileName *string
+	spaceName       *string
 	status          *string
 }
 
@@ -79,6 +81,7 @@ func (f *SageMakerApp) Remove(_ context.Context) error {
 		AppName:         f.appName,
 		AppType:         f.appType,
 		UserProfileName: f.userProfileName,
+		SpaceName:       f.spaceName,
 	})
 
 	return err
@@ -94,7 +97,8 @@ func (f *SageMakerApp) Properties() types.Properties {
 		Set("DomainID", f.domainID).
 		Set("AppName", f.appName).
 		Set("AppType", f.appType).
-		Set("UserProfileName", f.userProfileName)
+		Set("UserProfileName", f.userProfileName).
+		Set("SpaceName", f.spaceName)
 	return properties
 }
 
