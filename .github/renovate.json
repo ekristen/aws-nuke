@@ -31,5 +31,8 @@
             "datasourceTemplate": "docker"
         }
     ],
-    "gitIgnoredAuthors": ["github-actions@github.com"]
+    "gitIgnoredAuthors": [
+        "github-actions@github.com",
+        "169176299+ekristen-dev[bot]@users.noreply.github.com"
+    ]
 }
