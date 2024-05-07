@@ -34,7 +34,7 @@ jobs:
       - name: git-commit
         run: |
           git config --global user.name 'ekristen-dev[bot]'
-          git config --global user.email '50484080+ekristen-dev[bot]@users.noreply.github.com'
+          git config --global user.email '169176299+ekristen-dev[bot]@users.noreply.github.com'
           git add .
           git commit -a -m 'chore: update mocks'
       - name: git-push
