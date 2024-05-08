@@ -13,6 +13,7 @@ jobs:
   go-generate:
     name: go-generate
     runs-on: ubuntu-latest
+    if: github.actor == 'renovate[bot]'
     steps:
       - uses: actions/checkout@v4
         with:
