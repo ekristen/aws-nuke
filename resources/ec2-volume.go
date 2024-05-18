@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"time"
 
 	"github.com/aws/aws-sdk-go/service/ec2"
 
@@ -60,6 +61,7 @@ func (e *EC2Volume) Remove(_ context.Context) error {
 func (e *EC2Volume) Properties() types.Properties {
 	properties := types.NewProperties()
 	properties.Set("State", e.volume.State)
+	properties.Set("CreateTime", e.volume.CreateTime.Format(time.RFC3339))
 	for _, tagValue := range e.volume.Tags {
 		properties.SetTag(tagValue.Key, tagValue.Value)
 	}

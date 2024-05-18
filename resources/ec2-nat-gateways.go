@@ -3,6 +3,7 @@ package resources
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/gotidy/ptr"
 
@@ -79,6 +80,7 @@ func (n *EC2NATGateway) Remove(_ context.Context) error {
 
 func (n *EC2NATGateway) Properties() types.Properties {
 	properties := types.NewProperties()
+	properties.Set("CreateTime", n.natgw.CreateTime.Format(time.RFC3339))
 	for _, tagValue := range n.natgw.Tags {
 		properties.SetTag(tagValue.Key, tagValue.Value)
 	}
