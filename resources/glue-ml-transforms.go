@@ -1,10 +1,17 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
+
 	"github.com/aws/aws-sdk-go/service/glue"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/registry"
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 type GlueMLTransform struct {
@@ -12,13 +19,23 @@ type GlueMLTransform struct {
 	id  *string
 }
 
+const GlueMLTransformResource = "GlueMLTransform"
+
 func init() {
-	register("GlueMLTransform", ListGlueMLTransforms)
+	registry.Register(&registry.Registration{
+		Name:   GlueMLTransformResource,
+		Scope:  nuke.Account,
+		Lister: &GlueMLTransformLister{},
+	})
 }
 
-func ListGlueMLTransforms(sess *session.Session) ([]Resource, error) {
-	svc := glue.New(sess)
-	resources := []Resource{}
+type GlueMLTransformLister struct{}
+
+func (l *GlueMLTransformLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := glue.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &glue.ListMLTransformsInput{
 		MaxResults: aws.Int64(100),
@@ -30,10 +47,10 @@ func ListGlueMLTransforms(sess *session.Session) ([]Resource, error) {
 			return nil, err
 		}
 
-		for _, transformId := range output.TransformIds {
+		for _, transformID := range output.TransformIds {
 			resources = append(resources, &GlueMLTransform{
 				svc: svc,
-				id:  transformId,
+				id:  transformID,
 			})
 		}
 
@@ -47,7 +64,7 @@ func ListGlueMLTransforms(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *GlueMLTransform) Remove() error {
+func (f *GlueMLTransform) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteMLTransform(&glue.DeleteMLTransformInput{
 		TransformId: f.id,
 	})
@@ -57,7 +74,7 @@ func (f *GlueMLTransform) Remove() error {
 
 func (f *GlueMLTransform) Properties() types.Properties {
 	properties := types.NewProperties()
-	properties.Set("Id", f.id)
+	properties.Set("ID", f.id)
 
 	return properties
 }

@@ -1,10 +1,17 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
+
 	"github.com/aws/aws-sdk-go/service/glue"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/registry"
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 type GlueWorkflow struct {
@@ -12,13 +19,23 @@ type GlueWorkflow struct {
 	name *string
 }
 
+const GlueWorkflowResource = "GlueWorkflow"
+
 func init() {
-	register("GlueWorkflow", ListGlueWorkflows)
+	registry.Register(&registry.Registration{
+		Name:   GlueWorkflowResource,
+		Scope:  nuke.Account,
+		Lister: &GlueWorkflowLister{},
+	})
 }
 
-func ListGlueWorkflows(sess *session.Session) ([]Resource, error) {
-	svc := glue.New(sess)
-	resources := []Resource{}
+type GlueWorkflowLister struct{}
+
+func (l *GlueWorkflowLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := glue.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &glue.ListWorkflowsInput{
 		MaxResults: aws.Int64(25),
@@ -47,7 +64,7 @@ func ListGlueWorkflows(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *GlueWorkflow) Remove() error {
+func (f *GlueWorkflow) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteWorkflow(&glue.DeleteWorkflowInput{
 		Name: f.name,
 	})

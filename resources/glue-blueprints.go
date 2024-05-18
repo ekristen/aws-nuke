@@ -1,10 +1,17 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
+
 	"github.com/aws/aws-sdk-go/service/glue"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/registry"
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 type GlueBlueprint struct {
@@ -12,13 +19,23 @@ type GlueBlueprint struct {
 	name *string
 }
 
+const GlueBlueprintResource = "GlueBlueprint"
+
 func init() {
-	register("GlueBlueprint", ListGlueBlueprints)
+	registry.Register(&registry.Registration{
+		Name:   GlueBlueprintResource,
+		Scope:  nuke.Account,
+		Lister: &GlueBlueprintLister{},
+	})
 }
 
-func ListGlueBlueprints(sess *session.Session) ([]Resource, error) {
-	svc := glue.New(sess)
-	resources := []Resource{}
+type GlueBlueprintLister struct{}
+
+func (l *GlueBlueprintLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := glue.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &glue.ListBlueprintsInput{
 		MaxResults: aws.Int64(25),
@@ -47,7 +64,7 @@ func ListGlueBlueprints(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *GlueBlueprint) Remove() error {
+func (f *GlueBlueprint) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteBlueprint(&glue.DeleteBlueprintInput{
 		Name: f.name,
 	})

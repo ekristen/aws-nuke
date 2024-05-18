@@ -1,10 +1,17 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
+
 	"github.com/aws/aws-sdk-go/service/glue"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/registry"
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
 
 type GlueSession struct {
@@ -12,13 +19,23 @@ type GlueSession struct {
 	id  *string
 }
 
+const GlueSessionResource = "GlueSession"
+
 func init() {
-	register("GlueSession", ListGlueSessions)
+	registry.Register(&registry.Registration{
+		Name:   GlueSessionResource,
+		Scope:  nuke.Account,
+		Lister: &GlueSessionLister{},
+	})
 }
 
-func ListGlueSessions(sess *session.Session) ([]Resource, error) {
-	svc := glue.New(sess)
-	resources := []Resource{}
+type GlueSessionLister struct{}
+
+func (l *GlueSessionLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := glue.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &glue.ListSessionsInput{
 		MaxResults: aws.Int64(25),
@@ -47,7 +64,7 @@ func ListGlueSessions(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *GlueSession) Remove() error {
+func (f *GlueSession) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteSession(&glue.DeleteSessionInput{
 		Id: f.id,
 	})
@@ -57,7 +74,7 @@ func (f *GlueSession) Remove() error {
 
 func (f *GlueSession) Properties() types.Properties {
 	properties := types.NewProperties()
-	properties.Set("Id", f.id)
+	properties.Set("ID", f.id)
 
 	return properties
 }
