@@ -2,7 +2,6 @@ package resources
 
 import (
 	"context"
-
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -10,6 +9,7 @@ import (
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/pkg/nuke"
 )
@@ -69,6 +69,10 @@ func (f *ConfigServiceConfigRule) Filter() error {
 		return fmt.Errorf("cannot remove rule owned by securityhub.amazonaws.com")
 	}
 
+	if aws.StringValue(f.createdBy) == "config-conforms.amazonaws.com" {
+		return fmt.Errorf("cannot remove rule owned by config-conforms.amazonaws.com")
+	}
+
 	return nil
 }
 
@@ -82,4 +86,10 @@ func (f *ConfigServiceConfigRule) Remove(_ context.Context) error {
 
 func (f *ConfigServiceConfigRule) String() string {
 	return *f.configRuleName
+}
+
+func (f *ConfigServiceConfigRule) Properties() types.Properties {
+	props := types.NewProperties()
+	props.Set("CreatedBy", f.createdBy)
+	return props
 }
