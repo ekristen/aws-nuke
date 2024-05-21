@@ -3,6 +3,7 @@ package resources
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -72,6 +73,13 @@ type CloudFormationStack struct {
 	stack             *cloudformation.Stack
 	maxDeleteAttempts int
 	settings          *settings.Setting
+}
+
+func (cfs *CloudFormationStack) Filter() error {
+	if *cfs.stack.Description == "DO NOT MODIFY THIS STACK! This stack is managed by Config Conformance Packs." {
+		return fmt.Errorf("stack is managed by Config Conformance Packs")
+	}
+	return nil
 }
 
 func (cfs *CloudFormationStack) Settings(setting *settings.Setting) {
