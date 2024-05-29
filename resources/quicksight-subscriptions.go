@@ -27,15 +27,15 @@ func init() {
 	})
 }
 
-type QuickSightSubscriptionLister struct{
-	stsService stsiface.STSAPI
+type QuickSightSubscriptionLister struct {
+	stsService        stsiface.STSAPI
 	quicksightService quicksightiface.QuickSightAPI
 }
 
 type QuicksightSubscription struct {
 	svc               quicksightiface.QuickSightAPI
 	accountId         *string
-	name  			  *string
+	name              *string
 	notificationEmail *string
 	edition           *string
 	status            *string
@@ -43,7 +43,7 @@ type QuicksightSubscription struct {
 
 func (listener *QuickSightSubscriptionLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
-	
+
 	var stsSvc stsiface.STSAPI
 	if listener.stsService != nil {
 		stsSvc = listener.stsService
@@ -57,7 +57,7 @@ func (listener *QuickSightSubscriptionLister) List(_ context.Context, o interfac
 	} else {
 		quicksightSvc = quicksight.New(opts.Session)
 	}
-	
+
 	callerID, err := stsSvc.GetCallerIdentity(&sts.GetCallerIdentityInput{})
 	if err != nil {
 		return nil, err
@@ -87,7 +87,7 @@ func (listener *QuickSightSubscriptionLister) List(_ context.Context, o interfac
 	resources = append(resources, &QuicksightSubscription{
 		svc:               quicksightSvc,
 		accountId:         accountId,
-		name:			   &subscriptionName,
+		name:              &subscriptionName,
 		notificationEmail: describeSubscriptionOutput.AccountInfo.NotificationEmail,
 		edition:           describeSubscriptionOutput.AccountInfo.Edition,
 		status:            describeSubscriptionOutput.AccountInfo.AccountSubscriptionStatus,

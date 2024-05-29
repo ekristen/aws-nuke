@@ -18,24 +18,21 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-
-
 func Test_Mock_QuicksightSubscription_List_ValidSubscription(t *testing.T) {
 	assert := assert.New(t)
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	accountID := "123456789012"
-	quickSightAccountInfo := quicksight.AccountInfo {
-			AccountName: aws.String("AccountName"),
-			NotificationEmail: aws.String("notification@email.com"),
-			Edition: aws.String("Edition"),
-			AccountSubscriptionStatus: aws.String("ACCOUNT_CREATED"),
-		}
+	quickSightAccountInfo := quicksight.AccountInfo{
+		AccountName:               aws.String("AccountName"),
+		NotificationEmail:         aws.String("notification@email.com"),
+		Edition:                   aws.String("Edition"),
+		AccountSubscriptionStatus: aws.String("ACCOUNT_CREATED"),
+	}
 	mockQuickSightAPI := mock_quicksightiface.NewMockQuickSightAPI(ctrl)
 	mockSTSAPI := mock_stsiface.NewMockSTSAPI(ctrl)
 
-	
 	mockSTSAPI.EXPECT().GetCallerIdentity(&sts.GetCallerIdentityInput{}).Return(&sts.GetCallerIdentityOutput{
 		Account: &accountID,
 	}, nil)
@@ -48,7 +45,7 @@ func Test_Mock_QuicksightSubscription_List_ValidSubscription(t *testing.T) {
 
 	quicksightSubscriptionListener := QuickSightSubscriptionLister{
 		quicksightService: mockQuickSightAPI,
-		stsService: mockSTSAPI,
+		stsService:        mockSTSAPI,
 	}
 
 	resources, err := quicksightSubscriptionListener.List(context.TODO(), &nuke.ListerOpts{})
@@ -75,7 +72,6 @@ func Test_Mock_QuicksightSubscription_List_SubscriptionNotFound(t *testing.T) {
 	mockQuickSightAPI := mock_quicksightiface.NewMockQuickSightAPI(ctrl)
 	mockSTSAPI := mock_stsiface.NewMockSTSAPI(ctrl)
 
-	
 	mockSTSAPI.EXPECT().GetCallerIdentity(&sts.GetCallerIdentityInput{}).Return(&sts.GetCallerIdentityOutput{
 		Account: &accountID,
 	}, nil)
@@ -86,7 +82,7 @@ func Test_Mock_QuicksightSubscription_List_SubscriptionNotFound(t *testing.T) {
 
 	quicksightSubscriptionListener := QuickSightSubscriptionLister{
 		quicksightService: mockQuickSightAPI,
-		stsService: mockSTSAPI,
+		stsService:        mockSTSAPI,
 	}
 
 	resources, err := quicksightSubscriptionListener.List(context.TODO(), &nuke.ListerOpts{})
@@ -101,17 +97,16 @@ func Test_Mock_QuicksightSubscription_List_ErrorOnSTS(t *testing.T) {
 
 	mockQuickSightAPI := mock_quicksightiface.NewMockQuickSightAPI(ctrl)
 	mockSTSAPI := mock_stsiface.NewMockSTSAPI(ctrl)
-	
-	mockSTSAPI.EXPECT().GetCallerIdentity(&sts.GetCallerIdentityInput{}).Return(nil, errors.New("MOCK_ERROR"))
 
+	mockSTSAPI.EXPECT().GetCallerIdentity(&sts.GetCallerIdentityInput{}).Return(nil, errors.New("MOCK_ERROR"))
 
 	quicksightSubscriptionListener := QuickSightSubscriptionLister{
 		quicksightService: mockQuickSightAPI,
-		stsService: mockSTSAPI,
+		stsService:        mockSTSAPI,
 	}
 
 	resources, err := quicksightSubscriptionListener.List(context.TODO(), &nuke.ListerOpts{})
-	assert.EqualError(err,"MOCK_ERROR")
+	assert.EqualError(err, "MOCK_ERROR")
 	assert.Nil(resources)
 }
 
@@ -125,7 +120,6 @@ func Test_Mock_QuicksightSubscription_List_ErrorOnQuicksight(t *testing.T) {
 	mockQuickSightAPI := mock_quicksightiface.NewMockQuickSightAPI(ctrl)
 	mockSTSAPI := mock_stsiface.NewMockSTSAPI(ctrl)
 
-	
 	mockSTSAPI.EXPECT().GetCallerIdentity(&sts.GetCallerIdentityInput{}).Return(&sts.GetCallerIdentityOutput{
 		Account: &accountID,
 	}, nil)
@@ -136,11 +130,11 @@ func Test_Mock_QuicksightSubscription_List_ErrorOnQuicksight(t *testing.T) {
 
 	quicksightSubscriptionListener := QuickSightSubscriptionLister{
 		quicksightService: mockQuickSightAPI,
-		stsService: mockSTSAPI,
+		stsService:        mockSTSAPI,
 	}
 
 	resources, err := quicksightSubscriptionListener.List(context.TODO(), &nuke.ListerOpts{})
-	assert.EqualError(err,"MOCK_ERROR")
+	assert.EqualError(err, "MOCK_ERROR")
 	assert.Nil(resources)
 }
 
@@ -156,24 +150,23 @@ func Test_Mock_QuicksightSubscription_Remove(t *testing.T) {
 	subscriptionEdition := aws.String("Edition")
 	subscriptionStatus := aws.String("ACCOUNT_CREATED")
 
-
 	mockQuickSightAPI := mock_quicksightiface.NewMockQuickSightAPI(ctrl)
 
 	mockQuickSightAPI.EXPECT().DescribeAccountSettings(&quicksight.DescribeAccountSettingsInput{
 		AwsAccountId: &accountID,
 	}).Return(&quicksight.DescribeAccountSettingsOutput{
 		AccountSettings: &quicksight.AccountSettings{
-			DefaultNamespace: subscriptionDefaultNamespace,
-			NotificationEmail: subscriptionNotificationEmail,
+			DefaultNamespace:             subscriptionDefaultNamespace,
+			NotificationEmail:            subscriptionNotificationEmail,
 			TerminationProtectionEnabled: aws.Bool(true),
 		},
 	}, nil)
 
 	mockQuickSightAPI.EXPECT().UpdateAccountSettings(&quicksight.UpdateAccountSettingsInput{
-			AwsAccountId:                 &accountID,
-			DefaultNamespace:             subscriptionDefaultNamespace,
-			NotificationEmail:            subscriptionNotificationEmail,
-			TerminationProtectionEnabled: aws.Bool(false),
+		AwsAccountId:                 &accountID,
+		DefaultNamespace:             subscriptionDefaultNamespace,
+		NotificationEmail:            subscriptionNotificationEmail,
+		TerminationProtectionEnabled: aws.Bool(false),
 	}).Return(&quicksight.UpdateAccountSettingsOutput{}, nil).Times(1)
 
 	mockQuickSightAPI.EXPECT().DeleteAccountSubscription(&quicksight.DeleteAccountSubscriptionInput{
@@ -181,16 +174,16 @@ func Test_Mock_QuicksightSubscription_Remove(t *testing.T) {
 	}).Return(&quicksight.DeleteAccountSubscriptionOutput{}, nil).Times(1)
 
 	quicksightSubscription := QuicksightSubscription{
-		svc: mockQuickSightAPI,
-		accountId: &accountID,
-		name: subscriptionName,
+		svc:               mockQuickSightAPI,
+		accountId:         &accountID,
+		name:              subscriptionName,
 		notificationEmail: subscriptionNotificationEmail,
-		edition: subscriptionEdition,
-		status: subscriptionStatus,
+		edition:           subscriptionEdition,
+		status:            subscriptionStatus,
 	}
 
 	err := quicksightSubscription.Remove(context.TODO())
-	
+
 	assert.Nil(err)
 }
 
@@ -206,24 +199,23 @@ func Test_Mock_QuicksightSubscription_NoTerminationUpdatedNeeded(t *testing.T) {
 	subscriptionEdition := aws.String("Edition")
 	subscriptionStatus := aws.String("ACCOUNT_CREATED")
 
-
 	mockQuickSightAPI := mock_quicksightiface.NewMockQuickSightAPI(ctrl)
 
 	mockQuickSightAPI.EXPECT().DescribeAccountSettings(&quicksight.DescribeAccountSettingsInput{
 		AwsAccountId: &accountID,
 	}).Return(&quicksight.DescribeAccountSettingsOutput{
 		AccountSettings: &quicksight.AccountSettings{
-			DefaultNamespace: subscriptionDefaultNamespace,
-			NotificationEmail: subscriptionNotificationEmail,
+			DefaultNamespace:             subscriptionDefaultNamespace,
+			NotificationEmail:            subscriptionNotificationEmail,
 			TerminationProtectionEnabled: aws.Bool(false),
 		},
 	}, nil)
 
 	mockQuickSightAPI.EXPECT().UpdateAccountSettings(&quicksight.UpdateAccountSettingsInput{
-			AwsAccountId:                 &accountID,
-			DefaultNamespace:             subscriptionDefaultNamespace,
-			NotificationEmail:            subscriptionNotificationEmail,
-			TerminationProtectionEnabled: aws.Bool(false),
+		AwsAccountId:                 &accountID,
+		DefaultNamespace:             subscriptionDefaultNamespace,
+		NotificationEmail:            subscriptionNotificationEmail,
+		TerminationProtectionEnabled: aws.Bool(false),
 	}).Return(&quicksight.UpdateAccountSettingsOutput{}, nil).Times(0)
 
 	mockQuickSightAPI.EXPECT().DeleteAccountSubscription(&quicksight.DeleteAccountSubscriptionInput{
@@ -231,16 +223,16 @@ func Test_Mock_QuicksightSubscription_NoTerminationUpdatedNeeded(t *testing.T) {
 	}).Return(&quicksight.DeleteAccountSubscriptionOutput{}, nil).Times(1)
 
 	quicksightSubscription := QuicksightSubscription{
-		svc: mockQuickSightAPI,
-		accountId: &accountID,
-		name: subscriptionName,
+		svc:               mockQuickSightAPI,
+		accountId:         &accountID,
+		name:              subscriptionName,
 		notificationEmail: subscriptionNotificationEmail,
-		edition: subscriptionEdition,
-		status: subscriptionStatus,
+		edition:           subscriptionEdition,
+		status:            subscriptionStatus,
 	}
 
 	err := quicksightSubscription.Remove(context.TODO())
-	
+
 	assert.Nil(err)
 }
 
@@ -253,17 +245,16 @@ func Test_Mock_QuicksightSubscription_Filter(t *testing.T) {
 	subscriptionEdition := aws.String("Edition")
 	subscriptionStatus := aws.String("ACCOUNT_CREATED")
 
-
 	quicksightSubscription := QuicksightSubscription{
-		accountId: &accountID,
-		name: subscriptionName,
+		accountId:         &accountID,
+		name:              subscriptionName,
 		notificationEmail: subscriptionNotificationEmail,
-		edition: subscriptionEdition,
-		status: subscriptionStatus,
+		edition:           subscriptionEdition,
+		status:            subscriptionStatus,
 	}
 
 	err := quicksightSubscription.Filter()
-	
+
 	assert.Nil(err)
 }
 
@@ -276,18 +267,17 @@ func Test_Mock_QuicksightSubscription_Filter_Status(t *testing.T) {
 	subscriptionEdition := aws.String("Edition")
 	subscriptionStatus := aws.String("UNSUBSCRIBED")
 
-
 	quicksightSubscription := QuicksightSubscription{
-		accountId: &accountID,
-		name: subscriptionName,
+		accountId:         &accountID,
+		name:              subscriptionName,
 		notificationEmail: subscriptionNotificationEmail,
-		edition: subscriptionEdition,
-		status: subscriptionStatus,
+		edition:           subscriptionEdition,
+		status:            subscriptionStatus,
 	}
 
 	err := quicksightSubscription.Filter()
-	
-	assert.EqualError(err,"subscription is not active")
+
+	assert.EqualError(err, "subscription is not active")
 }
 
 func Test_Mock_QuicksightSubscription_Filter_Name(t *testing.T) {
@@ -299,16 +289,15 @@ func Test_Mock_QuicksightSubscription_Filter_Name(t *testing.T) {
 	subscriptionEdition := aws.String("Edition")
 	subscriptionStatus := aws.String("ACCOUNT_CREATED")
 
-
 	quicksightSubscription := QuicksightSubscription{
-		accountId: &accountID,
-		name: subscriptionName,
+		accountId:         &accountID,
+		name:              subscriptionName,
 		notificationEmail: subscriptionNotificationEmail,
-		edition: subscriptionEdition,
-		status: subscriptionStatus,
+		edition:           subscriptionEdition,
+		status:            subscriptionStatus,
 	}
 
 	err := quicksightSubscription.Filter()
-	
-	assert.EqualError(err,"subscription name is not available yet")
+
+	assert.EqualError(err, "subscription name is not available yet")
 }
