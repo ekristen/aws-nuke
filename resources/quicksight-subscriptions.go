@@ -16,12 +16,12 @@ import (
 	"github.com/ekristen/libnuke/pkg/types"
 )
 
-const quickSightSubscriptionResource = "QuicksightSubscription"
+const QuickSightSubscriptionResource = "QuickSightSubscription"
 const subscriptionNameWhenNotAvailable = "NOT_AVAILABLE"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   quickSightSubscriptionResource,
+		Name:   QuickSightSubscriptionResource,
 		Scope:  nuke.Account,
 		Lister: &QuickSightSubscriptionLister{},
 	})
@@ -41,19 +41,19 @@ type QuicksightSubscription struct {
 	status            *string
 }
 
-func (listener *QuickSightSubscriptionLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *QuickSightSubscriptionLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 
 	var stsSvc stsiface.STSAPI
-	if listener.stsService != nil {
-		stsSvc = listener.stsService
+	if l.stsService != nil {
+		stsSvc = l.stsService
 	} else {
 		stsSvc = sts.New(opts.Session)
 	}
 
 	var quicksightSvc quicksightiface.QuickSightAPI
-	if listener.quicksightService != nil {
-		quicksightSvc = listener.quicksightService
+	if l.quicksightService != nil {
+		quicksightSvc = l.quicksightService
 	} else {
 		quicksightSvc = quicksight.New(opts.Session)
 	}
@@ -96,7 +96,7 @@ func (listener *QuickSightSubscriptionLister) List(_ context.Context, o interfac
 	return resources, nil
 }
 
-func (subscription *QuicksightSubscription) Remove(_ context.Context) error {
+func (s *QuicksightSubscription) Remove(_ context.Context) error {
 	terminateProtectionEnabled := false
 
 	describeSettingsOutput, err := subscription.svc.DescribeAccountSettings(&quicksight.DescribeAccountSettingsInput{
@@ -130,7 +130,7 @@ func (subscription *QuicksightSubscription) Remove(_ context.Context) error {
 	return nil
 }
 
-func (subscription *QuicksightSubscription) Properties() types.Properties {
+func (r *QuicksightSubscription) Properties() types.Properties {
 	properties := types.NewProperties()
 	properties.Set("Edition", subscription.edition).
 		Set("NotificationEmail", subscription.notificationEmail).
@@ -140,17 +140,17 @@ func (subscription *QuicksightSubscription) Properties() types.Properties {
 	return properties
 }
 
-func (subscription *QuicksightSubscription) String() string {
+func (r *QuicksightSubscription) String() string {
 	return *subscription.name
 }
 
-func (subscription *QuicksightSubscription) Filter() error {
-	if *subscription.status != "ACCOUNT_CREATED" {
+func (r *QuicksightSubscription) Filter() error {
+	if *r.status != "ACCOUNT_CREATED" {
 		return fmt.Errorf("subscription is not active")
 	}
 
 	//Since the subscription name is an important value to identify the resource, it will wait till it is available
-	if *subscription.name == subscriptionNameWhenNotAvailable {
+	if *r.name == subscriptionNameWhenNotAvailable {
 		return fmt.Errorf("subscription name is not available yet")
 	}
 	return nil
