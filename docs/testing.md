@@ -31,7 +31,7 @@ Currently, there are only two services mocked out for testing, IAM and CloudForm
 To add another service to be mocked out, you will need to do the following:
 
 1. Identify the service in the AWS SDK for Go
-2. Create a new file in the `resources/` directory called `service_mock_test.go`
+2. Create a new file in the `resources/` directory called `<service>_mock_test.go`
 3. Add the following code to the file: (replace `<service>` with actual service name)
     ```go
     //go:generate ../mocks/generate_mocks.sh <service> <service>iface
