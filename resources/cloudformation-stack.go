@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gotidy/ptr"
 	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -76,7 +77,7 @@ type CloudFormationStack struct {
 }
 
 func (cfs *CloudFormationStack) Filter() error {
-	if *cfs.stack.Description == "DO NOT MODIFY THIS STACK! This stack is managed by Config Conformance Packs." {
+	if ptr.ToString(cfs.stack.Description) == "DO NOT MODIFY THIS STACK! This stack is managed by Config Conformance Packs." {
 		return fmt.Errorf("stack is managed by Config Conformance Packs")
 	}
 	return nil
