@@ -24,6 +24,11 @@ To reduce the blast radius of accidents, there are some safety precautions:
        
 4. The account alias must not contain the string `prod`. This string is hardcoded, and it is recommended to add it
    to every actual production account (e.g. `mycompany-production-ecr`).
+
+    !!! note "ProTip"
+        This can be disabled by adding `--no-alias-check` to the command line and
+        [modifying the config accordingly](features/bypass-alias-check.md).
+
 5. The config file contains a blocklist field. If the Account ID of the account you want to nuke is part of this
    blocklist, **aws-nuke** will abort. It is recommended, that you add every production account to this blocklist.
 6. To ensure you don't just ignore the blocklisting feature, the blocklist must contain at least one Account ID.
@@ -34,4 +39,3 @@ To reduce the blast radius of accidents, there are some safety precautions:
    keep up to date.
 
 Feel free to create an issue, if you have any ideas to improve the safety procedures.
-
