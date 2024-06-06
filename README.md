@@ -20,7 +20,7 @@ below for more.
 
 This is not a comprehensive list, but here are some of the highlights:
 
-* New Feature: Signed Darwin Binaries for MacOS
+* New Feature: Signed Darwin Binaries for macOS
 * New Feature: Published Homebrew Tap (ekristen/tap/aws-nuke@3)
 * New Feature: Global Filters
 * New Feature: Run Against All Enabled Regions
@@ -70,7 +70,7 @@ proper unit tests for it.
 
 ## Attribution, License, and Copyright
 
-The rewrite of this tool to use [libnuke](https://github.com/ekristen/libnuke) would not have been posssible without the
+The rewrite of this tool to use [libnuke](https://github.com/ekristen/libnuke) would not have been possible without the
 hard work that came before me on the original tool by the team and contributors over at [rebuy-de](https://github.com/rebuy-de)
 and their original work on [rebuy-de/aws-nuke](https://github.com/rebuy-de/aws-nuke).
 
