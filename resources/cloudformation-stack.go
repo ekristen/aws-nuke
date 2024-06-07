@@ -32,6 +32,9 @@ func init() {
 		Name:   CloudFormationStackResource,
 		Scope:  nuke.Account,
 		Lister: &CloudFormationStackLister{},
+		Settings: []string{
+			"DisableDeletionProtection",
+		},
 	})
 }
 

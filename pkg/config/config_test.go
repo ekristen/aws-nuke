@@ -370,7 +370,7 @@ func TestConfig_DeprecatedFeatureFlags(t *testing.T) {
 	assert.NotNil(t, rdsInstanceSettings)
 	assert.Equal(t, true, rdsInstanceSettings.Get("DisableDeletionProtection"))
 
-	cloudformationStackSettings := c.Settings.Get("CloudformationStack")
+	cloudformationStackSettings := c.Settings.Get("CloudFormationStack")
 	assert.NotNil(t, cloudformationStackSettings)
 	assert.Equal(t, true, cloudformationStackSettings.Get("DisableDeletionProtection"))
 }
