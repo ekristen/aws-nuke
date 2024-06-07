@@ -151,7 +151,7 @@ func (c *Config) ResolveDeprecatedFeatureFlags() {
 			})
 		}
 		if c.FeatureFlags.DisableDeletionProtection.CloudformationStack {
-			c.Settings.Set("CloudformationStack", &settings.Setting{
+			c.Settings.Set("CloudFormationStack", &settings.Setting{
 				"DisableDeletionProtection": true,
 			})
 		}

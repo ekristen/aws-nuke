@@ -22,6 +22,9 @@ func init() {
 		Name:   RDSInstanceResource,
 		Scope:  nuke.Account,
 		Lister: &RDSInstanceLister{},
+		Settings: []string{
+			"DisableDeletionProtection",
+		},
 	})
 }
 
