@@ -33,6 +33,8 @@ func (l *EC2ImageLister) List(_ context.Context, o interface{}) ([]resource.Reso
 		Owners: []*string{
 			aws.String("self"),
 		},
+		IncludeDeprecated: aws.Bool(true),
+		IncludeDisabled:   aws.Bool(true),
 	}
 	resp, err := svc.DescribeImages(params)
 	if err != nil {
@@ -42,11 +44,13 @@ func (l *EC2ImageLister) List(_ context.Context, o interface{}) ([]resource.Reso
 	resources := make([]resource.Resource, 0)
 	for _, out := range resp.Images {
 		resources = append(resources, &EC2Image{
-			svc:          svc,
-			creationDate: *out.CreationDate,
-			id:           *out.ImageId,
-			name:         *out.Name,
-			tags:         out.Tags,
+			svc:            svc,
+			creationDate:   *out.CreationDate,
+			id:             *out.ImageId,
+			name:           *out.Name,
+			tags:           out.Tags,
+			state:          out.State,
+			deprecatedTime: out.DeprecationTime,
 		})
 	}
 
@@ -54,11 +58,14 @@ func (l *EC2ImageLister) List(_ context.Context, o interface{}) ([]resource.Reso
 }
 
 type EC2Image struct {
-	svc          *ec2.EC2
-	creationDate string
-	id           string
-	name         string
-	tags         []*ec2.Tag
+	svc            *ec2.EC2
+	creationDate   string
+	id             string
+	name           string
+	tags           []*ec2.Tag
+	state          *string
+	deprecated     *bool
+	deprecatedTime *string
 }
 
 func (e *EC2Image) Remove(_ context.Context) error {
@@ -73,6 +80,9 @@ func (e *EC2Image) Properties() types.Properties {
 
 	properties.Set("CreationDate", e.creationDate)
 	properties.Set("Name", e.name)
+	properties.Set("State", e.state)
+	properties.Set("Deprecated", e.deprecated)
+	properties.Set("DeprecatedTime", e.deprecatedTime)
 
 	for _, tagValue := range e.tags {
 		properties.SetTag(tagValue.Key, tagValue.Value)
