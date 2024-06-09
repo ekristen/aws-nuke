@@ -82,8 +82,9 @@ func TestConfig_LoadExample(t *testing.T) {
 					Filters: filter.Filters{
 						"S3Bucket": {
 							filter.Filter{
-								Type:  filter.Glob,
-								Value: "my-statebucket-*",
+								Type:   filter.Glob,
+								Value:  "my-statebucket-*",
+								Values: []string{},
 							},
 						},
 					},
@@ -279,7 +280,7 @@ func TestConfig_FilterMerge(t *testing.T) {
 	expect := filter.Filters{
 		"S3Bucket": []filter.Filter{
 			{
-				Type: "glob", Value: "my-statebucket-*",
+				Type: "glob", Value: "my-statebucket-*", Values: []string{},
 			},
 		},
 		"IAMRole": []filter.Filter{
