@@ -3,6 +3,7 @@ package resources
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/gotidy/ptr"
 
@@ -56,12 +57,18 @@ func (l *EC2ImageLister) List(_ context.Context, o interface{}) ([]resource.Reso
 	}
 
 	for _, out := range resp.Images {
+		visibility := "Private"
+		if ptr.ToBool(out.Public) {
+			visibility = "Public"
+		}
+
 		resources = append(resources, &EC2Image{
 			svc:                      svc,
 			id:                       out.ImageId,
 			name:                     out.Name,
 			tags:                     out.Tags,
 			state:                    out.State,
+			visibility:               ptr.String(visibility),
 			creationDate:             out.CreationDate,
 			deprecated:               ptr.Bool(out.DeprecationTime != nil),
 			deprecatedTime:           out.DeprecationTime,
@@ -80,6 +87,7 @@ type EC2Image struct {
 	name                     *string
 	tags                     []*ec2.Tag
 	state                    *string
+	visibility               *string
 	deprecated               *bool
 	deprecatedTime           *string
 	creationDate             *string
@@ -89,6 +97,11 @@ type EC2Image struct {
 func (e *EC2Image) Filter() error {
 	if *e.state == "pending" {
 		return fmt.Errorf("ineligible state for removal")
+	}
+
+	if strings.HasPrefix(*e.deregistrationProtection, "disabled after") {
+		return fmt.Errorf("would remove after %s due to deregistration protection cooldown",
+			strings.ReplaceAll(*e.deregistrationProtection, "disabled after ", ""))
 	}
 
 	if *e.deregistrationProtection != ec2.ImageStateDisabled {
@@ -113,6 +126,10 @@ func (e *EC2Image) Filter() error {
 func (e *EC2Image) Remove(_ context.Context) error {
 	if err := e.removeDeregistrationProtection(); err != nil {
 		return err
+	}
+
+	if *e.deregistrationProtection == "enabled-with-cooldown" {
+		return nil
 	}
 
 	_, err := e.svc.DeregisterImage(&ec2.DeregisterImageInput{
@@ -143,6 +160,7 @@ func (e *EC2Image) Properties() types.Properties {
 	properties.Set("CreationDate", e.creationDate)
 	properties.Set("Name", e.name)
 	properties.Set("State", e.state)
+	properties.Set("Visibility", e.visibility)
 	properties.Set("Deprecated", e.deprecated)
 	properties.Set("DeprecatedTime", e.deprecatedTime)
 	properties.Set("DeregistrationProtection", e.deregistrationProtection)
