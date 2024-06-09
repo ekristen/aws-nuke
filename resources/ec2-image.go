@@ -11,7 +11,7 @@ import (
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
-	"github.com/ekristen/libnuke/pkg/settings"
+	libsettings "github.com/ekristen/libnuke/pkg/settings"
 	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/pkg/nuke"
@@ -74,7 +74,7 @@ func (l *EC2ImageLister) List(_ context.Context, o interface{}) ([]resource.Reso
 
 type EC2Image struct {
 	svc      *ec2.EC2
-	settings *settings.Setting
+	settings *libsettings.Setting
 
 	id                       *string
 	name                     *string
@@ -91,7 +91,7 @@ func (e *EC2Image) Filter() error {
 		return fmt.Errorf("ineligible state for removal")
 	}
 
-	if *e.deregistrationProtection != "disabled" {
+	if *e.deregistrationProtection != ec2.ImageStateDisabled {
 		if e.settings.Get(DisableDeregistrationProtectionSetting) == nil ||
 			(e.settings.Get(DisableDeregistrationProtectionSetting) != nil &&
 				!e.settings.Get(DisableDeregistrationProtectionSetting).(bool)) {
@@ -103,7 +103,7 @@ func (e *EC2Image) Filter() error {
 		return fmt.Errorf("excluded by %s setting being false", IncludeDeprecatedSetting)
 	}
 
-	if !e.settings.Get(IncludeDisabledSetting).(bool) && e.state != nil && *e.state == "disabled" {
+	if !e.settings.Get(IncludeDisabledSetting).(bool) && e.state != nil && *e.state == ec2.ImageStateDisabled {
 		return fmt.Errorf("excluded by %s setting being false", IncludeDisabledSetting)
 	}
 
@@ -123,13 +123,18 @@ func (e *EC2Image) Remove(_ context.Context) error {
 }
 
 func (e *EC2Image) removeDeregistrationProtection() error {
-	res, _ := e.svc.DisableImageDeregistrationProtectionRequest(&ec2.DisableImageDeregistrationProtectionInput{
+	if *e.deregistrationProtection == ec2.ImageStateDisabled {
+		return nil
+	}
+
+	if !e.settings.Get(DisableDeregistrationProtectionSetting).(bool) {
+		return nil
+	}
+
+	_, err := e.svc.DisableImageDeregistrationProtection(&ec2.DisableImageDeregistrationProtectionInput{
 		ImageId: e.id,
 	})
-	if res.Error != nil {
-		return res.Error
-	}
-	return nil
+	return err
 }
 
 func (e *EC2Image) Properties() types.Properties {
@@ -152,6 +157,6 @@ func (e *EC2Image) String() string {
 	return *e.id
 }
 
-func (e *EC2Image) Settings(settings *settings.Setting) {
+func (e *EC2Image) Settings(settings *libsettings.Setting) {
 	e.settings = settings
 }
