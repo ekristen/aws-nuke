@@ -14,6 +14,8 @@ github.com/ekristen/libnuke v0.11.0 h1:SdSaAVnuAdGDqNlV82uAa+2FD9NeQyH96rIMduheh
 github.com/ekristen/libnuke v0.11.0/go.mod h1:sBdA04l9IMMejQw5gO9k6o/a0GffSYhgZYaUSdRjIac=
 github.com/ekristen/libnuke v0.12.0 h1:Dsk+ckT9sh9QZTLq5m8kOA1KFJGJxSv0TLnfe3YeL1o=
 github.com/ekristen/libnuke v0.12.0/go.mod h1:sBdA04l9IMMejQw5gO9k6o/a0GffSYhgZYaUSdRjIac=
+github.com/ekristen/libnuke v0.15.0 h1:YiQo8E32cZucz1UI14OPikSRl1UoyIp02rntrVeX30U=
+github.com/ekristen/libnuke v0.15.0/go.mod h1:riI1tjCf6r+et/9oUBd1vQeFmn2Sn6UeFUR0nWkMeYw=
 github.com/fatih/color v1.16.0 h1:zmkK9Ngbjj+K0yRhTVONQh1p/HknKYSlNT+vZCzyokM=
 github.com/fatih/color v1.16.0/go.mod h1:fL2Sau1YI5c0pdGEVCbKQbLXB6edEj1ZgiY4NijnWvE=
 github.com/fatih/color v1.17.0 h1:GlRw1BRJxkpqUCBKzKOw098ed57fEsKeNjpTe3cSjK4=
