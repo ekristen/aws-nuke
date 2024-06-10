@@ -94,41 +94,41 @@ type SecretsManagerSecret struct {
 // ParentARN returns the ARN of the parent secret by doing a string replace of the region. For example, if the region
 // is us-west-2 and the primary region is us-east-1, the ARN will be replaced with us-east-1. This will allow for the
 // RemoveRegionsFromReplication call to work properly.
-func (f *SecretsManagerSecret) ParentARN() *string {
-	return ptr.String(strings.ReplaceAll(*f.ARN, *f.region, *f.PrimaryRegion))
+func (r *SecretsManagerSecret) ParentARN() *string {
+	return ptr.String(strings.ReplaceAll(*r.ARN, *r.region, *r.PrimaryRegion))
 }
 
-func (f *SecretsManagerSecret) Remove(_ context.Context) error {
-	if f.Replica {
-		_, err := f.primarySvc.RemoveRegionsFromReplication(&secretsmanager.RemoveRegionsFromReplicationInput{
-			SecretId:             f.ParentARN(),
-			RemoveReplicaRegions: []*string{f.region},
+func (r *SecretsManagerSecret) Remove(_ context.Context) error {
+	if r.Replica {
+		_, err := r.primarySvc.RemoveRegionsFromReplication(&secretsmanager.RemoveRegionsFromReplicationInput{
+			SecretId:             r.ParentARN(),
+			RemoveReplicaRegions: []*string{r.region},
 		})
 
 		return err
 	}
 
-	_, err := f.svc.DeleteSecret(&secretsmanager.DeleteSecretInput{
-		SecretId:                   f.ARN,
+	_, err := r.svc.DeleteSecret(&secretsmanager.DeleteSecretInput{
+		SecretId:                   r.ARN,
 		ForceDeleteWithoutRecovery: aws.Bool(true),
 	})
 
 	return err
 }
 
-func (f *SecretsManagerSecret) Properties() types.Properties {
+func (r *SecretsManagerSecret) Properties() types.Properties {
 	properties := types.NewProperties()
-	properties.Set("PrimaryRegion", f.PrimaryRegion)
-	properties.Set("Replica", f.Replica)
-	properties.Set("Name", f.Name)
-	properties.Set("ARN", f.ARN)
-	for _, tagValue := range f.tags {
+	properties.Set("PrimaryRegion", r.PrimaryRegion)
+	properties.Set("Replica", r.Replica)
+	properties.Set("Name", r.Name)
+	properties.Set("ARN", r.ARN)
+	for _, tagValue := range r.tags {
 		properties.SetTag(tagValue.Key, tagValue.Value)
 	}
 	return properties
 }
 
 // TODO(v4): change the return value to the name of the resource instead of the ARN
-func (f *SecretsManagerSecret) String() string {
-	return *f.ARN
+func (r *SecretsManagerSecret) String() string {
+	return *r.ARN
 }
