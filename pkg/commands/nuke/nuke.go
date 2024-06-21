@@ -113,6 +113,7 @@ func execute(c *cli.Context) error { //nolint:funlen,gocyclo
 	n := libnuke.New(params, filters, parsedConfig.Settings)
 
 	n.SetRunSleep(5 * time.Second)
+	n.SetLogger(logrus.WithField("component", "libnuke"))
 	n.RegisterVersion(fmt.Sprintf("> %s", common.AppVersion.String()))
 
 	// Register our custom validate handler that validates the account and AWS nuke unique alias checks
