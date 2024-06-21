@@ -106,7 +106,7 @@ func (cfs *CloudFormationStack) removeWithAttempts(attempt int) error {
 		if ok && awsErr.Code() == "ValidationError" &&
 			awsErr.Message() == "Stack ["+*cfs.stack.StackName+"] cannot be deleted while TerminationProtection is enabled" {
 			// check if the setting for the resource is set to allow deletion protection to be disabled
-			if cfs.settings.Get("DisableDeletionProtection").(bool) {
+			if cfs.settings.GetBool("DisableDeletionProtection") {
 				logrus.Infof("CloudFormationStack stackName=%s attempt=%d maxAttempts=%d updating termination protection",
 					*cfs.stack.StackName, attempt, cfs.maxDeleteAttempts)
 				_, err = cfs.svc.UpdateTerminationProtection(&cloudformation.UpdateTerminationProtectionInput{

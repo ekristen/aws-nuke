@@ -102,7 +102,7 @@ func (i *EC2Instance) Remove(_ context.Context) error {
 		if ok && awsErr.Code() == awsutil.ErrCodeOperationNotPermitted &&
 			awsErr.Message() == "The instance '"+*i.instance.InstanceId+"' may not be "+
 				"terminated. Modify its 'disableApiTermination' instance attribute and "+
-				"try again." && i.settings.Get("DisableDeletionProtection").(bool) {
+				"try again." && i.settings.GetBool("DisableDeletionProtection") {
 			termErr := i.DisableTerminationProtection()
 			if termErr != nil {
 				return termErr
@@ -119,7 +119,7 @@ func (i *EC2Instance) Remove(_ context.Context) error {
 		if ok && awsErr.Code() == "OperationNotPermitted" &&
 			awsErr.Message() == "The instance '"+*i.instance.InstanceId+"' may not be "+
 				"terminated. Modify its 'disableApiStop' instance attribute and try "+
-				"again." && i.settings.Get("DisableStopProtection").(bool) {
+				"again." && i.settings.GetBool("DisableStopProtection") {
 			stopErr := i.DisableStopProtection()
 			if stopErr != nil {
 				return stopErr

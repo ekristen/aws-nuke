@@ -95,7 +95,7 @@ type EC2Image struct {
 }
 
 func (e *EC2Image) Filter() error {
-	if *e.state == "pending" {
+	if ptr.ToString(e.state) == "pending" {
 		return fmt.Errorf("ineligible state for removal")
 	}
 
@@ -104,19 +104,19 @@ func (e *EC2Image) Filter() error {
 			strings.ReplaceAll(*e.deregistrationProtection, "disabled after ", ""))
 	}
 
-	if *e.deregistrationProtection != ec2.ImageStateDisabled {
-		if e.settings.Get(DisableDeregistrationProtectionSetting) == nil ||
-			(e.settings.Get(DisableDeregistrationProtectionSetting) != nil &&
-				!e.settings.Get(DisableDeregistrationProtectionSetting).(bool)) {
+	if ptr.ToString(e.deregistrationProtection) != ec2.ImageStateDisabled {
+		if !e.settings.GetBool(DisableDeregistrationProtectionSetting) || !e.settings.GetBool(DisableDeregistrationProtectionSetting) {
 			return fmt.Errorf("deregistration protection is enabled")
 		}
 	}
 
-	if !e.settings.Get(IncludeDeprecatedSetting).(bool) && e.deprecated != nil && *e.deprecated {
+	// TODO(v4): enable by default
+	if !e.settings.GetBool(IncludeDeprecatedSetting) && ptr.ToBool(e.deprecated) {
 		return fmt.Errorf("excluded by %s setting being false", IncludeDeprecatedSetting)
 	}
 
-	if !e.settings.Get(IncludeDisabledSetting).(bool) && e.state != nil && *e.state == ec2.ImageStateDisabled {
+	// TODO(v4): enable by default
+	if !e.settings.GetBool(IncludeDisabledSetting) && ptr.ToString(e.state) == ec2.ImageStateDisabled {
 		return fmt.Errorf("excluded by %s setting being false", IncludeDisabledSetting)
 	}
 
@@ -144,7 +144,7 @@ func (e *EC2Image) removeDeregistrationProtection() error {
 		return nil
 	}
 
-	if !e.settings.Get(DisableDeregistrationProtectionSetting).(bool) {
+	if !e.settings.GetBool(DisableDeregistrationProtectionSetting) {
 		return nil
 	}
 

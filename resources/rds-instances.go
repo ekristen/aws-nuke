@@ -74,7 +74,7 @@ func (i *RDSInstance) Settings(settings *libsettings.Setting) {
 }
 
 func (i *RDSInstance) Remove(_ context.Context) error {
-	if aws.BoolValue(i.instance.DeletionProtection) && i.settings.Get("DisableDeletionProtection").(bool) {
+	if aws.BoolValue(i.instance.DeletionProtection) && i.settings.GetBool("DisableDeletionProtection") {
 		modifyParams := &rds.ModifyDBInstanceInput{
 			DBInstanceIdentifier: i.instance.DBInstanceIdentifier,
 			DeletionProtection:   aws.Bool(false),

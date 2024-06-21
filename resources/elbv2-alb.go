@@ -97,7 +97,7 @@ func (e *ELBv2LoadBalancer) Remove(_ context.Context) error {
 	}
 
 	if _, err := e.svc.DeleteLoadBalancer(params); err != nil {
-		if e.settings.Get("DisableDeletionProtection").(bool) {
+		if e.settings.GetBool("DisableDeletionProtection") {
 			var awsErr awserr.Error
 			ok := errors.As(err, &awsErr)
 			if ok && awsErr.Code() == "OperationNotPermitted" &&

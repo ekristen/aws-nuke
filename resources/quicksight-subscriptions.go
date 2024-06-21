@@ -99,7 +99,7 @@ func (l *QuickSightSubscriptionLister) List(_ context.Context, o interface{}) ([
 }
 
 func (r *QuickSightSubscription) Remove(_ context.Context) error {
-	if r.settings != nil && r.settings.Get("DisableTerminationProtection").(bool) {
+	if r.settings != nil && r.settings.GetBool("DisableTerminationProtection") {
 		err := r.DisableTerminationProtection()
 		if err != nil {
 			return err
