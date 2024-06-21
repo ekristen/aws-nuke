@@ -10,9 +10,9 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/sqs"
 
-	"github.com/ekristen/aws-nuke/mocks/mock_sqsiface"
+	"github.com/ekristen/aws-nuke/v3/mocks/mock_sqsiface"
 
-	"github.com/ekristen/aws-nuke/pkg/nuke"
+	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
 func Test_Mock_SQSQueues_List(t *testing.T) {

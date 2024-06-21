@@ -5,7 +5,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/resourceexplorer2"
-	"github.com/ekristen/aws-nuke/pkg/nuke"
+	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 )

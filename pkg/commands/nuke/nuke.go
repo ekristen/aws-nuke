@@ -18,11 +18,11 @@ import (
 	"github.com/ekristen/libnuke/pkg/scanner"
 	"github.com/ekristen/libnuke/pkg/types"
 
-	"github.com/ekristen/aws-nuke/pkg/awsutil"
-	"github.com/ekristen/aws-nuke/pkg/commands/global"
-	"github.com/ekristen/aws-nuke/pkg/common"
-	"github.com/ekristen/aws-nuke/pkg/config"
-	"github.com/ekristen/aws-nuke/pkg/nuke"
+	"github.com/ekristen/aws-nuke/v3/pkg/awsutil"
+	"github.com/ekristen/aws-nuke/v3/pkg/commands/global"
+	"github.com/ekristen/aws-nuke/v3/pkg/common"
+	"github.com/ekristen/aws-nuke/v3/pkg/config"
+	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
 // ConfigureCreds is a helper function to configure the awsutil.Credentials object from the cli.Context
@@ -113,6 +113,7 @@ func execute(c *cli.Context) error { //nolint:funlen,gocyclo
 	n := libnuke.New(params, filters, parsedConfig.Settings)
 
 	n.SetRunSleep(5 * time.Second)
+	n.SetLogger(logrus.WithField("component", "libnuke"))
 	n.RegisterVersion(fmt.Sprintf("> %s", common.AppVersion.String()))
 
 	// Register our custom validate handler that validates the account and AWS nuke unique alias checks

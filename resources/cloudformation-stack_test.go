@@ -14,7 +14,7 @@ import (
 
 	libsettings "github.com/ekristen/libnuke/pkg/settings"
 
-	"github.com/ekristen/aws-nuke/mocks/mock_cloudformationiface"
+	"github.com/ekristen/aws-nuke/v3/mocks/mock_cloudformationiface"
 )
 
 func TestCloudformationStack_Remove_StackAlreadyDeleted(t *testing.T) {

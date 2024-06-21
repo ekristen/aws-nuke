@@ -17,7 +17,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3control"
 
-	"github.com/ekristen/aws-nuke/pkg/config"
+	"github.com/ekristen/aws-nuke/v3/pkg/config"
 	liberrors "github.com/ekristen/libnuke/pkg/errors"
 )
 

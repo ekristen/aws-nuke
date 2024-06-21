@@ -4,6 +4,10 @@
 [![release](https://img.shields.io/github/release/ekristen/aws-nuke.svg)](https://github.com/ekristen/aws-nuke/releases)
 [![Go Report Card](https://goreportcard.com/badge/github.com/ekristen/aws-nuke)](https://goreportcard.com/report/github.com/ekristen/aws-nuke)
 [![Maintainability](https://api.codeclimate.com/v1/badges/bf05fb12c69f1ea7f257/maintainability)](https://codeclimate.com/github/ekristen/aws-nuke/maintainability)
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/ekristen/aws-nuke/total)
+![GitHub Downloads (all assets, latest release)](https://img.shields.io/github/downloads/ekristen/aws-nuke/latest/total)
+
+
 
 ## Overview
 

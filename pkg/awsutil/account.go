@@ -12,7 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/sts"
 
-	"github.com/ekristen/aws-nuke/pkg/config"
+	"github.com/ekristen/aws-nuke/v3/pkg/config"
 )
 
 type Account struct {

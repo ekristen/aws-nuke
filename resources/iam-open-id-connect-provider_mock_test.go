@@ -10,7 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/iam"
 
-	"github.com/ekristen/aws-nuke/mocks/mock_iamiface"
+	"github.com/ekristen/aws-nuke/v3/mocks/mock_iamiface"
 )
 
 func Test_Mock_IAMOpenIDConnectProvider_Remove(t *testing.T) {

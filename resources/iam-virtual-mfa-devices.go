@@ -12,7 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 
-	"github.com/ekristen/aws-nuke/pkg/nuke"
+	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 )

@@ -11,9 +11,9 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/sagemaker"
 
-	"github.com/ekristen/aws-nuke/pkg/nuke"
+	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 
-	"github.com/ekristen/aws-nuke/mocks/mock_sagemakeriface"
+	"github.com/ekristen/aws-nuke/v3/mocks/mock_sagemakeriface"
 )
 
 func Test_Mock_SageMakerUserProfiles_List(t *testing.T) {

@@ -7,7 +7,7 @@ import (
 	libnuke "github.com/ekristen/libnuke/pkg/nuke"
 	"github.com/ekristen/libnuke/pkg/utils"
 
-	"github.com/ekristen/aws-nuke/pkg/awsutil"
+	"github.com/ekristen/aws-nuke/v3/pkg/awsutil"
 )
 
 // Prompt struct provides a way to provide a custom prompt to the libnuke library this allows

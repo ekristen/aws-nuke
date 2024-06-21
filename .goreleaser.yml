@@ -24,6 +24,8 @@ builds:
         goarch: arm
       - goos: darwin
         goarch: arm
+    flags:
+      - -trimpath
     ldflags:
       - -s
       - -w

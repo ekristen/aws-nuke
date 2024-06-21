@@ -11,11 +11,11 @@ import (
 	libconfig "github.com/ekristen/libnuke/pkg/config"
 	"github.com/ekristen/libnuke/pkg/registry"
 
-	"github.com/ekristen/aws-nuke/pkg/awsutil"
-	"github.com/ekristen/aws-nuke/pkg/commands/global"
-	"github.com/ekristen/aws-nuke/pkg/commands/nuke"
-	"github.com/ekristen/aws-nuke/pkg/common"
-	"github.com/ekristen/aws-nuke/pkg/config"
+	"github.com/ekristen/aws-nuke/v3/pkg/awsutil"
+	"github.com/ekristen/aws-nuke/v3/pkg/commands/global"
+	"github.com/ekristen/aws-nuke/v3/pkg/commands/nuke"
+	"github.com/ekristen/aws-nuke/v3/pkg/common"
+	"github.com/ekristen/aws-nuke/v3/pkg/config"
 )
 
 func execute(c *cli.Context) error {

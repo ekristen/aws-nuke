@@ -10,8 +10,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/elasticache"
 
-	"github.com/ekristen/aws-nuke/mocks/mock_elasticacheiface"
-	"github.com/ekristen/aws-nuke/pkg/nuke"
+	"github.com/ekristen/aws-nuke/v3/mocks/mock_elasticacheiface"
+	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
 func Test_Mock_ElastiCache_CacheCluster_Remove(t *testing.T) {
