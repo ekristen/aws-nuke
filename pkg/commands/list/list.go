@@ -7,10 +7,10 @@ import (
 	"github.com/fatih/color"
 	"github.com/urfave/cli/v2"
 
-	"github.com/ekristen/aws-nuke/pkg/commands/global"
-	"github.com/ekristen/aws-nuke/pkg/common"
+	"github.com/ekristen/aws-nuke/v3/pkg/commands/global"
+	"github.com/ekristen/aws-nuke/v3/pkg/common"
 
-	_ "github.com/ekristen/aws-nuke/resources"
+	_ "github.com/ekristen/aws-nuke/v3/resources"
 	"github.com/ekristen/libnuke/pkg/registry"
 )
 

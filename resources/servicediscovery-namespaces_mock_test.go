@@ -11,9 +11,9 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/servicediscovery"
 
-	"github.com/ekristen/aws-nuke/mocks/mock_servicediscoveryiface"
+	"github.com/ekristen/aws-nuke/v3/mocks/mock_servicediscoveryiface"
 
-	"github.com/ekristen/aws-nuke/pkg/nuke"
+	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
 func Test_Mock_ServiceDiscoveryNamespace_List(t *testing.T) {

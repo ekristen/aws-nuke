@@ -6,14 +6,14 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 
-	"github.com/ekristen/aws-nuke/pkg/common"
+	"github.com/ekristen/aws-nuke/v3/pkg/common"
 
-	_ "github.com/ekristen/aws-nuke/pkg/commands/account"
-	_ "github.com/ekristen/aws-nuke/pkg/commands/config"
-	_ "github.com/ekristen/aws-nuke/pkg/commands/list"
-	_ "github.com/ekristen/aws-nuke/pkg/commands/nuke"
+	_ "github.com/ekristen/aws-nuke/v3/pkg/commands/account"
+	_ "github.com/ekristen/aws-nuke/v3/pkg/commands/config"
+	_ "github.com/ekristen/aws-nuke/v3/pkg/commands/list"
+	_ "github.com/ekristen/aws-nuke/v3/pkg/commands/nuke"
 
-	_ "github.com/ekristen/aws-nuke/resources"
+	_ "github.com/ekristen/aws-nuke/v3/resources"
 )
 
 func main() {

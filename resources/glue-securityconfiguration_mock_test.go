@@ -10,8 +10,8 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/glue"
 
-	"github.com/ekristen/aws-nuke/mocks/mock_glueiface"
-	"github.com/ekristen/aws-nuke/pkg/nuke"
+	"github.com/ekristen/aws-nuke/v3/mocks/mock_glueiface"
+	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
 func Test_Mock_GlueSecurityConfiguration_Remove(t *testing.T) {

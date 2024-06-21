@@ -13,7 +13,7 @@ import (
 	"github.com/ekristen/libnuke/pkg/slices"
 	"github.com/ekristen/libnuke/pkg/types"
 
-	"github.com/ekristen/aws-nuke/pkg/nuke"
+	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
 var elbv2ListenerRulePageSize int64 = 400 // AWS has a limit of 100 rules per listener

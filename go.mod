@@ -1,4 +1,4 @@
-module github.com/ekristen/aws-nuke
+module github.com/ekristen/aws-nuke/v3
 
 go 1.21.6
 
