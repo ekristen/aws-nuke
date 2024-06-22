@@ -3,7 +3,8 @@ package resources
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go/service/lightsail"
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -73,7 +74,7 @@ func (f *LightsailInstance) Settings(setting *libsettings.Setting) {
 func (f *LightsailInstance) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteInstance(&lightsail.DeleteInstanceInput{
 		InstanceName:      f.instanceName,
-		ForceDeleteAddOns: aws.Bool(f.settings.Get("ForceDeleteAddOns").(bool)),
+		ForceDeleteAddOns: ptr.Bool(f.settings.GetBool("ForceDeleteAddOns")),
 	})
 
 	return err

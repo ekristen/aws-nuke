@@ -74,7 +74,7 @@ func (l *QLDBLedger) Settings(setting *libsettings.Setting) {
 }
 
 func (l *QLDBLedger) Remove(_ context.Context) error {
-	if aws.BoolValue(l.ledger.DeletionProtection) && l.settings.Get("DisableDeletionProtection").(bool) {
+	if aws.BoolValue(l.ledger.DeletionProtection) && l.settings.GetBool("DisableDeletionProtection") {
 		modifyParams := &qldb.UpdateLedgerInput{
 			DeletionProtection: aws.Bool(false),
 			Name:               l.ledger.Name,
