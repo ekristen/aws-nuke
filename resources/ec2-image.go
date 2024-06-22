@@ -104,10 +104,9 @@ func (e *EC2Image) Filter() error {
 			strings.ReplaceAll(*e.deregistrationProtection, "disabled after ", ""))
 	}
 
-	if ptr.ToString(e.deregistrationProtection) != ec2.ImageStateDisabled {
-		if !e.settings.GetBool(DisableDeregistrationProtectionSetting) || !e.settings.GetBool(DisableDeregistrationProtectionSetting) {
-			return fmt.Errorf("deregistration protection is enabled")
-		}
+	if ptr.ToString(e.deregistrationProtection) != ec2.ImageStateDisabled &&
+		!e.settings.GetBool(DisableDeregistrationProtectionSetting) {
+		return fmt.Errorf("deregistration protection is enabled")
 	}
 
 	// TODO(v4): enable by default
