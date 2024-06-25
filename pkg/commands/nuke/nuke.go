@@ -73,6 +73,7 @@ func execute(c *cli.Context) error { //nolint:funlen,gocyclo
 	parsedConfig, err := config.New(libconfig.Options{
 		Path:         c.Path("config"),
 		Deprecations: registry.GetDeprecatedResourceTypeMapping(),
+		Log:          logrus.WithField("component", "config"),
 	})
 	if err != nil {
 		logrus.Errorf("Failed to parse config file %s", c.Path("config"))
