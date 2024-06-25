@@ -111,15 +111,15 @@ use `go fmt` before committing any change.
 package example
 
 import (
-    "context"
+	"context"
 
-    "github.com/sirupsen/logrus"
-	
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	
+
 	"github.com/ekristen/libnuke/pkg/settings"
-	
+
 	"github.com/ekristen/aws-nuke/pkg/types"
 )
 ```
