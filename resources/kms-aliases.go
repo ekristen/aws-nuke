@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gotidy/ptr"
-
 	"github.com/aws/aws-sdk-go/service/kms"
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -34,17 +32,18 @@ func (l *KMSAliasLister) List(_ context.Context, o interface{}) ([]resource.Reso
 
 	svc := kms.New(opts.Session)
 
-	resp, err := svc.ListAliases(nil)
+	resources := make([]resource.Resource, 0)
+	err := svc.ListAliasesPages(nil, func(page *kms.ListAliasesOutput, lastPage bool) bool {
+		for _, alias := range page.Aliases {
+			resources = append(resources, &KMSAlias{
+				svc:  svc,
+				name: alias.AliasName,
+			})
+		}
+		return true
+	})
 	if err != nil {
 		return nil, err
-	}
-
-	resources := make([]resource.Resource, 0)
-	for _, alias := range resp.Aliases {
-		resources = append(resources, &KMSAlias{
-			svc:  svc,
-			name: ptr.ToString(alias.AliasName),
-		})
 	}
 
 	return resources, nil
@@ -52,11 +51,11 @@ func (l *KMSAliasLister) List(_ context.Context, o interface{}) ([]resource.Reso
 
 type KMSAlias struct {
 	svc  *kms.KMS
-	name string
+	name *string
 }
 
 func (e *KMSAlias) Filter() error {
-	if strings.HasPrefix(e.name, "alias/aws/") {
+	if strings.HasPrefix(*e.name, "alias/aws/") {
 		return fmt.Errorf("cannot delete AWS alias")
 	}
 	return nil
@@ -64,13 +63,13 @@ func (e *KMSAlias) Filter() error {
 
 func (e *KMSAlias) Remove(_ context.Context) error {
 	_, err := e.svc.DeleteAlias(&kms.DeleteAliasInput{
-		AliasName: &e.name,
+		AliasName: e.name,
 	})
 	return err
 }
 
 func (e *KMSAlias) String() string {
-	return e.name
+	return *e.name
 }
 
 func (e *KMSAlias) Properties() types.Properties {
