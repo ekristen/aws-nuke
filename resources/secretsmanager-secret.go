@@ -8,6 +8,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/secretsmanager"
+	"github.com/aws/aws-sdk-go/service/secretsmanager/secretsmanageriface"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
@@ -26,12 +27,20 @@ func init() {
 	})
 }
 
-type SecretsManagerSecretLister struct{}
+type SecretsManagerSecretLister struct {
+	mockSvc secretsmanageriface.SecretsManagerAPI
+}
 
 func (l *SecretsManagerSecretLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 
-	svc := secretsmanager.New(opts.Session)
+	var svc secretsmanageriface.SecretsManagerAPI
+	if l.mockSvc != nil {
+		svc = l.mockSvc
+	} else {
+		svc = secretsmanager.New(opts.Session)
+	}
+
 	resources := make([]resource.Resource, 0)
 
 	params := &secretsmanager.ListSecretsInput{
@@ -47,11 +56,14 @@ func (l *SecretsManagerSecretLister) List(_ context.Context, o interface{}) ([]r
 		for _, secret := range output.SecretList {
 			replica := false
 			var primarySvc *secretsmanager.SecretsManager
-			if opts.Region.Name != *secret.PrimaryRegion {
+
+			// Note: if primary region is not set, then the secret is not a replica
+			primaryRegion := ptr.ToString(secret.PrimaryRegion)
+			if primaryRegion != "" && opts.Region.Name != primaryRegion {
 				replica = true
 
 				primaryCfg := opts.Session.Copy(&aws.Config{
-					Region: aws.String(*secret.PrimaryRegion),
+					Region: secret.PrimaryRegion,
 				})
 
 				primarySvc = secretsmanager.New(primaryCfg)
@@ -80,8 +92,8 @@ func (l *SecretsManagerSecretLister) List(_ context.Context, o interface{}) ([]r
 }
 
 type SecretsManagerSecret struct {
-	svc            *secretsmanager.SecretsManager
-	primarySvc     *secretsmanager.SecretsManager
+	svc            secretsmanageriface.SecretsManagerAPI
+	primarySvc     secretsmanageriface.SecretsManagerAPI
 	region         *string
 	ARN            *string
 	Name           *string
