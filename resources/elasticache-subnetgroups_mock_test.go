@@ -49,13 +49,14 @@ func Test_Mock_ElastiCache_SubnetGroup_List_NoTags(t *testing.T) {
 	mockElastiCache.EXPECT().DescribeCacheSubnetGroups(gomock.Any()).Return(&elasticache.DescribeCacheSubnetGroupsOutput{
 		CacheSubnetGroups: []*elasticache.CacheSubnetGroup{
 			{
+				ARN:                  aws.String("arn:aws:elasticache:us-west-2:123456789012:subnet-group:foobar"),
 				CacheSubnetGroupName: aws.String("foobar"),
 			},
 		},
 	}, nil)
 
 	mockElastiCache.EXPECT().ListTagsForResource(&elasticache.ListTagsForResourceInput{
-		ResourceName: aws.String("foobar"),
+		ResourceName: aws.String("arn:aws:elasticache:us-west-2:123456789012:subnet-group:foobar"),
 	}).Return(&elasticache.TagListMessage{}, nil)
 
 	resources, err := subnetGroupsLister.List(context.TODO(), &nuke.ListerOpts{})
@@ -82,13 +83,14 @@ func Test_Mock_ElastiCache_SubnetGroup_List_WithTags(t *testing.T) {
 	mockElastiCache.EXPECT().DescribeCacheSubnetGroups(gomock.Any()).Return(&elasticache.DescribeCacheSubnetGroupsOutput{
 		CacheSubnetGroups: []*elasticache.CacheSubnetGroup{
 			{
+				ARN:                  aws.String("arn:aws:elasticache:us-west-2:123456789012:subnet-group:foobar"),
 				CacheSubnetGroupName: aws.String("foobar"),
 			},
 		},
 	}, nil)
 
 	mockElastiCache.EXPECT().ListTagsForResource(&elasticache.ListTagsForResourceInput{
-		ResourceName: aws.String("foobar"),
+		ResourceName: aws.String("arn:aws:elasticache:us-west-2:123456789012:subnet-group:foobar"),
 	}).Return(&elasticache.TagListMessage{
 		TagList: []*elasticache.Tag{
 			{
