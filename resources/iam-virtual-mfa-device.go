@@ -33,7 +33,6 @@ func (l *IAMVirtualMFADeviceLister) List(_ context.Context, o interface{}) ([]re
 	opts := o.(*nuke.ListerOpts)
 
 	svc := iam.New(opts.Session)
-
 	resp, err := svc.ListVirtualMFADevices(&iam.ListVirtualMFADevicesInput{})
 	if err != nil {
 		return nil, err
@@ -61,12 +60,12 @@ type IAMVirtualMFADevice struct {
 	serialNumber *string
 }
 
-func (v *IAMVirtualMFADevice) Filter() error {
+func (r *IAMVirtualMFADevice) Filter() error {
 	isRoot := false
-	if ptr.ToString(v.userARN) == fmt.Sprintf("arn:aws:iam::%s:root", ptr.ToString(v.userID)) {
+	if ptr.ToString(r.userARN) == fmt.Sprintf("arn:aws:iam::%s:root", ptr.ToString(r.userID)) {
 		isRoot = true
 	}
-	if strings.HasSuffix(ptr.ToString(v.serialNumber), "/root-account-mfa-device") {
+	if strings.HasSuffix(ptr.ToString(r.serialNumber), "/root-account-mfa-device") {
 		isRoot = true
 	}
 
@@ -77,16 +76,16 @@ func (v *IAMVirtualMFADevice) Filter() error {
 	return nil
 }
 
-func (v *IAMVirtualMFADevice) Remove(_ context.Context) error {
-	if _, err := v.svc.DeactivateMFADevice(&iam.DeactivateMFADeviceInput{
-		UserName:     v.userName,
-		SerialNumber: v.serialNumber,
+func (r *IAMVirtualMFADevice) Remove(_ context.Context) error {
+	if _, err := r.svc.DeactivateMFADevice(&iam.DeactivateMFADeviceInput{
+		UserName:     r.userName,
+		SerialNumber: r.serialNumber,
 	}); err != nil {
 		return err
 	}
 
-	if _, err := v.svc.DeleteVirtualMFADevice(&iam.DeleteVirtualMFADeviceInput{
-		SerialNumber: v.serialNumber,
+	if _, err := r.svc.DeleteVirtualMFADevice(&iam.DeleteVirtualMFADeviceInput{
+		SerialNumber: r.serialNumber,
 	}); err != nil {
 		return err
 	}
@@ -94,6 +93,6 @@ func (v *IAMVirtualMFADevice) Remove(_ context.Context) error {
 	return nil
 }
 
-func (v *IAMVirtualMFADevice) String() string {
-	return ptr.ToString(v.serialNumber)
+func (r *IAMVirtualMFADevice) String() string {
+	return ptr.ToString(r.serialNumber)
 }
