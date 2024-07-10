@@ -5,9 +5,9 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/iam"
 
 	"github.com/ekristen/aws-nuke/v3/mocks/mock_iamiface"
@@ -22,15 +22,15 @@ func Test_Mock_IAMServiceSpecificCredential_Remove(t *testing.T) {
 
 	iamServiceSpecificCredential := IAMServiceSpecificCredential{
 		svc:         mockIAM,
-		name:        "user:foobar",
-		serviceName: "service:foobar",
-		id:          "user:service:foobar",
-		userName:    "user:foobar",
+		name:        ptr.String("user:foobar"),
+		serviceName: ptr.String("service:foobar"),
+		id:          ptr.String("user:service:foobar"),
+		userName:    ptr.String("user:foobar"),
 	}
 
 	mockIAM.EXPECT().DeleteServiceSpecificCredential(gomock.Eq(&iam.DeleteServiceSpecificCredentialInput{
-		UserName:                    aws.String(iamServiceSpecificCredential.userName),
-		ServiceSpecificCredentialId: aws.String(iamServiceSpecificCredential.id),
+		UserName:                    iamServiceSpecificCredential.userName,
+		ServiceSpecificCredentialId: iamServiceSpecificCredential.id,
 	})).Return(&iam.DeleteServiceSpecificCredentialOutput{}, nil)
 
 	err := iamServiceSpecificCredential.Remove(context.TODO())

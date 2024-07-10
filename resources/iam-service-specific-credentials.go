@@ -33,7 +33,7 @@ func (l *IAMServiceSpecificCredentialLister) List(ctx context.Context, o interfa
 
 	svc := iam.New(opts.Session)
 
-	userLister := &IAMUsersLister{}
+	userLister := &IAMUserLister{}
 	users, usersErr := userLister.List(ctx, o)
 	if usersErr != nil {
 		return nil, usersErr
@@ -47,7 +47,7 @@ func (l *IAMServiceSpecificCredentialLister) List(ctx context.Context, o interfa
 			continue
 		}
 		params := &iam.ListServiceSpecificCredentialsInput{
-			UserName: &user.name,
+			UserName: user.name,
 		}
 		serviceCredentials, err := svc.ListServiceSpecificCredentials(params)
 		if err != nil {
@@ -57,9 +57,9 @@ func (l *IAMServiceSpecificCredentialLister) List(ctx context.Context, o interfa
 		for _, credential := range serviceCredentials.ServiceSpecificCredentials {
 			resources = append(resources, &IAMServiceSpecificCredential{
 				svc:         svc,
-				name:        *credential.ServiceUserName,
-				serviceName: *credential.ServiceName,
-				id:          *credential.ServiceSpecificCredentialId,
+				name:        credential.ServiceUserName,
+				serviceName: credential.ServiceName,
+				id:          credential.ServiceSpecificCredentialId,
 				userName:    user.name,
 			})
 		}
@@ -70,16 +70,16 @@ func (l *IAMServiceSpecificCredentialLister) List(ctx context.Context, o interfa
 
 type IAMServiceSpecificCredential struct {
 	svc         iamiface.IAMAPI
-	name        string
-	serviceName string
-	id          string
-	userName    string
+	name        *string
+	serviceName *string
+	id          *string
+	userName    *string
 }
 
 func (e *IAMServiceSpecificCredential) Remove(_ context.Context) error {
 	params := &iam.DeleteServiceSpecificCredentialInput{
-		ServiceSpecificCredentialId: &e.id,
-		UserName:                    &e.userName,
+		ServiceSpecificCredentialId: e.id,
+		UserName:                    e.userName,
 	}
 	_, err := e.svc.DeleteServiceSpecificCredential(params)
 	if err != nil {
@@ -92,9 +92,11 @@ func (e *IAMServiceSpecificCredential) Properties() types.Properties {
 	properties := types.NewProperties()
 	properties.Set("ServiceName", e.serviceName)
 	properties.Set("ID", e.id)
+	properties.Set("Name", e.name)
+	properties.Set("UserName", e.userName)
 	return properties
 }
 
 func (e *IAMServiceSpecificCredential) String() string {
-	return fmt.Sprintf("%s -> %s", e.userName, e.name)
+	return fmt.Sprintf("%s -> %s", *e.userName, *e.name)
 }
