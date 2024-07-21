@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/apigatewayv2"
@@ -47,6 +48,7 @@ func (l *APIGatewayV2APILister) List(_ context.Context, o interface{}) ([]resour
 				name:         item.Name,
 				protocolType: item.ProtocolType,
 				version:      item.Version,
+				createdDate:  item.CreatedDate,
 				tags:         item.Tags,
 			})
 		}
@@ -67,6 +69,7 @@ type APIGatewayV2API struct {
 	name         *string
 	protocolType *string
 	version      *string
+	createdDate  *time.Time
 	tags         map[string]*string
 }
 
@@ -91,6 +94,7 @@ func (f *APIGatewayV2API) Properties() types.Properties {
 		Set("APIID", f.v2APIID).
 		Set("Name", f.name).
 		Set("ProtocolType", f.protocolType).
-		Set("Version", f.version)
+		Set("Version", f.version).
+		Set("CreatedDate", f.createdDate.Format(time.RFC3339)).
 	return properties
 }
