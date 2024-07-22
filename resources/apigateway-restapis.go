@@ -2,9 +2,10 @@ package resources
 
 import (
 	"context"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/apigateway"
+	"github.com/aws/aws-sdk-go/service/apigatewayv2"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
@@ -13,82 +14,87 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-const APIGatewayRestAPIResource = "APIGatewayRestAPI"
+const APIGatewayV2APIResource = "APIGatewayV2API"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   APIGatewayRestAPIResource,
+		Name:   APIGatewayV2APIResource,
 		Scope:  nuke.Account,
-		Lister: &APIGatewayRestAPILister{},
+		Lister: &APIGatewayV2APILister{},
 	})
 }
 
-type APIGatewayRestAPILister struct{}
+type APIGatewayV2APILister struct{}
 
-type APIGatewayRestAPI struct {
-	svc       *apigateway.APIGateway
-	restAPIID *string
-	name      *string
-	version   *string
-	tags      map[string]*string
-}
-
-func (l *APIGatewayRestAPILister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *APIGatewayV2APILister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
-	svc := apigateway.New(opts.Session)
-
+	svc := apigatewayv2.New(opts.Session)
 	var resources []resource.Resource
 
-	params := &apigateway.GetRestApisInput{
-		Limit: aws.Int64(100),
+	params := &apigatewayv2.GetApisInput{
+		MaxResults: aws.String("100"),
 	}
 
 	for {
-		output, err := svc.GetRestApis(params)
+		output, err := svc.GetApis(params)
 		if err != nil {
 			return nil, err
 		}
 
 		for _, item := range output.Items {
-			resources = append(resources, &APIGatewayRestAPI{
-				svc:       svc,
-				restAPIID: item.Id,
-				name:      item.Name,
-				version:   item.Version,
-				tags:      item.Tags,
+			resources = append(resources, &APIGatewayV2API{
+				svc:          svc,
+				v2APIID:      item.ApiId,
+				name:         item.Name,
+				protocolType: item.ProtocolType,
+				version:      item.Version,
+				createdDate:  item.CreatedDate,
+				tags:         item.Tags,
 			})
 		}
 
-		if output.Position == nil {
+		if output.NextToken == nil {
 			break
 		}
 
-		params.Position = output.Position
+		params.NextToken = output.NextToken
 	}
 
 	return resources, nil
 }
 
-func (f *APIGatewayRestAPI) Remove(_ context.Context) error {
-	_, err := f.svc.DeleteRestApi(&apigateway.DeleteRestApiInput{
-		RestApiId: f.restAPIID,
+type APIGatewayV2API struct {
+	svc          *apigatewayv2.ApiGatewayV2
+	v2APIID      *string
+	name         *string
+	protocolType *string
+	version      *string
+	createdDate  *time.Time
+	tags         map[string]*string
+}
+
+func (f *APIGatewayV2API) Remove(_ context.Context) error {
+	_, err := f.svc.DeleteApi(&apigatewayv2.DeleteApiInput{
+		ApiId: f.v2APIID,
 	})
 
 	return err
 }
 
-func (f *APIGatewayRestAPI) String() string {
-	return *f.restAPIID
+func (f *APIGatewayV2API) String() string {
+	return *f.v2APIID
 }
 
-func (f *APIGatewayRestAPI) Properties() types.Properties {
+func (f *APIGatewayV2API) Properties() types.Properties {
 	properties := types.NewProperties()
 	for key, tag := range f.tags {
 		properties.SetTag(&key, tag)
 	}
 	properties.
-		Set("APIID", f.restAPIID).
+		Set("APIID", f.v2APIID).
 		Set("Name", f.name).
-		Set("Version", f.version)
+		Set("ProtocolType", f.protocolType).
+		Set("Version", f.version).
+		Set("CreatedDate", f.createdDate.Format(time.RFC3339))
 	return properties
 }
