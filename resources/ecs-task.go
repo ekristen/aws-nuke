@@ -3,8 +3,11 @@ package resources
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ecs"
+	"github.com/aws/aws-sdk-go/service/ecs/ecsiface"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
@@ -23,13 +26,22 @@ func init() {
 	})
 }
 
-type ECSTaskLister struct{}
+type ECSTaskLister struct {
+	mockSvc ecsiface.ECSAPI
+}
 
 func (l *ECSTaskLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 
-	svc := ecs.New(opts.Session)
 	resources := make([]resource.Resource, 0)
+
+	var svc ecsiface.ECSAPI
+	if l.mockSvc != nil {
+		svc = l.mockSvc
+	} else {
+		svc = ecs.New(opts.Session)
+	}
+
 	var clusters []*string
 
 	clusterParams := &ecs.ListClustersInput{
@@ -65,11 +77,24 @@ func (l *ECSTaskLister) List(_ context.Context, o interface{}) ([]resource.Resou
 		}
 
 		for _, taskArn := range output.TaskArns {
-			resources = append(resources, &ECSTask{
+			ecsTask := &ECSTask{
 				svc:        svc,
 				taskARN:    taskArn,
 				clusterARN: clusterArn,
+			}
+
+			tags, err := svc.ListTagsForResource(&ecs.ListTagsForResourceInput{
+				ResourceArn: taskArn,
 			})
+			if err != nil {
+				logrus.WithError(err).Error("unable to get tags for resource")
+			}
+
+			if tags != nil {
+				ecsTask.tags = tags.Tags
+			}
+
+			resources = append(resources, ecsTask)
 		}
 
 		if output.NextToken == nil {
@@ -83,9 +108,10 @@ func (l *ECSTaskLister) List(_ context.Context, o interface{}) ([]resource.Resou
 }
 
 type ECSTask struct {
-	svc        *ecs.ECS
+	svc        ecsiface.ECSAPI
 	taskARN    *string
 	clusterARN *string
+	tags       []*ecs.Tag
 }
 
 func (t *ECSTask) Filter() error {
@@ -96,6 +122,9 @@ func (t *ECSTask) Properties() types.Properties {
 	properties := types.NewProperties()
 	properties.Set("TaskARN", t.taskARN)
 	properties.Set("ClusterARN", t.clusterARN)
+	for _, tag := range t.tags {
+		properties.SetTag(tag.Key, tag.Value)
+	}
 
 	return properties
 }
