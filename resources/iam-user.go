@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"time"
 
 	"github.com/sirupsen/logrus"
 
@@ -40,6 +41,7 @@ type IAMUser struct {
 	id                    *string
 	name                  *string
 	hasPermissionBoundary bool
+	createDate            *time.Time
 	tags                  []*iam.Tag
 }
 
@@ -72,6 +74,7 @@ func (r *IAMUser) Properties() types.Properties {
 	properties.Set("UserID", r.id)
 	properties.Set("Name", r.name)
 	properties.Set("HasPermissionBoundary", r.hasPermissionBoundary)
+	properties.Set("CreateDate", r.createDate.Format(time.RFC3339))
 
 	for _, tag := range r.tags {
 		properties.SetTag(tag.Key, tag.Value)
@@ -139,10 +142,11 @@ func (l *IAMUserLister) List(_ context.Context, o interface{}) ([]resource.Resou
 		}
 
 		resourceUser := &IAMUser{
-			svc:  svc,
-			id:   user.UserId,
-			name: user.UserName,
-			tags: user.Tags,
+			svc:        svc,
+			id:         user.UserId,
+			name:       user.UserName,
+			createDate: user.CreateDate,
+			tags:       user.Tags,
 		}
 
 		if user.PermissionsBoundary != nil && user.PermissionsBoundary.PermissionsBoundaryArn != nil {
