@@ -2,15 +2,16 @@ package resources
 
 import (
 	"context"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
-	"github.com/gotidy/ptr"
 	"time"
+
+	"github.com/gotidy/ptr"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
