@@ -2,8 +2,11 @@ package resources
 
 import (
 	"context"
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
+	"github.com/ekristen/libnuke/pkg/settings"
+	"github.com/gotidy/ptr"
+	"github.com/sirupsen/logrus"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -20,36 +23,58 @@ func init() {
 		Name:   DynamoDBTableResource,
 		Scope:  nuke.Account,
 		Lister: &DynamoDBTableLister{},
+		Settings: []string{
+			"DisableDeletionProtection",
+		},
 		DependsOn: []string{
 			DynamoDBTableItemResource,
 		},
 	})
 }
 
-type DynamoDBTableLister struct{}
+type DynamoDBTableLister struct {
+	mockSvc dynamodbiface.DynamoDBAPI
+}
 
 func (l *DynamoDBTableLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
+	resources := make([]resource.Resource, 0)
 
-	svc := dynamodb.New(opts.Session)
+	var svc dynamodbiface.DynamoDBAPI
+	if l.mockSvc != nil {
+		svc = l.mockSvc
+	} else {
+		svc = dynamodb.New(opts.Session)
+	}
 
 	resp, err := svc.ListTables(&dynamodb.ListTablesInput{})
 	if err != nil {
 		return nil, err
 	}
 
-	resources := make([]resource.Resource, 0)
 	for _, tableName := range resp.TableNames {
-		tags, err := GetTableTags(svc, tableName)
-
+		table, err := svc.DescribeTable(&dynamodb.DescribeTableInput{
+			TableName: tableName,
+		})
 		if err != nil {
+			logrus.WithError(err).Warn("unable to describe table")
+			continue
+		}
+
+		tags, err := svc.ListTagsOfResource(&dynamodb.ListTagsOfResourceInput{
+			ResourceArn: table.Table.TableArn,
+		})
+		if err != nil {
+			logrus.WithError(err).Warn("unable to list tags of resource")
 			continue
 		}
 
 		resources = append(resources, &DynamoDBTable{
-			svc:  svc,
-			id:   *tableName,
-			tags: tags,
+			svc:        svc,
+			id:         tableName,
+			protection: table.Table.DeletionProtectionEnabled,
+			Name:       tableName,
+			Tags:       tags.Tags,
 		})
 	}
 
@@ -57,17 +82,24 @@ func (l *DynamoDBTableLister) List(_ context.Context, o interface{}) ([]resource
 }
 
 type DynamoDBTable struct {
-	svc  *dynamodb.DynamoDB
-	id   string
-	tags []*dynamodb.Tag
+	svc        dynamodbiface.DynamoDBAPI
+	settings   *settings.Setting
+	id         *string `property:"Identifier"` // TODO(v4): remove this
+	protection *bool
+	Name       *string
+	Tags       []*dynamodb.Tag
 }
 
-func (i *DynamoDBTable) Remove(_ context.Context) error {
-	params := &dynamodb.DeleteTableInput{
-		TableName: aws.String(i.id),
+func (r *DynamoDBTable) Remove(_ context.Context) error {
+	if err := r.DisableDeletionProtection(); err != nil {
+		return err
 	}
 
-	_, err := i.svc.DeleteTable(params)
+	params := &dynamodb.DeleteTableInput{
+		TableName: r.Name,
+	}
+
+	_, err := r.svc.DeleteTable(params)
 	if err != nil {
 		return err
 	}
@@ -75,37 +107,34 @@ func (i *DynamoDBTable) Remove(_ context.Context) error {
 	return nil
 }
 
-func GetTableTags(svc *dynamodb.DynamoDB, tableName *string) ([]*dynamodb.Tag, error) {
-	result, err := svc.DescribeTable(&dynamodb.DescribeTableInput{
-		TableName: aws.String(*tableName),
-	})
-
-	if err != nil {
-		return make([]*dynamodb.Tag, 0), err
+func (r *DynamoDBTable) DisableDeletionProtection() error {
+	if !r.settings.GetBool("DisableDeletionProtection") {
+		return nil
 	}
 
-	tags, err := svc.ListTagsOfResource(&dynamodb.ListTagsOfResourceInput{
-		ResourceArn: result.Table.TableArn,
-	})
+	if ptr.ToBool(r.protection) {
+		params := &dynamodb.UpdateTableInput{
+			TableName:                 r.Name,
+			DeletionProtectionEnabled: ptr.Bool(false),
+		}
 
-	if err != nil {
-		return make([]*dynamodb.Tag, 0), err
+		_, err := r.svc.UpdateTable(params)
+		if err != nil {
+			return err
+		}
 	}
 
-	return tags.Tags, nil
+	return nil
 }
 
-func (i *DynamoDBTable) Properties() types.Properties {
-	properties := types.NewProperties()
-	properties.Set("Identifier", i.id)
-
-	for _, tag := range i.tags {
-		properties.SetTag(tag.Key, tag.Value)
-	}
-
-	return properties
+func (r *DynamoDBTable) Settings(setting *settings.Setting) {
+	r.settings = setting
 }
 
-func (i *DynamoDBTable) String() string {
-	return i.id
+func (r *DynamoDBTable) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
+}
+
+func (r *DynamoDBTable) String() string {
+	return ptr.ToString(r.Name)
 }

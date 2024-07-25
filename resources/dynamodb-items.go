@@ -51,7 +51,7 @@ func (l *DynamoDBTableItemLister) List(ctx context.Context, o interface{}) ([]re
 		}
 
 		describeParams := &dynamodb.DescribeTableInput{
-			TableName: &dynamoTable.id,
+			TableName: dynamoTable.Name,
 		}
 
 		descResp, descErr := svc.DescribeTable(describeParams)
@@ -61,7 +61,7 @@ func (l *DynamoDBTableItemLister) List(ctx context.Context, o interface{}) ([]re
 
 		keyName := descResp.Table.KeySchema[0].AttributeName
 		params := &dynamodb.ScanInput{
-			TableName:            &dynamoTable.id,
+			TableName:            dynamoTable.Name,
 			ProjectionExpression: aws.String("#key"),
 			ExpressionAttributeNames: map[string]*string{
 				"#key": keyName,
@@ -77,8 +77,8 @@ func (l *DynamoDBTableItemLister) List(ctx context.Context, o interface{}) ([]re
 			var keyValue string
 
 			for _, value := range itemMap {
-				value := strings.TrimSpace(value.String())
-				keyValue = string([]rune(value)[8:(len([]rune(value)) - 3)])
+				trimmedValue := strings.TrimSpace(value.String())
+				keyValue = string([]rune(trimmedValue)[8:(len([]rune(trimmedValue)) - 3)])
 			}
 
 			resources = append(resources, &DynamoDBTableItem{
@@ -105,7 +105,7 @@ type DynamoDBTableItem struct {
 func (i *DynamoDBTableItem) Remove(_ context.Context) error {
 	params := &dynamodb.DeleteItemInput{
 		Key:       i.id,
-		TableName: &i.table.id,
+		TableName: i.table.Name,
 	}
 
 	_, err := i.svc.DeleteItem(params)
