@@ -20,6 +20,10 @@
             "automergeStrategy": "squash",
             "labels": ["bot"],
             "commitMessageSuffix": " [release skip]"
+        },
+        {
+            "matchPackagePatterns": "aws-sdk-go",
+            "separateMinorPatch": true
         }
     ],
     "customManagers": [
