@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"fmt"
+	"time"
 
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
@@ -33,6 +34,7 @@ type IAMUserAccessKey struct {
 	accessKeyID string
 	userName    string
 	status      string
+	createDate  *time.Time
 	userTags    []*iam.Tag
 }
 
@@ -53,6 +55,7 @@ func (e *IAMUserAccessKey) Properties() types.Properties {
 	properties := types.NewProperties()
 	properties.Set("UserName", e.userName)
 	properties.Set("AccessKeyID", e.accessKeyID)
+	properties.Set("CreateDate", e.createDate.Format(time.RFC3339))
 
 	for _, tag := range e.userTags {
 		properties.SetTag(tag.Key, tag.Value)
@@ -99,6 +102,7 @@ func (l *IAMUserAccessKeyLister) List(_ context.Context, o interface{}) ([]resou
 				accessKeyID: *meta.AccessKeyId,
 				userName:    *meta.UserName,
 				status:      *meta.Status,
+				createDate:  meta.CreateDate,
 				userTags:    userTags.Tags,
 			})
 		}
