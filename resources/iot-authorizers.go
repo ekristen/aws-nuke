@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go/service/iot"
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -52,6 +54,13 @@ type IoTAuthorizer struct {
 }
 
 func (f *IoTAuthorizer) Remove(_ context.Context) error {
+	if _, err := f.svc.UpdateAuthorizer(&iot.UpdateAuthorizerInput{
+		AuthorizerName: f.name,
+		Status:         ptr.String(iot.AuthorizerStatusInactive),
+	}); err != nil {
+		return err
+	}
+
 	_, err := f.svc.DeleteAuthorizer(&iot.DeleteAuthorizerInput{
 		AuthorizerName: f.name,
 	})
