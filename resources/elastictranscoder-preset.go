@@ -62,25 +62,25 @@ type ElasticTranscoderPreset struct {
 	PresetID *string
 }
 
-func (f *ElasticTranscoderPreset) Filter() error {
-	if strings.HasPrefix(*f.PresetID, "1351620000001") {
+func (r *ElasticTranscoderPreset) Filter() error {
+	if strings.HasPrefix(*r.PresetID, "1351620000001") {
 		return fmt.Errorf("cannot delete elastic transcoder system presets")
 	}
 	return nil
 }
 
-func (f *ElasticTranscoderPreset) Remove(_ context.Context) error {
-	_, err := f.svc.DeletePreset(&elastictranscoder.DeletePresetInput{
-		Id: f.PresetID,
+func (r *ElasticTranscoderPreset) Remove(_ context.Context) error {
+	_, err := r.svc.DeletePreset(&elastictranscoder.DeletePresetInput{
+		Id: r.PresetID,
 	})
 
 	return err
 }
 
-func (f *ElasticTranscoderPreset) Properties() types.Properties {
-	return types.NewPropertiesFromStruct(f)
+func (r *ElasticTranscoderPreset) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
 
-func (f *ElasticTranscoderPreset) String() string {
-	return *f.PresetID
+func (r *ElasticTranscoderPreset) String() string {
+	return *r.PresetID
 }
