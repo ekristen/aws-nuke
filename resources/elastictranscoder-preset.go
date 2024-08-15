@@ -1,26 +1,36 @@
 package resources
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/elastictranscoder"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/registry"
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-type ElasticTranscoderPreset struct {
-	svc      *elastictranscoder.ElasticTranscoder
-	presetID *string
-}
+const ElasticTranscoderPresetResource = "ElasticTranscoderPreset"
 
 func init() {
-	register("ElasticTranscoderPreset", ListElasticTranscoderPresets)
+	registry.Register(&registry.Registration{
+		Name:   ElasticTranscoderPresetResource,
+		Scope:  nuke.Account,
+		Lister: &ElasticTranscoderPresetLister{},
+	})
 }
 
-func ListElasticTranscoderPresets(sess *session.Session) ([]Resource, error) {
-	svc := elastictranscoder.New(sess)
-	resources := []Resource{}
+type ElasticTranscoderPresetLister struct{}
+
+func (l *ElasticTranscoderPresetLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := elastictranscoder.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &elastictranscoder.ListPresetsInput{}
 
@@ -33,7 +43,7 @@ func ListElasticTranscoderPresets(sess *session.Session) ([]Resource, error) {
 		for _, preset := range resp.Presets {
 			resources = append(resources, &ElasticTranscoderPreset{
 				svc:      svc,
-				presetID: preset.Id,
+				PresetID: preset.Id,
 			})
 		}
 
@@ -47,28 +57,30 @@ func ListElasticTranscoderPresets(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
+type ElasticTranscoderPreset struct {
+	svc      *elastictranscoder.ElasticTranscoder
+	PresetID *string
+}
+
 func (f *ElasticTranscoderPreset) Filter() error {
-	if strings.HasPrefix(*f.presetID, "1351620000001") {
+	if strings.HasPrefix(*f.PresetID, "1351620000001") {
 		return fmt.Errorf("cannot delete elastic transcoder system presets")
 	}
 	return nil
 }
 
-func (f *ElasticTranscoderPreset) Remove() error {
-
+func (f *ElasticTranscoderPreset) Remove(_ context.Context) error {
 	_, err := f.svc.DeletePreset(&elastictranscoder.DeletePresetInput{
-		Id: f.presetID,
+		Id: f.PresetID,
 	})
 
 	return err
 }
 
 func (f *ElasticTranscoderPreset) Properties() types.Properties {
-	properties := types.NewProperties()
-	properties.Set("PresetID", f.presetID)
-	return properties
+	return types.NewPropertiesFromStruct(f)
 }
 
 func (f *ElasticTranscoderPreset) String() string {
-	return *f.presetID
+	return *f.PresetID
 }
