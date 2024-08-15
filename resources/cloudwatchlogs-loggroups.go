@@ -2,9 +2,10 @@ package resources
 
 import (
 	"context"
-
 	"strings"
 	"time"
+
+	"go.uber.org/ratelimit"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
@@ -37,17 +38,27 @@ func (l *CloudWatchLogsLogGroupLister) List(_ context.Context, o interface{}) ([
 	svc := cloudwatchlogs.New(opts.Session)
 	resources := make([]resource.Resource, 0)
 
+	// Note: these can be modified by the customer and account, and we could query them but for now we hard code
+	// them to the bottom, because really it's per-second, and we should be fine querying at this rate for clearing
+	// Ref: https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/cloudwatch_limits_cwl.html
+	groupRl := ratelimit.New(10)
+	streamRl := ratelimit.New(15)
+
 	params := &cloudwatchlogs.DescribeLogGroupsInput{
 		Limit: aws.Int64(50),
 	}
 
 	for {
+		groupRl.Take() // Wait for DescribeLogGroup rate limiter
+
 		output, err := svc.DescribeLogGroups(params)
 		if err != nil {
 			return nil, err
 		}
 
 		for _, logGroup := range output.LogGroups {
+			streamRl.Take() // Wait for DescribeLogStream rate limiter
+
 			arn := strings.TrimSuffix(*logGroup.Arn, ":*")
 			tagResp, err := svc.ListTagsForResource(
 				&cloudwatchlogs.ListTagsForResourceInput{
@@ -67,6 +78,7 @@ func (l *CloudWatchLogsLogGroupLister) List(_ context.Context, o interface{}) ([
 			if err != nil {
 				return nil, err
 			}
+
 			var lastEvent time.Time
 			if len(lsResp.LogStreams) > 0 && lsResp.LogStreams[0].LastIngestionTime != nil {
 				lastEvent = time.Unix(*lsResp.LogStreams[0].LastIngestionTime/1000, 0)
