@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/ekristen/aws-nuke/v3/pkg/awsmod"
 	libsettings "github.com/ekristen/libnuke/pkg/settings"
@@ -64,7 +65,8 @@ func (l *S3BucketLister) List(_ context.Context, o interface{}) ([]resource.Reso
 			Bucket: bucket.Name,
 		})
 		if err != nil {
-			if aerr, ok := err.(awserr.Error); ok {
+			var aerr awserr.Error
+			if errors.As(err, &aerr) {
 				if aerr.Code() == "NoSuchTagSet" {
 					resources = append(resources, newBucket)
 				}
@@ -102,7 +104,7 @@ func DescribeS3Buckets(svc *s3.S3) ([]s3.Bucket, error) {
 			region = endpoints.UsEast1RegionID
 		}
 
-		if location == region && out != nil {
+		if location == region {
 			buckets = append(buckets, *out)
 		}
 	}
@@ -118,85 +120,85 @@ type S3Bucket struct {
 	tags         []*s3.Tag
 }
 
-func (e *S3Bucket) Remove(ctx context.Context) error {
-	_, err := e.svc.DeleteBucketPolicy(&s3.DeleteBucketPolicyInput{
-		Bucket: &e.name,
+func (r *S3Bucket) Remove(ctx context.Context) error {
+	_, err := r.svc.DeleteBucketPolicy(&s3.DeleteBucketPolicyInput{
+		Bucket: &r.name,
 	})
 	if err != nil {
 		return err
 	}
 
-	_, err = e.svc.PutBucketLogging(&s3.PutBucketLoggingInput{
-		Bucket:              &e.name,
+	_, err = r.svc.PutBucketLogging(&s3.PutBucketLoggingInput{
+		Bucket:              &r.name,
 		BucketLoggingStatus: &s3.BucketLoggingStatus{},
 	})
 	if err != nil {
 		return err
 	}
 
-	err = e.RemoveAllVersions(ctx)
+	err = r.RemoveAllVersions(ctx)
 	if err != nil {
 		return err
 	}
 
-	err = e.RemoveAllObjects(ctx)
+	err = r.RemoveAllObjects(ctx)
 	if err != nil {
 		return err
 	}
 
-	_, err = e.svc.DeleteBucket(&s3.DeleteBucketInput{
-		Bucket: &e.name,
+	_, err = r.svc.DeleteBucket(&s3.DeleteBucketInput{
+		Bucket: &r.name,
 	})
 
 	return err
 }
 
-func (e *S3Bucket) RemoveAllVersions(ctx context.Context) error {
+func (r *S3Bucket) RemoveAllVersions(ctx context.Context) error {
 	params := &s3.ListObjectVersionsInput{
-		Bucket: &e.name,
+		Bucket: &r.name,
 	}
 
 	var opts []func(input *s3.DeleteObjectsInput)
-	if e.settings.GetBool("BypassGovernanceRetention") {
+	if r.settings.GetBool("BypassGovernanceRetention") {
 		opts = append(opts, bypassGovernanceRetention)
 	}
 
-	iterator := newS3DeleteVersionListIterator(e.svc, params, e.settings.GetBool("BypassGovernanceRetention"))
-	return awsmod.NewBatchDeleteWithClient(e.svc).Delete(ctx, iterator, opts...)
+	iterator := newS3DeleteVersionListIterator(r.svc, params, r.settings.GetBool("BypassGovernanceRetention"))
+	return awsmod.NewBatchDeleteWithClient(r.svc).Delete(ctx, iterator, opts...)
 }
 
-func (e *S3Bucket) RemoveAllObjects(ctx context.Context) error {
+func (r *S3Bucket) RemoveAllObjects(ctx context.Context) error {
 	params := &s3.ListObjectsInput{
-		Bucket: &e.name,
+		Bucket: &r.name,
 	}
 
 	var opts []func(input *s3.DeleteObjectsInput)
-	if e.settings.GetBool("BypassGovernanceRetention") {
+	if r.settings.GetBool("BypassGovernanceRetention") {
 		opts = append(opts, bypassGovernanceRetention)
 	}
 
-	iterator := newS3ObjectDeleteListIterator(e.svc, params, e.settings.GetBool("BypassGovernanceRetention"))
-	return awsmod.NewBatchDeleteWithClient(e.svc).Delete(ctx, iterator, opts...)
+	iterator := newS3ObjectDeleteListIterator(r.svc, params, r.settings.GetBool("BypassGovernanceRetention"))
+	return awsmod.NewBatchDeleteWithClient(r.svc).Delete(ctx, iterator, opts...)
 }
 
-func (e *S3Bucket) Settings(settings *libsettings.Setting) {
-	e.settings = settings
+func (r *S3Bucket) Settings(settings *libsettings.Setting) {
+	r.settings = settings
 }
 
-func (e *S3Bucket) Properties() types.Properties {
+func (r *S3Bucket) Properties() types.Properties {
 	properties := types.NewProperties().
-		Set("Name", e.name).
-		Set("CreationDate", e.creationDate.Format(time.RFC3339))
+		Set("Name", r.name).
+		Set("CreationDate", r.creationDate.Format(time.RFC3339))
 
-	for _, tag := range e.tags {
+	for _, tag := range r.tags {
 		properties.SetTag(tag.Key, tag.Value)
 	}
 
 	return properties
 }
 
-func (e *S3Bucket) String() string {
-	return fmt.Sprintf("s3://%s", e.name)
+func (r *S3Bucket) String() string {
+	return fmt.Sprintf("s3://%s", r.name)
 }
 
 func bypassGovernanceRetention(input *s3.DeleteObjectsInput) {
