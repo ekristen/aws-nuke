@@ -1,3 +1,4 @@
+version: 2
 dist: releases
 release:
   github:
@@ -125,4 +126,4 @@ checksum:
 snapshot:
   name_template: '{{ trimprefix .Summary "v" }}'
 changelog:
-  skip: true
+  disable: true
