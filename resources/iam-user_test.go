@@ -35,7 +35,7 @@ func Test_IAMUser_Remove(t *testing.T) {
 
 	iamUser := IAMUser{
 		svc:  svc,
-		name: "test-user",
+		name: aws.String("test-user"),
 		tags: createInput.Tags,
 	}
 
