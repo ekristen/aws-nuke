@@ -220,9 +220,9 @@ type BatchDelete struct {
 //	}); err != nil {
 //		return err
 //	}
-func NewBatchDeleteWithClient(client s3iface.S3API, options ...func(*BatchDelete)) *BatchDelete {
+func NewBatchDeleteWithClient(s3client s3iface.S3API, options ...func(*BatchDelete)) *BatchDelete {
 	svc := &BatchDelete{
-		Client:    client,
+		Client:    s3client,
 		BatchSize: DefaultBatchSize,
 	}
 
@@ -255,8 +255,8 @@ func NewBatchDeleteWithClient(client s3iface.S3API, options ...func(*BatchDelete
 //		return err
 //	}
 func NewBatchDelete(c client.ConfigProvider, options ...func(*BatchDelete)) *BatchDelete {
-	client := s3.New(c)
-	return NewBatchDeleteWithClient(client, options...)
+	s3client := s3.New(c)
+	return NewBatchDeleteWithClient(s3client, options...)
 }
 
 // BatchDeleteObject is a wrapper object for calling the batch delete operation.

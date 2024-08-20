@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/ekristen/aws-nuke/v3/pkg/awsmod"
-	libsettings "github.com/ekristen/libnuke/pkg/settings"
 	"time"
 
 	"github.com/gotidy/ptr"
@@ -17,10 +15,13 @@ import (
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
+
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	libsettings "github.com/ekristen/libnuke/pkg/settings"
 	"github.com/ekristen/libnuke/pkg/types"
 
+	"github.com/ekristen/aws-nuke/v3/pkg/awsmod"
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
