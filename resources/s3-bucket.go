@@ -38,6 +38,7 @@ func init() {
 		AlternativeResource: "AWS::S3::Bucket",
 		Settings: []string{
 			"BypassGovernanceRetention",
+			"RemoveObjectLegalHold",
 		},
 	})
 }
@@ -60,6 +61,17 @@ func (l *S3BucketLister) List(_ context.Context, o interface{}) ([]resource.Reso
 			name:         aws.StringValue(bucket.Name),
 			creationDate: aws.TimeValue(bucket.CreationDate),
 			tags:         make([]*s3.Tag, 0),
+		}
+
+		lockCfg, err := svc.GetObjectLockConfiguration(&s3.GetObjectLockConfigurationInput{
+			Bucket: &newBucket.name,
+		})
+		if err != nil {
+			logrus.WithError(err).Warn("failed to get object lock configuration")
+		}
+
+		if lockCfg != nil && lockCfg.ObjectLockConfiguration != nil {
+			newBucket.ObjectLock = lockCfg.ObjectLockConfiguration.ObjectLockEnabled
 		}
 
 		tags, err := svc.GetBucketTagging(&s3.GetBucketTaggingInput{
@@ -119,6 +131,7 @@ type S3Bucket struct {
 	name         string
 	creationDate time.Time
 	tags         []*s3.Tag
+	ObjectLock   *string
 }
 
 func (r *S3Bucket) Remove(ctx context.Context) error {
@@ -133,6 +146,11 @@ func (r *S3Bucket) Remove(ctx context.Context) error {
 		Bucket:              &r.name,
 		BucketLoggingStatus: &s3.BucketLoggingStatus{},
 	})
+	if err != nil {
+		return err
+	}
+
+	err = r.RemoveAllLegalHolds(ctx)
 	if err != nil {
 		return err
 	}
@@ -152,6 +170,46 @@ func (r *S3Bucket) Remove(ctx context.Context) error {
 	})
 
 	return err
+}
+
+func (r *S3Bucket) RemoveAllLegalHolds(_ context.Context) error {
+	if !r.settings.GetBool("RemoveObjectLegalHold") {
+		return nil
+	}
+
+	if r.ObjectLock == nil || ptr.ToString(r.ObjectLock) != "Enabled" {
+		return nil
+	}
+
+	params := &s3.ListObjectsV2Input{
+		Bucket: &r.name,
+	}
+
+	for {
+		res, err := r.svc.ListObjectsV2(params)
+		if err != nil {
+			return err
+		}
+
+		params.ContinuationToken = res.NextContinuationToken
+
+		for _, obj := range res.Contents {
+			_, err := r.svc.PutObjectLegalHold(&s3.PutObjectLegalHoldInput{
+				Bucket:    &r.name,
+				Key:       obj.Key,
+				LegalHold: &s3.ObjectLockLegalHold{Status: aws.String("OFF")},
+			})
+			if err != nil {
+				return err
+			}
+		}
+
+		if res.NextContinuationToken == nil {
+			break
+		}
+	}
+
+	return nil
 }
 
 func (r *S3Bucket) RemoveAllVersions(ctx context.Context) error {
@@ -189,7 +247,8 @@ func (r *S3Bucket) Settings(settings *libsettings.Setting) {
 func (r *S3Bucket) Properties() types.Properties {
 	properties := types.NewProperties().
 		Set("Name", r.name).
-		Set("CreationDate", r.creationDate.Format(time.RFC3339))
+		Set("CreationDate", r.creationDate.Format(time.RFC3339)).
+		Set("ObjectLock", r.ObjectLock)
 
 	for _, tag := range r.tags {
 		properties.SetTag(tag.Key, tag.Value)
