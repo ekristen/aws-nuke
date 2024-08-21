@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/elasticache"
 
@@ -71,7 +73,7 @@ func (l *ElasticacheUserLister) List(_ context.Context, o interface{}) ([]resour
 }
 
 func (i *ElasticacheUser) Filter() error {
-	if strings.HasPrefix(*i.userName, "default") {
+	if ptr.ToString(i.userID) == "default" {
 		return fmt.Errorf("cannot delete default user")
 	}
 	return nil
