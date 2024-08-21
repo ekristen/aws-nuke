@@ -66,7 +66,7 @@ type DAXParameterGroup struct {
 }
 
 func (r *DAXParameterGroup) Filter() error {
-	if strings.Contains(*r.Name, "default") { //nolint:goconst
+	if strings.Contains(*r.Name, "default") { //nolint:goconst,nolintlint
 		return fmt.Errorf("unable to delete default")
 	}
 

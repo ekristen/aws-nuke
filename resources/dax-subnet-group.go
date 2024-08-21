@@ -65,7 +65,7 @@ type DAXSubnetGroup struct {
 }
 
 func (r *DAXSubnetGroup) Filter() error {
-	if *r.Name == "default" { //nolint:goconst
+	if *r.Name == "default" { //nolint:goconst,nolintlint
 		return fmt.Errorf("cannot delete default DAX Subnet group")
 	}
 	return nil
