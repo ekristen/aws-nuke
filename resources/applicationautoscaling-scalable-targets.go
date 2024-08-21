@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"slices"
 
 	"github.com/gotidy/ptr"
 
@@ -32,9 +33,16 @@ func (l *ApplicationAutoScalingScalableTargetLister) List(_ context.Context, o i
 
 	namespaces := applicationautoscaling.ServiceNamespace_Values()
 
+	// Note: Workspaces is not a valid namespace for DescribeScalableTargets anymore according to the API
+	invalidNamespaces := []string{applicationautoscaling.ServiceNamespaceWorkspaces}
+
 	params := &applicationautoscaling.DescribeScalableTargetsInput{}
 	resources := make([]resource.Resource, 0)
 	for _, namespace := range namespaces {
+		if slices.Contains(invalidNamespaces, namespace) {
+			continue
+		}
+
 		for {
 			params.ServiceNamespace = ptr.String(namespace)
 			resp, err := svc.DescribeScalableTargets(params)
