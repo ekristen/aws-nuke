@@ -2,7 +2,6 @@ package resources
 
 import (
 	"context"
-
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -10,6 +9,7 @@ import (
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
@@ -47,9 +47,11 @@ func (l *CloudWatchEventsRuleLister) List(_ context.Context, o interface{}) ([]r
 
 		for _, rule := range resp.Rules {
 			resources = append(resources, &CloudWatchEventsRule{
-				svc:     svc,
-				name:    rule.Name,
-				busName: bus.Name,
+				svc:          svc,
+				Name:         rule.Name,
+				ARN:          rule.Arn,
+				State:        rule.State,
+				EventBusName: bus.Name,
 			})
 		}
 	}
@@ -57,21 +59,27 @@ func (l *CloudWatchEventsRuleLister) List(_ context.Context, o interface{}) ([]r
 }
 
 type CloudWatchEventsRule struct {
-	svc     *cloudwatchevents.CloudWatchEvents
-	name    *string
-	busName *string
+	svc          *cloudwatchevents.CloudWatchEvents
+	Name         *string
+	ARN          *string
+	State        *string
+	EventBusName *string
 }
 
-func (rule *CloudWatchEventsRule) Remove(_ context.Context) error {
-	_, err := rule.svc.DeleteRule(&cloudwatchevents.DeleteRuleInput{
-		Name:         rule.name,
-		EventBusName: rule.busName,
+func (r *CloudWatchEventsRule) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteRule(&cloudwatchevents.DeleteRuleInput{
+		Name:         r.Name,
+		EventBusName: r.EventBusName,
 		Force:        aws.Bool(true),
 	})
 	return err
 }
 
-func (rule *CloudWatchEventsRule) String() string {
+func (r *CloudWatchEventsRule) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
+}
+
+func (r *CloudWatchEventsRule) String() string {
 	// TODO: remove Rule:, mark as breaking change for filters
-	return fmt.Sprintf("Rule: %s", *rule.name)
+	return fmt.Sprintf("Rule: %s", *r.Name)
 }

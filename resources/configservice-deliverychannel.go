@@ -7,6 +7,7 @@ import (
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
@@ -25,7 +26,7 @@ type ConfigServiceDeliveryChannelLister struct{}
 
 func (l *ConfigServiceDeliveryChannelLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
-
+	resources := make([]resource.Resource, 0)
 	svc := configservice.New(opts.Session)
 
 	params := &configservice.DescribeDeliveryChannelsInput{}
@@ -34,11 +35,10 @@ func (l *ConfigServiceDeliveryChannelLister) List(_ context.Context, o interface
 		return nil, err
 	}
 
-	resources := make([]resource.Resource, 0)
 	for _, deliveryChannel := range resp.DeliveryChannels {
 		resources = append(resources, &ConfigServiceDeliveryChannel{
-			svc:                 svc,
-			deliveryChannelName: deliveryChannel.Name,
+			svc:  svc,
+			Name: deliveryChannel.Name,
 		})
 	}
 
@@ -46,18 +46,22 @@ func (l *ConfigServiceDeliveryChannelLister) List(_ context.Context, o interface
 }
 
 type ConfigServiceDeliveryChannel struct {
-	svc                 *configservice.ConfigService
-	deliveryChannelName *string
+	svc  *configservice.ConfigService
+	Name *string
 }
 
-func (f *ConfigServiceDeliveryChannel) Remove(_ context.Context) error {
-	_, err := f.svc.DeleteDeliveryChannel(&configservice.DeleteDeliveryChannelInput{
-		DeliveryChannelName: f.deliveryChannelName,
+func (r *ConfigServiceDeliveryChannel) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteDeliveryChannel(&configservice.DeleteDeliveryChannelInput{
+		DeliveryChannelName: r.Name,
 	})
 
 	return err
 }
 
-func (f *ConfigServiceDeliveryChannel) String() string {
-	return *f.deliveryChannelName
+func (r *ConfigServiceDeliveryChannel) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
+}
+
+func (r *ConfigServiceDeliveryChannel) String() string {
+	return *r.Name
 }

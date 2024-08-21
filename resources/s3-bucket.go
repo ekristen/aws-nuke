@@ -67,7 +67,13 @@ func (l *S3BucketLister) List(_ context.Context, o interface{}) ([]resource.Reso
 			Bucket: &newBucket.name,
 		})
 		if err != nil {
-			logrus.WithError(err).Warn("failed to get object lock configuration")
+			// check if aws error is NoSuchObjectLockConfiguration
+			var aerr awserr.Error
+			if errors.As(err, &aerr) {
+				if aerr.Code() != "ObjectLockConfigurationNotFoundError" {
+					logrus.WithError(err).Warn("unknown failure during get object lock configuration")
+				}
+			}
 		}
 
 		if lockCfg != nil && lockCfg.ObjectLockConfiguration != nil {

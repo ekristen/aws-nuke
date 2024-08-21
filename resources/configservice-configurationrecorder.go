@@ -7,6 +7,7 @@ import (
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
@@ -37,8 +38,8 @@ func (l *ConfigServiceConfigurationRecorderLister) List(_ context.Context, o int
 	resources := make([]resource.Resource, 0)
 	for _, configurationRecorder := range resp.ConfigurationRecorders {
 		resources = append(resources, &ConfigServiceConfigurationRecorder{
-			svc:                       svc,
-			configurationRecorderName: configurationRecorder.Name,
+			svc:  svc,
+			Name: configurationRecorder.Name,
 		})
 	}
 
@@ -46,18 +47,22 @@ func (l *ConfigServiceConfigurationRecorderLister) List(_ context.Context, o int
 }
 
 type ConfigServiceConfigurationRecorder struct {
-	svc                       *configservice.ConfigService
-	configurationRecorderName *string
+	svc  *configservice.ConfigService
+	Name *string
 }
 
-func (f *ConfigServiceConfigurationRecorder) Remove(_ context.Context) error {
-	_, err := f.svc.DeleteConfigurationRecorder(&configservice.DeleteConfigurationRecorderInput{
-		ConfigurationRecorderName: f.configurationRecorderName,
+func (r *ConfigServiceConfigurationRecorder) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteConfigurationRecorder(&configservice.DeleteConfigurationRecorderInput{
+		ConfigurationRecorderName: r.Name,
 	})
 
 	return err
 }
 
-func (f *ConfigServiceConfigurationRecorder) String() string {
-	return *f.configurationRecorderName
+func (r *ConfigServiceConfigurationRecorder) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
+}
+
+func (r *ConfigServiceConfigurationRecorder) String() string {
+	return *r.Name
 }

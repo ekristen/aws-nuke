@@ -2,7 +2,6 @@ package resources
 
 import (
 	"context"
-
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -10,6 +9,7 @@ import (
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
@@ -44,8 +44,8 @@ func (l *DAXSubnetGroupLister) List(_ context.Context, o interface{}) ([]resourc
 
 		for _, subnet := range output.SubnetGroups {
 			resources = append(resources, &DAXSubnetGroup{
-				svc:             svc,
-				subnetGroupName: subnet.SubnetGroupName,
+				svc:  svc,
+				Name: subnet.SubnetGroupName,
 			})
 		}
 
@@ -60,25 +60,29 @@ func (l *DAXSubnetGroupLister) List(_ context.Context, o interface{}) ([]resourc
 }
 
 type DAXSubnetGroup struct {
-	svc             *dax.DAX
-	subnetGroupName *string
+	svc  *dax.DAX
+	Name *string
 }
 
-func (f *DAXSubnetGroup) Filter() error {
-	if *f.subnetGroupName == "default" {
+func (r *DAXSubnetGroup) Filter() error {
+	if *r.Name == "default" { //nolint:goconst,nolintlint
 		return fmt.Errorf("cannot delete default DAX Subnet group")
 	}
 	return nil
 }
 
-func (f *DAXSubnetGroup) Remove(_ context.Context) error {
-	_, err := f.svc.DeleteSubnetGroup(&dax.DeleteSubnetGroupInput{
-		SubnetGroupName: f.subnetGroupName,
+func (r *DAXSubnetGroup) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteSubnetGroup(&dax.DeleteSubnetGroupInput{
+		SubnetGroupName: r.Name,
 	})
 
 	return err
 }
 
-func (f *DAXSubnetGroup) String() string {
-	return *f.subnetGroupName
+func (r *DAXSubnetGroup) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
+}
+
+func (r *DAXSubnetGroup) String() string {
+	return *r.Name
 }
