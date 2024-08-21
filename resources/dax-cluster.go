@@ -8,6 +8,7 @@ import (
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
@@ -46,8 +47,8 @@ func (l *DAXClusterLister) List(_ context.Context, o interface{}) ([]resource.Re
 
 		for _, cluster := range output.Clusters {
 			resources = append(resources, &DAXCluster{
-				svc:         svc,
-				clusterName: cluster.ClusterName,
+				svc:  svc,
+				Name: cluster.ClusterName,
 			})
 		}
 
@@ -62,18 +63,22 @@ func (l *DAXClusterLister) List(_ context.Context, o interface{}) ([]resource.Re
 }
 
 type DAXCluster struct {
-	svc         *dax.DAX
-	clusterName *string
+	svc  *dax.DAX
+	Name *string
 }
 
-func (f *DAXCluster) Remove(_ context.Context) error {
-	_, err := f.svc.DeleteCluster(&dax.DeleteClusterInput{
-		ClusterName: f.clusterName,
+func (r *DAXCluster) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteCluster(&dax.DeleteClusterInput{
+		ClusterName: r.Name,
 	})
 
 	return err
 }
 
-func (f *DAXCluster) String() string {
-	return *f.clusterName
+func (r *DAXCluster) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
+}
+
+func (r *DAXCluster) String() string {
+	return *r.Name
 }
