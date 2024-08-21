@@ -4,6 +4,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/gotidy/ptr"
+
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
@@ -21,11 +23,11 @@ func Test_Mock_IAMSAMLProvider_Remove(t *testing.T) {
 
 	iamSAMLProvider := IAMSAMLProvider{
 		svc: mockIAM,
-		arn: "arn:mock-saml-provider-foobar",
+		ARN: ptr.String("arn:mock-saml-provider-foobar"),
 	}
 
 	mockIAM.EXPECT().DeleteSAMLProvider(gomock.Eq(&iam.DeleteSAMLProviderInput{
-		SAMLProviderArn: &iamSAMLProvider.arn,
+		SAMLProviderArn: iamSAMLProvider.ARN,
 	})).Return(&iam.DeleteSAMLProviderOutput{}, nil)
 
 	err := iamSAMLProvider.Remove(context.TODO())
