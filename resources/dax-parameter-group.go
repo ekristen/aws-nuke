@@ -2,7 +2,7 @@ package resources
 
 import (
 	"context"
-
+	"fmt"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -10,14 +10,10 @@ import (
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
-
-type DAXParameterGroup struct {
-	svc                *dax.DAX
-	parameterGroupName *string
-}
 
 const DAXParameterGroupResource = "DAXParameterGroup"
 
@@ -48,13 +44,10 @@ func (l *DAXParameterGroupLister) List(_ context.Context, o interface{}) ([]reso
 		}
 
 		for _, parameterGroup := range output.ParameterGroups {
-			// ensure default is not deleted
-			if !strings.Contains(*parameterGroup.ParameterGroupName, "default") {
-				resources = append(resources, &DAXParameterGroup{
-					svc:                svc,
-					parameterGroupName: parameterGroup.ParameterGroupName,
-				})
-			}
+			resources = append(resources, &DAXParameterGroup{
+				svc:  svc,
+				Name: parameterGroup.ParameterGroupName,
+			})
 		}
 
 		if output.NextToken == nil {
@@ -67,14 +60,31 @@ func (l *DAXParameterGroupLister) List(_ context.Context, o interface{}) ([]reso
 	return resources, nil
 }
 
-func (f *DAXParameterGroup) Remove(_ context.Context) error {
-	_, err := f.svc.DeleteParameterGroup(&dax.DeleteParameterGroupInput{
-		ParameterGroupName: f.parameterGroupName,
+type DAXParameterGroup struct {
+	svc  *dax.DAX
+	Name *string
+}
+
+func (r *DAXParameterGroup) Filter() error {
+	if strings.Contains(*r.Name, "default") { //nolint:goconst
+		return fmt.Errorf("unable to delete default")
+	}
+
+	return nil
+}
+
+func (r *DAXParameterGroup) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteParameterGroup(&dax.DeleteParameterGroupInput{
+		ParameterGroupName: r.Name,
 	})
 
 	return err
 }
 
-func (f *DAXParameterGroup) String() string {
-	return *f.parameterGroupName
+func (r *DAXParameterGroup) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
+}
+
+func (r *DAXParameterGroup) String() string {
+	return *r.Name
 }
