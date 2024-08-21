@@ -2,12 +2,16 @@ package resources
 
 import (
 	"context"
+	"time"
 
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
-	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
+
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
 const IAMSAMLProviderResource = "IAMSAMLProvider"
@@ -36,8 +40,9 @@ func (l *IAMSAMLProviderLister) List(_ context.Context, o interface{}) ([]resour
 
 	for _, out := range resp.SAMLProviderList {
 		resources = append(resources, &IAMSAMLProvider{
-			svc: svc,
-			arn: *out.Arn,
+			svc:        svc,
+			ARN:        out.Arn,
+			CreateDate: out.CreateDate,
 		})
 	}
 
@@ -45,13 +50,14 @@ func (l *IAMSAMLProviderLister) List(_ context.Context, o interface{}) ([]resour
 }
 
 type IAMSAMLProvider struct {
-	svc iamiface.IAMAPI
-	arn string
+	svc        iamiface.IAMAPI
+	ARN        *string
+	CreateDate *time.Time
 }
 
-func (e *IAMSAMLProvider) Remove(_ context.Context) error {
-	_, err := e.svc.DeleteSAMLProvider(&iam.DeleteSAMLProviderInput{
-		SAMLProviderArn: &e.arn,
+func (r *IAMSAMLProvider) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteSAMLProvider(&iam.DeleteSAMLProviderInput{
+		SAMLProviderArn: r.ARN,
 	})
 	if err != nil {
 		return err
@@ -60,6 +66,10 @@ func (e *IAMSAMLProvider) Remove(_ context.Context) error {
 	return nil
 }
 
-func (e *IAMSAMLProvider) String() string {
-	return e.arn
+func (r *IAMSAMLProvider) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
+}
+
+func (r *IAMSAMLProvider) String() string {
+	return *r.ARN
 }

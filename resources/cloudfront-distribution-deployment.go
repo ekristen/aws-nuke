@@ -5,22 +5,17 @@ import (
 	"fmt"
 
 	"github.com/gotidy/ptr"
+	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudfront"
 
-	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
-)
+	"github.com/ekristen/libnuke/pkg/types"
 
-type CloudFrontDistributionDeployment struct {
-	svc                *cloudfront.CloudFront
-	distributionID     *string
-	eTag               *string
-	distributionConfig *cloudfront.DistributionConfig
-	status             string
-}
+	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
+)
 
 const CloudFrontDistributionDeploymentResource = "CloudFrontDistributionDeployment"
 
@@ -61,44 +56,57 @@ func (l *CloudFrontDistributionDeploymentLister) List(_ context.Context, o inter
 	}
 
 	for _, distribution := range distributions {
-		params := &cloudfront.GetDistributionInput{
+		resp, err := svc.GetDistribution(&cloudfront.GetDistributionInput{
 			Id: distribution.Id,
-		}
-		resp, err := svc.GetDistribution(params)
+		})
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).Error("unable to get distribution, skipping")
+			continue
 		}
+
 		resources = append(resources, &CloudFrontDistributionDeployment{
 			svc:                svc,
-			distributionID:     resp.Distribution.Id,
+			ID:                 resp.Distribution.Id,
 			eTag:               resp.ETag,
 			distributionConfig: resp.Distribution.DistributionConfig,
-			status:             ptr.ToString(resp.Distribution.Status),
+			Status:             resp.Distribution.Status,
 		})
 	}
 
 	return resources, nil
 }
 
-func (f *CloudFrontDistributionDeployment) Remove(_ context.Context) error {
-	f.distributionConfig.Enabled = aws.Bool(false)
+type CloudFrontDistributionDeployment struct {
+	svc                *cloudfront.CloudFront
+	ID                 *string
+	Status             *string
+	eTag               *string
+	distributionConfig *cloudfront.DistributionConfig
+}
 
-	_, err := f.svc.UpdateDistribution(&cloudfront.UpdateDistributionInput{
-		Id:                 f.distributionID,
-		DistributionConfig: f.distributionConfig,
-		IfMatch:            f.eTag,
+func (r *CloudFrontDistributionDeployment) Remove(_ context.Context) error {
+	r.distributionConfig.Enabled = aws.Bool(false)
+
+	_, err := r.svc.UpdateDistribution(&cloudfront.UpdateDistributionInput{
+		Id:                 r.ID,
+		DistributionConfig: r.distributionConfig,
+		IfMatch:            r.eTag,
 	})
 
 	return err
 }
 
-func (f *CloudFrontDistributionDeployment) Filter() error {
-	if !ptr.ToBool(f.distributionConfig.Enabled) && f.status != "InProgress" {
+func (r *CloudFrontDistributionDeployment) Filter() error {
+	if !ptr.ToBool(r.distributionConfig.Enabled) && ptr.ToString(r.Status) != "InProgress" {
 		return fmt.Errorf("already disabled")
 	}
 	return nil
 }
 
-func (f *CloudFrontDistributionDeployment) String() string {
-	return *f.distributionID
+func (r *CloudFrontDistributionDeployment) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
+}
+
+func (r *CloudFrontDistributionDeployment) String() string {
+	return *r.ID
 }

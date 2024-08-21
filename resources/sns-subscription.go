@@ -2,13 +2,13 @@ package resources
 
 import (
 	"context"
-
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/service/sns"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
@@ -42,9 +42,10 @@ func (l *SNSSubscriptionLister) List(_ context.Context, o interface{}) ([]resour
 		for _, subscription := range resp.Subscriptions {
 			if *subscription.SubscriptionArn != "PendingConfirmation" {
 				resources = append(resources, &SNSSubscription{
-					svc:  svc,
-					id:   subscription.SubscriptionArn,
-					name: subscription.Owner,
+					svc:      svc,
+					ARN:      subscription.SubscriptionArn,
+					Owner:    subscription.Owner,
+					TopicARN: subscription.TopicArn,
 				})
 			}
 		}
@@ -60,18 +61,23 @@ func (l *SNSSubscriptionLister) List(_ context.Context, o interface{}) ([]resour
 }
 
 type SNSSubscription struct {
-	svc  *sns.SNS
-	id   *string
-	name *string
+	svc      *sns.SNS
+	ARN      *string
+	Owner    *string
+	TopicARN *string
 }
 
-func (subs *SNSSubscription) Remove(_ context.Context) error {
-	_, err := subs.svc.Unsubscribe(&sns.UnsubscribeInput{
-		SubscriptionArn: subs.id,
+func (r *SNSSubscription) Remove(_ context.Context) error {
+	_, err := r.svc.Unsubscribe(&sns.UnsubscribeInput{
+		SubscriptionArn: r.ARN,
 	})
 	return err
 }
 
-func (subs *SNSSubscription) String() string {
-	return fmt.Sprintf("Owner: %s ARN: %s", *subs.name, *subs.id)
+func (r *SNSSubscription) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
+}
+
+func (r *SNSSubscription) String() string {
+	return fmt.Sprintf("Owner: %s ARN: %s", *r.Owner, *r.ARN)
 }
