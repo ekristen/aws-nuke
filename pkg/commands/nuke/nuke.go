@@ -113,7 +113,7 @@ func execute(c *cli.Context) error { //nolint:funlen,gocyclo
 	// Instantiate libnuke
 	n := libnuke.New(params, filters, parsedConfig.Settings)
 
-	n.SetRunSleep(5 * time.Second)
+	n.SetRunSleep(c.Duration("sleep-delay"))
 	n.SetLogger(logrus.WithField("component", "libnuke"))
 	n.RegisterVersion(fmt.Sprintf("> %s", common.AppVersion.String()))
 
@@ -250,6 +250,12 @@ func init() { //nolint:funlen
 		&cli.IntFlag{
 			Name:  "max-wait-retries",
 			Usage: "maximum number of retries to wait for dependencies to be removed",
+		},
+		&cli.DurationFlag{
+			Name:    "run-sleep-delay",
+			EnvVars: []string{"AWS_NUKE_RUN_SLEEP_DELAY"},
+			Usage:   "time to sleep between run/loops of resource deletions, default is 5 seconds",
+			Value:   5 * time.Second,
 		},
 		&cli.BoolFlag{
 			Name:  "no-alias-check",
