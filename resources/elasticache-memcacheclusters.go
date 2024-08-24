@@ -62,10 +62,26 @@ func (l *ElasticacheCacheClusterLister) List(_ context.Context, o interface{}) (
 		}
 
 		resources = append(resources, &ElasticacheCacheCluster{
-			svc:       svc,
-			clusterID: cacheCluster.CacheClusterId,
-			status:    cacheCluster.CacheClusterStatus,
-			Tags:      tags.TagList,
+			svc:        svc,
+			clusterID:  cacheCluster.CacheClusterId,
+			status:     cacheCluster.CacheClusterStatus,
+			Tags:       tags.TagList,
+			serverless: false,
+		})
+	}
+
+	serverlessParams := &elasticache.DescribeServerlessCachesInput{MaxResults: aws.Int64(100)}
+	serverlessResp, serverlessErr := svc.DescribeServerlessCaches(serverlessParams)
+	if serverlessErr != nil {
+		return nil, serverlessErr
+	}
+
+	for _, serverlessCache := range serverlessResp.ServerlessCaches {
+		resources = append(resources, &ElasticacheCacheCluster{
+			svc:        svc,
+			clusterID:  serverlessCache.ServerlessCacheName,
+			status:     serverlessCache.Status,
+			serverless: true,
 		})
 	}
 
@@ -73,10 +89,11 @@ func (l *ElasticacheCacheClusterLister) List(_ context.Context, o interface{}) (
 }
 
 type ElasticacheCacheCluster struct {
-	svc       elasticacheiface.ElastiCacheAPI
-	clusterID *string
-	status    *string
-	Tags      []*elasticache.Tag
+	svc        elasticacheiface.ElastiCacheAPI
+	clusterID  *string
+	status     *string
+	Tags       []*elasticache.Tag
+	serverless bool
 }
 
 func (i *ElasticacheCacheCluster) Properties() types.Properties {
@@ -85,22 +102,36 @@ func (i *ElasticacheCacheCluster) Properties() types.Properties {
 	properties.Set("ClusterID", i.clusterID)
 	properties.Set("Status", i.status)
 
-	for _, tag := range i.Tags {
-		properties.SetTag(tag.Key, tag.Value)
+	if i.Tags != nil {
+		for _, tag := range i.Tags {
+			properties.SetTag(tag.Key, tag.Value)
+		}
 	}
 
 	return properties
 }
 
 func (i *ElasticacheCacheCluster) Remove(_ context.Context) error {
-	params := &elasticache.DeleteCacheClusterInput{
-		CacheClusterId: i.clusterID,
+	if !i.serverless {
+		params := &elasticache.DeleteCacheClusterInput{
+			CacheClusterId: i.clusterID,
+		}
+
+		_, err := i.svc.DeleteCacheCluster(params)
+		if err != nil {
+			return err
+		}
+	} else {
+		params := &elasticache.DeleteServerlessCacheInput{
+			ServerlessCacheName: i.clusterID,
+		}
+
+		_, serverlessErr := i.svc.DeleteServerlessCache(params)
+		if serverlessErr != nil {
+			return serverlessErr
+		}
 	}
 
-	_, err := i.svc.DeleteCacheCluster(params)
-	if err != nil {
-		return err
-	}
 	return nil
 }
 
