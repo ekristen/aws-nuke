@@ -26,8 +26,9 @@ func Test_Mock_ElastiCache_CacheCluster_Remove(t *testing.T) {
 	mockElastiCache := mock_elasticacheiface.NewMockElastiCacheAPI(ctrl)
 
 	cacheCluster := ElasticacheCacheCluster{
-		svc:       mockElastiCache,
-		clusterID: aws.String("foobar"),
+		svc:        mockElastiCache,
+		clusterID:  aws.String("foobar"),
+		serverless: false,
 	}
 
 	mockElastiCache.EXPECT().DeleteCacheCluster(&elasticache.DeleteCacheClusterInput{
@@ -58,6 +59,15 @@ func Test_Mock_ElastiCache_CacheCluster_List_NoTags(t *testing.T) {
 			},
 		},
 	}, nil)
+	mockElastiCache.EXPECT().DescribeServerlessCaches(gomock.Any()).Return(&elasticache.DescribeServerlessCachesOutput{
+		ServerlessCaches: []*elasticache.ServerlessCache{
+			{
+				ARN:                 aws.String("arn:aws:elasticache:us-west-2:123456789012:serverless:foobar"),
+				ServerlessCacheName: aws.String("serverless"),
+				Status:              aws.String("available"),
+			},
+		},
+	}, nil)
 
 	mockElastiCache.EXPECT().ListTagsForResource(&elasticache.ListTagsForResourceInput{
 		ResourceName: aws.String("arn:aws:elasticache:us-west-2:123456789012:cluster:foobar"),
@@ -65,10 +75,12 @@ func Test_Mock_ElastiCache_CacheCluster_List_NoTags(t *testing.T) {
 
 	resources, err := cacheClusterLister.List(context.TODO(), &nuke.ListerOpts{})
 	a.Nil(err)
-	a.Len(resources, 1)
+	a.Len(resources, 2)
 
 	resource := resources[0].(*ElasticacheCacheCluster)
 	a.Equal("foobar", resource.String())
+	serverlessResource := resources[1].(*ElasticacheCacheCluster)
+	a.Equal("serverless", serverlessResource.String())
 }
 
 func Test_Mock_ElastiCache_CacheCluster_List_WithTags(t *testing.T) {
@@ -90,6 +102,14 @@ func Test_Mock_ElastiCache_CacheCluster_List_WithTags(t *testing.T) {
 			},
 		},
 	}, nil)
+	mockElastiCache.EXPECT().DescribeServerlessCaches(gomock.Any()).Return(&elasticache.DescribeServerlessCachesOutput{
+		ServerlessCaches: []*elasticache.ServerlessCache{
+			{
+				ARN:                 aws.String("arn:aws:elasticache:us-west-2:123456789012:serverless:foobar"),
+				ServerlessCacheName: aws.String("serverless"),
+			},
+		},
+	}, nil)
 
 	mockElastiCache.EXPECT().ListTagsForResource(&elasticache.ListTagsForResourceInput{
 		ResourceName: aws.String("arn:aws:elasticache:us-west-2:123456789012:cluster:foobar"),
@@ -108,13 +128,17 @@ func Test_Mock_ElastiCache_CacheCluster_List_WithTags(t *testing.T) {
 
 	resources, err := cacheClusterLister.List(context.TODO(), &nuke.ListerOpts{})
 	a.Nil(err)
-	a.Len(resources, 1)
+	a.Len(resources, 2)
 
 	resource := resources[0].(*ElasticacheCacheCluster)
 	a.Len(resource.Tags, 2)
 	a.Equal("foobar", resource.String())
 	a.Equal("foobar", resource.Properties().Get("tag:Name"))
 	a.Equal("test", resource.Properties().Get("tag:aws-nuke"))
+
+	serverlessResource := resources[1].(*ElasticacheCacheCluster)
+	a.Nil(serverlessResource.Tags)
+	a.Equal("serverless", serverlessResource.String())
 }
 
 func Test_Mock_ElastiCache_CacheCluster_List_TagsInvalidARN(t *testing.T) {
@@ -149,6 +173,14 @@ func Test_Mock_ElastiCache_CacheCluster_List_TagsInvalidARN(t *testing.T) {
 			},
 		},
 	}, nil)
+	mockElastiCache.EXPECT().DescribeServerlessCaches(gomock.Any()).Return(&elasticache.DescribeServerlessCachesOutput{
+		ServerlessCaches: []*elasticache.ServerlessCache{
+			{
+				ARN:                 aws.String("arn:aws:elasticache:us-west-2:123456789012:serverless:foobar"),
+				ServerlessCacheName: aws.String("serverless"),
+			},
+		},
+	}, nil)
 
 	mockElastiCache.EXPECT().ListTagsForResource(&elasticache.ListTagsForResourceInput{
 		ResourceName: aws.String("foobar:invalid:arn"),
@@ -156,7 +188,7 @@ func Test_Mock_ElastiCache_CacheCluster_List_TagsInvalidARN(t *testing.T) {
 
 	resources, err := cacheClusterLister.List(context.TODO(), &nuke.ListerOpts{})
 	a.Nil(err)
-	a.Len(resources, 0)
+	a.Len(resources, 1)
 
 	a.True(called, "expected global hook called and log message to be found")
 }
