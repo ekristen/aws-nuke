@@ -51,14 +51,14 @@ func Test_KMSKey_Remove(t *testing.T) {
 
 	kmsKey := KMSKey{
 		svc: svc,
-		id:  *out.KeyMetadata.KeyId,
+		ID:  out.KeyMetadata.KeyId,
 	}
 
 	removeError := kmsKey.Remove(context.TODO())
 	assert.NoError(t, removeError)
 
 	_, err = svc.DescribeKey(&kms.DescribeKeyInput{
-		KeyId: aws.String(kmsKey.id),
+		KeyId: kmsKey.ID,
 	})
 	var awsError awserr.Error
 	if errors.As(err, &awsError) {

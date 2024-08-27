@@ -2,11 +2,11 @@ package resources
 
 import (
 	"context"
-
 	"fmt"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/aws/aws-sdk-go/service/kms/kmsiface"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
@@ -25,19 +25,26 @@ func init() {
 	})
 }
 
-type KMSAliasLister struct{}
+type KMSAliasLister struct {
+	mockSvc kmsiface.KMSAPI
+}
 
 func (l *KMSAliasLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
-
-	svc := kms.New(opts.Session)
-
 	resources := make([]resource.Resource, 0)
+
+	var svc kmsiface.KMSAPI
+	if l.mockSvc != nil {
+		svc = l.mockSvc
+	} else {
+		svc = kms.New(opts.Session)
+	}
+
 	err := svc.ListAliasesPages(nil, func(page *kms.ListAliasesOutput, lastPage bool) bool {
 		for _, alias := range page.Aliases {
 			resources = append(resources, &KMSAlias{
 				svc:  svc,
-				name: alias.AliasName,
+				Name: alias.AliasName,
 			})
 		}
 		return true
@@ -50,32 +57,28 @@ func (l *KMSAliasLister) List(_ context.Context, o interface{}) ([]resource.Reso
 }
 
 type KMSAlias struct {
-	svc  *kms.KMS
-	name *string
+	svc  kmsiface.KMSAPI
+	Name *string
 }
 
-func (e *KMSAlias) Filter() error {
-	if strings.HasPrefix(*e.name, "alias/aws/") {
+func (r *KMSAlias) Filter() error {
+	if strings.HasPrefix(*r.Name, "alias/aws/") {
 		return fmt.Errorf("cannot delete AWS alias")
 	}
 	return nil
 }
 
-func (e *KMSAlias) Remove(_ context.Context) error {
-	_, err := e.svc.DeleteAlias(&kms.DeleteAliasInput{
-		AliasName: e.name,
+func (r *KMSAlias) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteAlias(&kms.DeleteAliasInput{
+		AliasName: r.Name,
 	})
 	return err
 }
 
-func (e *KMSAlias) String() string {
-	return *e.name
+func (r *KMSAlias) String() string {
+	return *r.Name
 }
 
-func (e *KMSAlias) Properties() types.Properties {
-	properties := types.NewProperties()
-	properties.
-		Set("Name", e.name)
-
-	return properties
+func (r *KMSAlias) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
