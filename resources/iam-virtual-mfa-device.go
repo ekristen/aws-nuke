@@ -2,19 +2,21 @@ package resources
 
 import (
 	"context"
-
 	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/gotidy/ptr"
+	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 
-	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
 const IAMVirtualMFADeviceResource = "IAMVirtualMFADevice"
@@ -27,25 +29,32 @@ func init() {
 	})
 }
 
-type IAMVirtualMFADeviceLister struct{}
+type IAMVirtualMFADeviceLister struct {
+	mockSvc iamiface.IAMAPI
+}
 
 func (l *IAMVirtualMFADeviceLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
+	resources := make([]resource.Resource, 0)
 
-	svc := iam.New(opts.Session)
+	var svc iamiface.IAMAPI
+	if l.mockSvc != nil {
+		svc = l.mockSvc
+	} else {
+		svc = iam.New(opts.Session)
+	}
+
 	resp, err := svc.ListVirtualMFADevices(&iam.ListVirtualMFADevicesInput{})
 	if err != nil {
 		return nil, err
 	}
 
-	resources := make([]resource.Resource, 0)
 	for _, out := range resp.VirtualMFADevices {
 		resources = append(resources, &IAMVirtualMFADevice{
 			svc:          svc,
-			userID:       out.User.UserId,
-			userARN:      out.User.Arn,
-			userName:     out.User.UserName,
-			serialNumber: out.SerialNumber,
+			user:         out.User,
+			SerialNumber: out.SerialNumber,
+			Assigned:     ptr.Bool(out.User != nil),
 		})
 	}
 
@@ -54,18 +63,19 @@ func (l *IAMVirtualMFADeviceLister) List(_ context.Context, o interface{}) ([]re
 
 type IAMVirtualMFADevice struct {
 	svc          iamiface.IAMAPI
-	userID       *string
-	userARN      *string
-	userName     *string
-	serialNumber *string
+	user         *iam.User
+	Assigned     *bool
+	SerialNumber *string
 }
 
 func (r *IAMVirtualMFADevice) Filter() error {
 	isRoot := false
-	if ptr.ToString(r.userARN) == fmt.Sprintf("arn:aws:iam::%s:root", ptr.ToString(r.userID)) {
+	if r.user != nil && ptr.ToString(r.user.Arn) == fmt.Sprintf("arn:aws:iam::%s:root", ptr.ToString(r.user.UserId)) {
+		logrus.Debug("user is not nil, arn is root, assuming root")
 		isRoot = true
 	}
-	if strings.HasSuffix(ptr.ToString(r.serialNumber), "/root-account-mfa-device") {
+	if !isRoot && strings.HasSuffix(ptr.ToString(r.SerialNumber), "/root-account-mfa-device") {
+		logrus.Debug("serial number is root, assuming root")
 		isRoot = true
 	}
 
@@ -77,15 +87,18 @@ func (r *IAMVirtualMFADevice) Filter() error {
 }
 
 func (r *IAMVirtualMFADevice) Remove(_ context.Context) error {
-	if _, err := r.svc.DeactivateMFADevice(&iam.DeactivateMFADeviceInput{
-		UserName:     r.userName,
-		SerialNumber: r.serialNumber,
-	}); err != nil {
-		return err
+	// Note: if the user is not nil, we need to deactivate the MFA device first
+	if r.user != nil {
+		if _, err := r.svc.DeactivateMFADevice(&iam.DeactivateMFADeviceInput{
+			UserName:     r.user.UserName,
+			SerialNumber: r.SerialNumber,
+		}); err != nil {
+			return err
+		}
 	}
 
 	if _, err := r.svc.DeleteVirtualMFADevice(&iam.DeleteVirtualMFADeviceInput{
-		SerialNumber: r.serialNumber,
+		SerialNumber: r.SerialNumber,
 	}); err != nil {
 		return err
 	}
@@ -94,5 +107,9 @@ func (r *IAMVirtualMFADevice) Remove(_ context.Context) error {
 }
 
 func (r *IAMVirtualMFADevice) String() string {
-	return ptr.ToString(r.serialNumber)
+	return ptr.ToString(r.SerialNumber)
+}
+
+func (r *IAMVirtualMFADevice) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
