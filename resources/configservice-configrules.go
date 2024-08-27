@@ -3,9 +3,10 @@ package resources
 import (
 	"context"
 	"fmt"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/configservice"
+	"github.com/gotidy/ptr"
+	"github.com/sirupsen/logrus"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
@@ -41,11 +42,27 @@ func (l *ConfigServiceConfigRuleLister) List(_ context.Context, o interface{}) (
 		}
 
 		for _, configRule := range output.ConfigRules {
-			resources = append(resources, &ConfigServiceConfigRule{
-				svc:            svc,
-				configRuleName: configRule.ConfigRuleName,
-				createdBy:      configRule.CreatedBy,
+			remConfig, err := svc.DescribeRemediationConfigurations(&configservice.DescribeRemediationConfigurationsInput{
+				ConfigRuleNames: []*string{configRule.ConfigRuleName},
 			})
+			if err != nil {
+				logrus.
+					WithField("name", configRule.ConfigRuleName).
+					WithError(err).
+					Warn("unable to describe remediation configurations")
+			}
+
+			newResource := &ConfigServiceConfigRule{
+				svc:       svc,
+				Name:      configRule.ConfigRuleName,
+				CreatedBy: configRule.CreatedBy,
+			}
+
+			if remConfig != nil && len(remConfig.RemediationConfigurations) > 0 {
+				newResource.HasRemediationConfig = ptr.Bool(true)
+			}
+
+			resources = append(resources, newResource)
 		}
 
 		if output.NextToken == nil {
@@ -59,17 +76,19 @@ func (l *ConfigServiceConfigRuleLister) List(_ context.Context, o interface{}) (
 }
 
 type ConfigServiceConfigRule struct {
-	svc            *configservice.ConfigService
-	configRuleName *string
-	createdBy      *string
+	svc                  *configservice.ConfigService
+	Name                 *string
+	Scope                *string
+	HasRemediationConfig *bool
+	CreatedBy            *string
 }
 
 func (f *ConfigServiceConfigRule) Filter() error {
-	if aws.StringValue(f.createdBy) == "securityhub.amazonaws.com" {
+	if aws.StringValue(f.CreatedBy) == "securityhub.amazonaws.com" {
 		return fmt.Errorf("cannot remove rule owned by securityhub.amazonaws.com")
 	}
 
-	if aws.StringValue(f.createdBy) == "config-conforms.amazonaws.com" {
+	if aws.StringValue(f.CreatedBy) == "config-conforms.amazonaws.com" {
 		return fmt.Errorf("cannot remove rule owned by config-conforms.amazonaws.com")
 	}
 
@@ -77,19 +96,25 @@ func (f *ConfigServiceConfigRule) Filter() error {
 }
 
 func (f *ConfigServiceConfigRule) Remove(_ context.Context) error {
+	if ptr.ToBool(f.HasRemediationConfig) {
+		if _, err := f.svc.DeleteRemediationConfiguration(&configservice.DeleteRemediationConfigurationInput{
+			ConfigRuleName: f.Name,
+		}); err != nil {
+			return err
+		}
+	}
+
 	_, err := f.svc.DeleteConfigRule(&configservice.DeleteConfigRuleInput{
-		ConfigRuleName: f.configRuleName,
+		ConfigRuleName: f.Name,
 	})
 
 	return err
 }
 
 func (f *ConfigServiceConfigRule) String() string {
-	return *f.configRuleName
+	return *f.Name
 }
 
 func (f *ConfigServiceConfigRule) Properties() types.Properties {
-	props := types.NewProperties()
-	props.Set("CreatedBy", f.createdBy)
-	return props
+	return types.NewPropertiesFromStruct(f)
 }
