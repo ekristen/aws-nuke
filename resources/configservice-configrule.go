@@ -83,38 +83,38 @@ type ConfigServiceConfigRule struct {
 	CreatedBy            *string
 }
 
-func (f *ConfigServiceConfigRule) Filter() error {
-	if aws.StringValue(f.CreatedBy) == "securityhub.amazonaws.com" {
+func (r *ConfigServiceConfigRule) Filter() error {
+	if aws.StringValue(r.CreatedBy) == "securityhub.amazonaws.com" {
 		return fmt.Errorf("cannot remove rule owned by securityhub.amazonaws.com")
 	}
 
-	if aws.StringValue(f.CreatedBy) == "config-conforms.amazonaws.com" {
+	if aws.StringValue(r.CreatedBy) == "config-conforms.amazonaws.com" {
 		return fmt.Errorf("cannot remove rule owned by config-conforms.amazonaws.com")
 	}
 
 	return nil
 }
 
-func (f *ConfigServiceConfigRule) Remove(_ context.Context) error {
-	if ptr.ToBool(f.HasRemediationConfig) {
-		if _, err := f.svc.DeleteRemediationConfiguration(&configservice.DeleteRemediationConfigurationInput{
-			ConfigRuleName: f.Name,
+func (r *ConfigServiceConfigRule) Remove(_ context.Context) error {
+	if ptr.ToBool(r.HasRemediationConfig) {
+		if _, err := r.svc.DeleteRemediationConfiguration(&configservice.DeleteRemediationConfigurationInput{
+			ConfigRuleName: r.Name,
 		}); err != nil {
 			return err
 		}
 	}
 
-	_, err := f.svc.DeleteConfigRule(&configservice.DeleteConfigRuleInput{
-		ConfigRuleName: f.Name,
+	_, err := r.svc.DeleteConfigRule(&configservice.DeleteConfigRuleInput{
+		ConfigRuleName: r.Name,
 	})
 
 	return err
 }
 
-func (f *ConfigServiceConfigRule) String() string {
-	return *f.Name
+func (r *ConfigServiceConfigRule) String() string {
+	return *r.Name
 }
 
-func (f *ConfigServiceConfigRule) Properties() types.Properties {
-	return types.NewPropertiesFromStruct(f)
+func (r *ConfigServiceConfigRule) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
