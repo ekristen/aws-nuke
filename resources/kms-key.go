@@ -60,7 +60,7 @@ func (l *KMSKeyLister) List(_ context.Context, o interface{}) ([]resource.Resour
 				if errors.As(err, &awsError) {
 					if awsError.Code() == "AccessDeniedException" {
 						inaccessibleKeys = true
-						logrus.WithError(err).Debug("unable to describe key")
+						logrus.WithField("arn", key.KeyArn).WithError(err).Debug("unable to describe key")
 						continue
 					}
 				}
@@ -76,13 +76,26 @@ func (l *KMSKeyLister) List(_ context.Context, o interface{}) ([]resource.Resour
 				Manager: resp.KeyMetadata.KeyManager,
 			}
 
-			tags, err := svc.ListResourceTags(&kms.ListResourceTagsInput{
-				KeyId: key.KeyId,
-			})
-			if err != nil {
-				logrus.WithError(err).Error("unable to list tags")
-			} else {
-				kmsKey.Tags = tags.Tags
+			// Note: we check for customer managed keys here because we can't list tags for AWS managed keys
+			// This way AWS managed keys still show up but get filtered out by the Filter method
+			if ptr.ToString(resp.KeyMetadata.KeyManager) == kms.KeyManagerTypeCustomer {
+				tags, err := svc.ListResourceTags(&kms.ListResourceTagsInput{
+					KeyId: key.KeyId,
+				})
+				if err != nil {
+					var awsError awserr.Error
+					if errors.As(err, &awsError) {
+						if awsError.Code() == "AccessDeniedException" {
+							inaccessibleKeys = true
+							logrus.WithError(err).Debug("unable to list tags")
+							continue
+						} else {
+							logrus.WithError(err).Error("unable to list tags")
+						}
+					}
+				} else {
+					kmsKey.Tags = tags.Tags
+				}
 			}
 
 			resources = append(resources, kmsKey)
