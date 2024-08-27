@@ -2,11 +2,16 @@ package resources
 
 import (
 	"context"
-
+	"errors"
 	"fmt"
 
+	"github.com/gotidy/ptr"
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/aws/aws-sdk-go/service/kms/kmsiface"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
@@ -28,49 +33,58 @@ func init() {
 	})
 }
 
-type KMSKeyLister struct{}
+type KMSKeyLister struct {
+	mockSvc kmsiface.KMSAPI
+}
 
 func (l *KMSKeyLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
-
-	svc := kms.New(opts.Session)
 	resources := make([]resource.Resource, 0)
 
-	var innerErr error
-	if err := svc.ListKeysPages(nil, func(resp *kms.ListKeysOutput, lastPage bool) bool {
-		for _, key := range resp.Keys {
+	var svc kmsiface.KMSAPI
+	if l.mockSvc != nil {
+		svc = l.mockSvc
+	} else {
+		svc = kms.New(opts.Session)
+	}
+
+	inaccessibleKeys := false
+
+	if err := svc.ListKeysPages(nil, func(keysOut *kms.ListKeysOutput, lastPage bool) bool {
+		for _, key := range keysOut.Keys {
 			resp, err := svc.DescribeKey(&kms.DescribeKeyInput{
 				KeyId: key.KeyId,
 			})
 			if err != nil {
-				innerErr = err
-				return false
-			}
+				var awsError awserr.Error
+				if errors.As(err, &awsError) {
+					if awsError.Code() == "AccessDeniedException" {
+						inaccessibleKeys = true
+						logrus.WithError(err).Debug("unable to describe key")
+						continue
+					}
+				}
 
-			if *resp.KeyMetadata.KeyManager == kms.KeyManagerTypeAws {
-				continue
-			}
-
-			if *resp.KeyMetadata.KeyState == kms.KeyStatePendingDeletion {
+				logrus.WithError(err).Error("unable to describe key")
 				continue
 			}
 
 			kmsKey := &KMSKey{
 				svc:     svc,
-				id:      *resp.KeyMetadata.KeyId,
-				state:   *resp.KeyMetadata.KeyState,
-				manager: resp.KeyMetadata.KeyManager,
+				ID:      resp.KeyMetadata.KeyId,
+				State:   resp.KeyMetadata.KeyState,
+				Manager: resp.KeyMetadata.KeyManager,
 			}
 
 			tags, err := svc.ListResourceTags(&kms.ListResourceTagsInput{
 				KeyId: key.KeyId,
 			})
 			if err != nil {
-				innerErr = err
-				return false
+				logrus.WithError(err).Error("unable to list tags")
+			} else {
+				kmsKey.Tags = tags.Tags
 			}
 
-			kmsKey.tags = tags.Tags
 			resources = append(resources, kmsKey)
 		}
 
@@ -79,53 +93,45 @@ func (l *KMSKeyLister) List(_ context.Context, o interface{}) ([]resource.Resour
 		return nil, err
 	}
 
-	if innerErr != nil {
-		return nil, innerErr
+	if inaccessibleKeys {
+		logrus.Warn("one or more KMS keys were inaccessible, debug logging will contain more information")
 	}
 
 	return resources, nil
 }
 
 type KMSKey struct {
-	svc     *kms.KMS
-	id      string
-	state   string
-	manager *string
-	tags    []*kms.Tag
+	svc     kmsiface.KMSAPI
+	ID      *string
+	State   *string
+	Manager *string
+	Tags    []*kms.Tag
 }
 
-func (e *KMSKey) Filter() error {
-	if e.state == "PendingDeletion" {
+func (r *KMSKey) Filter() error {
+	if ptr.ToString(r.State) == kms.KeyStatePendingDeletion {
 		return fmt.Errorf("is already in PendingDeletion state")
 	}
 
-	if e.manager != nil && *e.manager == kms.KeyManagerTypeAws {
+	if ptr.ToString(r.Manager) == kms.KeyManagerTypeAws {
 		return fmt.Errorf("cannot delete AWS managed key")
 	}
 
 	return nil
 }
 
-func (e *KMSKey) Remove(_ context.Context) error {
-	_, err := e.svc.ScheduleKeyDeletion(&kms.ScheduleKeyDeletionInput{
-		KeyId:               &e.id,
+func (r *KMSKey) Remove(_ context.Context) error {
+	_, err := r.svc.ScheduleKeyDeletion(&kms.ScheduleKeyDeletionInput{
+		KeyId:               r.ID,
 		PendingWindowInDays: aws.Int64(7),
 	})
 	return err
 }
 
-func (e *KMSKey) String() string {
-	return e.id
+func (r *KMSKey) String() string {
+	return *r.ID
 }
 
-func (e *KMSKey) Properties() types.Properties {
-	properties := types.NewProperties()
-	properties.
-		Set("ID", e.id)
-
-	for _, tag := range e.tags {
-		properties.SetTag(tag.TagKey, tag.TagValue)
-	}
-
-	return properties
+func (r *KMSKey) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
