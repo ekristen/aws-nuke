@@ -223,12 +223,15 @@ func (r *S3Bucket) RemoveAllVersions(ctx context.Context) error {
 		Bucket: &r.name,
 	}
 
+	var setBypass bool
 	var opts []func(input *s3.DeleteObjectsInput)
-	if r.settings.GetBool("BypassGovernanceRetention") {
+	if ptr.ToString(r.ObjectLock) == s3.ObjectLockEnabledEnabled &&
+		r.settings.GetBool("BypassGovernanceRetention") {
+		setBypass = true
 		opts = append(opts, bypassGovernanceRetention)
 	}
 
-	iterator := newS3DeleteVersionListIterator(r.svc, params, r.settings.GetBool("BypassGovernanceRetention"))
+	iterator := newS3DeleteVersionListIterator(r.svc, params, setBypass)
 	return awsmod.NewBatchDeleteWithClient(r.svc).Delete(ctx, iterator, opts...)
 }
 
@@ -237,12 +240,15 @@ func (r *S3Bucket) RemoveAllObjects(ctx context.Context) error {
 		Bucket: &r.name,
 	}
 
+	var setBypass bool
 	var opts []func(input *s3.DeleteObjectsInput)
-	if r.settings.GetBool("BypassGovernanceRetention") {
+	if ptr.ToString(r.ObjectLock) == s3.ObjectLockEnabledEnabled &&
+		r.settings.GetBool("BypassGovernanceRetention") {
+		setBypass = true
 		opts = append(opts, bypassGovernanceRetention)
 	}
 
-	iterator := newS3ObjectDeleteListIterator(r.svc, params, r.settings.GetBool("BypassGovernanceRetention"))
+	iterator := newS3ObjectDeleteListIterator(r.svc, params, setBypass)
 	return awsmod.NewBatchDeleteWithClient(r.svc).Delete(ctx, iterator, opts...)
 }
 
