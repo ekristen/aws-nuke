@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"time"
 
 	"github.com/aws/aws-sdk-go/service/ec2"
 
@@ -37,9 +38,11 @@ func (l *EC2KeyPairLister) List(_ context.Context, o interface{}) ([]resource.Re
 	resources := make([]resource.Resource, 0)
 	for _, out := range resp.KeyPairs {
 		resources = append(resources, &EC2KeyPair{
-			svc:  svc,
-			name: *out.KeyName,
-			tags: out.Tags,
+			svc:        svc,
+			Name:       out.KeyName,
+			Tags:       out.Tags,
+			KeyType:    out.KeyType,
+			CreateTime: out.CreateTime,
 		})
 	}
 
@@ -47,17 +50,19 @@ func (l *EC2KeyPairLister) List(_ context.Context, o interface{}) ([]resource.Re
 }
 
 type EC2KeyPair struct {
-	svc  *ec2.EC2
-	name string
-	tags []*ec2.Tag
+	svc        *ec2.EC2
+	Name       *string
+	Tags       []*ec2.Tag
+	KeyType    *string
+	CreateTime *time.Time
 }
 
-func (e *EC2KeyPair) Remove(_ context.Context) error {
+func (r *EC2KeyPair) Remove(_ context.Context) error {
 	params := &ec2.DeleteKeyPairInput{
-		KeyName: &e.name,
+		KeyName: r.Name,
 	}
 
-	_, err := e.svc.DeleteKeyPair(params)
+	_, err := r.svc.DeleteKeyPair(params)
 	if err != nil {
 		return err
 	}
@@ -65,17 +70,10 @@ func (e *EC2KeyPair) Remove(_ context.Context) error {
 	return nil
 }
 
-func (e *EC2KeyPair) Properties() types.Properties {
-	properties := types.NewProperties()
-	properties.Set("Name", e.name)
-
-	for _, tag := range e.tags {
-		properties.SetTag(tag.Key, tag.Value)
-	}
-
-	return properties
+func (r *EC2KeyPair) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
 
-func (e *EC2KeyPair) String() string {
-	return e.name
+func (r *EC2KeyPair) String() string {
+	return *r.Name
 }
