@@ -113,7 +113,7 @@ func execute(c *cli.Context) error { //nolint:funlen,gocyclo
 	// Instantiate libnuke
 	n := libnuke.New(params, filters, parsedConfig.Settings)
 
-	n.SetRunSleep(c.Duration("sleep-delay"))
+	n.SetRunSleep(c.Duration("run-sleep-delay"))
 	n.SetLogger(logrus.WithField("component", "libnuke"))
 	n.RegisterVersion(fmt.Sprintf("> %s", common.AppVersion.String()))
 
