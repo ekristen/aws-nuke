@@ -31,12 +31,6 @@ func init() {
 
 type AthenaWorkGroupLister struct{}
 
-type AthenaWorkGroup struct {
-	svc  *athena.Athena
-	name *string
-	arn  *string
-}
-
 func (l *AthenaWorkGroupLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 
@@ -84,15 +78,21 @@ func (l *AthenaWorkGroupLister) List(_ context.Context, o interface{}) ([]resour
 	return resources, err
 }
 
-func (a *AthenaWorkGroup) Remove(_ context.Context) error {
+type AthenaWorkGroup struct {
+	svc  *athena.Athena
+	name *string
+	arn  *string
+}
+
+func (r *AthenaWorkGroup) Remove(_ context.Context) error {
 	// Primary WorkGroup cannot be deleted,
-	// but we can reset it to a clean state
-	if *a.name == "primary" {
+	// but we can reset it to r clean state
+	if *r.name == "primary" {
 		// TODO: pass logger via ListerOpts instead of using global
 		logrus.Info("Primary Athena WorkGroup may not be deleted. Resetting configuration only.")
 
 		// Reset the configuration to its default state
-		_, err := a.svc.UpdateWorkGroup(&athena.UpdateWorkGroupInput{
+		_, err := r.svc.UpdateWorkGroup(&athena.UpdateWorkGroupInput{
 			// See https://docs.aws.amazon.com/athena/latest/APIReference/API_WorkGroupConfigurationUpdates.html
 			// for documented defaults
 			ConfigurationUpdates: &athena.WorkGroupConfigurationUpdates{
@@ -106,15 +106,15 @@ func (a *AthenaWorkGroup) Remove(_ context.Context) error {
 				},
 			},
 			Description: aws.String(""),
-			WorkGroup:   a.name,
+			WorkGroup:   r.name,
 		})
 		if err != nil {
 			return err
 		}
 
 		// Remove any tags
-		wgTagsRes, err := a.svc.ListTagsForResource(&athena.ListTagsForResourceInput{
-			ResourceARN: a.arn,
+		wgTagsRes, err := r.svc.ListTagsForResource(&athena.ListTagsForResourceInput{
+			ResourceARN: r.arn,
 		})
 		if err != nil {
 			return err
@@ -125,8 +125,8 @@ func (a *AthenaWorkGroup) Remove(_ context.Context) error {
 			tagKeys = append(tagKeys, tag.Key)
 		}
 
-		_, err = a.svc.UntagResource(&athena.UntagResourceInput{
-			ResourceARN: a.arn,
+		_, err = r.svc.UntagResource(&athena.UntagResourceInput{
+			ResourceARN: r.arn,
 			TagKeys:     tagKeys,
 		})
 		if err != nil {
@@ -136,35 +136,35 @@ func (a *AthenaWorkGroup) Remove(_ context.Context) error {
 		return nil
 	}
 
-	_, err := a.svc.DeleteWorkGroup(&athena.DeleteWorkGroupInput{
+	_, err := r.svc.DeleteWorkGroup(&athena.DeleteWorkGroupInput{
 		RecursiveDeleteOption: aws.Bool(true),
-		WorkGroup:             a.name,
+		WorkGroup:             r.name,
 	})
 
 	return err
 }
 
-func (a *AthenaWorkGroup) Filter() error {
+func (r *AthenaWorkGroup) Filter() error {
 	// If this is the primary work group,
 	// check if it's already had its configuration reset
-	if *a.name == "primary" {
+	if *r.name == "primary" {
 		// Get workgroup configuration
-		wgConfigRes, err := a.svc.GetWorkGroup(&athena.GetWorkGroupInput{
-			WorkGroup: a.name,
+		wgConfigRes, err := r.svc.GetWorkGroup(&athena.GetWorkGroupInput{
+			WorkGroup: r.name,
 		})
 		if err != nil {
 			return err
 		}
 
 		// Get workgroup tags
-		wgTagsRes, err := a.svc.ListTagsForResource(&athena.ListTagsForResourceInput{
-			ResourceARN: a.arn,
+		wgTagsRes, err := r.svc.ListTagsForResource(&athena.ListTagsForResourceInput{
+			ResourceARN: r.arn,
 		})
 		if err != nil {
 			return err
 		}
 
-		// If the workgroup is already in a "clean" state, then
+		// If the workgroup is already in r "clean" state, then
 		// don't add it to our plan
 		wgConfig := wgConfigRes.WorkGroup.Configuration
 		isCleanConfig := wgConfig.BytesScannedCutoffPerQuery == nil &&
@@ -181,12 +181,12 @@ func (a *AthenaWorkGroup) Filter() error {
 	return nil
 }
 
-func (a *AthenaWorkGroup) Properties() types.Properties {
+func (r *AthenaWorkGroup) Properties() types.Properties {
 	return types.NewProperties().
-		Set("Name", *a.name).
-		Set("ARN", *a.arn)
+		Set("Name", *r.name).
+		Set("ARN", *r.arn)
 }
 
-func (a *AthenaWorkGroup) String() string {
-	return *a.name
+func (r *AthenaWorkGroup) String() string {
+	return *r.name
 }

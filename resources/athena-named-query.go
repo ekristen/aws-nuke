@@ -24,11 +24,6 @@ func init() {
 
 type AthenaNamedQueryLister struct{}
 
-type AthenaNamedQuery struct {
-	svc *athena.Athena
-	id  *string
-}
-
 func (l *AthenaNamedQueryLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 
@@ -76,19 +71,24 @@ func (l *AthenaNamedQueryLister) List(_ context.Context, o interface{}) ([]resou
 	return resources, err
 }
 
-func (a *AthenaNamedQuery) Remove(_ context.Context) error {
-	_, err := a.svc.DeleteNamedQuery(&athena.DeleteNamedQueryInput{
-		NamedQueryId: a.id,
+type AthenaNamedQuery struct {
+	svc *athena.Athena
+	id  *string
+}
+
+func (r *AthenaNamedQuery) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteNamedQuery(&athena.DeleteNamedQueryInput{
+		NamedQueryId: r.id,
 	})
 
 	return err
 }
 
-func (a *AthenaNamedQuery) Properties() types.Properties {
+func (r *AthenaNamedQuery) Properties() types.Properties {
 	return types.NewProperties().
-		Set("Id", *a.id)
+		Set("Id", *r.id)
 }
 
-func (a *AthenaNamedQuery) String() string {
-	return *a.id
+func (r *AthenaNamedQuery) String() string {
+	return *r.id
 }
