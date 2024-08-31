@@ -1,24 +1,36 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
+
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/registry"
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-type CloudWatchInsightRule struct {
-	svc  *cloudwatch.CloudWatch
-	name *string
-}
+const CloudWatchInsightRuleResource = "CloudWatchInsightRule"
 
 func init() {
-	register("CloudWatchInsightRule", ListCloudWatchInsightRules)
+	registry.Register(&registry.Registration{
+		Name:   CloudWatchInsightRuleResource,
+		Scope:  nuke.Account,
+		Lister: &CloudWatchInsightRuleLister{},
+	})
 }
 
-func ListCloudWatchInsightRules(sess *session.Session) ([]Resource, error) {
-	svc := cloudwatch.New(sess)
-	resources := []Resource{}
+type CloudWatchInsightRuleLister struct{}
+
+func (l *CloudWatchInsightRuleLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := cloudwatch.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &cloudwatch.DescribeInsightRulesInput{
 		MaxResults: aws.Int64(25),
@@ -47,7 +59,12 @@ func ListCloudWatchInsightRules(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *CloudWatchInsightRule) Remove() error {
+type CloudWatchInsightRule struct {
+	svc  *cloudwatch.CloudWatch
+	name *string
+}
+
+func (f *CloudWatchInsightRule) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteInsightRules(&cloudwatch.DeleteInsightRulesInput{
 		RuleNames: []*string{f.name},
 	})
