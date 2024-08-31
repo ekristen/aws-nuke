@@ -44,8 +44,9 @@ func (l *CloudWatchAnomalyDetectorLister) List(_ context.Context, o interface{})
 
 		for _, detector := range output.AnomalyDetectors {
 			resources = append(resources, &CloudWatchAnomalyDetector{
-				svc:      svc,
-				detector: detector,
+				svc:        svc,
+				detector:   detector.SingleMetricAnomalyDetector,
+				MetricName: detector.SingleMetricAnomalyDetector.MetricName,
 			})
 		}
 
@@ -60,24 +61,23 @@ func (l *CloudWatchAnomalyDetectorLister) List(_ context.Context, o interface{})
 }
 
 type CloudWatchAnomalyDetector struct {
-	svc      *cloudwatch.CloudWatch
-	detector *cloudwatch.AnomalyDetector
+	svc        *cloudwatch.CloudWatch
+	detector   *cloudwatch.SingleMetricAnomalyDetector
+	MetricName *string
 }
 
 func (r *CloudWatchAnomalyDetector) Remove(_ context.Context) error {
 	_, err := r.svc.DeleteAnomalyDetector(&cloudwatch.DeleteAnomalyDetectorInput{
-		SingleMetricAnomalyDetector: r.detector.SingleMetricAnomalyDetector,
+		SingleMetricAnomalyDetector: r.detector,
 	})
 
 	return err
 }
 
 func (r *CloudWatchAnomalyDetector) Properties() types.Properties {
-	properties := types.NewProperties()
-	properties.Set("MetricName", r.detector.SingleMetricAnomalyDetector.MetricName)
-	return properties
+	return types.NewPropertiesFromStruct(r)
 }
 
 func (r *CloudWatchAnomalyDetector) String() string {
-	return *r.detector.SingleMetricAnomalyDetector.MetricName
+	return *r.MetricName
 }
