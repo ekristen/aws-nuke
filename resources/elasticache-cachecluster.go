@@ -3,9 +3,9 @@ package resources
 import (
 	"context"
 
+	"github.com/gotidy/ptr"
 	"github.com/sirupsen/logrus"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/elasticache"
 	"github.com/aws/aws-sdk-go/service/elasticache/elasticacheiface"
 
@@ -45,7 +45,7 @@ func (l *ElasticacheCacheClusterLister) List(_ context.Context, o interface{}) (
 		svc = elasticache.New(opts.Session)
 	}
 
-	params := &elasticache.DescribeCacheClustersInput{MaxRecords: aws.Int64(100)}
+	params := &elasticache.DescribeCacheClustersInput{MaxRecords: ptr.Int64(100)}
 	resp, err := svc.DescribeCacheClusters(params)
 	if err != nil {
 		return nil, err
@@ -53,88 +53,87 @@ func (l *ElasticacheCacheClusterLister) List(_ context.Context, o interface{}) (
 
 	var resources []resource.Resource
 	for _, cacheCluster := range resp.CacheClusters {
-		tags, err := svc.ListTagsForResource(&elasticache.ListTagsForResourceInput{
-			ResourceName: cacheCluster.ARN,
-		})
+		tags, err := l.getResourceTags(svc, cacheCluster.ARN)
 		if err != nil {
 			logrus.WithError(err).Error("unable to retrieve tags")
-			continue
 		}
 
 		resources = append(resources, &ElasticacheCacheCluster{
-			svc:        svc,
-			clusterID:  cacheCluster.CacheClusterId,
-			status:     cacheCluster.CacheClusterStatus,
-			Tags:       tags.TagList,
-			serverless: false,
+			svc:       svc,
+			ClusterID: cacheCluster.CacheClusterId,
+			Status:    cacheCluster.CacheClusterStatus,
+			Tags:      tags,
 		})
 	}
 
-	serverlessParams := &elasticache.DescribeServerlessCachesInput{MaxResults: aws.Int64(100)}
+	serverlessParams := &elasticache.DescribeServerlessCachesInput{MaxResults: ptr.Int64(100)}
 	serverlessResp, serverlessErr := svc.DescribeServerlessCaches(serverlessParams)
 	if serverlessErr != nil {
 		return nil, serverlessErr
 	}
 
 	for _, serverlessCache := range serverlessResp.ServerlessCaches {
+		var tags []*elasticache.Tag
+
+		if ptr.ToString(serverlessCache.Status) == "available" ||
+			ptr.ToString(serverlessCache.Status) == "modifying" {
+			tags, err = l.getResourceTags(svc, serverlessCache.ARN)
+			if err != nil {
+				logrus.WithError(err).Error("unable to retrieve tags")
+			}
+		}
+
 		resources = append(resources, &ElasticacheCacheCluster{
 			svc:        svc,
-			clusterID:  serverlessCache.ServerlessCacheName,
-			status:     serverlessCache.Status,
-			serverless: true,
+			Serverless: true,
+			ClusterID:  serverlessCache.ServerlessCacheName,
+			Status:     serverlessCache.Status,
+			Tags:       tags,
 		})
 	}
 
 	return resources, nil
 }
 
+func (l *ElasticacheCacheClusterLister) getResourceTags(svc elasticacheiface.ElastiCacheAPI, arn *string) ([]*elasticache.Tag, error) {
+	tags, err := svc.ListTagsForResource(&elasticache.ListTagsForResourceInput{
+		ResourceName: arn,
+	})
+	if err != nil {
+		return []*elasticache.Tag{}, err
+	}
+
+	return tags.TagList, nil
+}
+
 type ElasticacheCacheCluster struct {
 	svc        elasticacheiface.ElastiCacheAPI
-	clusterID  *string
-	status     *string
+	ClusterID  *string
+	Status     *string
+	Serverless bool
 	Tags       []*elasticache.Tag
-	serverless bool
 }
 
-func (i *ElasticacheCacheCluster) Properties() types.Properties {
-	properties := types.NewProperties()
+func (r *ElasticacheCacheCluster) Remove(_ context.Context) error {
+	if r.Serverless {
+		_, err := r.svc.DeleteServerlessCache(&elasticache.DeleteServerlessCacheInput{
+			ServerlessCacheName: r.ClusterID,
+		})
 
-	properties.Set("ClusterID", i.clusterID)
-	properties.Set("Status", i.status)
-
-	if i.Tags != nil {
-		for _, tag := range i.Tags {
-			properties.SetTag(tag.Key, tag.Value)
-		}
+		return err
 	}
 
-	return properties
+	_, err := r.svc.DeleteCacheCluster(&elasticache.DeleteCacheClusterInput{
+		CacheClusterId: r.ClusterID,
+	})
+
+	return err
 }
 
-func (i *ElasticacheCacheCluster) Remove(_ context.Context) error {
-	if !i.serverless {
-		params := &elasticache.DeleteCacheClusterInput{
-			CacheClusterId: i.clusterID,
-		}
-
-		_, err := i.svc.DeleteCacheCluster(params)
-		if err != nil {
-			return err
-		}
-	} else {
-		params := &elasticache.DeleteServerlessCacheInput{
-			ServerlessCacheName: i.clusterID,
-		}
-
-		_, serverlessErr := i.svc.DeleteServerlessCache(params)
-		if serverlessErr != nil {
-			return serverlessErr
-		}
-	}
-
-	return nil
+func (r *ElasticacheCacheCluster) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
 
-func (i *ElasticacheCacheCluster) String() string {
-	return *i.clusterID
+func (r *ElasticacheCacheCluster) String() string {
+	return *r.ClusterID
 }
