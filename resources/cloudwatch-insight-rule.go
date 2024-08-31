@@ -44,8 +44,9 @@ func (l *CloudWatchInsightRuleLister) List(_ context.Context, o interface{}) ([]
 
 		for _, rules := range output.InsightRules {
 			resources = append(resources, &CloudWatchInsightRule{
-				svc:  svc,
-				name: rules.Name,
+				svc:   svc,
+				Name:  rules.Name,
+				State: rules.State,
 			})
 		}
 
@@ -60,24 +61,23 @@ func (l *CloudWatchInsightRuleLister) List(_ context.Context, o interface{}) ([]
 }
 
 type CloudWatchInsightRule struct {
-	svc  *cloudwatch.CloudWatch
-	name *string
+	svc   *cloudwatch.CloudWatch
+	Name  *string
+	State *string
 }
 
-func (f *CloudWatchInsightRule) Remove(_ context.Context) error {
-	_, err := f.svc.DeleteInsightRules(&cloudwatch.DeleteInsightRulesInput{
-		RuleNames: []*string{f.name},
+func (r *CloudWatchInsightRule) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteInsightRules(&cloudwatch.DeleteInsightRulesInput{
+		RuleNames: []*string{r.Name},
 	})
 
 	return err
 }
 
-func (f *CloudWatchInsightRule) Properties() types.Properties {
-	properties := types.NewProperties()
-	properties.Set("Name", f.name)
-	return properties
+func (r *CloudWatchInsightRule) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
 
-func (f *CloudWatchInsightRule) String() string {
-	return *f.name
+func (r *CloudWatchInsightRule) String() string {
+	return *r.Name
 }
