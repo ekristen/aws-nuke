@@ -2,6 +2,10 @@ package resources
 
 import (
 	"context"
+	"fmt"
+	"github.com/ekristen/libnuke/pkg/types"
+	"github.com/gotidy/ptr"
+	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/resourcegroups"
@@ -38,10 +42,23 @@ func (l *ResourceGroupGroupLister) List(_ context.Context, o interface{}) ([]res
 		}
 
 		for _, group := range output.GroupIdentifiers {
-			resources = append(resources, &ResourceGroupGroup{
-				svc:       svc,
-				groupName: group.GroupName,
+			tags, err := svc.GetTags(&resourcegroups.GetTagsInput{
+				Arn: group.GroupArn,
 			})
+			if err != nil {
+				logrus.WithError(err).Error("unable to get tags for resource group")
+			}
+
+			newResource := &ResourceGroupGroup{
+				svc:  svc,
+				Name: group.GroupName,
+			}
+
+			if tags != nil {
+				newResource.Tags = tags.Tags
+			}
+
+			resources = append(resources, newResource)
 		}
 
 		if output.NextToken == nil {
@@ -55,18 +72,33 @@ func (l *ResourceGroupGroupLister) List(_ context.Context, o interface{}) ([]res
 }
 
 type ResourceGroupGroup struct {
-	svc       *resourcegroups.ResourceGroups
-	groupName *string
+	svc  *resourcegroups.ResourceGroups
+	Name *string
+	Tags map[string]*string
 }
 
-func (f *ResourceGroupGroup) Remove(_ context.Context) error {
-	_, err := f.svc.DeleteGroup(&resourcegroups.DeleteGroupInput{
-		Group: f.groupName,
+func (r *ResourceGroupGroup) Filter() error {
+	for k, v := range r.Tags {
+		if k == "EnableAWSServiceCatalogAppRegistry" && ptr.ToString(v) == "true" {
+			return fmt.Errorf("cannot delete AWS managed resource group")
+		}
+	}
+
+	return nil
+}
+
+func (r *ResourceGroupGroup) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
+}
+
+func (r *ResourceGroupGroup) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteGroup(&resourcegroups.DeleteGroupInput{
+		Group: r.Name,
 	})
 
 	return err
 }
 
-func (f *ResourceGroupGroup) String() string {
-	return *f.groupName
+func (r *ResourceGroupGroup) String() string {
+	return *r.Name
 }
