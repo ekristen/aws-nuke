@@ -4,6 +4,9 @@ import (
 	"context"
 	"time"
 
+	"github.com/google/uuid"
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go/service/scheduler"
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -60,8 +63,9 @@ type SchedulerSchedule struct {
 
 func (r *SchedulerSchedule) Remove(_ context.Context) error {
 	_, err := r.svc.DeleteSchedule(&scheduler.DeleteScheduleInput{
-		Name:      r.Name,
-		GroupName: r.GroupName,
+		Name:        r.Name,
+		GroupName:   r.GroupName,
+		ClientToken: ptr.String(uuid.Must(uuid.NewUUID()).String()),
 	})
 	return err
 }
