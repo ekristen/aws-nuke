@@ -3,15 +3,18 @@ package resources
 import (
 	"context"
 	"fmt"
-	"github.com/ekristen/libnuke/pkg/types"
+
 	"github.com/gotidy/ptr"
 	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/resourcegroups"
-	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
+
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
 const ResourceGroupGroupResource = "ResourceGroupGroup"
