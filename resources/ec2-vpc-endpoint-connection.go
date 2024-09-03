@@ -3,6 +3,9 @@ package resources
 import (
 	"context"
 	"fmt"
+	"strings"
+
+	"github.com/gotidy/ptr"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -45,10 +48,10 @@ func (l *EC2VPCEndpointConnectionLister) List(_ context.Context, o interface{}) 
 		for _, endpointConnection := range resp.VpcEndpointConnections {
 			resources = append(resources, &EC2VPCEndpointConnection{
 				svc:           svc,
-				vpcEndpointID: endpointConnection.VpcEndpointId,
-				serviceID:     endpointConnection.ServiceId,
-				state:         endpointConnection.VpcEndpointState,
-				owner:         endpointConnection.VpcEndpointOwner,
+				ServiceID:     endpointConnection.ServiceId,
+				VPCEndpointID: endpointConnection.VpcEndpointId,
+				State:         endpointConnection.VpcEndpointState,
+				Owner:         endpointConnection.VpcEndpointOwner,
 			})
 		}
 
@@ -64,43 +67,45 @@ func (l *EC2VPCEndpointConnectionLister) List(_ context.Context, o interface{}) 
 
 type EC2VPCEndpointConnection struct {
 	svc           *ec2.EC2
-	serviceID     *string
-	vpcEndpointID *string
-	state         *string
-	owner         *string
+	ServiceID     *string
+	VPCEndpointID *string
+	State         *string
+	Owner         *string
 }
 
-func (c *EC2VPCEndpointConnection) Filter() error {
-	if *c.state == awsutil.StateDeleting || *c.state == awsutil.StateDeleted {
+func (r *EC2VPCEndpointConnection) Filter() error {
+	if *r.State == awsutil.StateDeleting || *r.State == awsutil.StateDeleted {
 		return fmt.Errorf("already deleted")
 	}
 
+	if strings.EqualFold(ptr.ToString(r.State), awsutil.StateRejected) {
+		return fmt.Errorf("non-deletable state: rejected")
+	}
+
 	return nil
 }
 
-func (c *EC2VPCEndpointConnection) Remove(_ context.Context) error {
+func (r *EC2VPCEndpointConnection) Remove(_ context.Context) error {
 	params := &ec2.RejectVpcEndpointConnectionsInput{
-		ServiceId: c.serviceID,
+		ServiceId: r.ServiceID,
 		VpcEndpointIds: []*string{
-			c.vpcEndpointID,
+			r.VPCEndpointID,
 		},
 	}
 
-	_, err := c.svc.RejectVpcEndpointConnections(params)
+	_, err := r.svc.RejectVpcEndpointConnections(params)
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
-func (c *EC2VPCEndpointConnection) Properties() types.Properties {
-	properties := types.NewProperties()
-	properties.Set("VpcEndpointID", c.vpcEndpointID)
-	properties.Set("State", c.state)
-	properties.Set("Owner", c.owner)
-	return properties
+func (r *EC2VPCEndpointConnection) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r).
+		Set("VpcEndpointID", r.VPCEndpointID) // TODO(v4): remove the extra set
 }
 
-func (c *EC2VPCEndpointConnection) String() string {
-	return *c.serviceID
+func (r *EC2VPCEndpointConnection) String() string {
+	return *r.ServiceID
 }
