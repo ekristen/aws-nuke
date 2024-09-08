@@ -2,14 +2,13 @@ package resources
 
 import (
 	"context"
-
 	"fmt"
 	"strings"
 	"time"
 
+	"github.com/gotidy/ptr"
 	"github.com/sirupsen/logrus"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 
@@ -37,25 +36,27 @@ func init() {
 }
 
 type IAMRole struct {
-	svc  iamiface.IAMAPI
-	name string
-	path string
-	tags []*iam.Tag
+	svc          iamiface.IAMAPI
+	Name         *string
+	Path         *string
+	CreateDate   *time.Time
+	LastUsedDate *time.Time
+	Tags         []*iam.Tag
 }
 
-func (e *IAMRole) Filter() error {
-	if strings.HasPrefix(e.path, "/aws-service-role/") {
+func (r *IAMRole) Filter() error {
+	if strings.HasPrefix(*r.Path, "/aws-service-role/") {
 		return fmt.Errorf("cannot delete service roles")
 	}
-	if strings.HasPrefix(e.path, "/aws-reserved/sso.amazonaws.com/") {
+	if strings.HasPrefix(*r.Path, "/aws-reserved/sso.amazonaws.com/") {
 		return fmt.Errorf("cannot delete SSO roles")
 	}
 	return nil
 }
 
-func (e *IAMRole) Remove(_ context.Context) error {
-	_, err := e.svc.DeleteRole(&iam.DeleteRoleInput{
-		RoleName: aws.String(e.name),
+func (r *IAMRole) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteRole(&iam.DeleteRoleInput{
+		RoleName: r.Name,
 	})
 	if err != nil {
 		return err
@@ -64,51 +65,32 @@ func (e *IAMRole) Remove(_ context.Context) error {
 	return nil
 }
 
-func (e *IAMRole) Properties() types.Properties {
-	properties := types.NewProperties()
-	for _, tagValue := range e.tags {
-		properties.SetTag(tagValue.Key, tagValue.Value)
-	}
-
-	return properties
+func (r *IAMRole) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
 
-func (e *IAMRole) String() string {
-	return e.name
-}
-
-// ---------
-
-func GetIAMRole(svc *iam.IAM, roleName *string) (*iam.Role, error) {
-	params := &iam.GetRoleInput{
-		RoleName: roleName,
-	}
-	resp, err := svc.GetRole(params)
-	return resp.Role, err
-}
-
-func getLastUsedDate(role *iam.Role, format string) string {
-	var lastUsedDate *time.Time
-	if role.RoleLastUsed == nil || role.RoleLastUsed.LastUsedDate == nil {
-		lastUsedDate = role.CreateDate
-	} else {
-		lastUsedDate = role.RoleLastUsed.LastUsedDate
-	}
-
-	return lastUsedDate.Format(format)
+func (r *IAMRole) String() string {
+	return *r.Name
 }
 
 // --------------
 
-type IAMRoleLister struct{}
+type IAMRoleLister struct {
+	mockSvc iamiface.IAMAPI
+}
 
 func (l *IAMRoleLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
-
-	svc := iam.New(opts.Session)
-	params := &iam.ListRolesInput{}
 	resources := make([]resource.Resource, 0)
 
+	var svc iamiface.IAMAPI
+	if l.mockSvc != nil {
+		svc = l.mockSvc
+	} else {
+		svc = iam.New(opts.Session)
+	}
+
+	params := &iam.ListRolesInput{}
 	for {
 		resp, err := svc.ListRoles(params)
 		if err != nil {
@@ -126,10 +108,12 @@ func (l *IAMRoleLister) List(_ context.Context, o interface{}) ([]resource.Resou
 			}
 
 			resources = append(resources, &IAMRole{
-				svc:  svc,
-				name: *role.RoleName,
-				path: *role.Path,
-				tags: role.Tags,
+				svc:          svc,
+				Name:         role.RoleName,
+				Path:         role.Path,
+				CreateDate:   role.CreateDate,
+				LastUsedDate: getLastUsedDate(role),
+				Tags:         role.Tags,
 			})
 		}
 
@@ -141,4 +125,30 @@ func (l *IAMRoleLister) List(_ context.Context, o interface{}) ([]resource.Resou
 	}
 
 	return resources, nil
+}
+
+// ---------
+
+// GetIAMRole returns the IAM role with the given name
+func GetIAMRole(svc iamiface.IAMAPI, roleName *string) (*iam.Role, error) {
+	resp, err := svc.GetRole(&iam.GetRoleInput{
+		RoleName: roleName,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.Role, err
+}
+
+// getLastUsedDate returns the last used date of the role
+func getLastUsedDate(role *iam.Role) *time.Time {
+	var lastUsedDate *time.Time
+	if role.RoleLastUsed == nil || role.RoleLastUsed.LastUsedDate == nil {
+		lastUsedDate = role.CreateDate
+	} else {
+		lastUsedDate = role.RoleLastUsed.LastUsedDate
+	}
+
+	return ptr.Time(lastUsedDate.UTC())
 }

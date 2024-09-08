@@ -111,7 +111,7 @@ func (e *IAMInstanceProfileRole) Properties() types.Properties {
 		Set("InstanceRole", e.role.RoleName).
 		Set("role:Path", e.role.Path).
 		Set("role:CreateDate", e.role.CreateDate.Format(time.RFC3339)).
-		Set("role:LastUsedDate", getLastUsedDate(e.role, time.RFC3339))
+		Set("role:LastUsedDate", getLastUsedDate(e.role))
 
 	for _, tagValue := range e.role.Tags {
 		properties.SetTagWithPrefix("role", tagValue.Key, tagValue.Value)
