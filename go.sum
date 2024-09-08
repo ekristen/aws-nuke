@@ -10,6 +10,8 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/ekristen/libnuke v0.18.0 h1:sF533oSET50FjgIkYV72rvgNzCzUR/AH2tQeKVim31g=
 github.com/ekristen/libnuke v0.18.0/go.mod h1:riI1tjCf6r+et/9oUBd1vQeFmn2Sn6UeFUR0nWkMeYw=
+github.com/ekristen/libnuke v0.19.0 h1:pXVxPlbKfYbP1iSwsNu67MQ8HNvZPEZIeKiyw/k8FWg=
+github.com/ekristen/libnuke v0.19.0/go.mod h1:riI1tjCf6r+et/9oUBd1vQeFmn2Sn6UeFUR0nWkMeYw=
 github.com/fatih/color v1.17.0 h1:GlRw1BRJxkpqUCBKzKOw098ed57fEsKeNjpTe3cSjK4=
 github.com/fatih/color v1.17.0/go.mod h1:YZ7TlrGPkiz6ku9fK3TLD/pl3CpsiFyu8N92HLgmosI=
 github.com/golang/mock v1.6.0 h1:ErTB+efbowRARo13NNdxyJji2egdxLGQhRaY+DUumQc=
