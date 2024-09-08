@@ -192,11 +192,15 @@ func Test_Mock_KMSKey_Properties(t *testing.T) {
 		ID:      ptr.String("test-key-id"),
 		State:   ptr.String(kms.KeyStateEnabled),
 		Manager: ptr.String(kms.KeyManagerTypeCustomer),
+		Tags: []*kms.Tag{
+			{TagKey: aws.String("Environment"), TagValue: aws.String("Test")},
+		},
 	}
 
 	assert.Equal(t, "test-key-id", kmsKey.String())
 	assert.Equal(t, kms.KeyStateEnabled, kmsKey.Properties().Get("State"))
 	assert.Equal(t, kms.KeyManagerTypeCustomer, kmsKey.Properties().Get("Manager"))
+	assert.Equal(t, "Test", kmsKey.Properties().Get("tag:Environment"))
 }
 
 func Test_Mock_KMSKey_Remove(t *testing.T) {
