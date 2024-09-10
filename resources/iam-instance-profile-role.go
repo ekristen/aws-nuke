@@ -2,7 +2,6 @@ package resources
 
 import (
 	"context"
-
 	"fmt"
 	"time"
 
@@ -32,14 +31,22 @@ func init() {
 	})
 }
 
-type IAMInstanceProfileRoleLister struct{}
+type IAMInstanceProfileRoleLister struct {
+	mockSvc iamiface.IAMAPI
+}
 
 func (l *IAMInstanceProfileRoleLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
-
-	svc := iam.New(opts.Session)
-	params := &iam.ListInstanceProfilesInput{}
 	resources := make([]resource.Resource, 0)
+
+	var svc iamiface.IAMAPI
+	if l.mockSvc != nil {
+		svc = l.mockSvc
+	} else {
+		svc = iam.New(opts.Session)
+	}
+
+	params := &iam.ListInstanceProfilesInput{}
 
 	for {
 		resp, err := svc.ListInstanceProfiles(params)
