@@ -5,7 +5,7 @@
 ### Homebrew Tap (MacOS/Linux)
 
 ```console
-brew install ekristen/tap/aws-nuke@3
+brew install ekristen/tap/aws-nuke
 ```
 
 !!! warning "Brew Warning"
