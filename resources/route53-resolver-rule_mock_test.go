@@ -3,13 +3,13 @@ package resources
 import (
 	"context"
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws"
 	"testing"
 
 	"github.com/golang/mock/gomock"
 	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/route53resolver"
 
@@ -218,21 +218,21 @@ func Test_resolverRulesToVpcIDs(t *testing.T) {
 		Return(&route53resolver.ListResolverRuleAssociationsOutput{
 			ResolverRuleAssociations: []*route53resolver.ResolverRuleAssociation{
 				{
-					ResolverRuleId: aws.String("rslvr-rr-1"),
-					VPCId:          aws.String("vpc-1"),
+					ResolverRuleId: ptr.String("rslvr-rr-1"),
+					VPCId:          ptr.String("vpc-1"),
 				},
 			},
-			NextToken: aws.String("token1"),
+			NextToken: ptr.String("token1"),
 		}, nil)
 
 	mockRoute53Resolver.EXPECT().
 		ListResolverRuleAssociations(&route53resolver.ListResolverRuleAssociationsInput{
-			NextToken: aws.String("token1"),
+			NextToken: ptr.String("token1"),
 		}).Return(&route53resolver.ListResolverRuleAssociationsOutput{
 		ResolverRuleAssociations: []*route53resolver.ResolverRuleAssociation{
 			{
-				ResolverRuleId: aws.String("rslvr-rr-2"),
-				VPCId:          aws.String("vpc-2"),
+				ResolverRuleId: ptr.String("rslvr-rr-2"),
+				VPCId:          ptr.String("vpc-2"),
 			},
 		},
 	}, nil)
@@ -241,8 +241,8 @@ func Test_resolverRulesToVpcIDs(t *testing.T) {
 	a.Nil(err)
 	a.NotNil(vpcAssociations)
 	a.Len(vpcAssociations, 2)
-	a.Equal([]*string{aws.String("vpc-1")}, vpcAssociations["rslvr-rr-1"])
-	a.Equal([]*string{aws.String("vpc-2")}, vpcAssociations["rslvr-rr-2"])
+	a.Equal([]*string{ptr.String("vpc-1")}, vpcAssociations["rslvr-rr-1"])
+	a.Equal([]*string{ptr.String("vpc-2")}, vpcAssociations["rslvr-rr-2"])
 
 	// Test case: Multiple VPC associations for a single resolver rule
 	mockRoute53Resolver.EXPECT().
@@ -250,12 +250,12 @@ func Test_resolverRulesToVpcIDs(t *testing.T) {
 		Return(&route53resolver.ListResolverRuleAssociationsOutput{
 			ResolverRuleAssociations: []*route53resolver.ResolverRuleAssociation{
 				{
-					ResolverRuleId: aws.String("rslvr-rr-3"),
-					VPCId:          aws.String("vpc-3"),
+					ResolverRuleId: ptr.String("rslvr-rr-3"),
+					VPCId:          ptr.String("vpc-3"),
 				},
 				{
-					ResolverRuleId: aws.String("rslvr-rr-3"),
-					VPCId:          aws.String("vpc-4"),
+					ResolverRuleId: ptr.String("rslvr-rr-3"),
+					VPCId:          ptr.String("vpc-4"),
 				},
 			},
 		}, nil)
@@ -264,5 +264,5 @@ func Test_resolverRulesToVpcIDs(t *testing.T) {
 	a.Nil(err)
 	a.NotNil(vpcAssociations)
 	a.Len(vpcAssociations, 1)
-	a.Equal([]*string{aws.String("vpc-3"), aws.String("vpc-4")}, vpcAssociations["rslvr-rr-3"])
+	a.Equal([]*string{ptr.String("vpc-3"), ptr.String("vpc-4")}, vpcAssociations["rslvr-rr-3"])
 }
