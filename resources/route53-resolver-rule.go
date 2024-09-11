@@ -8,6 +8,7 @@ import (
 	"github.com/gotidy/ptr"
 
 	"github.com/aws/aws-sdk-go/service/route53resolver"
+	"github.com/aws/aws-sdk-go/service/route53resolver/route53resolveriface"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
@@ -26,14 +27,21 @@ func init() {
 	})
 }
 
-type Route53ResolverRuleLister struct{}
+type Route53ResolverRuleLister struct {
+	mockSvc route53resolveriface.Route53ResolverAPI
+}
 
 // List returns a list of all Route53 ResolverRules before filtering to be nuked
 func (l *Route53ResolverRuleLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 	var resources []resource.Resource
 
-	svc := route53resolver.New(opts.Session)
+	var svc route53resolveriface.Route53ResolverAPI
+	if l.mockSvc != nil {
+		svc = l.mockSvc
+	} else {
+		svc = route53resolver.New(opts.Session)
+	}
 
 	vpcAssociations, vpcErr := resolverRulesToVpcIDs(svc)
 	if vpcErr != nil {
@@ -43,7 +51,6 @@ func (l *Route53ResolverRuleLister) List(_ context.Context, o interface{}) ([]re
 	params := &route53resolver.ListResolverRulesInput{}
 	for {
 		resp, err := svc.ListResolverRules(params)
-
 		if err != nil {
 			return nil, err
 		}
@@ -68,8 +75,55 @@ func (l *Route53ResolverRuleLister) List(_ context.Context, o interface{}) ([]re
 	return resources, nil
 }
 
+// Route53ResolverRule is the resource type
+type Route53ResolverRule struct {
+	svc        route53resolveriface.Route53ResolverAPI
+	vpcIds     []*string
+	ID         *string
+	Name       *string
+	DomainName *string
+}
+
+// Filter removes resources automatically from being nuked
+func (r *Route53ResolverRule) Filter() error {
+	if strings.HasPrefix(ptr.ToString(r.ID), "rslvr-autodefined-rr") {
+		return fmt.Errorf("cannot delete system defined rules")
+	}
+
+	return nil
+}
+
+// Remove implements Resource
+func (r *Route53ResolverRule) Remove(_ context.Context) error {
+	for _, vpcID := range r.vpcIds {
+		_, err := r.svc.DisassociateResolverRule(&route53resolver.DisassociateResolverRuleInput{
+			ResolverRuleId: r.ID,
+			VPCId:          vpcID,
+		})
+		if err != nil {
+			return err
+		}
+	}
+
+	_, err := r.svc.DeleteResolverRule(&route53resolver.DeleteResolverRuleInput{
+		ResolverRuleId: r.ID,
+	})
+
+	return err
+}
+
+// Properties provides debugging output
+func (r *Route53ResolverRule) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
+}
+
+// String implements Stringer
+func (r *Route53ResolverRule) String() string {
+	return fmt.Sprintf("%s (%s)", ptr.ToString(r.ID), ptr.ToString(r.Name))
+}
+
 // resolverRulesToVpcIDs - Associate all the vpcIDs to their resolver rule ID to be disassociated before deleting the rule.
-func resolverRulesToVpcIDs(svc *route53resolver.Route53Resolver) (map[string][]*string, error) {
+func resolverRulesToVpcIDs(svc route53resolveriface.Route53ResolverAPI) (map[string][]*string, error) {
 	vpcAssociations := map[string][]*string{}
 
 	params := &route53resolver.ListResolverRuleAssociationsInput{}
@@ -102,57 +156,4 @@ func resolverRulesToVpcIDs(svc *route53resolver.Route53Resolver) (map[string][]*
 	}
 
 	return vpcAssociations, nil
-}
-
-// Route53ResolverRule is the resource type
-type Route53ResolverRule struct {
-	svc        *route53resolver.Route53Resolver
-	vpcIds     []*string
-	ID         *string
-	Name       *string
-	DomainName *string
-}
-
-// Filter removes resources automatically from being nuked
-func (r *Route53ResolverRule) Filter() error {
-	if strings.HasPrefix(ptr.ToString(r.ID), "rslvr-autodefined-rr") {
-		return fmt.Errorf("cannot delete system defined rules")
-	}
-
-	// TODO: is this needed if the system defined is already filtered?
-	if r.DomainName != nil && ptr.ToString(r.DomainName) == "." {
-		return fmt.Errorf(`filtering DomainName "."`)
-	}
-
-	return nil
-}
-
-// Remove implements Resource
-func (r *Route53ResolverRule) Remove(_ context.Context) error {
-	for _, vpcID := range r.vpcIds {
-		_, err := r.svc.DisassociateResolverRule(&route53resolver.DisassociateResolverRuleInput{
-			ResolverRuleId: r.ID,
-			VPCId:          vpcID,
-		})
-
-		if err != nil {
-			return err
-		}
-	}
-
-	_, err := r.svc.DeleteResolverRule(&route53resolver.DeleteResolverRuleInput{
-		ResolverRuleId: r.ID,
-	})
-
-	return err
-}
-
-// Properties provides debugging output
-func (r *Route53ResolverRule) Properties() types.Properties {
-	return types.NewPropertiesFromStruct(r)
-}
-
-// String implements Stringer
-func (r *Route53ResolverRule) String() string {
-	return fmt.Sprintf("%s (%s)", ptr.ToString(r.ID), ptr.ToString(r.Name))
 }
