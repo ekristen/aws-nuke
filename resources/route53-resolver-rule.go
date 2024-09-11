@@ -31,15 +31,14 @@ type Route53ResolverRuleLister struct{}
 // List returns a list of all Route53 ResolverRules before filtering to be nuked
 func (l *Route53ResolverRuleLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
+	var resources []resource.Resource
 
 	svc := route53resolver.New(opts.Session)
 
-	vpcAssociations, err := resolverRulesToVpcIDs(svc)
-	if err != nil {
-		return nil, err
+	vpcAssociations, vpcErr := resolverRulesToVpcIDs(svc)
+	if vpcErr != nil {
+		return nil, vpcErr
 	}
-
-	var resources []resource.Resource
 
 	params := &route53resolver.ListResolverRulesInput{}
 	for {
@@ -52,10 +51,10 @@ func (l *Route53ResolverRuleLister) List(_ context.Context, o interface{}) ([]re
 		for _, rule := range resp.ResolverRules {
 			resources = append(resources, &Route53ResolverRule{
 				svc:        svc,
-				id:         rule.Id,
-				name:       rule.Name,
-				domainName: rule.DomainName,
 				vpcIds:     vpcAssociations[*rule.Id],
+				ID:         rule.Id,
+				Name:       rule.Name,
+				DomainName: rule.DomainName,
 			})
 		}
 
@@ -108,20 +107,21 @@ func resolverRulesToVpcIDs(svc *route53resolver.Route53Resolver) (map[string][]*
 // Route53ResolverRule is the resource type
 type Route53ResolverRule struct {
 	svc        *route53resolver.Route53Resolver
-	id         *string
-	name       *string
-	domainName *string
 	vpcIds     []*string
+	ID         *string
+	Name       *string
+	DomainName *string
 }
 
 // Filter removes resources automatically from being nuked
 func (r *Route53ResolverRule) Filter() error {
-	if r.domainName != nil && ptr.ToString(r.domainName) == "." {
-		return fmt.Errorf(`filtering DomainName "."`)
+	if strings.HasPrefix(ptr.ToString(r.ID), "rslvr-autodefined-rr") {
+		return fmt.Errorf("cannot delete system defined rules")
 	}
 
-	if r.id != nil && strings.HasPrefix(ptr.ToString(r.id), "rslvr-autodefined-rr") {
-		return fmt.Errorf("cannot delete system defined rules")
+	// TODO: is this needed if the system defined is already filtered?
+	if r.DomainName != nil && ptr.ToString(r.DomainName) == "." {
+		return fmt.Errorf(`filtering DomainName "."`)
 	}
 
 	return nil
@@ -131,7 +131,7 @@ func (r *Route53ResolverRule) Filter() error {
 func (r *Route53ResolverRule) Remove(_ context.Context) error {
 	for _, vpcID := range r.vpcIds {
 		_, err := r.svc.DisassociateResolverRule(&route53resolver.DisassociateResolverRuleInput{
-			ResolverRuleId: r.id,
+			ResolverRuleId: r.ID,
 			VPCId:          vpcID,
 		})
 
@@ -141,7 +141,7 @@ func (r *Route53ResolverRule) Remove(_ context.Context) error {
 	}
 
 	_, err := r.svc.DeleteResolverRule(&route53resolver.DeleteResolverRuleInput{
-		ResolverRuleId: r.id,
+		ResolverRuleId: r.ID,
 	})
 
 	return err
@@ -149,12 +149,10 @@ func (r *Route53ResolverRule) Remove(_ context.Context) error {
 
 // Properties provides debugging output
 func (r *Route53ResolverRule) Properties() types.Properties {
-	return types.NewProperties().
-		Set("ID", r.id).
-		Set("Name", r.name)
+	return types.NewPropertiesFromStruct(r)
 }
 
 // String implements Stringer
 func (r *Route53ResolverRule) String() string {
-	return fmt.Sprintf("%s (%s)", *r.id, *r.name)
+	return fmt.Sprintf("%s (%s)", ptr.ToString(r.ID), ptr.ToString(r.Name))
 }
