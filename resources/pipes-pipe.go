@@ -13,7 +13,7 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-const PipesPipeResource = "PipesPipes"
+const PipesPipeResource = "PipesPipe"
 
 func init() {
 	registry.Register(&registry.Registration{
