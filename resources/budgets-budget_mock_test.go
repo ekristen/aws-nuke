@@ -62,6 +62,21 @@ func Test_Mock_BudgetsBudget_List(t *testing.T) {
 		UserId:  ptr.String("000000000000"),
 	}, nil)
 
+	mockBudgets.EXPECT().ListTagsForResource(&budgets.ListTagsForResourceInput{
+		ResourceARN: ptr.String("arn:aws:budgets::000000000000:budget/budget1"),
+	}).Return(&budgets.ListTagsForResourceOutput{
+		ResourceTags: []*budgets.ResourceTag{
+			{
+				Key:   ptr.String("key1"),
+				Value: ptr.String("value1"),
+			},
+		},
+	}, nil)
+
+	mockBudgets.EXPECT().ListTagsForResource(&budgets.ListTagsForResourceInput{
+		ResourceARN: ptr.String("arn:aws:budgets::000000000000:budget/budget2"),
+	}).Return(&budgets.ListTagsForResourceOutput{}, nil)
+
 	lister := &BudgetsBudgetLister{
 		mockSvc:    mockBudgets,
 		mockSTSSvc: mockSts,
@@ -81,6 +96,12 @@ func Test_Mock_BudgetsBudget_List(t *testing.T) {
 			Name:       ptr.String("budget1"),
 			BudgetType: ptr.String("COST"),
 			AccountID:  ptr.String("000000000000"),
+			Tags: []*budgets.ResourceTag{
+				{
+					Key:   ptr.String("key1"),
+					Value: ptr.String("value1"),
+				},
+			},
 		},
 		&BudgetsBudget{
 			svc:        mockBudgets,

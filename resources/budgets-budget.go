@@ -2,8 +2,10 @@ package resources
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/gotidy/ptr"
+	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go/service/budgets"
 	"github.com/aws/aws-sdk-go/service/budgets/budgetsiface"
@@ -70,17 +72,27 @@ func (l *BudgetsBudgetLister) List(_ context.Context, o interface{}) ([]resource
 		buds = append(buds, page.Budgets...)
 		return true
 	})
-
 	if err != nil {
 		return nil, err
 	}
 
 	for _, bud := range buds {
+		var resourceTags []*budgets.ResourceTag
+		tags, tagsErr := svc.ListTagsForResource(&budgets.ListTagsForResourceInput{
+			ResourceARN: ptr.String(fmt.Sprintf("arn:aws:budgets::%s:budget/%s", *accountID, *bud.BudgetName)),
+		})
+		if tagsErr != nil {
+			logrus.WithError(tagsErr).Error("unable to get tags for budget")
+		} else {
+			resourceTags = tags.ResourceTags
+		}
+
 		resources = append(resources, &BudgetsBudget{
 			svc:        svc,
 			Name:       bud.BudgetName,
 			BudgetType: bud.BudgetType,
 			AccountID:  accountID,
+			Tags:       resourceTags,
 		})
 	}
 
@@ -92,6 +104,7 @@ type BudgetsBudget struct {
 	Name       *string
 	BudgetType *string
 	AccountID  *string
+	Tags       []*budgets.ResourceTag
 }
 
 func (r *BudgetsBudget) Remove(_ context.Context) error {
