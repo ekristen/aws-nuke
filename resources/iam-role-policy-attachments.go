@@ -66,7 +66,7 @@ func (e *IAMRolePolicyAttachment) Properties() types.Properties {
 	properties := types.NewProperties().
 		Set("RoleName", e.role.RoleName).
 		Set("RolePath", e.role.Path).
-		Set("RoleLastUsed", getLastUsedDate(e.role, time.RFC3339)).
+		Set("RoleLastUsed", getLastUsedDate(e.role)).
 		Set("RoleCreateDate", e.role.CreateDate.Format(time.RFC3339)).
 		Set("PolicyName", e.policyName).
 		Set("PolicyArn", e.policyArn)

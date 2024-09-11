@@ -2,7 +2,6 @@ package resources
 
 import (
 	"context"
-
 	"fmt"
 	"time"
 
@@ -32,14 +31,22 @@ func init() {
 	})
 }
 
-type IAMInstanceProfileRoleLister struct{}
+type IAMInstanceProfileRoleLister struct {
+	mockSvc iamiface.IAMAPI
+}
 
 func (l *IAMInstanceProfileRoleLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
-
-	svc := iam.New(opts.Session)
-	params := &iam.ListInstanceProfilesInput{}
 	resources := make([]resource.Resource, 0)
+
+	var svc iamiface.IAMAPI
+	if l.mockSvc != nil {
+		svc = l.mockSvc
+	} else {
+		svc = iam.New(opts.Session)
+	}
+
+	params := &iam.ListInstanceProfilesInput{}
 
 	for {
 		resp, err := svc.ListInstanceProfiles(params)
@@ -111,7 +118,7 @@ func (e *IAMInstanceProfileRole) Properties() types.Properties {
 		Set("InstanceRole", e.role.RoleName).
 		Set("role:Path", e.role.Path).
 		Set("role:CreateDate", e.role.CreateDate.Format(time.RFC3339)).
-		Set("role:LastUsedDate", getLastUsedDate(e.role, time.RFC3339))
+		Set("role:LastUsedDate", getLastUsedDate(e.role))
 
 	for _, tagValue := range e.role.Tags {
 		properties.SetTagWithPrefix("role", tagValue.Key, tagValue.Value)

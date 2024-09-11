@@ -29,14 +29,22 @@ func init() {
 	})
 }
 
-type IAMInstanceProfileLister struct{}
+type IAMInstanceProfileLister struct {
+	mockSvc iamiface.IAMAPI
+}
 
 func (l *IAMInstanceProfileLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
-
-	svc := iam.New(opts.Session)
-	params := &iam.ListInstanceProfilesInput{}
 	resources := make([]resource.Resource, 0)
+
+	var svc iamiface.IAMAPI
+	if l.mockSvc != nil {
+		svc = l.mockSvc
+	} else {
+		svc = iam.New(opts.Session)
+	}
+
+	params := &iam.ListInstanceProfilesInput{}
 
 	for {
 		resp, err := svc.ListInstanceProfiles(params)
@@ -55,10 +63,10 @@ func (l *IAMInstanceProfileLister) List(_ context.Context, o interface{}) ([]res
 			}
 
 			resources = append(resources, &IAMInstanceProfile{
-				svc:     svc,
-				name:    *out.InstanceProfileName,
-				path:    *profile.Path,
-				profile: profile,
+				svc:  svc,
+				Name: out.InstanceProfileName,
+				Path: profile.Path,
+				Tags: profile.Tags,
 			})
 		}
 
@@ -72,24 +80,16 @@ func (l *IAMInstanceProfileLister) List(_ context.Context, o interface{}) ([]res
 	return resources, nil
 }
 
-func GetIAMInstanceProfile(svc *iam.IAM, instanceProfileName *string) (*iam.InstanceProfile, error) {
-	params := &iam.GetInstanceProfileInput{
-		InstanceProfileName: instanceProfileName,
-	}
-	resp, err := svc.GetInstanceProfile(params)
-	return resp.InstanceProfile, err
-}
-
 type IAMInstanceProfile struct {
-	svc     iamiface.IAMAPI
-	name    string
-	path    string
-	profile *iam.InstanceProfile
+	svc  iamiface.IAMAPI
+	Name *string
+	Path *string
+	Tags []*iam.Tag
 }
 
-func (e *IAMInstanceProfile) Remove(_ context.Context) error {
-	_, err := e.svc.DeleteInstanceProfile(&iam.DeleteInstanceProfileInput{
-		InstanceProfileName: &e.name,
+func (r *IAMInstanceProfile) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteInstanceProfile(&iam.DeleteInstanceProfileInput{
+		InstanceProfileName: r.Name,
 	})
 	if err != nil {
 		return err
@@ -98,20 +98,22 @@ func (e *IAMInstanceProfile) Remove(_ context.Context) error {
 	return nil
 }
 
-func (e *IAMInstanceProfile) String() string {
-	return e.name
+func (r *IAMInstanceProfile) String() string {
+	return *r.Name
 }
 
-func (e *IAMInstanceProfile) Properties() types.Properties {
-	properties := types.NewProperties()
+func (r *IAMInstanceProfile) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
+}
 
-	for _, tagValue := range e.profile.Tags {
-		properties.SetTag(tagValue.Key, tagValue.Value)
+// GetIAMInstanceProfile returns an IAM instance profile
+func GetIAMInstanceProfile(svc iamiface.IAMAPI, instanceProfileName *string) (*iam.InstanceProfile, error) {
+	resp, err := svc.GetInstanceProfile(&iam.GetInstanceProfileInput{
+		InstanceProfileName: instanceProfileName,
+	})
+	if err != nil {
+		return nil, err
 	}
 
-	properties.
-		Set("Name", e.name).
-		Set("Path", e.path)
-
-	return properties
+	return resp.InstanceProfile, nil
 }

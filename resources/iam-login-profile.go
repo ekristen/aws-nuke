@@ -2,8 +2,8 @@ package resources
 
 import (
 	"context"
-
 	"errors"
+	"time"
 
 	"github.com/gotidy/ptr"
 	"github.com/sirupsen/logrus"
@@ -29,18 +29,26 @@ func init() {
 	})
 }
 
-type IAMLoginProfileLister struct{}
+type IAMLoginProfileLister struct {
+	mockSvc iamiface.IAMAPI
+}
 
 func (l *IAMLoginProfileLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
-	svc := iam.New(opts.Session)
+	resources := make([]resource.Resource, 0)
+	var svc iamiface.IAMAPI
+
+	if l.mockSvc != nil {
+		svc = l.mockSvc
+	} else {
+		svc = iam.New(opts.Session)
+	}
 
 	resp, err := svc.ListUsers(nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resources := make([]resource.Resource, 0)
 	for _, out := range resp.Users {
 		lpresp, err := svc.GetLoginProfile(&iam.GetLoginProfileInput{UserName: out.UserName})
 		if err != nil {
@@ -58,8 +66,9 @@ func (l *IAMLoginProfileLister) List(_ context.Context, o interface{}) ([]resour
 
 		if lpresp.LoginProfile != nil {
 			resources = append(resources, &IAMLoginProfile{
-				svc:  svc,
-				name: ptr.ToString(out.UserName),
+				svc:        svc,
+				UserName:   out.UserName,
+				CreateDate: out.CreateDate,
 			})
 		}
 	}
@@ -68,23 +77,25 @@ func (l *IAMLoginProfileLister) List(_ context.Context, o interface{}) ([]resour
 }
 
 type IAMLoginProfile struct {
-	svc  iamiface.IAMAPI
-	name string
+	svc        iamiface.IAMAPI
+	UserName   *string
+	CreateDate *time.Time
 }
 
-func (e *IAMLoginProfile) Remove(_ context.Context) error {
-	_, err := e.svc.DeleteLoginProfile(&iam.DeleteLoginProfileInput{UserName: &e.name})
+func (r *IAMLoginProfile) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteLoginProfile(&iam.DeleteLoginProfileInput{
+		UserName: r.UserName,
+	})
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (e *IAMLoginProfile) Properties() types.Properties {
-	return types.NewProperties().
-		Set("UserName", e.name)
+func (r *IAMLoginProfile) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
 
-func (e *IAMLoginProfile) String() string {
-	return e.name
+func (r *IAMLoginProfile) String() string {
+	return *r.UserName
 }
