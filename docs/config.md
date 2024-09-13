@@ -7,6 +7,7 @@ The configuration is the user supplied configuration that is used to drive the n
 The configuration is broken down into the following sections:
 
 - [blocklist](#blocklist)
+- [blocklist-alias-keywords](#blocklist-alias-keywords)
 - [regions](#regions)
 - [accounts](#accounts)
     - [presets](#presets)
@@ -30,6 +31,11 @@ The configuration is broken down into the following sections:
 ```yaml
 blocklist:
   - 1234567890
+    
+blocklist-alias-keywords:
+  - "prod"
+  - "production"
+  - "live"
 
 regions:
   - global
@@ -61,14 +67,38 @@ settings:
 
 ## Blocklist
 
-The blocklist is simply a list of Accounts that the tool cannot run against. This is to protect the user from accidentally
+The `blocklist` is simply a list of Accounts that the tool cannot run against. This is to protect the user from accidentally
 running the tool against the wrong account. The blocklist must always be populated with at least one entry.
+
+```yaml
+blocklist:
+  - 1234567890
+```
+
+## Blocklist Alias Keywords
+
+`blocklist-alias-keywords` is a list of keywords that the tool will use to block accounts based on their aliases. If 
+an account alias contains any of the keywords in the list, then the account will be blocked. However if the bypass alias
+check flag is set, then this feature has no affect.
+
+```yaml
+blocklist-alias-keywords:
+  - "prod"
+  - "production"
+  - "live"
+```
 
 ## Regions
 
-The regions is a list of AWS regions that the tool will run against. The tool will run against all regions specified in the
+The `regions` is a list of AWS regions that the tool will run against. The tool will run against all regions specified in the
 configuration. If no regions are listed, then the tool will **NOT** run against any region. Regions must be explicitly
 provided.
+
+```yaml
+regions:
+  - global
+  - us-east-1
+```
 
 ### All Enabled Regions
 
@@ -79,6 +109,11 @@ special region `global` which is for specific global resources.
 !!! important
     The use of `all` will ignore all other regions specified in the configuration. It will only run against regions
     that are enabled in the account.
+
+```yaml
+regions:
+  - all
+```
 
 ## Accounts
 
