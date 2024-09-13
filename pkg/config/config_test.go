@@ -375,3 +375,59 @@ func TestConfig_DeprecatedFeatureFlags(t *testing.T) {
 	assert.NotNil(t, cloudformationStackSettings)
 	assert.Equal(t, true, cloudformationStackSettings.Get("DisableDeletionProtection"))
 }
+
+func TestConfig_ValidateAccount_Blocklist(t *testing.T) {
+	config, err := New(libconfig.Options{
+		Path: "testdata/example.yaml",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Add an account to the blocklist
+	config.Blocklist = append(config.Blocklist, "1234567890")
+	config.BlocklistAliasKeywords = append(config.BlocklistAliasKeywords, "alpha-tango")
+
+	// Test cases
+	cases := []struct {
+		ID         string
+		Aliases    []string
+		ShouldFail bool
+	}{
+		{
+			// Should fail due to blocklist
+			ID: "1234567890",
+			Aliases: []string{
+				"sandbox",
+			},
+			ShouldFail: true,
+		},
+		{
+			// Allowed account
+			ID: "555133742",
+			Aliases: []string{
+				"sandbox2",
+			},
+			ShouldFail: false,
+		},
+		{
+			// Allowed account but blocked by keyword
+			ID: "555133742",
+			Aliases: []string{
+				"alpha-tango-sandbox",
+			},
+			ShouldFail: true,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(fmt.Sprintf("AccountID_%s", tc.ID), func(t *testing.T) {
+			err := config.ValidateAccount(tc.ID, tc.Aliases, false)
+			if tc.ShouldFail {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
