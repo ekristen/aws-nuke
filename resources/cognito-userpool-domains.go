@@ -46,7 +46,7 @@ func (l *CognitoUserPoolDomainLister) List(ctx context.Context, o interface{}) (
 		}
 
 		describeParams := &cognitoidentityprovider.DescribeUserPoolInput{
-			UserPoolId: userPool.id,
+			UserPoolId: userPool.ID,
 		}
 		userPoolDetails, err := svc.DescribeUserPool(describeParams)
 		if err != nil {
@@ -60,8 +60,8 @@ func (l *CognitoUserPoolDomainLister) List(ctx context.Context, o interface{}) (
 		resources = append(resources, &CognitoUserPoolDomain{
 			svc:          svc,
 			name:         userPoolDetails.UserPool.Domain,
-			userPoolName: userPool.name,
-			userPoolID:   userPool.id,
+			userPoolName: userPool.Name,
+			userPoolID:   userPool.ID,
 		})
 	}
 

@@ -51,7 +51,7 @@ func (l *CognitoIdentityProviderLister) List(ctx context.Context, o interface{})
 		}
 
 		listParams := &cognitoidentityprovider.ListIdentityProvidersInput{
-			UserPoolId: userPool.id,
+			UserPoolId: userPool.ID,
 			MaxResults: aws.Int64(50),
 		}
 
@@ -66,8 +66,8 @@ func (l *CognitoIdentityProviderLister) List(ctx context.Context, o interface{})
 					svc:          svc,
 					name:         provider.ProviderName,
 					providerType: provider.ProviderType,
-					userPoolName: userPool.name,
-					userPoolID:   userPool.id,
+					userPoolName: userPool.Name,
+					userPoolID:   userPool.ID,
 				})
 			}
 
