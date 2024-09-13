@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/service/pipes"
+	"github.com/sirupsen/logrus"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
@@ -36,6 +37,14 @@ func (l *PipesPipeLister) List(_ context.Context, o interface{}) ([]resource.Res
 	}
 
 	for _, p := range res.Pipes {
+		tagResp, tagsErr := svc.ListTagsForResource(&pipes.ListTagsForResourceInput{
+			ResourceArn: p.Arn,
+		})
+
+		if tagsErr != nil {
+			logrus.WithError(tagsErr).Error("unable to get tags for pipe")
+		}
+
 		resources = append(resources, &PipesPipes{
 			svc:          svc,
 			Name:         p.Name,
@@ -44,6 +53,7 @@ func (l *PipesPipeLister) List(_ context.Context, o interface{}) ([]resource.Res
 			Target:       p.Target,
 			CreationDate: p.CreationTime,
 			ModifiedDate: p.LastModifiedTime,
+			Tags:         tagResp.Tags,
 		})
 	}
 
@@ -58,6 +68,7 @@ type PipesPipes struct {
 	Target       *string
 	CreationDate *time.Time
 	ModifiedDate *time.Time
+	Tags         map[string]*string
 }
 
 func (r *PipesPipes) Remove(_ context.Context) error {
