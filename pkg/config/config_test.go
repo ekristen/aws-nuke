@@ -111,6 +111,7 @@ func TestConfig_LoadExample(t *testing.T) {
 				},
 			},
 		},
+		BlocklistAliasKeywords: []string{"prod"},
 	}
 
 	assert.Equal(t, expect, *config)
