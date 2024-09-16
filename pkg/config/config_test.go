@@ -69,12 +69,12 @@ func TestConfig_LoadExample(t *testing.T) {
 						},
 					},
 					ResourceTypes: libconfig.ResourceTypes{
-						Targets: types.Collection{"S3Bucket"},
+						Includes: types.Collection{"S3Bucket"},
 					},
 				},
 			},
 			ResourceTypes: libconfig.ResourceTypes{
-				Targets:  types.Collection{"DynamoDBTable", "S3Bucket", "S3Object"},
+				Includes: types.Collection{"DynamoDBTable", "S3Bucket", "S3Object"},
 				Excludes: types.Collection{"IAMRole"},
 			},
 			Presets: map[string]libconfig.Preset{
@@ -111,7 +111,69 @@ func TestConfig_LoadExample(t *testing.T) {
 				},
 			},
 		},
-		BlocklistAliasKeywords: []string{"prod"},
+		BlocklistTerms: []string{"prod"},
+	}
+
+	assert.Equal(t, expect, *config)
+}
+
+func TestConfig_NoBlocklistTermsProd(t *testing.T) {
+	logger := logrus.New()
+	logger.SetOutput(io.Discard)
+	entry := logrus.WithField("test", true)
+
+	config, err := New(libconfig.Options{
+		Path: "testdata/no-blocklist-term-prod.yaml",
+		Log:  entry,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expect := Config{
+		Config: &libconfig.Config{
+			Blocklist: []string{"012345678901"},
+			Regions:   []string{"global", "us-east-1"},
+			Accounts: map[string]*libconfig.Account{
+				"555133742": {
+					Presets: []string{"terraform"},
+					Filters: filter.Filters{
+						"IAMRole": {
+							filter.NewExactFilter("uber.admin"),
+						},
+						"IAMRolePolicyAttachment": {
+							filter.NewExactFilter("uber.admin -> AdministratorAccess"),
+						},
+					},
+					ResourceTypes: libconfig.ResourceTypes{
+						Includes: types.Collection{"S3Bucket"},
+					},
+				},
+			},
+			ResourceTypes: libconfig.ResourceTypes{
+				Includes: types.Collection{"DynamoDBTable", "S3Bucket", "S3Object"},
+				Excludes: types.Collection{"IAMRole"},
+			},
+			Presets: map[string]libconfig.Preset{
+				"terraform": {
+					Filters: filter.Filters{
+						"S3Bucket": {
+							filter.Filter{
+								Type:   filter.Glob,
+								Value:  "my-statebucket-*",
+								Values: []string{},
+							},
+						},
+					},
+				},
+			},
+			Settings:     &settings.Settings{},
+			Deprecations: make(map[string]string),
+			Log:          entry,
+		},
+		CustomEndpoints:         CustomEndpoints{},
+		BlocklistTerms:          []string{"alpha"},
+		NoBlocklistTermsDefault: true,
 	}
 
 	assert.Equal(t, expect, *config)
@@ -387,7 +449,7 @@ func TestConfig_ValidateAccount_Blocklist(t *testing.T) {
 
 	// Add an account to the blocklist
 	config.Blocklist = append(config.Blocklist, "1234567890")
-	config.BlocklistAliasKeywords = append(config.BlocklistAliasKeywords, "alpha-tango")
+	config.BlocklistTerms = append(config.BlocklistTerms, "alpha-tango")
 
 	// Test cases
 	cases := []struct {

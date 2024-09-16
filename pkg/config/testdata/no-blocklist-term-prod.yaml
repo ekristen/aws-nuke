@@ -1,20 +1,15 @@
 ---
 regions:
-  - "eu-west-1"
-  - stratoscale
+  - global
+  - us-east-1
 
 blocklist:
-  - 1234567890
+  - 012345678901
 
-endpoints:
-  - region: stratoscale
-    tls_insecure_skip_verify: true
-    services:
-      - service: ec2
-        url: https://stratoscale.cloud.internal/api/v2/aws/ec2
-      - service: s3
-        url: https://stratoscale.cloud.internal:1060
-        tls_insecure_skip_verify: true
+blocklist-terms:
+  - alpha
+
+no-blocklist-terms-default: true
 
 resource-types:
   includes:

@@ -43,9 +43,13 @@ type Config struct {
 	// Config is the underlying libnuke configuration.
 	*config.Config `yaml:",inline"`
 
-	// BlocklistAliasKeywords is a list of keywords that are blocklisted from being used in an alias.
+	// BlocklistTerms is a list of keywords that are blocklisted from being used in an alias.
 	// If any of these keywords are found in an alias, the nuke will abort.
-	BlocklistAliasKeywords []string `yaml:"blocklist-alias-keywords"`
+	BlocklistTerms []string `yaml:"blocklist-terms"`
+
+	// NoBlocklistTermsDefault is a setting that can be used to disable the default terms from being added to the
+	// blocklist.
+	NoBlocklistTermsDefault bool `yaml:"no-blocklist-terms-default"`
 
 	// BypassAliasCheckAccounts is a list of account IDs that will be allowed to bypass the alias check.
 	// This is useful for accounts that don't have an alias for a number of reasons, it must be used with a cli
@@ -75,7 +79,9 @@ func (c *Config) Load(path string) error {
 		return err
 	}
 
-	c.BlocklistAliasKeywords = append(c.BlocklistAliasKeywords, "prod")
+	if !c.NoBlocklistTermsDefault {
+		c.BlocklistTerms = append(c.BlocklistTerms, "prod")
+	}
 
 	return nil
 }
@@ -115,7 +121,7 @@ func (c *Config) ValidateAccount(accountID string, aliases []string, skipAliasCh
 	}
 
 	for _, alias := range aliases {
-		for _, keyword := range c.BlocklistAliasKeywords {
+		for _, keyword := range c.BlocklistTerms {
 			if strings.Contains(strings.ToLower(alias), keyword) {
 				return fmt.Errorf("you are trying to nuke an account with the alias '%s', "+
 					"but it contains the blocklisted keyword '%s'. Aborting", alias, keyword)
