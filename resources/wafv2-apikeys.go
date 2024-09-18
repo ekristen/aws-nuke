@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/endpoints"
@@ -78,6 +79,7 @@ func getAPIKeys(svc *wafv2.WAFV2, params *wafv2.ListAPIKeysInput) ([]resource.Re
 				apiKey:       apiKey.APIKey,
 				tokenDomains: tokenDomains,
 				scope:        params.Scope,
+				createdAt:    apiKey.CreationTimestamp,
 			})
 		}
 
@@ -95,6 +97,7 @@ type WAFv2APIKey struct {
 	apiKey       *string
 	tokenDomains []string
 	scope        *string
+	createdAt    *time.Time
 }
 
 func (f *WAFv2APIKey) Remove(_ context.Context) error {
@@ -107,13 +110,15 @@ func (f *WAFv2APIKey) Remove(_ context.Context) error {
 }
 
 func (f *WAFv2APIKey) String() string {
-	return strings.Join(f.tokenDomains, ", ")
+	return (*f.apiKey)[:16]
 }
 
 func (f *WAFv2APIKey) Properties() types.Properties {
 	properties := types.NewProperties()
 
 	properties.
-		Set("tokenDomains", strings.Join(f.tokenDomains, ", "))
+		Set("APIKey", (*f.apiKey)[:16]).
+		Set("TokenDomains", strings.Join(f.tokenDomains, ", ")).
+		Set("CreatedAt", f.createdAt.String())
 	return properties
 }
