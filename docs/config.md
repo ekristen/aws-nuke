@@ -7,7 +7,8 @@ The configuration is the user supplied configuration that is used to drive the n
 The configuration is broken down into the following sections:
 
 - [blocklist](#blocklist)
-- [blocklist-alias-keywords](#blocklist-alias-keywords)
+- [blocklist-terms](#blocklist-terms)
+- [no-blocklist-terms-default](#no-blocklist-terms-default)
 - [regions](#regions)
 - [accounts](#accounts)
     - [presets](#presets)
@@ -32,10 +33,12 @@ The configuration is broken down into the following sections:
 blocklist:
   - 1234567890
     
-blocklist-alias-keywords:
+blocklist-terms:
   - "prod"
   - "production"
   - "live"
+
+no-blocklist-terms-default: false # default value
 
 regions:
   - global
@@ -75,17 +78,36 @@ blocklist:
   - 1234567890
 ```
 
-## Blocklist Alias Keywords
+## Blocklist Terms
 
-`blocklist-alias-keywords` is a list of keywords that the tool will use to block accounts based on their aliases. If 
-an account alias contains any of the keywords in the list, then the account will be blocked. However if the bypass alias
-check flag is set, then this feature has no affect.
+`blocklist-terms` is a list of terms that the tool will use to block accounts based on their aliases. If an account
+alias contains any of the terms in the list, then the account will be blocked. However, if the bypass alias check flag
+is set, then this feature has no affect.
 
 ```yaml
-blocklist-alias-keywords:
+blocklist-terms:
   - "prod"
   - "production"
   - "live"
+```
+
+## No Blocklist Terms Default
+
+`no-blocklist-terms-default` is a boolean value that determines the default behavior of the blocklist. If set to true,
+then the blocklist will be empty by default. If set to false, then the blocklist will be populated by default.
+
+### Usage
+
+**Default Value:** `false`
+
+```yaml
+no-blocklist-terms-default: true
+```
+
+### Default Terms
+
+```yaml
+- prod
 ```
 
 ## Regions
