@@ -81,6 +81,7 @@ nav:
   - CLI:
     - Usage: cli-usage.md
     - Options: cli-options.md
+    - Shell Completion: cli-completion.md
     - Experimental: cli-experimental.md
     - Examples: cli-examples.md
   - Config:
