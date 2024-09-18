@@ -9,9 +9,11 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/common"
 
 	_ "github.com/ekristen/aws-nuke/v3/pkg/commands/account"
+	_ "github.com/ekristen/aws-nuke/v3/pkg/commands/completion"
 	_ "github.com/ekristen/aws-nuke/v3/pkg/commands/config"
 	_ "github.com/ekristen/aws-nuke/v3/pkg/commands/list"
 	_ "github.com/ekristen/aws-nuke/v3/pkg/commands/nuke"
+	_ "github.com/ekristen/aws-nuke/v3/pkg/commands/version"
 
 	_ "github.com/ekristen/aws-nuke/v3/resources"
 )
@@ -42,6 +44,8 @@ func main() {
 	app.CommandNotFound = func(context *cli.Context, command string) {
 		logrus.Fatalf("Command %s not found.", command)
 	}
+
+	app.EnableBashCompletion = true
 
 	if err := app.Run(os.Args); err != nil {
 		logrus.Fatal(err)
