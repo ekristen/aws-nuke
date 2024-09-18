@@ -7,11 +7,6 @@ import (
 
 var commands []*cli.Command
 
-// Commander --
-type Commander interface {
-	Execute(c *cli.Context)
-}
-
 // RegisterCommand --
 func RegisterCommand(command *cli.Command) {
 	logrus.Debugln("Registering", command.Name, "command...")
