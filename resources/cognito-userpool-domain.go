@@ -75,16 +75,16 @@ type CognitoUserPoolDomain struct {
 	userPoolID   *string
 }
 
-func (f *CognitoUserPoolDomain) Remove(_ context.Context) error {
+func (r *CognitoUserPoolDomain) Remove(_ context.Context) error {
 	params := &cognitoidentityprovider.DeleteUserPoolDomainInput{
-		Domain:     f.name,
-		UserPoolId: f.userPoolID,
+		Domain:     r.name,
+		UserPoolId: r.userPoolID,
 	}
-	_, err := f.svc.DeleteUserPoolDomain(params)
+	_, err := r.svc.DeleteUserPoolDomain(params)
 
 	return err
 }
 
-func (f *CognitoUserPoolDomain) String() string {
-	return fmt.Sprintf("%s -> %s", *f.userPoolName, *f.name)
+func (r *CognitoUserPoolDomain) String() string {
+	return fmt.Sprintf("%s -> %s", *r.userPoolName, *r.name)
 }

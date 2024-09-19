@@ -101,18 +101,18 @@ type CognitoUserPool struct {
 	Tags map[string]*string
 }
 
-func (f *CognitoUserPool) Remove(_ context.Context) error {
-	_, err := f.svc.DeleteUserPool(&cognitoidentityprovider.DeleteUserPoolInput{
-		UserPoolId: f.ID,
+func (r *CognitoUserPool) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteUserPool(&cognitoidentityprovider.DeleteUserPoolInput{
+		UserPoolId: r.ID,
 	})
 
 	return err
 }
 
-func (f *CognitoUserPool) Properties() types.Properties {
-	return types.NewPropertiesFromStruct(f)
+func (r *CognitoUserPool) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
 
-func (f *CognitoUserPool) String() string {
-	return *f.Name
+func (r *CognitoUserPool) String() string {
+	return *r.Name
 }

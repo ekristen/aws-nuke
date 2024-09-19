@@ -64,14 +64,14 @@ func (l *CognitoIdentityPoolLister) List(_ context.Context, o interface{}) ([]re
 	return resources, nil
 }
 
-func (f *CognitoIdentityPool) Remove(_ context.Context) error {
-	_, err := f.svc.DeleteIdentityPool(&cognitoidentity.DeleteIdentityPoolInput{
-		IdentityPoolId: f.id,
+func (r *CognitoIdentityPool) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteIdentityPool(&cognitoidentity.DeleteIdentityPoolInput{
+		IdentityPoolId: r.id,
 	})
 
 	return err
 }
 
-func (f *CognitoIdentityPool) String() string {
-	return *f.name
+func (r *CognitoIdentityPool) String() string {
+	return *r.name
 }
