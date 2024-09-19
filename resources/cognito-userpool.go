@@ -3,6 +3,7 @@ package resources
 import (
 	"context"
 	"fmt"
+	"github.com/ekristen/libnuke/pkg/settings"
 
 	"github.com/gotidy/ptr"
 	"github.com/sirupsen/logrus"
@@ -26,6 +27,9 @@ func init() {
 		Name:   CognitoUserPoolResource,
 		Scope:  nuke.Account,
 		Lister: &CognitoUserPoolLister{},
+		Settings: []string{
+			"DisableDeletionProtection",
+		},
 		DependsOn: []string{
 			CognitoIdentityPoolResource,
 			CognitoUserPoolClientResource,
@@ -95,13 +99,24 @@ func (l *CognitoUserPoolLister) List(_ context.Context, o interface{}) ([]resour
 }
 
 type CognitoUserPool struct {
-	svc  *cognitoidentityprovider.CognitoIdentityProvider
-	Name *string
-	ID   *string
-	Tags map[string]*string
+	svc      *cognitoidentityprovider.CognitoIdentityProvider
+	settings *settings.Setting
+	Name     *string
+	ID       *string
+	Tags     map[string]*string
 }
 
 func (r *CognitoUserPool) Remove(_ context.Context) error {
+	if r.settings.GetBool("DisableDeletionProtection") {
+		_, err := r.svc.UpdateUserPool(&cognitoidentityprovider.UpdateUserPoolInput{
+			UserPoolId:         r.ID,
+			DeletionProtection: ptr.String("INACTIVE"),
+		})
+		if err != nil {
+			return err
+		}
+	}
+
 	_, err := r.svc.DeleteUserPool(&cognitoidentityprovider.DeleteUserPoolInput{
 		UserPoolId: r.ID,
 	})
@@ -115,4 +130,8 @@ func (r *CognitoUserPool) Properties() types.Properties {
 
 func (r *CognitoUserPool) String() string {
 	return *r.Name
+}
+
+func (r *CognitoUserPool) Settings(setting *settings.Setting) {
+	r.settings = setting
 }
