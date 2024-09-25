@@ -3,6 +3,7 @@ package resources
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/gotidy/ptr"
@@ -100,11 +101,14 @@ func Test_Mock_IAMPolicy_WithVersions_Remove(t *testing.T) {
 func Test_Mock_IAMPolicy_Properties(t *testing.T) {
 	a := assert.New(t)
 
+	now := time.Now().UTC()
+
 	iamPolicy := IAMPolicy{
-		Name:     ptr.String("foobar"),
-		PolicyID: ptr.String("foobar"),
-		ARN:      ptr.String("arn:foobar"),
-		Path:     ptr.String("/foobar"),
+		Name:       ptr.String("foobar"),
+		PolicyID:   ptr.String("foobar"),
+		ARN:        ptr.String("arn:foobar"),
+		Path:       ptr.String("/foobar"),
+		CreateDate: ptr.Time(now),
 		Tags: []*iam.Tag{
 			{
 				Key:   ptr.String("foo"),
@@ -118,5 +122,6 @@ func Test_Mock_IAMPolicy_Properties(t *testing.T) {
 	a.Equal("arn:foobar", iamPolicy.Properties().Get("ARN"))
 	a.Equal("/foobar", iamPolicy.Properties().Get("Path"))
 	a.Equal("bar", iamPolicy.Properties().Get("tag:foo"))
+	a.Equal(now.Format(time.RFC3339), iamPolicy.Properties().Get("CreateDate"))
 	a.Equal("arn:foobar", iamPolicy.String())
 }

@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"time"
 
 	"github.com/sirupsen/logrus"
 
@@ -66,12 +67,13 @@ func (l *IAMPolicyLister) List(_ context.Context, o interface{}) ([]resource.Res
 
 	for _, out := range policies {
 		resources = append(resources, &IAMPolicy{
-			svc:      svc,
-			Name:     out.PolicyName,
-			Path:     out.Path,
-			ARN:      out.Arn,
-			PolicyID: out.PolicyId,
-			Tags:     out.Tags,
+			svc:        svc,
+			Name:       out.PolicyName,
+			Path:       out.Path,
+			ARN:        out.Arn,
+			PolicyID:   out.PolicyId,
+			CreateDate: out.CreateDate,
+			Tags:       out.Tags,
 		})
 	}
 
@@ -79,12 +81,13 @@ func (l *IAMPolicyLister) List(_ context.Context, o interface{}) ([]resource.Res
 }
 
 type IAMPolicy struct {
-	svc      iamiface.IAMAPI
-	Name     *string
-	PolicyID *string
-	ARN      *string
-	Path     *string
-	Tags     []*iam.Tag
+	svc        iamiface.IAMAPI
+	Name       *string
+	PolicyID   *string
+	ARN        *string
+	Path       *string
+	CreateDate *time.Time
+	Tags       []*iam.Tag
 }
 
 func (r *IAMPolicy) Remove(_ context.Context) error {
