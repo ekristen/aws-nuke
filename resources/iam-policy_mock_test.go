@@ -5,9 +5,9 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/iam"
 
 	"github.com/ekristen/aws-nuke/v3/mocks/mock_iamiface"
@@ -22,24 +22,24 @@ func Test_Mock_IAMPolicy_Remove(t *testing.T) {
 
 	iamPolicy := IAMPolicy{
 		svc:      mockIAM,
-		name:     "foobar",
-		policyID: "foobar",
-		arn:      "foobar",
+		Name:     ptr.String("foobar"),
+		PolicyID: ptr.String("foobar"),
+		ARN:      ptr.String("foobar"),
 	}
 
 	mockIAM.EXPECT().ListPolicyVersions(gomock.Eq(&iam.ListPolicyVersionsInput{
-		PolicyArn: aws.String(iamPolicy.arn),
+		PolicyArn: iamPolicy.ARN,
 	})).Return(&iam.ListPolicyVersionsOutput{
 		Versions: []*iam.PolicyVersion{
 			{
-				IsDefaultVersion: aws.Bool(true),
-				VersionId:        aws.String("v1"),
+				IsDefaultVersion: ptr.Bool(true),
+				VersionId:        ptr.String("v1"),
 			},
 		},
 	}, nil)
 
 	mockIAM.EXPECT().DeletePolicy(gomock.Eq(&iam.DeletePolicyInput{
-		PolicyArn: aws.String(iamPolicy.arn),
+		PolicyArn: iamPolicy.ARN,
 	})).Return(&iam.DeletePolicyOutput{}, nil)
 
 	err := iamPolicy.Remove(context.TODO())
@@ -55,42 +55,42 @@ func Test_Mock_IAMPolicy_WithVersions_Remove(t *testing.T) {
 
 	iamPolicy := IAMPolicy{
 		svc:      mockIAM,
-		name:     "foobar",
-		policyID: "foobar",
-		arn:      "foobar",
+		Name:     ptr.String("foobar"),
+		PolicyID: ptr.String("foobar"),
+		ARN:      ptr.String("foobar"),
 	}
 
 	mockIAM.EXPECT().ListPolicyVersions(gomock.Eq(&iam.ListPolicyVersionsInput{
-		PolicyArn: aws.String(iamPolicy.arn),
+		PolicyArn: iamPolicy.ARN,
 	})).Return(&iam.ListPolicyVersionsOutput{
 		Versions: []*iam.PolicyVersion{
 			{
-				IsDefaultVersion: aws.Bool(false),
-				VersionId:        aws.String("v1"),
+				IsDefaultVersion: ptr.Bool(false),
+				VersionId:        ptr.String("v1"),
 			},
 			{
-				IsDefaultVersion: aws.Bool(false),
-				VersionId:        aws.String("v2"),
+				IsDefaultVersion: ptr.Bool(false),
+				VersionId:        ptr.String("v2"),
 			},
 			{
-				IsDefaultVersion: aws.Bool(true),
-				VersionId:        aws.String("v3"),
+				IsDefaultVersion: ptr.Bool(true),
+				VersionId:        ptr.String("v3"),
 			},
 		},
 	}, nil)
 
 	mockIAM.EXPECT().DeletePolicyVersion(gomock.Eq(&iam.DeletePolicyVersionInput{
-		PolicyArn: aws.String(iamPolicy.arn),
-		VersionId: aws.String("v1"),
+		PolicyArn: iamPolicy.ARN,
+		VersionId: ptr.String("v1"),
 	})).Return(&iam.DeletePolicyVersionOutput{}, nil)
 
 	mockIAM.EXPECT().DeletePolicyVersion(gomock.Eq(&iam.DeletePolicyVersionInput{
-		PolicyArn: aws.String(iamPolicy.arn),
-		VersionId: aws.String("v2"),
+		PolicyArn: iamPolicy.ARN,
+		VersionId: ptr.String("v2"),
 	})).Return(&iam.DeletePolicyVersionOutput{}, nil)
 
 	mockIAM.EXPECT().DeletePolicy(gomock.Eq(&iam.DeletePolicyInput{
-		PolicyArn: aws.String(iamPolicy.arn),
+		PolicyArn: iamPolicy.ARN,
 	})).Return(&iam.DeletePolicyOutput{}, nil)
 
 	err := iamPolicy.Remove(context.TODO())
@@ -101,14 +101,14 @@ func Test_Mock_IAMPolicy_Properties(t *testing.T) {
 	a := assert.New(t)
 
 	iamPolicy := IAMPolicy{
-		name:     "foobar",
-		policyID: "foobar",
-		arn:      "arn:foobar",
-		path:     "/foobar",
-		tags: []*iam.Tag{
+		Name:     ptr.String("foobar"),
+		PolicyID: ptr.String("foobar"),
+		ARN:      ptr.String("arn:foobar"),
+		Path:     ptr.String("/foobar"),
+		Tags: []*iam.Tag{
 			{
-				Key:   aws.String("foo"),
-				Value: aws.String("bar"),
+				Key:   ptr.String("foo"),
+				Value: ptr.String("bar"),
 			},
 		},
 	}

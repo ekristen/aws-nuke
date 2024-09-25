@@ -67,11 +67,11 @@ func (l *IAMPolicyLister) List(_ context.Context, o interface{}) ([]resource.Res
 	for _, out := range policies {
 		resources = append(resources, &IAMPolicy{
 			svc:      svc,
-			name:     *out.PolicyName,
-			path:     *out.Path,
-			arn:      *out.Arn,
-			policyID: *out.PolicyId,
-			tags:     out.Tags,
+			Name:     out.PolicyName,
+			Path:     out.Path,
+			ARN:      out.Arn,
+			PolicyID: out.PolicyId,
+			Tags:     out.Tags,
 		})
 	}
 
@@ -80,16 +80,16 @@ func (l *IAMPolicyLister) List(_ context.Context, o interface{}) ([]resource.Res
 
 type IAMPolicy struct {
 	svc      iamiface.IAMAPI
-	name     string
-	policyID string
-	arn      string
-	path     string
-	tags     []*iam.Tag
+	Name     *string
+	PolicyID *string
+	ARN      *string
+	Path     *string
+	Tags     []*iam.Tag
 }
 
 func (r *IAMPolicy) Remove(_ context.Context) error {
 	resp, err := r.svc.ListPolicyVersions(&iam.ListPolicyVersionsInput{
-		PolicyArn: &r.arn,
+		PolicyArn: r.ARN,
 	})
 	if err != nil {
 		return err
@@ -98,7 +98,7 @@ func (r *IAMPolicy) Remove(_ context.Context) error {
 	for _, version := range resp.Versions {
 		if !*version.IsDefaultVersion {
 			_, err = r.svc.DeletePolicyVersion(&iam.DeletePolicyVersionInput{
-				PolicyArn: &r.arn,
+				PolicyArn: r.ARN,
 				VersionId: version.VersionId,
 			})
 			if err != nil {
@@ -108,7 +108,7 @@ func (r *IAMPolicy) Remove(_ context.Context) error {
 	}
 
 	_, err = r.svc.DeletePolicy(&iam.DeletePolicyInput{
-		PolicyArn: &r.arn,
+		PolicyArn: r.ARN,
 	})
 	if err != nil {
 		return err
@@ -118,20 +118,11 @@ func (r *IAMPolicy) Remove(_ context.Context) error {
 }
 
 func (r *IAMPolicy) Properties() types.Properties {
-	properties := types.NewProperties()
-
-	properties.Set("Name", r.name)
-	properties.Set("ARN", r.arn)
-	properties.Set("Path", r.path)
-	properties.Set("PolicyID", r.policyID)
-	for _, tag := range r.tags {
-		properties.SetTag(tag.Key, tag.Value)
-	}
-	return properties
+	return types.NewPropertiesFromStruct(r)
 }
 
 func (r *IAMPolicy) String() string {
-	return r.arn
+	return *r.ARN
 }
 
 // -------------
