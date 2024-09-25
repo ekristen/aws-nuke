@@ -96,3 +96,27 @@ func Test_Mock_IAMPolicy_WithVersions_Remove(t *testing.T) {
 	err := iamPolicy.Remove(context.TODO())
 	a.Nil(err)
 }
+
+func Test_Mock_IAMPolicy_Properties(t *testing.T) {
+	a := assert.New(t)
+
+	iamPolicy := IAMPolicy{
+		name:     "foobar",
+		policyID: "foobar",
+		arn:      "arn:foobar",
+		path:     "/foobar",
+		tags: []*iam.Tag{
+			{
+				Key:   aws.String("foo"),
+				Value: aws.String("bar"),
+			},
+		},
+	}
+
+	a.Equal("foobar", iamPolicy.Properties().Get("Name"))
+	a.Equal("foobar", iamPolicy.Properties().Get("PolicyID"))
+	a.Equal("arn:foobar", iamPolicy.Properties().Get("ARN"))
+	a.Equal("/foobar", iamPolicy.Properties().Get("Path"))
+	a.Equal("bar", iamPolicy.Properties().Get("tag:foo"))
+	a.Equal("arn:foobar", iamPolicy.String())
+}
