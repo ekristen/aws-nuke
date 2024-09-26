@@ -1,33 +1,43 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/gamelift"
+
+	"github.com/ekristen/libnuke/pkg/registry"
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-type GameLiftMatchmakingConfiguration struct {
-	svc  *gamelift.GameLift
-	Name string
-}
+const GameLiftMatchmakingConfigurationResource = "GameLiftMatchmakingConfiguration"
 
 func init() {
-	register("GameLiftMatchmakingConfiguration", ListMatchmakingConfigurations)
+	registry.Register(&registry.Registration{
+		Name:   GameLiftMatchmakingConfigurationResource,
+		Scope:  nuke.Account,
+		Lister: &GameLiftMatchmakingConfigurationLister{},
+	})
 }
 
-func ListMatchmakingConfigurations(sess *session.Session) ([]Resource, error) {
-	svc := gamelift.New(sess)
+type GameLiftMatchmakingConfigurationLister struct{}
+
+func (l *GameLiftMatchmakingConfigurationLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := gamelift.New(opts.Session)
 
 	resp, err := svc.DescribeMatchmakingConfigurations(&gamelift.DescribeMatchmakingConfigurationsInput{})
 	if err != nil {
 		return nil, err
 	}
 
-	configs := make([]Resource, 0)
+	configs := make([]resource.Resource, 0)
 	for _, config := range resp.Configurations {
 		q := &GameLiftMatchmakingConfiguration{
 			svc:  svc,
-			Name: *config.Name,
+			Name: config.Name,
 		}
 		configs = append(configs, q)
 	}
@@ -35,12 +45,17 @@ func ListMatchmakingConfigurations(sess *session.Session) ([]Resource, error) {
 	return configs, nil
 }
 
-func (config *GameLiftMatchmakingConfiguration) Remove() error {
+type GameLiftMatchmakingConfiguration struct {
+	svc  *gamelift.GameLift
+	Name *string
+}
+
+func (r *GameLiftMatchmakingConfiguration) Remove(_ context.Context) error {
 	params := &gamelift.DeleteMatchmakingConfigurationInput{
-		Name: aws.String(config.Name),
+		Name: r.Name,
 	}
 
-	_, err := config.svc.DeleteMatchmakingConfiguration(params)
+	_, err := r.svc.DeleteMatchmakingConfiguration(params)
 	if err != nil {
 		return err
 	}
@@ -48,6 +63,6 @@ func (config *GameLiftMatchmakingConfiguration) Remove() error {
 	return nil
 }
 
-func (i *GameLiftMatchmakingConfiguration) String() string {
-	return i.Name
+func (r *GameLiftMatchmakingConfiguration) String() string {
+	return *r.Name
 }
