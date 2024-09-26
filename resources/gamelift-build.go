@@ -2,11 +2,13 @@ package resources
 
 import (
 	"context"
+	"time"
 
 	"github.com/aws/aws-sdk-go/service/gamelift"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
@@ -25,28 +27,46 @@ type GameLiftBuildLister struct{}
 
 func (l *GameLiftBuildLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
+	var resources []resource.Resource
 
 	svc := gamelift.New(opts.Session)
 
-	resp, err := svc.ListBuilds(&gamelift.ListBuildsInput{})
-	if err != nil {
-		return nil, err
+	params := &gamelift.ListBuildsInput{}
+
+	for {
+		resp, err := svc.ListBuilds(params)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, build := range resp.Builds {
+			resources = append(resources, &GameLiftBuild{
+				svc:          svc,
+				BuildID:      build.BuildId,
+				Name:         build.Name,
+				Status:       build.Status,
+				Version:      build.Version,
+				CreationDate: build.CreationTime,
+			})
+		}
+
+		if resp.NextToken == nil {
+			break
+		}
+
+		params.NextToken = resp.NextToken
 	}
 
-	builds := make([]resource.Resource, 0)
-	for _, build := range resp.Builds {
-		builds = append(builds, &GameLiftBuild{
-			svc:     svc,
-			BuildID: build.BuildId,
-		})
-	}
-
-	return builds, nil
+	return resources, nil
 }
 
 type GameLiftBuild struct {
-	svc     *gamelift.GameLift
-	BuildID *string
+	svc          *gamelift.GameLift
+	BuildID      *string
+	Name         *string
+	Status       *string
+	Version      *string
+	CreationDate *time.Time
 }
 
 func (r *GameLiftBuild) Remove(_ context.Context) error {
@@ -60,6 +80,10 @@ func (r *GameLiftBuild) Remove(_ context.Context) error {
 	}
 
 	return nil
+}
+
+func (r *GameLiftBuild) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
 
 func (r *GameLiftBuild) String() string {
