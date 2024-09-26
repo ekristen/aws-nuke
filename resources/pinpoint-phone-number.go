@@ -49,12 +49,12 @@ type PinpointPhoneNumber struct {
 	ID  *string
 }
 
-func (p *PinpointPhoneNumber) Remove(_ context.Context) error {
+func (r *PinpointPhoneNumber) Remove(_ context.Context) error {
 	params := &pinpointsmsvoicev2.ReleasePhoneNumberInput{
-		PhoneNumberId: p.ID,
+		PhoneNumberId: r.ID,
 	}
 
-	_, err := p.svc.ReleasePhoneNumber(params)
+	_, err := r.svc.ReleasePhoneNumber(params)
 	if err != nil {
 		return err
 	}
@@ -62,6 +62,6 @@ func (p *PinpointPhoneNumber) Remove(_ context.Context) error {
 	return nil
 }
 
-func (p *PinpointPhoneNumber) String() string {
-	return *p.ID
+func (r *PinpointPhoneNumber) String() string {
+	return *r.ID
 }
