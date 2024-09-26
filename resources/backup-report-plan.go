@@ -24,9 +24,9 @@ func (BackupReportPlanLister) List(_ context.Context, o interface{}) ([]resource
 	opts := o.(*nuke.ListerOpts)
 
 	svc := backup.New(opts.Session)
-	max_backups_len := int64(100)
+	maxBackupsLen := int64(100)
 	params := &backup.ListReportPlansInput{
-		MaxResults: &max_backups_len, // aws default limit on number of backup plans per account
+		MaxResults: &maxBackupsLen, // aws default limit on number of backup plans per account
 	}
 	resources := make([]resource.Resource, 0)
 
