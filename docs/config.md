@@ -7,6 +7,8 @@ The configuration is the user supplied configuration that is used to drive the n
 The configuration is broken down into the following sections:
 
 - [blocklist](#blocklist)
+- [blocklist-terms](#blocklist-terms)
+- [no-blocklist-terms-default](#no-blocklist-terms-default)
 - [regions](#regions)
 - [accounts](#accounts)
     - [presets](#presets)
@@ -30,6 +32,13 @@ The configuration is broken down into the following sections:
 ```yaml
 blocklist:
   - 1234567890
+    
+blocklist-terms:
+  - "prod"
+  - "production"
+  - "live"
+
+no-blocklist-terms-default: false # default value
 
 regions:
   - global
@@ -61,14 +70,57 @@ settings:
 
 ## Blocklist
 
-The blocklist is simply a list of Accounts that the tool cannot run against. This is to protect the user from accidentally
+The `blocklist` is simply a list of Accounts that the tool cannot run against. This is to protect the user from accidentally
 running the tool against the wrong account. The blocklist must always be populated with at least one entry.
+
+```yaml
+blocklist:
+  - 1234567890
+```
+
+## Blocklist Terms
+
+`blocklist-terms` is a list of terms that the tool will use to block accounts based on their aliases. If an account
+alias contains any of the terms in the list, then the account will be blocked. However, if the bypass alias check flag
+is set, then this feature has no affect.
+
+```yaml
+blocklist-terms:
+  - "prod"
+  - "production"
+  - "live"
+```
+
+## No Blocklist Terms Default
+
+`no-blocklist-terms-default` is a boolean value that determines the default behavior of the blocklist. If set to true,
+then the blocklist will be empty by default. If set to false, then the blocklist will be populated by default.
+
+### Usage
+
+**Default Value:** `false`
+
+```yaml
+no-blocklist-terms-default: true
+```
+
+### Default Terms
+
+```yaml
+- prod
+```
 
 ## Regions
 
-The regions is a list of AWS regions that the tool will run against. The tool will run against all regions specified in the
+The `regions` is a list of AWS regions that the tool will run against. The tool will run against all regions specified in the
 configuration. If no regions are listed, then the tool will **NOT** run against any region. Regions must be explicitly
 provided.
+
+```yaml
+regions:
+  - global
+  - us-east-1
+```
 
 ### All Enabled Regions
 
@@ -79,6 +131,11 @@ special region `global` which is for specific global resources.
 !!! important
     The use of `all` will ignore all other regions specified in the configuration. It will only run against regions
     that are enabled in the account.
+
+```yaml
+regions:
+  - all
+```
 
 ## Accounts
 
