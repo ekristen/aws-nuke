@@ -2,11 +2,16 @@ package resources
 
 import (
 	"context"
+	"time"
+
+	"github.com/gotidy/ptr"
 
 	"github.com/aws/aws-sdk-go/service/pinpointsmsvoicev2"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/settings"
+	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
@@ -18,6 +23,9 @@ func init() {
 		Name:   PinpointPhoneNumberResource,
 		Scope:  nuke.Account,
 		Lister: &PinpointPhoneNumberLister{},
+		Settings: []string{
+			"DisableDeletionProtection",
+		},
 	})
 }
 
@@ -25,41 +33,74 @@ type PinpointPhoneNumberLister struct{}
 
 func (l *PinpointPhoneNumberLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
+	var resources []resource.Resource
 
 	svc := pinpointsmsvoicev2.New(opts.Session)
 
-	resp, err := svc.DescribePhoneNumbers(&pinpointsmsvoicev2.DescribePhoneNumbersInput{})
-	if err != nil {
-		return nil, err
+	params := &pinpointsmsvoicev2.DescribePhoneNumbersInput{}
+
+	for {
+		resp, err := svc.DescribePhoneNumbers(params)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, number := range resp.PhoneNumbers {
+			resources = append(resources, &PinpointPhoneNumber{
+				svc:         svc,
+				settings:    &settings.Setting{},
+				ID:          number.PhoneNumberId,
+				Status:      number.Status,
+				CreatedDate: number.CreatedTimestamp,
+			})
+		}
+
+		if resp.NextToken == nil {
+			break
+		}
+
+		params.NextToken = resp.NextToken
 	}
 
-	numbers := make([]resource.Resource, 0)
-	for _, number := range resp.PhoneNumbers {
-		numbers = append(numbers, &PinpointPhoneNumber{
-			svc: svc,
-			ID:  number.PhoneNumberId,
-		})
-	}
-
-	return numbers, nil
+	return resources, nil
 }
 
 type PinpointPhoneNumber struct {
-	svc *pinpointsmsvoicev2.PinpointSMSVoiceV2
-	ID  *string
+	svc                       *pinpointsmsvoicev2.PinpointSMSVoiceV2
+	settings                  *settings.Setting
+	ID                        *string
+	Status                    *string
+	CreatedDate               *time.Time
+	deletionProtectionEnabled *bool
+}
+
+func (r *PinpointPhoneNumber) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
 
 func (r *PinpointPhoneNumber) Remove(_ context.Context) error {
-	params := &pinpointsmsvoicev2.ReleasePhoneNumberInput{
-		PhoneNumberId: r.ID,
+	if r.settings.GetBool("DisableDeletionProtection") {
+		_, err := r.svc.UpdatePhoneNumber(&pinpointsmsvoicev2.UpdatePhoneNumberInput{
+			PhoneNumberId:             r.ID,
+			DeletionProtectionEnabled: ptr.Bool(false),
+		})
+		if err != nil {
+			return err
+		}
 	}
 
-	_, err := r.svc.ReleasePhoneNumber(params)
+	_, err := r.svc.ReleasePhoneNumber(&pinpointsmsvoicev2.ReleasePhoneNumberInput{
+		PhoneNumberId: r.ID,
+	})
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (r *PinpointPhoneNumber) Settings(settings *settings.Setting) {
+	r.settings = settings
 }
 
 func (r *PinpointPhoneNumber) String() string {
