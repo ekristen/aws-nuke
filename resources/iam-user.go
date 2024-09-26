@@ -37,18 +37,22 @@ func init() {
 }
 
 type IAMUser struct {
-	svc                   iamiface.IAMAPI
-	id                    *string
-	name                  *string
-	hasPermissionBoundary bool
-	createDate            *time.Time
-	tags                  []*iam.Tag
+	svc                    iamiface.IAMAPI
+	Name                   *string
+	Path                   *string
+	UserID                 *string
+	CreateDate             *time.Time
+	PasswordLastUsed       *time.Time
+	Tags                   []*iam.Tag
+	HasPermissionBoundary  bool
+	PermissionBoundaryARN  *string
+	PermissionBoundaryType *string
 }
 
 func (r *IAMUser) Remove(_ context.Context) error {
-	if r.hasPermissionBoundary {
+	if r.HasPermissionBoundary {
 		_, err := r.svc.DeleteUserPermissionsBoundary(&iam.DeleteUserPermissionsBoundaryInput{
-			UserName: r.name,
+			UserName: r.Name,
 		})
 		if err != nil {
 			return err
@@ -56,7 +60,7 @@ func (r *IAMUser) Remove(_ context.Context) error {
 	}
 
 	_, err := r.svc.DeleteUser(&iam.DeleteUserInput{
-		UserName: r.name,
+		UserName: r.Name,
 	})
 	if err != nil {
 		return err
@@ -66,48 +70,11 @@ func (r *IAMUser) Remove(_ context.Context) error {
 }
 
 func (r *IAMUser) String() string {
-	return *r.name
+	return *r.Name
 }
 
 func (r *IAMUser) Properties() types.Properties {
-	properties := types.NewProperties()
-	properties.Set("UserID", r.id)
-	properties.Set("Name", r.name)
-	properties.Set("HasPermissionBoundary", r.hasPermissionBoundary)
-	properties.Set("CreateDate", r.createDate.Format(time.RFC3339))
-
-	for _, tag := range r.tags {
-		properties.SetTag(tag.Key, tag.Value)
-	}
-
-	return properties
-}
-
-// --------------
-
-// GetIAMUser retries and returns just the *iam.User from the response
-func GetIAMUser(svc iamiface.IAMAPI, userName *string) (*iam.User, error) {
-	resp, err := svc.GetUser(&iam.GetUserInput{
-		UserName: userName,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return resp.User, err
-}
-
-// ListIAMUsers retrieves a base list of users
-func ListIAMUsers(svc iamiface.IAMAPI) ([]*iam.User, error) {
-	var users []*iam.User
-	if err := svc.ListUsersPages(nil, func(page *iam.ListUsersOutput, lastPage bool) bool {
-		users = append(users, page.Users...)
-		return true
-	}); err != nil {
-		return nil, err
-	}
-
-	return users, nil
+	return types.NewPropertiesFromStruct(r)
 }
 
 // --------------
@@ -142,19 +109,50 @@ func (l *IAMUserLister) List(_ context.Context, o interface{}) ([]resource.Resou
 		}
 
 		resourceUser := &IAMUser{
-			svc:        svc,
-			id:         user.UserId,
-			name:       user.UserName,
-			createDate: user.CreateDate,
-			tags:       user.Tags,
+			svc:              svc,
+			Name:             user.UserName,
+			Path:             user.Path,
+			UserID:           user.UserId,
+			CreateDate:       user.CreateDate,
+			PasswordLastUsed: user.PasswordLastUsed,
+			Tags:             user.Tags,
 		}
 
 		if user.PermissionsBoundary != nil && user.PermissionsBoundary.PermissionsBoundaryArn != nil {
-			resourceUser.hasPermissionBoundary = true
+			resourceUser.HasPermissionBoundary = true
+			resourceUser.PermissionBoundaryARN = user.PermissionsBoundary.PermissionsBoundaryArn
+			resourceUser.PermissionBoundaryType = user.PermissionsBoundary.PermissionsBoundaryType
 		}
 
 		resources = append(resources, resourceUser)
 	}
 
 	return resources, nil
+}
+
+// --------------
+
+// GetIAMUser retries and returns just the *iam.User from the response
+func GetIAMUser(svc iamiface.IAMAPI, userName *string) (*iam.User, error) {
+	resp, err := svc.GetUser(&iam.GetUserInput{
+		UserName: userName,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.User, err
+}
+
+// ListIAMUsers retrieves a base list of users
+func ListIAMUsers(svc iamiface.IAMAPI) ([]*iam.User, error) {
+	var users []*iam.User
+	if err := svc.ListUsersPages(nil, func(page *iam.ListUsersOutput, lastPage bool) bool {
+		users = append(users, page.Users...)
+		return true
+	}); err != nil {
+		return nil, err
+	}
+
+	return users, nil
 }
