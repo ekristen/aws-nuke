@@ -49,12 +49,12 @@ type PinpointApp struct {
 	ID  *string
 }
 
-func (p *PinpointApp) Remove(_ context.Context) error {
+func (r *PinpointApp) Remove(_ context.Context) error {
 	params := &pinpoint.DeleteAppInput{
-		ApplicationId: p.ID,
+		ApplicationId: r.ID,
 	}
 
-	_, err := p.svc.DeleteApp(params)
+	_, err := r.svc.DeleteApp(params)
 	if err != nil {
 		return err
 	}
@@ -62,6 +62,6 @@ func (p *PinpointApp) Remove(_ context.Context) error {
 	return nil
 }
 
-func (p *PinpointApp) String() string {
-	return *p.ID
+func (r *PinpointApp) String() string {
+	return *r.ID
 }
