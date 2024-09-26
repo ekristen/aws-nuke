@@ -7,6 +7,7 @@ import (
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
@@ -25,24 +26,34 @@ type GameLiftQueueLister struct{}
 
 func (l *GameLiftQueueLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
+	var resources []resource.Resource
 
 	svc := gamelift.New(opts.Session)
 
-	resp, err := svc.DescribeGameSessionQueues(&gamelift.DescribeGameSessionQueuesInput{})
-	if err != nil {
-		return nil, err
-	}
+	params := &gamelift.DescribeGameSessionQueuesInput{}
 
-	queues := make([]resource.Resource, 0)
-	for _, queue := range resp.GameSessionQueues {
-		q := &GameLiftQueue{
-			svc:  svc,
-			Name: queue.Name,
+	for {
+		resp, err := svc.DescribeGameSessionQueues(params)
+		if err != nil {
+			return nil, err
 		}
-		queues = append(queues, q)
+
+		for _, queue := range resp.GameSessionQueues {
+			q := &GameLiftQueue{
+				svc:  svc,
+				Name: queue.Name,
+			}
+			resources = append(resources, q)
+		}
+
+		if resp.NextToken == nil {
+			break
+		}
+
+		params.NextToken = resp.NextToken
 	}
 
-	return queues, nil
+	return resources, nil
 }
 
 type GameLiftQueue struct {
@@ -61,6 +72,10 @@ func (r *GameLiftQueue) Remove(_ context.Context) error {
 	}
 
 	return nil
+}
+
+func (r *GameLiftQueue) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
 
 func (r *GameLiftQueue) String() string {
