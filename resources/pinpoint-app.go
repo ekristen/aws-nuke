@@ -27,25 +27,35 @@ type PinpointAppLister struct{}
 
 func (l *PinpointAppLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
+	var resources []resource.Resource
 
 	svc := pinpoint.New(opts.Session)
 
-	resp, err := svc.GetApps(&pinpoint.GetAppsInput{})
-	if err != nil {
-		return nil, err
+	params := &pinpoint.GetAppsInput{}
+
+	for {
+		resp, err := svc.GetApps(params)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, appResponse := range resp.ApplicationsResponse.Item {
+			resources = append(resources, &PinpointApp{
+				svc:  svc,
+				ID:   appResponse.Id,
+				Name: appResponse.Name,
+				Tags: appResponse.Tags,
+			})
+		}
+
+		if resp.ApplicationsResponse.NextToken == nil {
+			break
+		}
+
+		params.Token = resp.ApplicationsResponse.NextToken
 	}
 
-	apps := make([]resource.Resource, 0)
-	for _, appResponse := range resp.ApplicationsResponse.Item {
-		apps = append(apps, &PinpointApp{
-			svc:  svc,
-			ID:   appResponse.Id,
-			Name: appResponse.Name,
-			Tags: appResponse.Tags,
-		})
-	}
-
-	return apps, nil
+	return resources, nil
 }
 
 type PinpointApp struct {
