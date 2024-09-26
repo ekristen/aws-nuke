@@ -2,7 +2,6 @@ package resources
 
 import (
 	"context"
-
 	"strings"
 	"time"
 
@@ -31,9 +30,9 @@ type WAFv2APIKeyLister struct{}
 
 func (l *WAFv2APIKeyLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
+	var resources []resource.Resource
 
 	svc := wafv2.New(opts.Session)
-	resources := make([]resource.Resource, 0)
 
 	params := &wafv2.ListAPIKeysInput{
 		Limit: aws.Int64(50),
@@ -62,7 +61,8 @@ func (l *WAFv2APIKeyLister) List(_ context.Context, o interface{}) ([]resource.R
 }
 
 func getAPIKeys(svc *wafv2.WAFV2, params *wafv2.ListAPIKeysInput) ([]resource.Resource, error) {
-	resources := make([]resource.Resource, 0)
+	var resources []resource.Resource
+
 	for {
 		resp, err := svc.ListAPIKeys(params)
 		if err != nil {
@@ -74,12 +74,13 @@ func getAPIKeys(svc *wafv2.WAFV2, params *wafv2.ListAPIKeysInput) ([]resource.Re
 			for _, tokenDomain := range apiKey.TokenDomains {
 				tokenDomains = append(tokenDomains, *tokenDomain)
 			}
+
 			resources = append(resources, &WAFv2APIKey{
 				svc:          svc,
 				apiKey:       apiKey.APIKey,
-				tokenDomains: tokenDomains,
-				scope:        params.Scope,
-				createdAt:    apiKey.CreationTimestamp,
+				TokenDomains: tokenDomains,
+				Scope:        params.Scope,
+				CreateDate:   apiKey.CreationTimestamp,
 			})
 		}
 
@@ -89,36 +90,33 @@ func getAPIKeys(svc *wafv2.WAFV2, params *wafv2.ListAPIKeysInput) ([]resource.Re
 
 		params.NextMarker = resp.NextMarker
 	}
+
 	return resources, nil
 }
 
 type WAFv2APIKey struct {
 	svc          *wafv2.WAFV2
 	apiKey       *string
-	tokenDomains []string
-	scope        *string
-	createdAt    *time.Time
+	TokenDomains []string
+	Scope        *string
+	CreateDate   *time.Time
 }
 
-func (f *WAFv2APIKey) Remove(_ context.Context) error {
-	_, err := f.svc.DeleteAPIKey(&wafv2.DeleteAPIKeyInput{
-		APIKey: f.apiKey,
-		Scope:  f.scope,
+func (r *WAFv2APIKey) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteAPIKey(&wafv2.DeleteAPIKeyInput{
+		APIKey: r.apiKey,
+		Scope:  r.Scope,
 	})
 
 	return err
 }
 
-func (f *WAFv2APIKey) String() string {
-	return (*f.apiKey)[:16]
+func (r *WAFv2APIKey) String() string {
+	return (*r.apiKey)[:16]
 }
 
-func (f *WAFv2APIKey) Properties() types.Properties {
-	properties := types.NewProperties()
-
-	properties.
-		Set("APIKey", (*f.apiKey)[:16]).
-		Set("TokenDomains", strings.Join(f.tokenDomains, ", ")).
-		Set("CreatedAt", f.createdAt.String())
-	return properties
+func (r *WAFv2APIKey) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r).
+		// Note: this is necessary because NewPropertiesFromStruct doesn't handle slices of strings
+		Set("TokenDomains", strings.Join(r.TokenDomains, ","))
 }
