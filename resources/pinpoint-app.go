@@ -1,42 +1,57 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/pinpoint"
+
+	"github.com/ekristen/libnuke/pkg/registry"
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-type PinpointApp struct {
-	svc *pinpoint.Pinpoint
-	app string
-}
+const PinpointAppResource = "PinpointApp"
 
 func init() {
-	register("PinpointApp", ListPinpointApps)
+	registry.Register(&registry.Registration{
+		Name:   PinpointAppResource,
+		Scope:  nuke.Account,
+		Lister: &PinpointAppLister{},
+	})
 }
 
-func ListPinpointApps(sess *session.Session) ([]Resource, error) {
-	svc := pinpoint.New(sess)
+type PinpointAppLister struct{}
+
+func (l *PinpointAppLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := pinpoint.New(opts.Session)
 
 	resp, err := svc.GetApps(&pinpoint.GetAppsInput{})
 	if err != nil {
 		return nil, err
 	}
 
-	apps := make([]Resource, 0)
+	apps := make([]resource.Resource, 0)
 	for _, appResponse := range resp.ApplicationsResponse.Item {
 		apps = append(apps, &PinpointApp{
 			svc: svc,
-			app: aws.StringValue(appResponse.Id),
+			ID:  appResponse.Id,
 		})
 	}
 
 	return apps, nil
 }
 
-func (p *PinpointApp) Remove() error {
+type PinpointApp struct {
+	svc *pinpoint.Pinpoint
+	ID  *string
+}
+
+func (p *PinpointApp) Remove(_ context.Context) error {
 	params := &pinpoint.DeleteAppInput{
-		ApplicationId: aws.String(p.app),
+		ApplicationId: p.ID,
 	}
 
 	_, err := p.svc.DeleteApp(params)
@@ -48,5 +63,5 @@ func (p *PinpointApp) Remove() error {
 }
 
 func (p *PinpointApp) String() string {
-	return p.app
+	return *p.ID
 }
