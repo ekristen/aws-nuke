@@ -67,6 +67,7 @@ func init() {
 func (r *BackupReportPlan) Properties() types.Properties {
 	properties := types.NewProperties()
 	properties.Set("Name", r.Name)
+	properties.Set("ARN", r.arn)
 	return properties
 }
 
@@ -78,5 +79,5 @@ func (r *BackupReportPlan) Remove(context.Context) error {
 }
 
 func (r *BackupReportPlan) String() string {
-	return *r.arn
+	return *r.Name
 }
