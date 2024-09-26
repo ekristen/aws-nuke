@@ -1,42 +1,57 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/pinpointsmsvoicev2"
+
+	"github.com/ekristen/libnuke/pkg/registry"
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-type PinpointPhoneNumber struct {
-	svc   *pinpointsmsvoicev2.PinpointSMSVoiceV2
-	phone string
-}
+const PinpointPhoneNumberResource = "PinpointPhoneNumber"
 
 func init() {
-	register("PinpointPhoneNumber", ListPinpointPhoneNumbers)
+	registry.Register(&registry.Registration{
+		Name:   PinpointPhoneNumberResource,
+		Scope:  nuke.Account,
+		Lister: &PinpointPhoneNumberLister{},
+	})
 }
 
-func ListPinpointPhoneNumbers(sess *session.Session) ([]Resource, error) {
-	svc := pinpointsmsvoicev2.New(sess)
+type PinpointPhoneNumberLister struct{}
+
+func (l *PinpointPhoneNumberLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := pinpointsmsvoicev2.New(opts.Session)
 
 	resp, err := svc.DescribePhoneNumbers(&pinpointsmsvoicev2.DescribePhoneNumbersInput{})
 	if err != nil {
 		return nil, err
 	}
 
-	numbers := make([]Resource, 0)
+	numbers := make([]resource.Resource, 0)
 	for _, number := range resp.PhoneNumbers {
 		numbers = append(numbers, &PinpointPhoneNumber{
-			svc:   svc,
-			phone: aws.StringValue(number.PhoneNumberId),
+			svc: svc,
+			ID:  number.PhoneNumberId,
 		})
 	}
 
 	return numbers, nil
 }
 
-func (p *PinpointPhoneNumber) Remove() error {
+type PinpointPhoneNumber struct {
+	svc *pinpointsmsvoicev2.PinpointSMSVoiceV2
+	ID  *string
+}
+
+func (p *PinpointPhoneNumber) Remove(_ context.Context) error {
 	params := &pinpointsmsvoicev2.ReleasePhoneNumberInput{
-		PhoneNumberId: aws.String(p.phone),
+		PhoneNumberId: p.ID,
 	}
 
 	_, err := p.svc.ReleasePhoneNumber(params)
@@ -48,5 +63,5 @@ func (p *PinpointPhoneNumber) Remove() error {
 }
 
 func (p *PinpointPhoneNumber) String() string {
-	return p.phone
+	return *p.ID
 }
