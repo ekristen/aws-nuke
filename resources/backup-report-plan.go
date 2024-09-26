@@ -54,7 +54,7 @@ func (BackupReportPlanLister) List(_ context.Context, o interface{}) ([]resource
 	return resources, nil
 }
 
-const BackupReportPlanResource = "AWSBackupReportPlan"
+const BackupReportPlanResource = "BackupReportPlan"
 
 func init() {
 	registry.Register(&registry.Registration{
