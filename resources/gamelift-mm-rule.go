@@ -7,6 +7,7 @@ import (
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
@@ -25,24 +26,34 @@ type GameLiftMatchmakingRuleSetLister struct{}
 
 func (l *GameLiftMatchmakingRuleSetLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
+	var resources []resource.Resource
 
 	svc := gamelift.New(opts.Session)
 
-	resp, err := svc.DescribeMatchmakingRuleSets(&gamelift.DescribeMatchmakingRuleSetsInput{})
-	if err != nil {
-		return nil, err
-	}
+	params := &gamelift.DescribeMatchmakingRuleSetsInput{}
 
-	rules := make([]resource.Resource, 0)
-	for _, ruleSet := range resp.RuleSets {
-		q := &GameLiftMatchmakingRuleSet{
-			svc:  svc,
-			Name: ruleSet.RuleSetName,
+	for {
+		resp, err := svc.DescribeMatchmakingRuleSets(params)
+		if err != nil {
+			return nil, err
 		}
-		rules = append(rules, q)
+
+		for _, ruleSet := range resp.RuleSets {
+			q := &GameLiftMatchmakingRuleSet{
+				svc:  svc,
+				Name: ruleSet.RuleSetName,
+			}
+			resources = append(resources, q)
+		}
+
+		if resp.NextToken == nil {
+			break
+		}
+
+		params.NextToken = resp.NextToken
 	}
 
-	return rules, nil
+	return resources, nil
 }
 
 type GameLiftMatchmakingRuleSet struct {
@@ -61,6 +72,10 @@ func (r *GameLiftMatchmakingRuleSet) Remove(_ context.Context) error {
 	}
 
 	return nil
+}
+
+func (r *GameLiftMatchmakingRuleSet) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
 
 func (r *GameLiftMatchmakingRuleSet) String() string {
