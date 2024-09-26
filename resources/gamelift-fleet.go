@@ -3,11 +3,11 @@ package resources
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/gamelift"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
@@ -26,34 +26,44 @@ type GameLiftFleetLister struct{}
 
 func (l *GameLiftFleetLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
+	var resources []resource.Resource
 
 	svc := gamelift.New(opts.Session)
 
-	resp, err := svc.ListFleets(&gamelift.ListFleetsInput{})
-	if err != nil {
-		return nil, err
-	}
+	params := &gamelift.ListFleetsInput{}
 
-	fleets := make([]resource.Resource, 0)
-	for _, fleetId := range resp.FleetIds {
-		fleet := &GameLiftFleet{
-			svc:     svc,
-			FleetId: *fleetId, // Dereference the fleetId pointer
+	for {
+		resp, err := svc.ListFleets(params)
+		if err != nil {
+			return nil, err
 		}
-		fleets = append(fleets, fleet)
+
+		for _, fleetId := range resp.FleetIds {
+			fleet := &GameLiftFleet{
+				svc:     svc,
+				FleetID: fleetId,
+			}
+			resources = append(resources, fleet)
+		}
+
+		if resp.NextToken == nil {
+			break
+		}
+
+		params.NextToken = resp.NextToken
 	}
 
-	return fleets, nil
+	return resources, nil
 }
 
 type GameLiftFleet struct {
 	svc     *gamelift.GameLift
-	FleetId string
+	FleetID *string
 }
 
 func (r *GameLiftFleet) Remove(_ context.Context) error {
 	params := &gamelift.DeleteFleetInput{
-		FleetId: aws.String(r.FleetId),
+		FleetId: r.FleetID,
 	}
 
 	_, err := r.svc.DeleteFleet(params)
@@ -65,5 +75,9 @@ func (r *GameLiftFleet) Remove(_ context.Context) error {
 }
 
 func (r *GameLiftFleet) String() string {
-	return r.FleetId
+	return *r.FleetID
+}
+
+func (r *GameLiftFleet) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
