@@ -9,11 +9,13 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cognitoidentityprovider"
+	"github.com/aws/aws-sdk-go/service/cognitoidentityprovider/cognitoidentityprovideriface"
 	"github.com/aws/aws-sdk-go/service/sts"
 	"github.com/aws/aws-sdk-go/service/sts/stsiface"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/settings"
 	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
@@ -26,6 +28,9 @@ func init() {
 		Name:   CognitoUserPoolResource,
 		Scope:  nuke.Account,
 		Lister: &CognitoUserPoolLister{},
+		Settings: []string{
+			"DisableDeletionProtection",
+		},
 		DependsOn: []string{
 			CognitoIdentityPoolResource,
 			CognitoUserPoolClientResource,
@@ -35,11 +40,13 @@ func init() {
 }
 
 type CognitoUserPoolLister struct {
-	stsService stsiface.STSAPI
+	stsService     stsiface.STSAPI
+	cognitoService cognitoidentityprovideriface.CognitoIdentityProviderAPI
 }
 
 func (l *CognitoUserPoolLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
+	resources := make([]resource.Resource, 0)
 
 	var stsSvc stsiface.STSAPI
 	if l.stsService != nil {
@@ -48,8 +55,12 @@ func (l *CognitoUserPoolLister) List(_ context.Context, o interface{}) ([]resour
 		stsSvc = sts.New(opts.Session)
 	}
 
-	svc := cognitoidentityprovider.New(opts.Session)
-	resources := make([]resource.Resource, 0)
+	var svc cognitoidentityprovideriface.CognitoIdentityProviderAPI
+	if l.cognitoService != nil {
+		svc = l.cognitoService
+	} else {
+		svc = cognitoidentityprovider.New(opts.Session)
+	}
 
 	identityOutput, err := stsSvc.GetCallerIdentity(nil)
 	if err != nil {
@@ -95,24 +106,39 @@ func (l *CognitoUserPoolLister) List(_ context.Context, o interface{}) ([]resour
 }
 
 type CognitoUserPool struct {
-	svc  *cognitoidentityprovider.CognitoIdentityProvider
-	Name *string
-	ID   *string
-	Tags map[string]*string
+	svc      cognitoidentityprovideriface.CognitoIdentityProviderAPI
+	settings *settings.Setting
+	Name     *string
+	ID       *string
+	Tags     map[string]*string
 }
 
-func (f *CognitoUserPool) Remove(_ context.Context) error {
-	_, err := f.svc.DeleteUserPool(&cognitoidentityprovider.DeleteUserPoolInput{
-		UserPoolId: f.ID,
+func (r *CognitoUserPool) Remove(_ context.Context) error {
+	if r.settings.GetBool("DisableDeletionProtection") {
+		_, err := r.svc.UpdateUserPool(&cognitoidentityprovider.UpdateUserPoolInput{
+			UserPoolId:         r.ID,
+			DeletionProtection: ptr.String("INACTIVE"),
+		})
+		if err != nil {
+			return err
+		}
+	}
+
+	_, err := r.svc.DeleteUserPool(&cognitoidentityprovider.DeleteUserPoolInput{
+		UserPoolId: r.ID,
 	})
 
 	return err
 }
 
-func (f *CognitoUserPool) Properties() types.Properties {
-	return types.NewPropertiesFromStruct(f)
+func (r *CognitoUserPool) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
 
-func (f *CognitoUserPool) String() string {
-	return *f.Name
+func (r *CognitoUserPool) String() string {
+	return *r.Name
+}
+
+func (r *CognitoUserPool) Settings(setting *settings.Setting) {
+	r.settings = setting
 }

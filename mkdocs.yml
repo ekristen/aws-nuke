@@ -91,7 +91,8 @@ nav:
     - Custom Endpoints: config-custom-endpoints.md
     - Migration Guide: config-migration.md
   - Resources:
-      S3 Bucket: resources/s3-bucket.md
+    - Cognito User Pool: resources/cognito-user-pool.md
+    - S3 Bucket: resources/s3-bucket.md
   - Development:
     - Overview: development.md
     - Contributing: contributing.md

@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/gotidy/ptr"
-
 	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -18,19 +16,19 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-const CognitoIdentityProviderResource = "CognitoIdentityProvider"
+const CognitoUserPoolClientResource = "CognitoUserPoolClient"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   CognitoIdentityProviderResource,
+		Name:   CognitoUserPoolClientResource,
 		Scope:  nuke.Account,
-		Lister: &CognitoIdentityProviderLister{},
+		Lister: &CognitoUserPoolClientLister{},
 	})
 }
 
-type CognitoIdentityProviderLister struct{}
+type CognitoUserPoolClientLister struct{}
 
-func (l *CognitoIdentityProviderLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *CognitoUserPoolClientLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 
 	svc := cognitoidentityprovider.New(opts.Session)
@@ -50,22 +48,22 @@ func (l *CognitoIdentityProviderLister) List(ctx context.Context, o interface{})
 			continue
 		}
 
-		listParams := &cognitoidentityprovider.ListIdentityProvidersInput{
+		listParams := &cognitoidentityprovider.ListUserPoolClientsInput{
 			UserPoolId: userPool.ID,
 			MaxResults: aws.Int64(50),
 		}
 
 		for {
-			output, err := svc.ListIdentityProviders(listParams)
+			output, err := svc.ListUserPoolClients(listParams)
 			if err != nil {
 				return nil, err
 			}
 
-			for _, provider := range output.Providers {
-				resources = append(resources, &CognitoIdentityProvider{
+			for _, client := range output.UserPoolClients {
+				resources = append(resources, &CognitoUserPoolClient{
 					svc:          svc,
-					name:         provider.ProviderName,
-					providerType: provider.ProviderType,
+					id:           client.ClientId,
+					name:         client.ClientName,
 					userPoolName: userPool.Name,
 					userPoolID:   userPool.ID,
 				})
@@ -82,31 +80,31 @@ func (l *CognitoIdentityProviderLister) List(ctx context.Context, o interface{})
 	return resources, nil
 }
 
-type CognitoIdentityProvider struct {
+type CognitoUserPoolClient struct {
 	svc          *cognitoidentityprovider.CognitoIdentityProvider
 	name         *string
-	providerType *string
+	id           *string
 	userPoolName *string
 	userPoolID   *string
 }
 
-func (p *CognitoIdentityProvider) Remove(_ context.Context) error {
-	_, err := p.svc.DeleteIdentityProvider(&cognitoidentityprovider.DeleteIdentityProviderInput{
-		UserPoolId:   p.userPoolID,
-		ProviderName: p.name,
+func (r *CognitoUserPoolClient) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteUserPoolClient(&cognitoidentityprovider.DeleteUserPoolClientInput{
+		ClientId:   r.id,
+		UserPoolId: r.userPoolID,
 	})
 
 	return err
 }
 
-func (p *CognitoIdentityProvider) Properties() types.Properties {
+func (r *CognitoUserPoolClient) Properties() types.Properties {
 	properties := types.NewProperties()
-	properties.Set("Type", p.providerType)
-	properties.Set("UserPoolName", p.userPoolName)
-	properties.Set("Name", p.name)
+	properties.Set("ID", r.id)
+	properties.Set("Name", r.name)
+	properties.Set("UserPoolName", r.userPoolName)
 	return properties
 }
 
-func (p *CognitoIdentityProvider) String() string {
-	return fmt.Sprintf("%s -> %s", ptr.ToString(p.userPoolName), ptr.ToString(p.name))
+func (r *CognitoUserPoolClient) String() string {
+	return fmt.Sprintf("%s -> %s", *r.userPoolName, *r.name)
 }
