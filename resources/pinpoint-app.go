@@ -2,11 +2,13 @@ package resources
 
 import (
 	"context"
+	"time"
 
 	"github.com/aws/aws-sdk-go/service/pinpoint"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
@@ -36,8 +38,10 @@ func (l *PinpointAppLister) List(_ context.Context, o interface{}) ([]resource.R
 	apps := make([]resource.Resource, 0)
 	for _, appResponse := range resp.ApplicationsResponse.Item {
 		apps = append(apps, &PinpointApp{
-			svc: svc,
-			ID:  appResponse.Id,
+			svc:  svc,
+			ID:   appResponse.Id,
+			Name: appResponse.Name,
+			Tags: appResponse.Tags,
 		})
 	}
 
@@ -45,8 +49,15 @@ func (l *PinpointAppLister) List(_ context.Context, o interface{}) ([]resource.R
 }
 
 type PinpointApp struct {
-	svc *pinpoint.Pinpoint
-	ID  *string
+	svc          *pinpoint.Pinpoint
+	ID           *string
+	Name         *string
+	CreationDate *time.Time
+	Tags         map[string]*string
+}
+
+func (r *PinpointApp) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
 
 func (r *PinpointApp) Remove(_ context.Context) error {
@@ -63,5 +74,5 @@ func (r *PinpointApp) Remove(_ context.Context) error {
 }
 
 func (r *PinpointApp) String() string {
-	return *r.ID
+	return *r.Name
 }
