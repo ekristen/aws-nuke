@@ -4,21 +4,23 @@ import (
 	"context"
 
 	"github.com/aws/aws-sdk-go/service/backup"
-	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
+
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
 type BackupReportPlan struct {
-	svc            *backup.Backup
-	arn            string
-	reportPlanName string
+	svc  *backup.Backup
+	arn  *string
+	Name *string
 }
 
-type AWSBackupReportPlanLister struct{}
+type BackupReportPlanLister struct{}
 
-func (AWSBackupReportPlanLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+func (BackupReportPlanLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 
 	svc := backup.New(opts.Session)
@@ -36,9 +38,9 @@ func (AWSBackupReportPlanLister) List(_ context.Context, o interface{}) ([]resou
 
 		for _, report := range output.ReportPlans {
 			resources = append(resources, &BackupReportPlan{
-				svc:            svc,
-				arn:            *report.ReportPlanArn,
-				reportPlanName: *report.ReportPlanName,
+				svc:  svc,
+				arn:  report.ReportPlanArn,
+				Name: report.ReportPlanName,
 			})
 		}
 
@@ -52,29 +54,29 @@ func (AWSBackupReportPlanLister) List(_ context.Context, o interface{}) ([]resou
 	return resources, nil
 }
 
-const AWSBackupReportPlanResource = "AWSBackupReportPlan"
+const BackupReportPlanResource = "AWSBackupReportPlan"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   AWSBackupReportPlanResource,
+		Name:   BackupReportPlanResource,
 		Scope:  nuke.Account,
-		Lister: &AWSBackupReportPlanLister{},
+		Lister: &BackupReportPlanLister{},
 	})
 }
 
-func (b *BackupReportPlan) Properties() types.Properties {
+func (r *BackupReportPlan) Properties() types.Properties {
 	properties := types.NewProperties()
-	properties.Set("BackupReport", b.reportPlanName)
+	properties.Set("Name", r.Name)
 	return properties
 }
 
-func (b *BackupReportPlan) Remove(context.Context) error {
-	_, err := b.svc.DeleteReportPlan(&backup.DeleteReportPlanInput{
-		ReportPlanName: &b.reportPlanName,
+func (r *BackupReportPlan) Remove(context.Context) error {
+	_, err := r.svc.DeleteReportPlan(&backup.DeleteReportPlanInput{
+		ReportPlanName: r.Name,
 	})
 	return err
 }
 
-func (b *BackupReportPlan) String() string {
-	return b.arn
+func (r *BackupReportPlan) String() string {
+	return *r.arn
 }
