@@ -47,7 +47,7 @@ func (l *IAMServiceSpecificCredentialLister) List(ctx context.Context, o interfa
 			continue
 		}
 		params := &iam.ListServiceSpecificCredentialsInput{
-			UserName: user.name,
+			UserName: user.Name,
 		}
 		serviceCredentials, err := svc.ListServiceSpecificCredentials(params)
 		if err != nil {
@@ -60,7 +60,7 @@ func (l *IAMServiceSpecificCredentialLister) List(ctx context.Context, o interfa
 				name:        credential.ServiceUserName,
 				serviceName: credential.ServiceName,
 				id:          credential.ServiceSpecificCredentialId,
-				userName:    user.name,
+				userName:    user.Name,
 			})
 		}
 	}

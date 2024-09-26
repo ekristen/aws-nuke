@@ -3,6 +3,7 @@ package resources
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/gotidy/ptr"
@@ -72,10 +73,44 @@ func Test_Mock_IAMUser_Remove(t *testing.T) {
 
 	iamUser := IAMUser{
 		svc:                   mockIAM,
-		name:                  ptr.String("foobar"),
-		hasPermissionBoundary: true,
+		Name:                  ptr.String("foobar"),
+		HasPermissionBoundary: true,
 	}
 
 	err := iamUser.Remove(context.TODO())
 	a.Nil(err)
+}
+
+func Test_Mock_IAMUser_Properties(t *testing.T) {
+	a := assert.New(t)
+
+	now := time.Now().UTC()
+
+	iamUser := IAMUser{
+		Name:             ptr.String("foo"),
+		Path:             ptr.String("/foo"),
+		UserID:           ptr.String("foobar"),
+		CreateDate:       ptr.Time(now),
+		PasswordLastUsed: ptr.Time(now),
+		Tags: []*iam.Tag{
+			{
+				Key:   ptr.String("foo"),
+				Value: ptr.String("bar"),
+			},
+		},
+		HasPermissionBoundary:  true,
+		PermissionBoundaryARN:  ptr.String("arn:aws:iam::123456789012:policy/foo"),
+		PermissionBoundaryType: ptr.String("PermissionsBoundary"),
+	}
+
+	a.Equal("foo", iamUser.String())
+	a.Equal("foobar", iamUser.Properties().Get("UserID"))
+	a.Equal("foo", iamUser.Properties().Get("Name"))
+	a.Equal("true", iamUser.Properties().Get("HasPermissionBoundary"))
+	a.Equal(now.Format(time.RFC3339), iamUser.Properties().Get("CreateDate"))
+	a.Equal(now.Format(time.RFC3339), iamUser.Properties().Get("PasswordLastUsed"))
+	a.Equal("arn:aws:iam::123456789012:policy/foo", iamUser.Properties().Get("PermissionBoundaryARN"))
+	a.Equal("PermissionsBoundary", iamUser.Properties().Get("PermissionBoundaryType"))
+	a.Equal("bar", iamUser.Properties().Get("tag:foo"))
+	a.Equal("/foo", iamUser.Properties().Get("Path"))
 }
