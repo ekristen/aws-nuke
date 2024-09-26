@@ -1,33 +1,43 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
 	"github.com/aws/aws-sdk-go/service/gamelift"
+
+	"github.com/ekristen/libnuke/pkg/registry"
+	"github.com/ekristen/libnuke/pkg/resource"
+
+	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-type GameLiftMatchmakingRuleSet struct {
-	svc  *gamelift.GameLift
-	Name string
-}
+const GameLiftMatchmakingRuleSetResource = "GameLiftMatchmakingRuleSet"
 
 func init() {
-	register("GameLiftMatchmakingRuleSet", ListMatchmakingRuleSets)
+	registry.Register(&registry.Registration{
+		Name:   GameLiftMatchmakingRuleSetResource,
+		Scope:  nuke.Account,
+		Lister: &GameLiftMatchmakingRuleSetLister{},
+	})
 }
 
-func ListMatchmakingRuleSets(sess *session.Session) ([]Resource, error) {
-	svc := gamelift.New(sess)
+type GameLiftMatchmakingRuleSetLister struct{}
+
+func (l *GameLiftMatchmakingRuleSetLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := gamelift.New(opts.Session)
 
 	resp, err := svc.DescribeMatchmakingRuleSets(&gamelift.DescribeMatchmakingRuleSetsInput{})
 	if err != nil {
 		return nil, err
 	}
 
-	rules := make([]Resource, 0)
+	rules := make([]resource.Resource, 0)
 	for _, ruleSet := range resp.RuleSets {
 		q := &GameLiftMatchmakingRuleSet{
 			svc:  svc,
-			Name: *ruleSet.RuleSetName,
+			Name: ruleSet.RuleSetName,
 		}
 		rules = append(rules, q)
 	}
@@ -35,12 +45,17 @@ func ListMatchmakingRuleSets(sess *session.Session) ([]Resource, error) {
 	return rules, nil
 }
 
-func (ruleSet *GameLiftMatchmakingRuleSet) Remove() error {
+type GameLiftMatchmakingRuleSet struct {
+	svc  *gamelift.GameLift
+	Name *string
+}
+
+func (r *GameLiftMatchmakingRuleSet) Remove(_ context.Context) error {
 	params := &gamelift.DeleteMatchmakingRuleSetInput{
-		Name: aws.String(ruleSet.Name),
+		Name: r.Name,
 	}
 
-	_, err := ruleSet.svc.DeleteMatchmakingRuleSet(params)
+	_, err := r.svc.DeleteMatchmakingRuleSet(params)
 	if err != nil {
 		return err
 	}
@@ -48,6 +63,6 @@ func (ruleSet *GameLiftMatchmakingRuleSet) Remove() error {
 	return nil
 }
 
-func (ruleSet *GameLiftMatchmakingRuleSet) String() string {
-	return ruleSet.Name
+func (r *GameLiftMatchmakingRuleSet) String() string {
+	return *r.Name
 }
