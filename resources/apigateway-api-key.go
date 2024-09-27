@@ -71,18 +71,18 @@ type APIGatewayAPIKey struct {
 	CreatedDate *time.Time
 }
 
-func (f *APIGatewayAPIKey) Remove(_ context.Context) error {
-	_, err := f.svc.DeleteApiKey(&apigateway.DeleteApiKeyInput{
-		ApiKey: f.apiKey,
+func (r *APIGatewayAPIKey) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteApiKey(&apigateway.DeleteApiKeyInput{
+		ApiKey: r.apiKey,
 	})
 
 	return err
 }
 
-func (f *APIGatewayAPIKey) Properties() types.Properties {
-	return types.NewPropertiesFromStruct(f)
+func (r *APIGatewayAPIKey) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
 
-func (f *APIGatewayAPIKey) String() string {
-	return *f.apiKey
+func (r *APIGatewayAPIKey) String() string {
+	return *r.apiKey
 }
