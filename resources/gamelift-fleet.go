@@ -38,10 +38,10 @@ func (l *GameLiftFleetLister) List(_ context.Context, o interface{}) ([]resource
 			return nil, err
 		}
 
-		for _, fleetId := range resp.FleetIds {
+		for _, fleetID := range resp.FleetIds {
 			fleet := &GameLiftFleet{
 				svc:     svc,
-				FleetID: fleetId,
+				FleetID: fleetID,
 			}
 			resources = append(resources, fleet)
 		}
