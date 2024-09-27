@@ -79,7 +79,7 @@ func (r *PinpointPhoneNumber) Properties() types.Properties {
 }
 
 func (r *PinpointPhoneNumber) Remove(_ context.Context) error {
-	if r.settings.GetBool("DisableDeletionProtection") {
+	if r.settings.GetBool("DisableDeletionProtection") && ptr.ToBool(r.deletionProtectionEnabled) {
 		_, err := r.svc.UpdatePhoneNumber(&pinpointsmsvoicev2.UpdatePhoneNumberInput{
 			PhoneNumberId:             r.ID,
 			DeletionProtectionEnabled: ptr.Bool(false),
@@ -99,8 +99,8 @@ func (r *PinpointPhoneNumber) Remove(_ context.Context) error {
 	return nil
 }
 
-func (r *PinpointPhoneNumber) Settings(settings *settings.Setting) {
-	r.settings = settings
+func (r *PinpointPhoneNumber) Settings(setting *settings.Setting) {
+	r.settings = setting
 }
 
 func (r *PinpointPhoneNumber) String() string {
