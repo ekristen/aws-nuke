@@ -26,13 +26,6 @@ func init() {
 
 type APIGatewayUsagePlanLister struct{}
 
-type APIGatewayUsagePlan struct {
-	svc         *apigateway.APIGateway
-	usagePlanID *string
-	name        *string
-	tags        map[string]*string
-}
-
 func (l *APIGatewayUsagePlanLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 	svc := apigateway.New(opts.Session)
@@ -51,9 +44,9 @@ func (l *APIGatewayUsagePlanLister) List(_ context.Context, o interface{}) ([]re
 		for _, item := range output.Items {
 			resources = append(resources, &APIGatewayUsagePlan{
 				svc:         svc,
-				usagePlanID: item.Id,
-				name:        item.Name,
-				tags:        item.Tags,
+				UsagePlanID: item.Id,
+				Name:        item.Name,
+				Tags:        item.Tags,
 			})
 		}
 
@@ -67,27 +60,25 @@ func (l *APIGatewayUsagePlanLister) List(_ context.Context, o interface{}) ([]re
 	return resources, nil
 }
 
-func (f *APIGatewayUsagePlan) Remove(_ context.Context) error {
-	_, err := f.svc.DeleteUsagePlan(&apigateway.DeleteUsagePlanInput{
-		UsagePlanId: f.usagePlanID,
+type APIGatewayUsagePlan struct {
+	svc         *apigateway.APIGateway
+	UsagePlanID *string
+	Name        *string
+	Tags        map[string]*string
+}
+
+func (r *APIGatewayUsagePlan) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteUsagePlan(&apigateway.DeleteUsagePlanInput{
+		UsagePlanId: r.UsagePlanID,
 	})
 
 	return err
 }
 
-func (f *APIGatewayUsagePlan) String() string {
-	return *f.usagePlanID
+func (r *APIGatewayUsagePlan) String() string {
+	return *r.UsagePlanID
 }
 
-func (f *APIGatewayUsagePlan) Properties() types.Properties {
-	properties := types.NewProperties()
-
-	for key, tag := range f.tags {
-		properties.SetTag(&key, tag)
-	}
-
-	properties.
-		Set("UsagePlanID", f.usagePlanID).
-		Set("Name", f.name)
-	return properties
+func (r *APIGatewayUsagePlan) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
