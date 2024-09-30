@@ -34,7 +34,6 @@ func (l *PollyLexiconLister) List(_ context.Context, o interface{}) ([]resource.
 	params := &polly.ListLexiconsInput{}
 
 	for {
-
 		listOutput, err := svc.ListLexicons(params)
 		if err != nil {
 			return nil, err
@@ -60,6 +59,7 @@ func (l *PollyLexiconLister) List(_ context.Context, o interface{}) ([]resource.
 		// Set the nextToken for the next iteration
 		params.NextToken = listOutput.NextToken
 	}
+
 	return resources, nil
 }
 
