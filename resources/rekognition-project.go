@@ -1,23 +1,35 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/rekognition"
+
+	"github.com/ekristen/libnuke/pkg/registry"
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-type RekognitionProject struct {
-	svc *rekognition.Rekognition
-	arn *string
-}
+const RekognitionProjectResource = "RekognitionProject"
 
 func init() {
-	register("RekognitionProject", ListRekognitionProjects)
+	registry.Register(&registry.Registration{
+		Name:   RekognitionProjectResource,
+		Scope:  nuke.Account,
+		Lister: &RekognitionProjectLister{},
+	})
 }
 
-func ListRekognitionProjects(sess *session.Session) ([]Resource, error) {
-	svc := rekognition.New(sess)
-	resources := []Resource{}
+type RekognitionProjectLister struct{}
+
+func (l *RekognitionProjectLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := rekognition.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &rekognition.DescribeProjectsInput{
 		MaxResults: aws.Int64(100),
@@ -32,7 +44,7 @@ func ListRekognitionProjects(sess *session.Session) ([]Resource, error) {
 		for _, project := range output.ProjectDescriptions {
 			resources = append(resources, &RekognitionProject{
 				svc: svc,
-				arn: project.ProjectArn,
+				ARN: project.ProjectArn,
 			})
 		}
 
@@ -46,15 +58,23 @@ func ListRekognitionProjects(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *RekognitionProject) Remove() error {
+type RekognitionProject struct {
+	svc *rekognition.Rekognition
+	ARN *string
+}
 
-	_, err := f.svc.DeleteProject(&rekognition.DeleteProjectInput{
-		ProjectArn: f.arn,
+func (r *RekognitionProject) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteProject(&rekognition.DeleteProjectInput{
+		ProjectArn: r.ARN,
 	})
 
 	return err
 }
 
-func (f *RekognitionProject) String() string {
-	return *f.arn
+func (r *RekognitionProject) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
+}
+
+func (r *RekognitionProject) String() string {
+	return *r.ARN
 }
