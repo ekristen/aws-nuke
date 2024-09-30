@@ -2,10 +2,10 @@ package resources
 
 import (
 	"context"
-	"github.com/sirupsen/logrus"
+	"fmt"
 	"time"
 
-	"fmt"
+	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/eks"

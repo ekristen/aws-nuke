@@ -1,9 +1,10 @@
 package resources
 
 import (
+	"testing"
+
 	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestEKSFargateProperties(t *testing.T) {
