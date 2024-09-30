@@ -63,8 +63,8 @@ type DatabaseMigrationServiceCertificate struct {
 }
 
 func (f *DatabaseMigrationServiceCertificate) Remove(_ context.Context) error {
-	_, err := f.svc.DeleteEndpoint(&databasemigrationservice.DeleteEndpointInput{
-		EndpointArn: f.ARN,
+	_, err := f.svc.DeleteCertificate(&databasemigrationservice.DeleteCertificateInput{
+		CertificateArn: f.ARN,
 	})
 
 	return err
