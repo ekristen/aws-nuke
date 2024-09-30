@@ -92,6 +92,7 @@ nav:
     - Migration Guide: config-migration.md
   - Resources:
     - Cognito User Pool: resources/cognito-user-pool.md
+    - IAM Role: resources/iam-role.md
     - S3 Bucket: resources/s3-bucket.md
   - Development:
     - Overview: development.md
