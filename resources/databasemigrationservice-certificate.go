@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/databasemigrationservice"
@@ -62,14 +63,18 @@ type DatabaseMigrationServiceCertificate struct {
 	ARN *string
 }
 
-func (f *DatabaseMigrationServiceCertificate) Remove(_ context.Context) error {
-	_, err := f.svc.DeleteCertificate(&databasemigrationservice.DeleteCertificateInput{
-		CertificateArn: f.ARN,
+func (r *DatabaseMigrationServiceCertificate) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
+}
+
+func (r *DatabaseMigrationServiceCertificate) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteCertificate(&databasemigrationservice.DeleteCertificateInput{
+		CertificateArn: r.ARN,
 	})
 
 	return err
 }
 
-func (f *DatabaseMigrationServiceCertificate) String() string {
-	return *f.ARN
+func (r *DatabaseMigrationServiceCertificate) String() string {
+	return *r.ARN
 }
