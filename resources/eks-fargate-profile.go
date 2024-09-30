@@ -2,6 +2,8 @@ package resources
 
 import (
 	"context"
+	"github.com/sirupsen/logrus"
+	"time"
 
 	"fmt"
 
@@ -71,10 +73,21 @@ func (l *EKSFargateProfileLister) List(_ context.Context, o interface{}) ([]reso
 			}
 
 			for _, name := range resp.FargateProfileNames {
+				profResp, err := svc.DescribeFargateProfile(&eks.DescribeFargateProfileInput{
+					ClusterName:        clusterName,
+					FargateProfileName: name,
+				})
+				if err != nil {
+					logrus.WithError(err).Error("unable to describe fargate profile")
+					continue
+				}
+
 				resources = append(resources, &EKSFargateProfile{
-					svc:     svc,
-					name:    name,
-					cluster: clusterName,
+					svc:       svc,
+					Name:      name,
+					Cluster:   clusterName,
+					CreatedAt: profResp.FargateProfile.CreatedAt,
+					Tags:      profResp.FargateProfile.Tags,
 				})
 			}
 
@@ -91,25 +104,25 @@ func (l *EKSFargateProfileLister) List(_ context.Context, o interface{}) ([]reso
 }
 
 type EKSFargateProfile struct {
-	svc     *eks.EKS
-	cluster *string
-	name    *string
+	svc       *eks.EKS
+	Cluster   *string
+	Name      *string
+	CreatedAt *time.Time
+	Tags      map[string]*string
 }
 
-func (fp *EKSFargateProfile) Remove(_ context.Context) error {
-	_, err := fp.svc.DeleteFargateProfile(&eks.DeleteFargateProfileInput{
-		ClusterName:        fp.cluster,
-		FargateProfileName: fp.name,
+func (r *EKSFargateProfile) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteFargateProfile(&eks.DeleteFargateProfileInput{
+		ClusterName:        r.Cluster,
+		FargateProfileName: r.Name,
 	})
 	return err
 }
 
-func (fp *EKSFargateProfile) Properties() types.Properties {
-	return types.NewProperties().
-		Set("Cluster", *fp.cluster).
-		Set("Profile", *fp.name)
+func (r *EKSFargateProfile) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
 
-func (fp *EKSFargateProfile) String() string {
-	return fmt.Sprintf("%s:%s", *fp.cluster, *fp.name)
+func (r *EKSFargateProfile) String() string {
+	return fmt.Sprintf("%s:%s", *r.Cluster, *r.Name)
 }
