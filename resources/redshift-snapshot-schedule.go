@@ -75,6 +75,9 @@ func (r *RedshiftSnapshotSchedule) Properties() types.Properties {
 	properties := types.NewProperties()
 	properties.Set("ID", r.ID)
 	properties.Set("AssociatedClusters", associatedClusters)
+	for _, tag := range r.Tags {
+		properties.SetTag(tag.Key, tag.Value)
+	}
 	return properties
 }
 
