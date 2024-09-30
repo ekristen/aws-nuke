@@ -72,7 +72,6 @@ func Test_Mock_IAMRole_List(t *testing.T) {
 
 	err = iamRole.Filter()
 	a.Nil(err)
-
 }
 
 func Test_Mock_IAMRole_Remove(t *testing.T) {
