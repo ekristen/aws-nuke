@@ -1,25 +1,35 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/redshift"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+
+	"github.com/ekristen/libnuke/pkg/registry"
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-type RedshiftSnapshotSchedule struct {
-	svc                *redshift.Redshift
-	scheduleID         *string
-	associatedClusters []*redshift.ClusterAssociatedToSchedule
-}
+const RedshiftSnapshotScheduleResource = "RedshiftSnapshotSchedule"
 
 func init() {
-	register("RedshiftSnapshotSchedule", ListRedshiftSnapshotSchedule)
+	registry.Register(&registry.Registration{
+		Name:   RedshiftSnapshotScheduleResource,
+		Scope:  nuke.Account,
+		Lister: &RedshiftSnapshotScheduleLister{},
+	})
 }
 
-func ListRedshiftSnapshotSchedule(sess *session.Session) ([]Resource, error) {
-	svc := redshift.New(sess)
-	resources := []Resource{}
+type RedshiftSnapshotScheduleLister struct{}
+
+func (l *RedshiftSnapshotScheduleLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := redshift.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &redshift.DescribeSnapshotSchedulesInput{
 		MaxRecords: aws.Int64(100),
@@ -34,7 +44,8 @@ func ListRedshiftSnapshotSchedule(sess *session.Session) ([]Resource, error) {
 		for _, snapshotSchedule := range output.SnapshotSchedules {
 			resources = append(resources, &RedshiftSnapshotSchedule{
 				svc:                svc,
-				scheduleID:         snapshotSchedule.ScheduleIdentifier,
+				ID:                 snapshotSchedule.ScheduleIdentifier,
+				Tags:               snapshotSchedule.Tags,
 				associatedClusters: snapshotSchedule.AssociatedClusters,
 			})
 		}
@@ -49,21 +60,28 @@ func ListRedshiftSnapshotSchedule(sess *session.Session) ([]Resource, error) {
 	return resources, nil
 }
 
-func (f *RedshiftSnapshotSchedule) Properties() types.Properties {
-	associatedClusters := make([]string, len(f.associatedClusters))
-	for i, cluster := range f.associatedClusters {
+type RedshiftSnapshotSchedule struct {
+	svc                *redshift.Redshift
+	ID                 *string
+	Tags               []*redshift.Tag
+	associatedClusters []*redshift.ClusterAssociatedToSchedule
+}
+
+func (r *RedshiftSnapshotSchedule) Properties() types.Properties {
+	associatedClusters := make([]string, len(r.associatedClusters))
+	for i, cluster := range r.associatedClusters {
 		associatedClusters[i] = *cluster.ClusterIdentifier
 	}
 	properties := types.NewProperties()
-	properties.Set("scheduleID", f.scheduleID)
-	properties.Set("associatedClusters", associatedClusters)
+	properties.Set("ID", r.ID)
+	properties.Set("AssociatedClusters", associatedClusters)
 	return properties
 }
 
-func (f *RedshiftSnapshotSchedule) Remove() error {
-	for _, associatedCluster := range f.associatedClusters {
-		_, disassociateErr := f.svc.ModifyClusterSnapshotSchedule(&redshift.ModifyClusterSnapshotScheduleInput{
-			ScheduleIdentifier:   f.scheduleID,
+func (r *RedshiftSnapshotSchedule) Remove(_ context.Context) error {
+	for _, associatedCluster := range r.associatedClusters {
+		_, disassociateErr := r.svc.ModifyClusterSnapshotSchedule(&redshift.ModifyClusterSnapshotScheduleInput{
+			ScheduleIdentifier:   r.ID,
 			ClusterIdentifier:    associatedCluster.ClusterIdentifier,
 			DisassociateSchedule: aws.Bool(true),
 		})
@@ -73,9 +91,13 @@ func (f *RedshiftSnapshotSchedule) Remove() error {
 		}
 	}
 
-	_, err := f.svc.DeleteSnapshotSchedule(&redshift.DeleteSnapshotScheduleInput{
-		ScheduleIdentifier: f.scheduleID,
+	_, err := r.svc.DeleteSnapshotSchedule(&redshift.DeleteSnapshotScheduleInput{
+		ScheduleIdentifier: r.ID,
 	})
 
 	return err
+}
+
+func (r *RedshiftSnapshotSchedule) String() string {
+	return *r.ID
 }
