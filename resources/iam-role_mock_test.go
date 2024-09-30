@@ -13,6 +13,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iam"
 
+	libsettings "github.com/ekristen/libnuke/pkg/settings"
+
 	"github.com/ekristen/aws-nuke/v3/mocks/mock_iamiface"
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
@@ -67,6 +69,10 @@ func Test_Mock_IAMRole_List(t *testing.T) {
 	a.Equal("/", *iamRole.Path)
 	a.Equal(createDate.Format(time.RFC3339), iamRole.Properties().Get("CreateDate"))
 	a.Equal(lastUsedDate.Format(time.RFC3339), iamRole.Properties().Get("LastUsedDate"))
+
+	err = iamRole.Filter()
+	a.Nil(err)
+
 }
 
 func Test_Mock_IAMRole_Remove(t *testing.T) {
@@ -89,6 +95,37 @@ func Test_Mock_IAMRole_Remove(t *testing.T) {
 
 	err := iamRole.Remove(context.TODO())
 	a.Nil(err)
+}
+
+func Test_Mock_IAMRole_Filter_ServiceLinked(t *testing.T) {
+	a := assert.New(t)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockIAM := mock_iamiface.NewMockIAMAPI(ctrl)
+
+	settings := &libsettings.Setting{}
+
+	iamRole := IAMRole{
+		svc:      mockIAM,
+		settings: settings,
+		Name:     ptr.String("test"),
+		Path:     ptr.String("/aws-service-role/"),
+		Tags:     []*iam.Tag{},
+	}
+
+	err := iamRole.Filter()
+	a.NotNil(err, "should not be able to delete service linked roles")
+
+	iamRole.settings.Set("IncludeServiceLinkedRoles", false)
+
+	err = iamRole.Filter()
+	a.NotNil(err, "should not be able to delete service linked roles")
+
+	iamRole.settings.Set("IncludeServiceLinkedRoles", true)
+
+	err = iamRole.Filter()
+	a.Nil(err, "should be able to delete service linked roles")
 }
 
 func Test_Mock_IAMRole_Properties(t *testing.T) {
