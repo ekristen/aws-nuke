@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gotidy/ptr"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 
@@ -184,7 +185,12 @@ func execute(c *cli.Context) error { //nolint:funlen,gocyclo
 
 		// Step 2 - Create the scannerActual object
 		scannerActual := scanner.New(regionName, resourceTypes, &nuke.ListerOpts{
-			Region: region,
+			Region:    region,
+			AccountID: ptr.String(account.ID()),
+			Logger: logrus.WithFields(logrus.Fields{
+				"component": "scanner",
+				"region":    regionName,
+			}),
 		})
 
 		// Step 3 - Register a mutate function that will be called to modify the lister options for each resource type
