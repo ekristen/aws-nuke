@@ -11,8 +11,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/sqs"
 
 	"github.com/ekristen/aws-nuke/v3/mocks/mock_sqsiface"
-
-	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
 func Test_Mock_SQSQueues_List(t *testing.T) {
@@ -38,7 +36,7 @@ func Test_Mock_SQSQueues_List(t *testing.T) {
 		},
 	}, nil)
 
-	resources, err := sqsQueueLister.List(context.TODO(), &nuke.ListerOpts{})
+	resources, err := sqsQueueLister.List(context.TODO(), testListerOpts)
 	a.Nil(err)
 	a.Len(resources, 1)
 

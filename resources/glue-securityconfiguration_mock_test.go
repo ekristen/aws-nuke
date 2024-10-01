@@ -11,7 +11,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/glue"
 
 	"github.com/ekristen/aws-nuke/v3/mocks/mock_glueiface"
-	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
 func Test_Mock_GlueSecurityConfiguration_Remove(t *testing.T) {
@@ -53,7 +52,7 @@ func Test_Mock_GlueSecurityConfiguration_List(t *testing.T) {
 		},
 	}, nil)
 
-	resources, err := resource.List(context.TODO(), &nuke.ListerOpts{})
+	resources, err := resource.List(context.TODO(), testListerOpts)
 	a.Nil(err)
 	a.Len(resources, 1)
 	a.Equal("foobar", *resources[0].(*GlueSecurityConfiguration).name)
@@ -90,7 +89,7 @@ func Test_Mock_GlueSecurityConfiguration_ListNext(t *testing.T) {
 		NextToken: &[]string{""}[0], // empty string to break the loop or nil
 	}, nil)
 
-	resources, err := resource.List(context.TODO(), &nuke.ListerOpts{})
+	resources, err := resource.List(context.TODO(), testListerOpts)
 	a.Nil(err)
 	a.Len(resources, 2)
 	a.Equal("foobar1", *resources[0].(*GlueSecurityConfiguration).name)

@@ -7,9 +7,6 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/quicksight"
 	"github.com/aws/aws-sdk-go/service/quicksight/quicksightiface"
-	"github.com/aws/aws-sdk-go/service/sts"
-	"github.com/aws/aws-sdk-go/service/sts/stsiface"
-
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
@@ -28,20 +25,12 @@ func init() {
 }
 
 type QuickSightUserLister struct {
-	stsService        stsiface.STSAPI
 	quicksightService quicksightiface.QuickSightAPI
 }
 
 func (l *QuickSightUserLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 	var resources []resource.Resource
-
-	var stsSvc stsiface.STSAPI
-	if l.stsService != nil {
-		stsSvc = l.stsService
-	} else {
-		stsSvc = sts.New(opts.Session)
-	}
 
 	var quicksightSvc quicksightiface.QuickSightAPI
 	if l.quicksightService != nil {
@@ -50,23 +39,17 @@ func (l *QuickSightUserLister) List(_ context.Context, o interface{}) ([]resourc
 		quicksightSvc = quicksight.New(opts.Session)
 	}
 
-	callerID, err := stsSvc.GetCallerIdentity(&sts.GetCallerIdentityInput{})
-	if err != nil {
-		return nil, err
-	}
-	accountID := callerID.Account
-
 	// TODO: support all namespaces
 	namespace := ptr.String("default")
 
-	err = quicksightSvc.ListUsersPages(&quicksight.ListUsersInput{
-		AwsAccountId: accountID,
+	err := quicksightSvc.ListUsersPages(&quicksight.ListUsersInput{
+		AwsAccountId: opts.AccountID,
 		Namespace:    namespace,
 	}, func(output *quicksight.ListUsersOutput, lastPage bool) bool {
 		for _, user := range output.UserList {
 			resources = append(resources, &QuickSightUser{
 				svc:         quicksightSvc,
-				accountID:   accountID,
+				accountID:   opts.AccountID,
 				PrincipalID: user.PrincipalId,
 				UserName:    user.UserName,
 				Active:      user.Active,

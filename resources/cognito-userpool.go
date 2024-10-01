@@ -10,9 +10,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cognitoidentityprovider"
 	"github.com/aws/aws-sdk-go/service/cognitoidentityprovider/cognitoidentityprovideriface"
-	"github.com/aws/aws-sdk-go/service/sts"
-	"github.com/aws/aws-sdk-go/service/sts/stsiface"
-
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/settings"
@@ -40,7 +37,6 @@ func init() {
 }
 
 type CognitoUserPoolLister struct {
-	stsService     stsiface.STSAPI
 	cognitoService cognitoidentityprovideriface.CognitoIdentityProviderAPI
 }
 
@@ -48,25 +44,12 @@ func (l *CognitoUserPoolLister) List(_ context.Context, o interface{}) ([]resour
 	opts := o.(*nuke.ListerOpts)
 	resources := make([]resource.Resource, 0)
 
-	var stsSvc stsiface.STSAPI
-	if l.stsService != nil {
-		stsSvc = l.stsService
-	} else {
-		stsSvc = sts.New(opts.Session)
-	}
-
 	var svc cognitoidentityprovideriface.CognitoIdentityProviderAPI
 	if l.cognitoService != nil {
 		svc = l.cognitoService
 	} else {
 		svc = cognitoidentityprovider.New(opts.Session)
 	}
-
-	identityOutput, err := stsSvc.GetCallerIdentity(nil)
-	if err != nil {
-		return nil, err
-	}
-	accountID := identityOutput.Account
 
 	params := &cognitoidentityprovider.ListUserPoolsInput{
 		MaxResults: aws.Int64(50),
@@ -80,7 +63,7 @@ func (l *CognitoUserPoolLister) List(_ context.Context, o interface{}) ([]resour
 
 		for _, pool := range output.UserPools {
 			tagResp, tagsErr := svc.ListTagsForResource(&cognitoidentityprovider.ListTagsForResourceInput{
-				ResourceArn: ptr.String(fmt.Sprintf("arn:aws:cognito-idp:%s:%s:userpool/%s", opts.Region.Name, *accountID, *pool.Id)),
+				ResourceArn: ptr.String(fmt.Sprintf("arn:aws:cognito-idp:%s:%s:userpool/%s", opts.Region.Name, *opts.AccountID, *pool.Id)),
 			})
 
 			if tagsErr != nil {

@@ -14,7 +14,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/elasticache"
 
 	"github.com/ekristen/aws-nuke/v3/mocks/mock_elasticacheiface"
-	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 	"github.com/ekristen/aws-nuke/v3/pkg/testsuite"
 )
 
@@ -97,7 +96,7 @@ func Test_Mock_ElastiCache_CacheCluster_List_NoTags(t *testing.T) {
 		ResourceName: ptr.String("arn:aws:elasticache:us-west-2:123456789012:serverless:foobar"),
 	}).Return(&elasticache.TagListMessage{}, nil)
 
-	resources, err := cacheClusterLister.List(context.TODO(), &nuke.ListerOpts{})
+	resources, err := cacheClusterLister.List(context.TODO(), testListerOpts)
 	a.Nil(err)
 	a.Len(resources, 2)
 
@@ -150,7 +149,7 @@ func Test_Mock_ElastiCache_CacheCluster_List_WithTags(t *testing.T) {
 		},
 	}, nil)
 
-	resources, err := cacheClusterLister.List(context.TODO(), &nuke.ListerOpts{})
+	resources, err := cacheClusterLister.List(context.TODO(), testListerOpts)
 	a.Nil(err)
 	a.Len(resources, 2)
 
@@ -215,7 +214,7 @@ func Test_Mock_ElastiCache_CacheCluster_List_TagsInvalidARN(t *testing.T) {
 		ResourceName: ptr.String("foobar:invalid:arn"),
 	}).Return(nil, awserr.New(elasticache.ErrCodeInvalidARNFault, elasticache.ErrCodeInvalidARNFault, nil))
 
-	resources, err := cacheClusterLister.List(context.TODO(), &nuke.ListerOpts{})
+	resources, err := cacheClusterLister.List(context.TODO(), testListerOpts)
 	a.Nil(err)
 	a.Len(resources, 2)
 

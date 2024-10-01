@@ -9,9 +9,6 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/budgets"
 	"github.com/aws/aws-sdk-go/service/budgets/budgetsiface"
-	"github.com/aws/aws-sdk-go/service/sts"
-	"github.com/aws/aws-sdk-go/service/sts/stsiface"
-
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
@@ -33,15 +30,14 @@ func init() {
 }
 
 type BudgetsBudgetLister struct {
-	mockSvc    budgetsiface.BudgetsAPI
-	mockSTSSvc stsiface.STSAPI
+	mockSvc budgetsiface.BudgetsAPI
 }
 
 func (l *BudgetsBudgetLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 	var resources []resource.Resource
+
 	var svc budgetsiface.BudgetsAPI
-	var stsSvc stsiface.STSAPI
 
 	if l.mockSvc != nil {
 		svc = l.mockSvc
@@ -49,26 +45,13 @@ func (l *BudgetsBudgetLister) List(_ context.Context, o interface{}) ([]resource
 		svc = budgets.New(opts.Session)
 	}
 
-	if l.mockSTSSvc != nil {
-		stsSvc = l.mockSTSSvc
-	} else {
-		stsSvc = sts.New(opts.Session)
-	}
-
-	// TODO: modify ListerOpts to include Account to reduce API calls
-	identityOutput, err := stsSvc.GetCallerIdentity(nil)
-	if err != nil {
-		return nil, err
-	}
-	accountID := identityOutput.Account
-
 	params := &budgets.DescribeBudgetsInput{
-		AccountId:  accountID,
+		AccountId:  opts.AccountID,
 		MaxResults: ptr.Int64(100),
 	}
 
 	buds := make([]*budgets.Budget, 0)
-	err = svc.DescribeBudgetsPages(params, func(page *budgets.DescribeBudgetsOutput, lastPage bool) bool {
+	err := svc.DescribeBudgetsPages(params, func(page *budgets.DescribeBudgetsOutput, lastPage bool) bool {
 		buds = append(buds, page.Budgets...)
 		return true
 	})
@@ -79,7 +62,7 @@ func (l *BudgetsBudgetLister) List(_ context.Context, o interface{}) ([]resource
 	for _, bud := range buds {
 		var resourceTags []*budgets.ResourceTag
 		tags, tagsErr := svc.ListTagsForResource(&budgets.ListTagsForResourceInput{
-			ResourceARN: ptr.String(fmt.Sprintf("arn:aws:budgets::%s:budget/%s", *accountID, *bud.BudgetName)),
+			ResourceARN: ptr.String(fmt.Sprintf("arn:aws:budgets::%s:budget/%s", *opts.AccountID, *bud.BudgetName)),
 		})
 		if tagsErr != nil {
 			logrus.WithError(tagsErr).Error("unable to get tags for budget")
@@ -91,7 +74,7 @@ func (l *BudgetsBudgetLister) List(_ context.Context, o interface{}) ([]resource
 			svc:        svc,
 			Name:       bud.BudgetName,
 			BudgetType: bud.BudgetType,
-			AccountID:  accountID,
+			AccountID:  opts.AccountID,
 			Tags:       resourceTags,
 		})
 	}

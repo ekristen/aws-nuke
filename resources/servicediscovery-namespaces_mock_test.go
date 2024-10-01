@@ -12,8 +12,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/servicediscovery"
 
 	"github.com/ekristen/aws-nuke/v3/mocks/mock_servicediscoveryiface"
-
-	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
 func Test_Mock_ServiceDiscoveryNamespace_List(t *testing.T) {
@@ -47,7 +45,7 @@ func Test_Mock_ServiceDiscoveryNamespace_List(t *testing.T) {
 		},
 	}, nil)
 
-	resources, err := resource.List(context.TODO(), &nuke.ListerOpts{})
+	resources, err := resource.List(context.TODO(), testListerOpts)
 	a.Nil(err)
 	a.Len(resources, 1)
 }
@@ -76,7 +74,7 @@ func Test_Mock_ServiceDiscoveryNamespace_List_NoTags(t *testing.T) {
 		ResourceARN: ptr.String("arn:aws:servicediscovery:us-west-2:123456789012:namespace/id"),
 	})).Return(&servicediscovery.ListTagsForResourceOutput{}, nil)
 
-	resources, err := resource.List(context.TODO(), &nuke.ListerOpts{})
+	resources, err := resource.List(context.TODO(), testListerOpts)
 	a.Nil(err)
 	a.Len(resources, 1)
 }
@@ -105,7 +103,7 @@ func Test_Mock_ServiceDiscoveryNamespace_List_TagError(t *testing.T) {
 		ResourceARN: ptr.String("arn:aws:servicediscovery:us-west-2:123456789012:namespace/id"),
 	})).Return(&servicediscovery.ListTagsForResourceOutput{}, fmt.Errorf("error"))
 
-	resources, err := resource.List(context.TODO(), &nuke.ListerOpts{})
+	resources, err := resource.List(context.TODO(), testListerOpts)
 	a.Nil(err)
 	a.Len(resources, 1)
 

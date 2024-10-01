@@ -7,9 +7,6 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/quicksight"
 	"github.com/aws/aws-sdk-go/service/quicksight/quicksightiface"
-	"github.com/aws/aws-sdk-go/service/sts"
-	"github.com/aws/aws-sdk-go/service/sts/stsiface"
-
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
@@ -29,7 +26,6 @@ func init() {
 }
 
 type QuickSightSubscriptionLister struct {
-	stsService        stsiface.STSAPI
 	quicksightService quicksightiface.QuickSightAPI
 }
 
@@ -45,13 +41,7 @@ type QuickSightSubscription struct {
 
 func (l *QuickSightSubscriptionLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
-
-	var stsSvc stsiface.STSAPI
-	if l.stsService != nil {
-		stsSvc = l.stsService
-	} else {
-		stsSvc = sts.New(opts.Session)
-	}
+	var resources []resource.Resource
 
 	var quicksightSvc quicksightiface.QuickSightAPI
 	if l.quicksightService != nil {
@@ -60,21 +50,12 @@ func (l *QuickSightSubscriptionLister) List(_ context.Context, o interface{}) ([
 		quicksightSvc = quicksight.New(opts.Session)
 	}
 
-	callerID, err := stsSvc.GetCallerIdentity(&sts.GetCallerIdentityInput{})
-	if err != nil {
-		return nil, err
-	}
-	accountID := callerID.Account
-
-	var resources []resource.Resource
-
 	describeSubscriptionOutput, err := quicksightSvc.DescribeAccountSubscription(&quicksight.DescribeAccountSubscriptionInput{
-		AwsAccountId: accountID,
+		AwsAccountId: opts.AccountID,
 	})
-
 	if err != nil {
-		var resoureceNotFoundException *quicksight.ResourceNotFoundException
-		if !errors.As(err, &resoureceNotFoundException) {
+		var notFoundException *quicksight.ResourceNotFoundException
+		if !errors.As(err, &notFoundException) {
 			return nil, err
 		}
 		return resources, nil
@@ -88,7 +69,7 @@ func (l *QuickSightSubscriptionLister) List(_ context.Context, o interface{}) ([
 
 	resources = append(resources, &QuickSightSubscription{
 		svc:               quicksightSvc,
-		accountID:         accountID,
+		accountID:         opts.AccountID,
 		name:              &subscriptionName,
 		notificationEmail: describeSubscriptionOutput.AccountInfo.NotificationEmail,
 		edition:           describeSubscriptionOutput.AccountInfo.Edition,

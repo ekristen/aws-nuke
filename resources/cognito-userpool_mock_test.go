@@ -8,16 +8,11 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/sts"
-
 	"github.com/aws/aws-sdk-go/service/cognitoidentityprovider"
 
 	"github.com/ekristen/libnuke/pkg/settings"
 
 	"github.com/ekristen/aws-nuke/v3/mocks/mock_cognitoidentityprovideriface"
-	"github.com/ekristen/aws-nuke/v3/mocks/mock_stsiface"
-	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
 func Test_Mock_CognitoUserPool_List(t *testing.T) {
@@ -26,16 +21,10 @@ func Test_Mock_CognitoUserPool_List(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockSvc := mock_cognitoidentityprovideriface.NewMockCognitoIdentityProviderAPI(ctrl)
-	mockStsSvc := mock_stsiface.NewMockSTSAPI(ctrl)
 
 	lister := &CognitoUserPoolLister{
-		stsService:     mockStsSvc,
 		cognitoService: mockSvc,
 	}
-
-	mockStsSvc.EXPECT().GetCallerIdentity(gomock.Any()).Return(&sts.GetCallerIdentityOutput{
-		Account: aws.String("123456789012"),
-	}, nil)
 
 	mockSvc.EXPECT().ListUserPools(&cognitoidentityprovider.ListUserPoolsInput{
 		MaxResults: aws.Int64(50),
@@ -49,19 +38,14 @@ func Test_Mock_CognitoUserPool_List(t *testing.T) {
 	}, nil)
 
 	mockSvc.EXPECT().ListTagsForResource(&cognitoidentityprovider.ListTagsForResourceInput{
-		ResourceArn: aws.String("arn:aws:cognito-idp:us-east-2:123456789012:userpool/test-pool-id"),
+		ResourceArn: aws.String("arn:aws:cognito-idp:us-east-2:012345678901:userpool/test-pool-id"),
 	}).Return(&cognitoidentityprovider.ListTagsForResourceOutput{
 		Tags: map[string]*string{
 			"test-key": aws.String("test-value"),
 		},
 	}, nil)
 
-	resources, err := lister.List(context.TODO(), &nuke.ListerOpts{
-		Region: &nuke.Region{
-			Name: "us-east-2",
-		},
-		Session: session.Must(session.NewSession()),
-	})
+	resources, err := lister.List(context.TODO(), testListerOpts)
 	a.NoError(err)
 	a.Len(resources, 1)
 }

@@ -14,7 +14,6 @@ import (
 	"github.com/ekristen/libnuke/pkg/resource"
 
 	"github.com/ekristen/aws-nuke/v3/mocks/mock_sagemakeriface"
-	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
 // TestSageMakerDomain_List is a unit test function to test the list of SageMakerDomain via mocked interface
@@ -62,7 +61,7 @@ func TestSageMakerDomain_List(t *testing.T) {
 		},
 	}, nil)
 
-	resources, err := sagemakerDomainLister.List(context.TODO(), &nuke.ListerOpts{})
+	resources, err := sagemakerDomainLister.List(context.TODO(), testListerOpts)
 	a.NoError(err)
 	a.Len(resources, 1)
 	a.Equal([]resource.Resource{&sagemakerDomain}, resources)

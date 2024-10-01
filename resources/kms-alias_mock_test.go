@@ -10,11 +10,9 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/kms"
 
 	"github.com/ekristen/aws-nuke/v3/mocks/mock_kmsiface"
-	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
 func Test_Mock_KMSAlias_List(t *testing.T) {
@@ -40,12 +38,7 @@ func Test_Mock_KMSAlias_List(t *testing.T) {
 		mockSvc: mockKMS,
 	}
 
-	resources, err := lister.List(context.TODO(), &nuke.ListerOpts{
-		Region: &nuke.Region{
-			Name: "us-east-2",
-		},
-		Session: session.Must(session.NewSession()),
-	})
+	resources, err := lister.List(context.TODO(), testListerOpts)
 	a.NoError(err)
 	a.Len(resources, 2)
 }
@@ -65,12 +58,7 @@ func Test_Mock_KMSAlias_List_Error(t *testing.T) {
 		mockSvc: mockKMS,
 	}
 
-	resources, err := lister.List(context.TODO(), &nuke.ListerOpts{
-		Region: &nuke.Region{
-			Name: "us-east-2",
-		},
-		Session: session.Must(session.NewSession()),
-	})
+	resources, err := lister.List(context.TODO(), testListerOpts)
 	a.Error(err)
 	a.Nil(resources)
 	a.EqualError(err, "BadRequest: 400 Bad Request")

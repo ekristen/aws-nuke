@@ -33,7 +33,6 @@ func (l *OpsWorksUserProfileLister) List(_ context.Context, o interface{}) ([]re
 	resources := make([]resource.Resource, 0)
 
 	// TODO: pass in account information via ListerOpts to avoid additional calls.
-
 	identityOutput, err := sts.New(opts.Session).GetCallerIdentity(nil)
 	if err != nil {
 		return nil, err
