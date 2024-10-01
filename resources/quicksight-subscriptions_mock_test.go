@@ -44,7 +44,7 @@ func Test_Mock_QuicksightSubscription_List_ValidSubscription(t *testing.T) {
 	assertions.Nil(err)
 
 	resource := resources[0].(*QuickSightSubscription)
-	assertions.Equal(*resource.accountID, accountID)
+	assertions.Equal(resource.accountID, accountID)
 	assertions.Equal(resource.edition, quickSightAccountInfo.Edition)
 	assertions.Equal(resource.name, quickSightAccountInfo.AccountName)
 	assertions.Equal(resource.notificationEmail, quickSightAccountInfo.NotificationEmail)
