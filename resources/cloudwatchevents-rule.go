@@ -28,33 +28,44 @@ type CloudWatchEventsRuleLister struct{}
 
 func (l *CloudWatchEventsRuleLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
+	var resources []resource.Resource
 
 	svc := cloudwatchevents.New(opts.Session)
 
-	resp, err := svc.ListEventBuses(nil)
-	if err != nil {
-		return nil, err
-	}
+	params := &cloudwatchevents.ListEventBusesInput{}
 
-	resources := make([]resource.Resource, 0)
-	for _, bus := range resp.EventBuses {
-		resp, err := svc.ListRules(&cloudwatchevents.ListRulesInput{
-			EventBusName: bus.Name,
-		})
+	for {
+		resp, err := svc.ListEventBuses(params)
 		if err != nil {
 			return nil, err
 		}
 
-		for _, rule := range resp.Rules {
-			resources = append(resources, &CloudWatchEventsRule{
-				svc:          svc,
-				Name:         rule.Name,
-				ARN:          rule.Arn,
-				State:        rule.State,
+		for _, bus := range resp.EventBuses {
+			resp, err := svc.ListRules(&cloudwatchevents.ListRulesInput{
 				EventBusName: bus.Name,
 			})
+			if err != nil {
+				return nil, err
+			}
+
+			for _, rule := range resp.Rules {
+				resources = append(resources, &CloudWatchEventsRule{
+					svc:          svc,
+					Name:         rule.Name,
+					ARN:          rule.Arn,
+					State:        rule.State,
+					EventBusName: bus.Name,
+				})
+			}
 		}
+
+		if resp.NextToken == nil {
+			break
+		}
+
+		params.NextToken = resp.NextToken
 	}
+
 	return resources, nil
 }
 
