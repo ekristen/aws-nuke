@@ -32,8 +32,8 @@ func (l *CodeBuildSourceCredentialLister) List(_ context.Context, o interface{})
 
 	params := &codebuild.ListSourceCredentialsInput{}
 
-	//This endpoint[1] is not paginated, `SourceCredentialsInfo` doesn't have a `NextToken` field.
-	//[1] https://docs.aws.amazon.com/sdk-for-go/api/service/codebuild/#SourceCredentialsInfo
+	// This endpoint[1] is not paginated, `SourceCredentialsInfo` doesn't have a `NextToken` field.
+	// [1] https://docs.aws.amazon.com/sdk-for-go/api/service/codebuild/#SourceCredentialsInfo
 	resp, err := svc.ListSourceCredentials(params)
 
 	if err != nil {
