@@ -21,7 +21,7 @@ func Test_Mock_QuicksightSubscription_List_ValidSubscription(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	accountID := "012345678901"
+	accountID := testListerOpts.AccountID
 	quickSightAccountInfo := quicksight.AccountInfo{
 		AccountName:               aws.String("AccountName"),
 		NotificationEmail:         aws.String("notification@email.com"),
@@ -31,7 +31,7 @@ func Test_Mock_QuicksightSubscription_List_ValidSubscription(t *testing.T) {
 	mockQuickSightAPI := mock_quicksightiface.NewMockQuickSightAPI(ctrl)
 
 	mockQuickSightAPI.EXPECT().DescribeAccountSubscription(&quicksight.DescribeAccountSubscriptionInput{
-		AwsAccountId: &accountID,
+		AwsAccountId: accountID,
 	}).Return(&quicksight.DescribeAccountSubscriptionOutput{
 		AccountInfo: &quickSightAccountInfo,
 	}, nil)
@@ -56,7 +56,7 @@ func Test_Mock_QuicksightSubscription_List_SubscriptionNotFound(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	accountID := "012345678901"
+	accountID := testListerOpts.AccountID
 	quickSightSubscriptionNotFoundError := &quicksight.ResourceNotFoundException{
 		Message_: aws.String("Resource not found"),
 	}
@@ -64,7 +64,7 @@ func Test_Mock_QuicksightSubscription_List_SubscriptionNotFound(t *testing.T) {
 	mockQuickSightAPI := mock_quicksightiface.NewMockQuickSightAPI(ctrl)
 
 	mockQuickSightAPI.EXPECT().DescribeAccountSubscription(&quicksight.DescribeAccountSubscriptionInput{
-		AwsAccountId: &accountID,
+		AwsAccountId: accountID,
 	}).Return(nil, quickSightSubscriptionNotFoundError)
 
 	quicksightSubscriptionListener := QuickSightSubscriptionLister{
@@ -81,12 +81,12 @@ func Test_Mock_QuicksightSubscription_List_ErrorOnQuicksight(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	accountID := "012345678901"
+	accountID := testListerOpts.AccountID
 
 	mockQuickSightAPI := mock_quicksightiface.NewMockQuickSightAPI(ctrl)
 
 	mockQuickSightAPI.EXPECT().DescribeAccountSubscription(&quicksight.DescribeAccountSubscriptionInput{
-		AwsAccountId: &accountID,
+		AwsAccountId: accountID,
 	}).Return(nil, errors.New("MOCK_ERROR"))
 
 	quicksightSubscriptionListener := QuickSightSubscriptionLister{
@@ -103,7 +103,7 @@ func Test_Mock_QuicksightSubscription_Remove_No_Settings(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	accountID := "012345678901"
+	accountID := testListerOpts.AccountID
 	subscriptionName := aws.String("Name")
 	subscriptionDefaultNamespace := aws.String("Default")
 	subscriptionNotificationEmail := aws.String("notification@email.com")
@@ -113,7 +113,7 @@ func Test_Mock_QuicksightSubscription_Remove_No_Settings(t *testing.T) {
 	mockQuickSightAPI := mock_quicksightiface.NewMockQuickSightAPI(ctrl)
 
 	mockQuickSightAPI.EXPECT().DescribeAccountSettings(&quicksight.DescribeAccountSettingsInput{
-		AwsAccountId: &accountID,
+		AwsAccountId: accountID,
 	}).Return(&quicksight.DescribeAccountSettingsOutput{
 		AccountSettings: &quicksight.AccountSettings{
 			DefaultNamespace:             subscriptionDefaultNamespace,
@@ -123,19 +123,19 @@ func Test_Mock_QuicksightSubscription_Remove_No_Settings(t *testing.T) {
 	}, nil).Times(0)
 
 	mockQuickSightAPI.EXPECT().UpdateAccountSettings(&quicksight.UpdateAccountSettingsInput{
-		AwsAccountId:                 &accountID,
+		AwsAccountId:                 accountID,
 		DefaultNamespace:             subscriptionDefaultNamespace,
 		NotificationEmail:            subscriptionNotificationEmail,
 		TerminationProtectionEnabled: aws.Bool(false),
 	}).Return(&quicksight.UpdateAccountSettingsOutput{}, nil).Times(0)
 
 	mockQuickSightAPI.EXPECT().DeleteAccountSubscription(&quicksight.DeleteAccountSubscriptionInput{
-		AwsAccountId: &accountID,
+		AwsAccountId: accountID,
 	}).Return(&quicksight.DeleteAccountSubscriptionOutput{}, nil).Times(1)
 
 	quicksightSubscription := QuickSightSubscription{
 		svc:               mockQuickSightAPI,
-		accountID:         &accountID,
+		accountID:         accountID,
 		name:              subscriptionName,
 		notificationEmail: subscriptionNotificationEmail,
 		edition:           subscriptionEdition,
@@ -152,7 +152,7 @@ func Test_Mock_QuicksightSubscription_Remove_TerminationSetting_Is_False(t *test
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	accountID := "012345678901"
+	accountID := testListerOpts.AccountID
 	subscriptionName := aws.String("Name")
 	subscriptionDefaultNamespace := aws.String("Default")
 	subscriptionNotificationEmail := aws.String("notification@email.com")
@@ -164,7 +164,7 @@ func Test_Mock_QuicksightSubscription_Remove_TerminationSetting_Is_False(t *test
 	mockQuickSightAPI := mock_quicksightiface.NewMockQuickSightAPI(ctrl)
 
 	mockQuickSightAPI.EXPECT().DescribeAccountSettings(&quicksight.DescribeAccountSettingsInput{
-		AwsAccountId: &accountID,
+		AwsAccountId: accountID,
 	}).Return(&quicksight.DescribeAccountSettingsOutput{
 		AccountSettings: &quicksight.AccountSettings{
 			DefaultNamespace:             subscriptionDefaultNamespace,
@@ -174,19 +174,19 @@ func Test_Mock_QuicksightSubscription_Remove_TerminationSetting_Is_False(t *test
 	}, nil).Times(0)
 
 	mockQuickSightAPI.EXPECT().UpdateAccountSettings(&quicksight.UpdateAccountSettingsInput{
-		AwsAccountId:                 &accountID,
+		AwsAccountId:                 accountID,
 		DefaultNamespace:             subscriptionDefaultNamespace,
 		NotificationEmail:            subscriptionNotificationEmail,
 		TerminationProtectionEnabled: aws.Bool(false),
 	}).Return(&quicksight.UpdateAccountSettingsOutput{}, nil).Times(0)
 
 	mockQuickSightAPI.EXPECT().DeleteAccountSubscription(&quicksight.DeleteAccountSubscriptionInput{
-		AwsAccountId: &accountID,
+		AwsAccountId: accountID,
 	}).Return(&quicksight.DeleteAccountSubscriptionOutput{}, nil).Times(1)
 
 	quicksightSubscription := QuickSightSubscription{
 		svc:               mockQuickSightAPI,
-		accountID:         &accountID,
+		accountID:         accountID,
 		name:              subscriptionName,
 		notificationEmail: subscriptionNotificationEmail,
 		edition:           subscriptionEdition,
@@ -204,7 +204,7 @@ func Test_Mock_QuicksightSubscription_Remove_TerminationSetting_Is_True(t *testi
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	accountID := "012345678901"
+	accountID := testListerOpts.AccountID
 	subscriptionName := aws.String("Name")
 	subscriptionDefaultNamespace := aws.String("Default")
 	subscriptionNotificationEmail := aws.String("notification@email.com")
@@ -216,7 +216,7 @@ func Test_Mock_QuicksightSubscription_Remove_TerminationSetting_Is_True(t *testi
 	mockQuickSightAPI := mock_quicksightiface.NewMockQuickSightAPI(ctrl)
 
 	mockQuickSightAPI.EXPECT().DescribeAccountSettings(&quicksight.DescribeAccountSettingsInput{
-		AwsAccountId: &accountID,
+		AwsAccountId: accountID,
 	}).Return(&quicksight.DescribeAccountSettingsOutput{
 		AccountSettings: &quicksight.AccountSettings{
 			DefaultNamespace:             subscriptionDefaultNamespace,
@@ -226,19 +226,19 @@ func Test_Mock_QuicksightSubscription_Remove_TerminationSetting_Is_True(t *testi
 	}, nil).Times(1)
 
 	mockQuickSightAPI.EXPECT().UpdateAccountSettings(&quicksight.UpdateAccountSettingsInput{
-		AwsAccountId:                 &accountID,
+		AwsAccountId:                 accountID,
 		DefaultNamespace:             subscriptionDefaultNamespace,
 		NotificationEmail:            subscriptionNotificationEmail,
 		TerminationProtectionEnabled: aws.Bool(false),
 	}).Return(&quicksight.UpdateAccountSettingsOutput{}, nil).Times(1)
 
 	mockQuickSightAPI.EXPECT().DeleteAccountSubscription(&quicksight.DeleteAccountSubscriptionInput{
-		AwsAccountId: &accountID,
+		AwsAccountId: accountID,
 	}).Return(&quicksight.DeleteAccountSubscriptionOutput{}, nil).Times(1)
 
 	quicksightSubscription := QuickSightSubscription{
 		svc:               mockQuickSightAPI,
-		accountID:         &accountID,
+		accountID:         accountID,
 		name:              subscriptionName,
 		notificationEmail: subscriptionNotificationEmail,
 		edition:           subscriptionEdition,
@@ -254,14 +254,14 @@ func Test_Mock_QuicksightSubscription_Remove_TerminationSetting_Is_True(t *testi
 func Test_Mock_QuicksightSubscription_Filter(t *testing.T) {
 	assertions := assert.New(t)
 
-	accountID := "012345678901"
+	accountID := testListerOpts.AccountID
 	subscriptionName := aws.String("Name")
 	subscriptionNotificationEmail := aws.String("notification@email.com")
 	subscriptionEdition := aws.String("Edition")
 	subscriptionStatus := aws.String("ACCOUNT_CREATED")
 
 	quicksightSubscription := QuickSightSubscription{
-		accountID:         &accountID,
+		accountID:         accountID,
 		name:              subscriptionName,
 		notificationEmail: subscriptionNotificationEmail,
 		edition:           subscriptionEdition,
@@ -276,14 +276,14 @@ func Test_Mock_QuicksightSubscription_Filter(t *testing.T) {
 func Test_Mock_QuicksightSubscription_Filter_Status(t *testing.T) {
 	assertions := assert.New(t)
 
-	accountID := "012345678901"
+	accountID := testListerOpts.AccountID
 	subscriptionName := aws.String("Name")
 	subscriptionNotificationEmail := aws.String("notification@email.com")
 	subscriptionEdition := aws.String("Edition")
 	subscriptionStatus := aws.String("UNSUBSCRIBED")
 
 	quicksightSubscription := QuickSightSubscription{
-		accountID:         &accountID,
+		accountID:         accountID,
 		name:              subscriptionName,
 		notificationEmail: subscriptionNotificationEmail,
 		edition:           subscriptionEdition,
@@ -298,14 +298,14 @@ func Test_Mock_QuicksightSubscription_Filter_Status(t *testing.T) {
 func Test_Mock_QuicksightSubscription_Filter_Name(t *testing.T) {
 	assertions := assert.New(t)
 
-	accountID := "012345678901"
+	accountID := testListerOpts.AccountID
 	subscriptionName := aws.String("NOT_AVAILABLE")
 	subscriptionNotificationEmail := aws.String("notification@email.com")
 	subscriptionEdition := aws.String("Edition")
 	subscriptionStatus := aws.String("ACCOUNT_CREATED")
 
 	quicksightSubscription := QuickSightSubscription{
-		accountID:         &accountID,
+		accountID:         accountID,
 		name:              subscriptionName,
 		notificationEmail: subscriptionNotificationEmail,
 		edition:           subscriptionEdition,
