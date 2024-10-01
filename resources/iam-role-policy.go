@@ -2,7 +2,6 @@ package resources
 
 import (
 	"context"
-
 	"fmt"
 	"strings"
 
@@ -40,6 +39,9 @@ type IAMRolePolicy struct {
 func (e *IAMRolePolicy) Filter() error {
 	if strings.HasPrefix(e.rolePath, "/aws-service-role/") {
 		return fmt.Errorf("cannot alter service roles")
+	}
+	if strings.HasPrefix(e.rolePath, "/aws-reserved/sso.amazonaws.com/") {
+		return fmt.Errorf("cannot alter sso roles")
 	}
 	return nil
 }
