@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"errors"
 
 	"github.com/aws/aws-sdk-go/service/gamelift"
 
@@ -35,7 +36,11 @@ func (l *GameLiftMatchmakingRuleSetLister) List(_ context.Context, o interface{}
 	for {
 		resp, err := svc.DescribeMatchmakingRuleSets(params)
 		if err != nil {
-			return nil, err
+			var unsupportedRegionException *gamelift.UnsupportedRegionException
+			if errors.As(err, &unsupportedRegionException) {
+				return resources, nil
+			}
+			return resources, err
 		}
 
 		for _, ruleSet := range resp.RuleSets {

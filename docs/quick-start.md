@@ -1,6 +1,6 @@
 # First Run
 
-## First Configuration
+## First Simple Configuration
 
 First you need to create a config file for *aws-nuke*. This is a minimal one:
 

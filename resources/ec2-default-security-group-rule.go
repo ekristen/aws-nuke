@@ -120,6 +120,7 @@ func (r *EC2DefaultSecurityGroupRule) Remove(_ context.Context) error {
 func (r *EC2DefaultSecurityGroupRule) Properties() types.Properties {
 	properties := types.NewProperties()
 	properties.Set("SecurityGroupId", r.groupID)
+	properties.Set("DefaultVPC", true)
 	return properties
 }
 
