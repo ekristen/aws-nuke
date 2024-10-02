@@ -21,13 +21,16 @@ type BackupVault struct {
 	tags map[string]*string
 }
 
-const AWSBackupVaultResource = "AWSBackupVault"
+const BackupVaultResource = "BackupVault"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   AWSBackupVaultResource,
+		Name:   BackupVaultResource,
 		Scope:  nuke.Account,
 		Lister: &AWSBackupVaultLister{},
+		DeprecatedAliases: []string{
+			"AWSBackupVault",
+		},
 	})
 }
 
