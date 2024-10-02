@@ -2,11 +2,13 @@ package resources
 
 import (
 	"context"
+	"errors"
 
 	"github.com/gotidy/ptr"
 
 	"github.com/aws/aws-sdk-go/service/quicksight"
 	"github.com/aws/aws-sdk-go/service/quicksight/quicksightiface"
+
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
@@ -60,7 +62,11 @@ func (l *QuickSightUserLister) List(_ context.Context, o interface{}) ([]resourc
 		return !lastPage
 	})
 	if err != nil {
-		return nil, err
+		var notFoundException *quicksight.ResourceNotFoundException
+		if !errors.As(err, &notFoundException) {
+			return nil, err
+		}
+		return resources, nil
 	}
 
 	return resources, nil
