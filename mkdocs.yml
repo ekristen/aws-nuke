@@ -71,6 +71,7 @@ nav:
     - Install: installation.md
     - Authentication: auth.md
     - Quick Start: quick-start.md
+    - Starter Config: starter-config.md
     - Migration Guide: migration-guide.md
   - Features:
       - Overview: features/overview.md
