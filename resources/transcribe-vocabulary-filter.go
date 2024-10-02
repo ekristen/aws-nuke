@@ -82,8 +82,6 @@ func (r *TranscribeVocabularyFilter) Properties() types.Properties {
 	properties := types.NewProperties()
 	properties.Set("Name", r.name)
 	properties.Set("LanguageCode", r.languageCode)
-	if r.lastModifiedTime != nil {
-		properties.Set("LastModifiedTime", r.lastModifiedTime.Format(time.RFC3339))
-	}
+	properties.Set("LastModifiedTime", r.lastModifiedTime)
 	return properties
 }

@@ -92,14 +92,10 @@ func (r *TranscribeLanguageModel) Properties() types.Properties {
 	properties := types.NewProperties()
 	properties.Set("Name", r.name)
 	properties.Set("BaseModelName", r.baseModelName)
-	if r.createTime != nil {
-		properties.Set("CreateTime", r.createTime.Format(time.RFC3339))
-	}
+	properties.Set("CreateTime", r.createTime)
 	properties.Set("FailureReason", r.failureReason)
 	properties.Set("LanguageCode", r.languageCode)
-	if r.lastModifiedTime != nil {
-		properties.Set("LastModifiedTime", r.lastModifiedTime.Format(time.RFC3339))
-	}
+	properties.Set("LastModifiedTime", r.lastModifiedTime)
 	properties.Set("ModelStatus", r.modelStatus)
 	properties.Set("UpgradeAvailability", r.upgradeAvailability)
 	return properties

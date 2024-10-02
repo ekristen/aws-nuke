@@ -90,17 +90,11 @@ func (r *TranscribeCallAnalyticsJob) Properties() types.Properties {
 	properties := types.NewProperties()
 	properties.Set("Name", r.name)
 	properties.Set("Status", r.status)
-	if r.completionTime != nil {
-		properties.Set("CompletionTime", r.completionTime.Format(time.RFC3339))
-	}
-	if r.creationTime != nil {
-		properties.Set("CreationTime", r.creationTime.Format(time.RFC3339))
-	}
+	properties.Set("CompletionTime", r.completionTime)
+	properties.Set("CreationTime", r.creationTime)
 	properties.Set("FailureReason", r.failureReason)
 	properties.Set("LanguageCode", r.languageCode)
-	if r.startTime != nil {
-		properties.Set("StartTime", r.startTime.Format(time.RFC3339))
-	}
+	properties.Set("StartTime", r.startTime)
 	return properties
 }
 

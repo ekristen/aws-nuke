@@ -86,9 +86,7 @@ func (r *TranscribeMedicalVocabulary) Properties() types.Properties {
 	properties.Set("Name", r.name)
 	properties.Set("State", r.state)
 	properties.Set("LanguageCode", r.languageCode)
-	if r.lastModifiedTime != nil {
-		properties.Set("LastModifiedTime", r.lastModifiedTime.Format(time.RFC3339))
-	}
+	properties.Set("LastModifiedTime", r.lastModifiedTime)
 	return properties
 }
 

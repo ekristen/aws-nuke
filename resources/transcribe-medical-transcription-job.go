@@ -98,20 +98,14 @@ func (r *TranscribeMedicalTranscriptionJob) Properties() types.Properties {
 	properties := types.NewProperties()
 	properties.Set("Name", r.name)
 	properties.Set("Status", r.status)
-	if r.completionTime != nil {
-		properties.Set("CompletionTime", r.completionTime.Format(time.RFC3339))
-	}
+	properties.Set("CompletionTime", r.completionTime)
 	properties.Set("ContentIdentificationType", r.contentIdentificationType)
-	if r.creationTime != nil {
-		properties.Set("CreationTime", r.creationTime.Format(time.RFC3339))
-	}
+	properties.Set("CreationTime", r.creationTime)
 	properties.Set("FailureReason", r.failureReason)
 	properties.Set("LanguageCode", r.languageCode)
 	properties.Set("OutputLocationType", r.outputLocationType)
 	properties.Set("Specialty", r.specialty)
-	if r.startTime != nil {
-		properties.Set("StartTime", r.startTime.Format(time.RFC3339))
-	}
+	properties.Set("StartTime", r.startTime)
 	properties.Set("InputType", r.inputType)
 	return properties
 }

@@ -82,12 +82,8 @@ func (r *TranscribeCallAnalyticsCategory) Properties() types.Properties {
 	properties := types.NewProperties()
 	properties.Set("Name", r.name)
 	properties.Set("InputType", r.inputType)
-	if r.createTime != nil {
-		properties.Set("CreateTime", r.createTime.Format(time.RFC3339))
-	}
-	if r.lastUpdateTime != nil {
-		properties.Set("LastUpdateTime", r.lastUpdateTime.Format(time.RFC3339))
-	}
+	properties.Set("CreateTime", r.createTime)
+	properties.Set("LastUpdateTime", r.lastUpdateTime)
 	return properties
 }
 
