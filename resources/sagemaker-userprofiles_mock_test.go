@@ -11,8 +11,6 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/sagemaker"
 
-	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
-
 	"github.com/ekristen/aws-nuke/v3/mocks/mock_sagemakeriface"
 )
 
@@ -57,7 +55,7 @@ func Test_Mock_SageMakerUserProfiles_List(t *testing.T) {
 		},
 	}, nil)
 
-	resources, err := resource.List(context.TODO(), &nuke.ListerOpts{})
+	resources, err := resource.List(context.TODO(), testListerOpts)
 	a.Nil(err)
 	a.Len(resources, 1)
 

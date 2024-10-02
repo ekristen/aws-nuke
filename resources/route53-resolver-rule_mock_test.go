@@ -10,13 +10,11 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/route53resolver"
 
 	"github.com/ekristen/libnuke/pkg/resource"
 
 	"github.com/ekristen/aws-nuke/v3/mocks/mock_route53resolveriface"
-	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
 func Test_Mock_Route53ResolverRule_List(t *testing.T) {
@@ -67,12 +65,7 @@ func Test_Mock_Route53ResolverRule_List(t *testing.T) {
 		mockSvc: mockRoute53Resolver,
 	}
 
-	resources, err := lister.List(context.TODO(), &nuke.ListerOpts{
-		Region: &nuke.Region{
-			Name: "us-east-2",
-		},
-		Session: session.Must(session.NewSession()),
-	})
+	resources, err := lister.List(context.TODO(), testListerOpts)
 	a.Nil(err)
 	a.Len(resources, 3)
 

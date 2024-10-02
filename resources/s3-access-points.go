@@ -7,7 +7,6 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3control"
-	"github.com/aws/aws-sdk-go/service/sts"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
@@ -30,18 +29,13 @@ type S3AccessPointLister struct{}
 
 func (l *S3AccessPointLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
-	stsSvc := sts.New(opts.Session)
-	callerID, err := stsSvc.GetCallerIdentity(&sts.GetCallerIdentityInput{})
-	if err != nil {
-		return nil, err
-	}
-	accountID := callerID.Account
-
 	var resources []resource.Resource
+
 	svc := s3control.New(opts.Session)
+
 	for {
 		params := &s3control.ListAccessPointsInput{
-			AccountId: accountID,
+			AccountId: opts.AccountID,
 		}
 
 		resp, err := svc.ListAccessPoints(params)
@@ -52,7 +46,7 @@ func (l *S3AccessPointLister) List(_ context.Context, o interface{}) ([]resource
 		for _, accessPoint := range resp.AccessPointList {
 			resources = append(resources, &S3AccessPoint{
 				svc:         svc,
-				accountID:   accountID,
+				accountID:   opts.AccountID,
 				accessPoint: accessPoint,
 			})
 		}

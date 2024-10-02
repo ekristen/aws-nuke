@@ -11,7 +11,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/elasticache"
 
 	"github.com/ekristen/aws-nuke/v3/mocks/mock_elasticacheiface"
-	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
 func Test_Mock_ElastiCache_SubnetGroup_Remove(t *testing.T) {
@@ -59,7 +58,7 @@ func Test_Mock_ElastiCache_SubnetGroup_List_NoTags(t *testing.T) {
 		ResourceName: aws.String("arn:aws:elasticache:us-west-2:123456789012:subnet-group:foobar"),
 	}).Return(&elasticache.TagListMessage{}, nil)
 
-	resources, err := subnetGroupsLister.List(context.TODO(), &nuke.ListerOpts{})
+	resources, err := subnetGroupsLister.List(context.TODO(), testListerOpts)
 	a.Nil(err)
 	a.Len(resources, 1)
 
@@ -104,7 +103,7 @@ func Test_Mock_ElastiCache_SubnetGroup_List_WithTags(t *testing.T) {
 		},
 	}, nil)
 
-	resources, err := subnetGroupsLister.List(context.TODO(), &nuke.ListerOpts{})
+	resources, err := subnetGroupsLister.List(context.TODO(), testListerOpts)
 	a.Nil(err)
 
 	a.Len(resources, 1)

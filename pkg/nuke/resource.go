@@ -1,6 +1,8 @@
 package nuke
 
 import (
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws/session"
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -13,8 +15,10 @@ const Account registry.Scope = "account"
 // so that each implementing tool can define their own options for the lister. Each resource then asserts the type on
 // the interface{} to get the options it needs.
 type ListerOpts struct {
-	Region  *Region
-	Session *session.Session
+	Region    *Region
+	Session   *session.Session
+	AccountID *string
+	Logger    *logrus.Entry
 }
 
 // MutateOpts is a function that will be called for each resource type to mutate the options for the scanner based on
@@ -29,5 +33,12 @@ var MutateOpts = func(opts interface{}, resourceType string) interface{} {
 	}
 
 	o.Session = session
+
+	if o.Logger != nil {
+		o.Logger = o.Logger.WithField("resource", resourceType)
+	} else {
+		o.Logger = logrus.WithField("resource", resourceType)
+	}
+
 	return o
 }

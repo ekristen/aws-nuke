@@ -10,8 +10,6 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/athena"
-	"github.com/aws/aws-sdk-go/service/sts"
-
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
@@ -37,18 +35,9 @@ func (l *AthenaWorkGroupLister) List(_ context.Context, o interface{}) ([]resour
 	svc := athena.New(opts.Session)
 	resources := make([]resource.Resource, 0)
 
-	// Lookup current account ID
-	stsSvc := sts.New(opts.Session)
-	callerID, err := stsSvc.GetCallerIdentity(&sts.GetCallerIdentityInput{})
-	if err != nil {
-		return nil, err
-	}
-	accountID := callerID.Account
-	region := svc.Config.Region
-
 	// List WorkGroup
 	var workgroupNames []*string
-	err = svc.ListWorkGroupsPages(
+	err := svc.ListWorkGroupsPages(
 		&athena.ListWorkGroupsInput{},
 		func(page *athena.ListWorkGroupsOutput, lastPage bool) bool {
 			for _, workgroup := range page.WorkGroups {
@@ -70,7 +59,7 @@ func (l *AthenaWorkGroupLister) List(_ context.Context, o interface{}) ([]resour
 			// so we need to construct one ourselves
 			arn: aws.String(fmt.Sprintf(
 				"arn:aws:athena:%s:%s:workgroup/%s",
-				*region, *accountID, *name,
+				opts.Region.Name, *opts.AccountID, *name,
 			)),
 		})
 	}

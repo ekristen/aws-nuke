@@ -12,8 +12,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/ecs"
 
 	"github.com/ekristen/aws-nuke/v3/mocks/mock_ecsiface"
-
-	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
 func Test_Mock_ECSCluster_List(t *testing.T) {
@@ -51,7 +49,7 @@ func Test_Mock_ECSCluster_List(t *testing.T) {
 		},
 	}, nil)
 
-	resources, err := ecsClusterLister.List(context.TODO(), &nuke.ListerOpts{})
+	resources, err := ecsClusterLister.List(context.TODO(), testListerOpts)
 	a.Nil(err)
 	a.Len(resources, 1)
 
