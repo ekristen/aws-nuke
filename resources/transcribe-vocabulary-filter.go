@@ -1,12 +1,20 @@
 package resources
 
 import (
+	"context"
+
+	"github.com/ekristen/libnuke/pkg/registry"
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/pkg/nuke"
+
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
+	
 	"github.com/aws/aws-sdk-go/service/transcribeservice"
-	"github.com/rebuy-de/aws-nuke/v2/pkg/types"
+	""
 )
 
 type TranscribeVocabularyFilter struct {
@@ -16,13 +24,23 @@ type TranscribeVocabularyFilter struct {
 	lastModifiedTime *time.Time
 }
 
+const TranscribeVocabularyFilterResource = "TranscribeVocabularyFilter"
+
 func init() {
-	register("TranscribeVocabularyFilter", ListTranscribeVocabularyFilters)
+	registry.Register(&registry.Registration{
+		Name:   TranscribeVocabularyFilterResource,
+		Scope:  nuke.Account,
+		Lister: &TranscribeVocabularyFilterLister{},
+	})
 }
 
-func ListTranscribeVocabularyFilters(sess *session.Session) ([]Resource, error) {
-	svc := transcribeservice.New(sess)
-	resources := []Resource{}
+type TranscribeVocabularyFilterLister struct{}
+
+func (l *TranscribeVocabularyFilterLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+
+	svc := transcribeservice.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 	var nextToken *string
 
 	for {
@@ -55,7 +73,7 @@ func ListTranscribeVocabularyFilters(sess *session.Session) ([]Resource, error) 
 	return resources, nil
 }
 
-func (filter *TranscribeVocabularyFilter) Remove() error {
+func (filter *TranscribeVocabularyFilter) Remove(_ context.Context) error {
 	deleteInput := &transcribeservice.DeleteVocabularyFilterInput{
 		VocabularyFilterName: filter.name,
 	}
