@@ -1,27 +1,44 @@
 # Install
 
-## Install the pre-compiled binary 
+Preferred installation order is the following:
 
-### Homebrew Tap (MacOS/Linux)
+1. [GitHub Release](#github-releases-preferred)
+2. [ekristen's homebrew tap](#ekristens-homebrew-tap-macoslinux)
+3. [Homebrew Core](#homebrew-core-macoslinux)
+
+Docker images are also available via the GitHub Container Registry.
+
+## GitHub Releases (preferred)
+
+!!! success - "Recommended"
+    This supports all operating systems and most architectures.
+
+You can download pre-compiled binaries from the [releases](https://github.com/ekristen/aws-nuke/releases) page.
+
+## ekristen's Homebrew Tap (MacOS/Linux)
+
+!!! info
+    I control this tap, and it sources the binaries directly from the GitHub releases. However, it only supports MacOS.
 
 ```console
 brew install ekristen/tap/aws-nuke
 ```
 
-!!! warning "Brew Warning"
-    `brew install aws-nuke` will install the rebuy-aws version of aws-nuke, which is not the same as this version.
+## Homebrew Core (MacOS/Linux)
 
-## Releases
+!!! note
+    I do not control the Homebrew Core formula, so it may not be up to date. Additionally, it is not compiled with
+    goreleaser, instead it is compiled with the Homebrew build system which does not build it in the same way, for
+    example it does not compile it statically.
 
-You can download pre-compiled binaries from the [releases](https://github.com/ekristen/aws-nuke/releases) page.
-
+```console
+brew install aws-nuke
+```
 ## Docker
 
 Registries:
 
 - [ghcr.io/ekristen/aws-nuke](https://github.com/ekristen/aws-nuke/pkgs/container/aws-nuke)
-
-You can run **aws-nuke** with Docker by using a command like this:
 
 ## Source
 
