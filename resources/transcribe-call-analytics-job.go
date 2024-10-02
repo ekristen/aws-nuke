@@ -2,6 +2,8 @@ package resources
 
 import (
 	"context"
+	"errors"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -41,8 +43,13 @@ func (l *TranscribeCallAnalyticsJobLister) List(_ context.Context, o interface{}
 
 		listOutput, err := svc.ListCallAnalyticsJobs(listCallAnalyticsJobsInput)
 		if err != nil {
-			return nil, err
+			var badRequestException *transcribeservice.BadRequestException
+			if errors.As(err, &badRequestException) &&
+				strings.Contains(badRequestException.Message(), "isn't supported in this region") {
+				return resources, nil
+			}
 		}
+
 		for _, job := range listOutput.CallAnalyticsJobSummaries {
 			resources = append(resources, &TranscribeCallAnalyticsJob{
 				svc:            svc,

@@ -2,6 +2,8 @@ package resources
 
 import (
 	"context"
+	"errors"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/service/transcribeservice"
@@ -39,6 +41,11 @@ func (l *TranscribeCallAnalyticsCategoryLister) List(_ context.Context, o interf
 
 		listOutput, err := svc.ListCallAnalyticsCategories(listCallAnalyticsCategoriesInput)
 		if err != nil {
+			var badRequestException *transcribeservice.BadRequestException
+			if errors.As(err, &badRequestException) &&
+				strings.Contains(badRequestException.Message(), "isn't supported in this region") {
+				return resources, nil
+			}
 			return nil, err
 		}
 		for _, category := range listOutput.Categories {
