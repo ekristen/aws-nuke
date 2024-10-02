@@ -2,12 +2,14 @@ package resources
 
 import (
 	"context"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/apigateway"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
@@ -43,8 +45,11 @@ func (l *APIGatewayAPIKeyLister) List(_ context.Context, o interface{}) ([]resou
 
 		for _, item := range output.Items {
 			resources = append(resources, &APIGatewayAPIKey{
-				svc:    svc,
-				APIKey: item.Id,
+				svc:         svc,
+				apiKey:      item.Id,
+				Name:        item.Name,
+				Tags:        item.Tags,
+				CreatedDate: item.CreatedDate,
 			})
 		}
 
@@ -59,18 +64,25 @@ func (l *APIGatewayAPIKeyLister) List(_ context.Context, o interface{}) ([]resou
 }
 
 type APIGatewayAPIKey struct {
-	svc    *apigateway.APIGateway
-	APIKey *string
+	svc         *apigateway.APIGateway
+	apiKey      *string
+	Name        *string
+	Tags        map[string]*string
+	CreatedDate *time.Time
 }
 
-func (f *APIGatewayAPIKey) Remove(_ context.Context) error {
-	_, err := f.svc.DeleteApiKey(&apigateway.DeleteApiKeyInput{
-		ApiKey: f.APIKey,
+func (r *APIGatewayAPIKey) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteApiKey(&apigateway.DeleteApiKeyInput{
+		ApiKey: r.apiKey,
 	})
 
 	return err
 }
 
-func (f *APIGatewayAPIKey) String() string {
-	return *f.APIKey
+func (r *APIGatewayAPIKey) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
+}
+
+func (r *APIGatewayAPIKey) String() string {
+	return *r.apiKey
 }

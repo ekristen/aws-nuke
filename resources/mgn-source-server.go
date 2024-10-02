@@ -76,6 +76,13 @@ type MGNSourceServer struct {
 }
 
 func (f *MGNSourceServer) Remove(_ context.Context) error {
+	// Disconnect source server from service first before delete
+	if _, err := f.svc.DisconnectFromService(&mgn.DisconnectFromServiceInput{
+		SourceServerID: f.sourceServerID,
+	}); err != nil {
+		return err
+	}
+
 	_, err := f.svc.DeleteSourceServer(&mgn.DeleteSourceServerInput{
 		SourceServerID: f.sourceServerID,
 	})

@@ -14,6 +14,7 @@ import (
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	libsettings "github.com/ekristen/libnuke/pkg/settings"
 	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
@@ -32,11 +33,15 @@ func init() {
 		DeprecatedAliases: []string{
 			"IamRole",
 		},
+		Settings: []string{
+			"IncludeServiceLinkedRoles",
+		},
 	})
 }
 
 type IAMRole struct {
 	svc          iamiface.IAMAPI
+	settings     *libsettings.Setting
 	Name         *string
 	Path         *string
 	CreateDate   *time.Time
@@ -44,8 +49,12 @@ type IAMRole struct {
 	Tags         []*iam.Tag
 }
 
+func (r *IAMRole) Settings(settings *libsettings.Setting) {
+	r.settings = settings
+}
+
 func (r *IAMRole) Filter() error {
-	if strings.HasPrefix(*r.Path, "/aws-service-role/") {
+	if strings.HasPrefix(*r.Path, "/aws-service-role/") && !r.settings.GetBool("IncludeServiceLinkedRoles") {
 		return fmt.Errorf("cannot delete service roles")
 	}
 	if strings.HasPrefix(*r.Path, "/aws-reserved/sso.amazonaws.com/") {

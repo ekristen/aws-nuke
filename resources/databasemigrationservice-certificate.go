@@ -8,6 +8,7 @@ import (
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
@@ -62,14 +63,18 @@ type DatabaseMigrationServiceCertificate struct {
 	ARN *string
 }
 
-func (f *DatabaseMigrationServiceCertificate) Remove(_ context.Context) error {
-	_, err := f.svc.DeleteEndpoint(&databasemigrationservice.DeleteEndpointInput{
-		EndpointArn: f.ARN,
+func (r *DatabaseMigrationServiceCertificate) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
+}
+
+func (r *DatabaseMigrationServiceCertificate) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteCertificate(&databasemigrationservice.DeleteCertificateInput{
+		CertificateArn: r.ARN,
 	})
 
 	return err
 }
 
-func (f *DatabaseMigrationServiceCertificate) String() string {
-	return *f.ARN
+func (r *DatabaseMigrationServiceCertificate) String() string {
+	return *r.ARN
 }
