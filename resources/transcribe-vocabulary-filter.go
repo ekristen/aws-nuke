@@ -2,27 +2,17 @@ package resources
 
 import (
 	"context"
+	"time"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/transcribeservice"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
-	"github.com/ekristen/aws-nuke/pkg/nuke"
-
-	"time"
-
-	"github.com/aws/aws-sdk-go/aws"
-	
-	"github.com/aws/aws-sdk-go/service/transcribeservice"
-	""
+	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
-
-type TranscribeVocabularyFilter struct {
-	svc              *transcribeservice.TranscribeService
-	name             *string
-	languageCode     *string
-	lastModifiedTime *time.Time
-}
 
 const TranscribeVocabularyFilterResource = "TranscribeVocabularyFilter"
 
@@ -73,20 +63,27 @@ func (l *TranscribeVocabularyFilterLister) List(_ context.Context, o interface{}
 	return resources, nil
 }
 
-func (filter *TranscribeVocabularyFilter) Remove(_ context.Context) error {
+type TranscribeVocabularyFilter struct {
+	svc              *transcribeservice.TranscribeService
+	name             *string
+	languageCode     *string
+	lastModifiedTime *time.Time
+}
+
+func (r *TranscribeVocabularyFilter) Remove(_ context.Context) error {
 	deleteInput := &transcribeservice.DeleteVocabularyFilterInput{
-		VocabularyFilterName: filter.name,
+		VocabularyFilterName: r.name,
 	}
-	_, err := filter.svc.DeleteVocabularyFilter(deleteInput)
+	_, err := r.svc.DeleteVocabularyFilter(deleteInput)
 	return err
 }
 
-func (filter *TranscribeVocabularyFilter) Properties() types.Properties {
+func (r *TranscribeVocabularyFilter) Properties() types.Properties {
 	properties := types.NewProperties()
-	properties.Set("Name", filter.name)
-	properties.Set("LanguageCode", filter.languageCode)
-	if filter.lastModifiedTime != nil {
-		properties.Set("LastModifiedTime", filter.lastModifiedTime.Format(time.RFC3339))
+	properties.Set("Name", r.name)
+	properties.Set("LanguageCode", r.languageCode)
+	if r.lastModifiedTime != nil {
+		properties.Set("LastModifiedTime", r.lastModifiedTime.Format(time.RFC3339))
 	}
 	return properties
 }
