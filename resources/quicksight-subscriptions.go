@@ -7,11 +7,13 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/quicksight"
 	"github.com/aws/aws-sdk-go/service/quicksight/quicksightiface"
-	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
+
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	libsettings "github.com/ekristen/libnuke/pkg/settings"
 	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
 const QuickSightSubscriptionResource = "QuickSightSubscription"
