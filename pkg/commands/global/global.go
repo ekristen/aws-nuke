@@ -7,6 +7,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
+
+	"github.com/ekristen/libnuke/pkg/log"
 )
 
 func Flags() []cli.Flag {
@@ -30,6 +32,11 @@ func Flags() []cli.Flag {
 			Name:  "log-full-timestamp",
 			Usage: "force log output to always show full timestamp",
 		},
+		&cli.StringFlag{
+			Name:  "log-format",
+			Usage: "log format",
+			Value: "standard",
+		},
 	}
 
 	return globalFlags
@@ -48,7 +55,16 @@ func Before(c *cli.Context) error {
 		}
 	}
 
-	logrus.SetFormatter(formatter)
+	logFormatter := &log.CustomFormatter{
+		FallbackFormatter: formatter,
+	}
+
+	switch c.String("log-format") {
+	case "json":
+		logrus.SetFormatter(&logrus.JSONFormatter{})
+	default:
+		logrus.SetFormatter(logFormatter)
+	}
 
 	switch c.String("log-level") {
 	case "trace":
