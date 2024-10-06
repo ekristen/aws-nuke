@@ -150,6 +150,10 @@ github.com/ekristen/libnuke v0.19.3-0.20241006055534-9f6008b7a6bd h1:91btyxCOv3N
 github.com/ekristen/libnuke v0.19.3-0.20241006055534-9f6008b7a6bd/go.mod h1:DIN5VmrH6AUwaXc25RHcH/V+JKALdl16CN9iJvFtbK4=
 github.com/ekristen/libnuke v0.19.3-0.20241006060217-60ab37420cea h1:JAijGxg3Dq9CGjnzN9OPRXBHJP0gzyv+we8UijpKvHU=
 github.com/ekristen/libnuke v0.19.3-0.20241006060217-60ab37420cea/go.mod h1:DIN5VmrH6AUwaXc25RHcH/V+JKALdl16CN9iJvFtbK4=
+github.com/ekristen/libnuke v0.19.3-0.20241006062138-3abb64a459ba h1:LWXLToojlg5aX8yCgoGg89X+zbOW3ZVcpFvmTjf/n8U=
+github.com/ekristen/libnuke v0.19.3-0.20241006062138-3abb64a459ba/go.mod h1:DIN5VmrH6AUwaXc25RHcH/V+JKALdl16CN9iJvFtbK4=
+github.com/ekristen/libnuke v0.19.3-0.20241006062416-6d82056ddbbf h1:0Rn5zPKG8KyHWrItAWaKGcGnMk51qXSMBarGK8A5zMk=
+github.com/ekristen/libnuke v0.19.3-0.20241006062416-6d82056ddbbf/go.mod h1:DIN5VmrH6AUwaXc25RHcH/V+JKALdl16CN9iJvFtbK4=
 github.com/fatih/color v1.17.0 h1:GlRw1BRJxkpqUCBKzKOw098ed57fEsKeNjpTe3cSjK4=
 github.com/fatih/color v1.17.0/go.mod h1:YZ7TlrGPkiz6ku9fK3TLD/pl3CpsiFyu8N92HLgmosI=
 github.com/fatih/color v1.18.0 h1:S8gINlzdQ840/4pfAwic/ZE0djQEH3wM94VfqLTZcOM=
