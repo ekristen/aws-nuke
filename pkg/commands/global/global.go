@@ -62,6 +62,11 @@ func Before(c *cli.Context) error {
 	switch c.String("log-format") {
 	case "json":
 		logrus.SetFormatter(&logrus.JSONFormatter{})
+	case "kv":
+		logrus.SetFormatter(&logrus.TextFormatter{
+			DisableColors: true,
+			FullTimestamp: true,
+		})
 	default:
 		logrus.SetFormatter(logFormatter)
 	}
