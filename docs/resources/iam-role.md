@@ -2,6 +2,12 @@
 
 This will remove all IAM Roles an AWS account.
 
+## Resource
+
+```text
+IAMRole
+```
+
 ## Settings
 
 - `IncludeServiceLinkedRoles`
