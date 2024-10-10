@@ -3,11 +3,14 @@ package resources
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/neptune"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
@@ -47,9 +50,22 @@ func (l *NeptuneInstanceLister) List(_ context.Context, o interface{}) ([]resour
 		}
 
 		for _, dbInstance := range output.DBInstances {
+			var dbTags []*neptune.Tag
+			tags, err := svc.ListTagsForResource(&neptune.ListTagsForResourceInput{
+				ResourceName: dbInstance.DBInstanceArn,
+			})
+			if err != nil {
+				logrus.WithError(err).Warn("failed to list tags for resource")
+			}
+			if tags.TagList != nil {
+				dbTags = tags.TagList
+			}
+
 			resources = append(resources, &NeptuneInstance{
-				svc: svc,
-				ID:  dbInstance.DBInstanceIdentifier,
+				svc:  svc,
+				ID:   dbInstance.DBInstanceIdentifier,
+				Name: dbInstance.DBName,
+				Tags: dbTags,
 			})
 		}
 
@@ -64,19 +80,25 @@ func (l *NeptuneInstanceLister) List(_ context.Context, o interface{}) ([]resour
 }
 
 type NeptuneInstance struct {
-	svc *neptune.Neptune
-	ID  *string
+	svc  *neptune.Neptune
+	ID   *string
+	Name *string
+	Tags []*neptune.Tag
 }
 
-func (f *NeptuneInstance) Remove(_ context.Context) error {
-	_, err := f.svc.DeleteDBInstance(&neptune.DeleteDBInstanceInput{
-		DBInstanceIdentifier: f.ID,
+func (r *NeptuneInstance) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteDBInstance(&neptune.DeleteDBInstanceInput{
+		DBInstanceIdentifier: r.ID,
 		SkipFinalSnapshot:    aws.Bool(true),
 	})
 
 	return err
 }
 
-func (f *NeptuneInstance) String() string {
-	return *f.ID
+func (r *NeptuneInstance) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
+}
+
+func (r *NeptuneInstance) String() string {
+	return *r.ID
 }
