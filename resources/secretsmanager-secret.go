@@ -2,6 +2,8 @@ package resources
 
 import (
 	"context"
+	"errors"
+	"regexp"
 	"strings"
 
 	"github.com/gotidy/ptr"
@@ -18,6 +20,9 @@ import (
 )
 
 const SecretsManagerSecretResource = "SecretsManagerSecret"
+
+var managedRegex = regexp.MustCompile("^([a-z-]+)!.*$")
+var errAWSManaged = errors.New("cannot delete AWS managed secret")
 
 func init() {
 	registry.Register(&registry.Registration{
@@ -126,6 +131,20 @@ func (r *SecretsManagerSecret) Remove(_ context.Context) error {
 	})
 
 	return err
+}
+
+func (r *SecretsManagerSecret) Filter() error {
+	if managedRegex.MatchString(*r.Name) {
+		return errAWSManaged
+	}
+
+	for _, tag := range r.tags {
+		if *tag.Key == "aws:secretsmanager:owningService" {
+			return errAWSManaged
+		}
+	}
+
+	return nil
 }
 
 func (r *SecretsManagerSecret) Properties() types.Properties {
