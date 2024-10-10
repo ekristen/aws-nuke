@@ -91,6 +91,7 @@ nav:
     - Presets: config-presets.md
     - Custom Endpoints: config-custom-endpoints.md
     - Migration Guide: config-migration.md
+    - Examples & Presets: config-contrib.md
   - Resources:
     - Overview: resources/overview.md
     - Cognito User Pool: resources/cognito-user-pool.md
