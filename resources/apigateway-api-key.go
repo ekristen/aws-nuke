@@ -2,8 +2,9 @@ package resources
 
 import (
 	"context"
-	"go.uber.org/ratelimit"
 	"time"
+
+	"go.uber.org/ratelimit"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/apigateway"
