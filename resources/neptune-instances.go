@@ -32,6 +32,12 @@ func (l *NeptuneInstanceLister) List(_ context.Context, o interface{}) ([]resour
 
 	params := &neptune.DescribeDBInstancesInput{
 		MaxRecords: aws.Int64(100),
+		Filters: []*neptune.Filter{
+			{
+				Name:   aws.String("engine"),
+				Values: []*string{aws.String("neptune")},
+			},
+		},
 	}
 
 	for {
