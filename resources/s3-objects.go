@@ -8,8 +8,8 @@ import (
 
 	"github.com/gotidy/ptr"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
@@ -30,13 +30,13 @@ func init() {
 
 type S3ObjectLister struct{}
 
-func (l *S3ObjectLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *S3ObjectLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
-	svc := s3.New(opts.Session)
+	svc := s3.NewFromConfig(*opts.Config)
 
 	resources := make([]resource.Resource, 0)
 
-	buckets, err := DescribeS3Buckets(svc)
+	buckets, err := DescribeS3Buckets(ctx, svc)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +47,7 @@ func (l *S3ObjectLister) List(_ context.Context, o interface{}) ([]resource.Reso
 		}
 
 		for {
-			resp, err := svc.ListObjectVersions(params)
+			resp, err := svc.ListObjectVersions(ctx, params)
 			if err != nil {
 				return nil, err
 			}
@@ -59,8 +59,8 @@ func (l *S3ObjectLister) List(_ context.Context, o interface{}) ([]resource.Reso
 
 				resources = append(resources, &S3Object{
 					svc:          svc,
-					bucket:       aws.StringValue(bucket.Name),
-					creationDate: aws.TimeValue(bucket.CreationDate),
+					bucket:       aws.ToString(bucket.Name),
+					creationDate: aws.ToTime(bucket.CreationDate),
 					key:          *out.Key,
 					versionID:    out.VersionId,
 					latest:       ptr.ToBool(out.IsLatest),
@@ -74,8 +74,8 @@ func (l *S3ObjectLister) List(_ context.Context, o interface{}) ([]resource.Reso
 
 				resources = append(resources, &S3Object{
 					svc:          svc,
-					bucket:       aws.StringValue(bucket.Name),
-					creationDate: aws.TimeValue(bucket.CreationDate),
+					bucket:       aws.ToString(bucket.Name),
+					creationDate: aws.ToTime(bucket.CreationDate),
 					key:          *out.Key,
 					versionID:    out.VersionId,
 					latest:       ptr.ToBool(out.IsLatest),
@@ -96,7 +96,7 @@ func (l *S3ObjectLister) List(_ context.Context, o interface{}) ([]resource.Reso
 }
 
 type S3Object struct {
-	svc          *s3.S3
+	svc          *s3.Client
 	bucket       string
 	creationDate time.Time
 	key          string
@@ -104,14 +104,14 @@ type S3Object struct {
 	latest       bool
 }
 
-func (e *S3Object) Remove(_ context.Context) error {
+func (e *S3Object) Remove(ctx context.Context) error {
 	params := &s3.DeleteObjectInput{
 		Bucket:    &e.bucket,
 		Key:       &e.key,
 		VersionId: e.versionID,
 	}
 
-	_, err := e.svc.DeleteObject(params)
+	_, err := e.svc.DeleteObject(ctx, params)
 	if err != nil {
 		return err
 	}
