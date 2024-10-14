@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 
@@ -21,13 +22,13 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/awsmod"
 )
 
-type TestS3BucketObjectLockSuite struct {
+type TestS3BucketSuite struct {
 	suite.Suite
 	bucket string
 	svc    *s3.S3
 }
 
-func (suite *TestS3BucketObjectLockSuite) SetupSuite() {
+func (suite *TestS3BucketSuite) SetupSuite() {
 	var err error
 
 	suite.bucket = fmt.Sprintf("aws-nuke-testing-bucket-%d", time.Now().UnixNano())
@@ -89,7 +90,7 @@ func (suite *TestS3BucketObjectLockSuite) SetupSuite() {
 	}
 }
 
-func (suite *TestS3BucketObjectLockSuite) TearDownSuite() {
+func (suite *TestS3BucketSuite) TearDownSuite() {
 	iterator := newS3DeleteVersionListIterator(suite.svc, &s3.ListObjectVersionsInput{
 		Bucket: &suite.bucket,
 	}, true)
@@ -118,6 +119,10 @@ func (suite *TestS3BucketObjectLockSuite) TearDownSuite() {
 	}
 }
 
+type TestS3BucketObjectLockSuite struct {
+	TestS3BucketSuite
+}
+
 func (suite *TestS3BucketObjectLockSuite) TestS3BucketObjectLock() {
 	// Verify the object lock configuration
 	result, err := suite.svc.GetObjectLockConfiguration(&s3.GetObjectLockConfigurationInput{
@@ -144,11 +149,16 @@ func (suite *TestS3BucketObjectLockSuite) TestS3BucketRemove() {
 	assert.Error(suite.T(), err)
 }
 
-func (suite *TestS3BucketObjectLockSuite) TestS3BucketRemoveWithBypass() {
+type TestS3BucketBypassGovernanceSuite struct {
+	TestS3BucketSuite
+}
+
+func (suite *TestS3BucketBypassGovernanceSuite) TestS3BucketRemoveWithBypass() {
 	// Create the S3Bucket object
 	bucket := &S3Bucket{
-		svc:  suite.svc,
-		name: suite.bucket,
+		svc:        suite.svc,
+		name:       suite.bucket,
+		ObjectLock: ptr.String("Enabled"),
 		settings: &libsettings.Setting{
 			"BypassGovernanceRetention": true,
 		},
@@ -160,4 +170,8 @@ func (suite *TestS3BucketObjectLockSuite) TestS3BucketRemoveWithBypass() {
 
 func TestS3BucketObjectLock(t *testing.T) {
 	suite.Run(t, new(TestS3BucketObjectLockSuite))
+}
+
+func TestS3BucketBypassGovernance(t *testing.T) {
+	suite.Run(t, new(TestS3BucketBypassGovernanceSuite))
 }

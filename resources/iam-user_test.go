@@ -35,8 +35,8 @@ func Test_IAMUser_Remove(t *testing.T) {
 
 	iamUser := IAMUser{
 		svc:  svc,
-		name: aws.String("test-user"),
-		tags: createInput.Tags,
+		Name: aws.String("test-user"),
+		Tags: createInput.Tags,
 	}
 
 	removeError := iamUser.Remove(context.TODO())
