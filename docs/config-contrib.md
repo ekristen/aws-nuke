@@ -40,6 +40,9 @@ presets:
       CloudWatchEventsRule:
         - type: "contains"
           value: "aws-controltower"
+        - property: "Name"
+          type: glob
+          value: "AWSControlTower*"
       EC2VPCEndpoint:
         - type: "contains"
           value: "aws-controltower"
@@ -57,6 +60,8 @@ presets:
       CloudWatchEventsTarget:
         - type: "contains"
           value: "aws-controltower"
+        - type: "glob"
+          value: "Rule: AWSControlTower*"
       SNSSubscription:
         - type: "contains"
           value: "aws-controltower"
@@ -97,4 +102,6 @@ presets:
       IAMRolePolicy:
         - type: "contains"
           value: "aws-controltower"
+        - type: glob
+          value: "AWSReservedSSO_*"
 ```

@@ -1,6 +1,6 @@
 # EC2 Image
 
-This will remove all IAM Roles an AWS account.
+This will remove all EC2 Images (AMI) in an AWS account.
 
 ## Resource
 
