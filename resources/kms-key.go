@@ -98,6 +98,17 @@ func (l *KMSKeyLister) List(_ context.Context, o interface{}) ([]resource.Resour
 				}
 			}
 
+			keyAliases, err := svc.ListAliases(&kms.ListAliasesInput{
+				KeyId: key.KeyId,
+			})
+			if err != nil {
+				logrus.WithError(err).Error("unable to list aliases")
+			}
+
+			if len(keyAliases.Aliases) > 0 {
+				kmsKey.Alias = keyAliases.Aliases[0].AliasName
+			}
+
 			resources = append(resources, kmsKey)
 		}
 
@@ -118,6 +129,7 @@ type KMSKey struct {
 	ID      *string
 	State   *string
 	Manager *string
+	Alias   *string
 	Tags    []*kms.Tag
 }
 

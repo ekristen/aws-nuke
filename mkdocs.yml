@@ -91,10 +91,14 @@ nav:
     - Presets: config-presets.md
     - Custom Endpoints: config-custom-endpoints.md
     - Migration Guide: config-migration.md
+    - Examples & Presets: config-contrib.md
   - Resources:
+    - Overview: resources/overview.md
     - Cognito User Pool: resources/cognito-user-pool.md
+    - EC2 Image: resources/ec2-image.md
     - IAM Role: resources/iam-role.md
     - S3 Bucket: resources/s3-bucket.md
+    - S3 Object: resources/s3-object.md
   - Development:
     - Overview: development.md
     - Contributing: contributing.md

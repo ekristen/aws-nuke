@@ -3,8 +3,6 @@ package resources
 import (
 	"context"
 
-	"github.com/gotidy/ptr"
-
 	"github.com/aws/aws-sdk-go/service/ec2"
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -40,10 +38,10 @@ func (l *EC2AddressLister) List(_ context.Context, o interface{}) ([]resource.Re
 	resources := make([]resource.Resource, 0)
 	for _, out := range resp.Addresses {
 		resources = append(resources, &EC2Address{
-			svc: svc,
-			eip: out,
-			id:  ptr.ToString(out.AllocationId),
-			ip:  ptr.ToString(out.PublicIp),
+			svc:          svc,
+			AllocationID: out.AllocationId,
+			PublicIP:     out.PublicIp,
+			Tags:         out.Tags,
 		})
 	}
 
@@ -51,15 +49,17 @@ func (l *EC2AddressLister) List(_ context.Context, o interface{}) ([]resource.Re
 }
 
 type EC2Address struct {
-	svc *ec2.EC2
-	eip *ec2.Address
-	id  string
-	ip  string
+	svc                *ec2.EC2
+	AllocationID       *string
+	PublicIP           *string
+	NetworkBorderGroup *string
+	Tags               []*ec2.Tag
 }
 
-func (e *EC2Address) Remove(_ context.Context) error {
-	_, err := e.svc.ReleaseAddress(&ec2.ReleaseAddressInput{
-		AllocationId: &e.id,
+func (r *EC2Address) Remove(_ context.Context) error {
+	_, err := r.svc.ReleaseAddress(&ec2.ReleaseAddressInput{
+		AllocationId:       r.AllocationID,
+		NetworkBorderGroup: r.NetworkBorderGroup,
 	})
 	if err != nil {
 		return err
@@ -68,15 +68,10 @@ func (e *EC2Address) Remove(_ context.Context) error {
 	return nil
 }
 
-func (e *EC2Address) Properties() types.Properties {
-	properties := types.NewProperties()
-	for _, tagValue := range e.eip.Tags {
-		properties.SetTag(tagValue.Key, tagValue.Value)
-	}
-	properties.Set("AllocationID", e.id)
-	return properties
+func (r *EC2Address) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
 
-func (e *EC2Address) String() string {
-	return e.ip
+func (r *EC2Address) String() string {
+	return *r.PublicIP
 }

@@ -56,6 +56,14 @@ func Test_Mock_KMSKey_List(t *testing.T) {
 		},
 	)
 
+	mockKMS.EXPECT().ListAliases(&kms.ListAliasesInput{
+		KeyId: aws.String("test-key-id"),
+	}).Return(&kms.ListAliasesOutput{
+		Aliases: []*kms.AliasListEntry{
+			{AliasName: aws.String("alias/test-key-id")},
+		},
+	}, nil)
+
 	lister := KMSKeyLister{
 		mockSvc: mockKMS,
 	}
@@ -123,6 +131,14 @@ func Test_Mock_KMSKey_List_WithAccessDenied(t *testing.T) {
 		},
 	)
 
+	mockKMS.EXPECT().ListAliases(&kms.ListAliasesInput{
+		KeyId: aws.String("test-key-id-1"),
+	}).Return(&kms.ListAliasesOutput{
+		Aliases: []*kms.AliasListEntry{
+			{AliasName: aws.String("alias/test-key-id-1")},
+		},
+	}, nil)
+
 	lister := KMSKeyLister{
 		mockSvc: mockKMS,
 	}
@@ -180,6 +196,7 @@ func Test_Mock_KMSKey_Properties(t *testing.T) {
 		ID:      ptr.String("test-key-id"),
 		State:   ptr.String(kms.KeyStateEnabled),
 		Manager: ptr.String(kms.KeyManagerTypeCustomer),
+		Alias:   ptr.String("alias/test-key-id"),
 		Tags: []*kms.Tag{
 			{TagKey: aws.String("Environment"), TagValue: aws.String("Test")},
 		},
@@ -189,6 +206,7 @@ func Test_Mock_KMSKey_Properties(t *testing.T) {
 	assert.Equal(t, kms.KeyStateEnabled, kmsKey.Properties().Get("State"))
 	assert.Equal(t, kms.KeyManagerTypeCustomer, kmsKey.Properties().Get("Manager"))
 	assert.Equal(t, "Test", kmsKey.Properties().Get("tag:Environment"))
+	assert.Equal(t, "alias/test-key-id", kmsKey.Properties().Get("Alias"))
 }
 
 func Test_Mock_KMSKey_Remove(t *testing.T) {

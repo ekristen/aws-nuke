@@ -13,6 +13,12 @@ This will remove all S3 buckets from an AWS account. The following actions are p
   - This will include bypassing any Object Lock governance retention settings if the `BypassGovernanceRetention`
     setting is set to `true`
 
+## Resource
+
+```text
+S3Bucket
+```
+
 ## Settings
 
 - `BypassGovernanceRetention` 

@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"go.uber.org/ratelimit"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/apigateway"
 
@@ -15,6 +17,12 @@ import (
 )
 
 const APIGatewayAPIKeyResource = "APIGatewayAPIKey"
+
+// Rate limit to avoid throttling when deleting API Gateway Rest APIs
+// The API Gateway Delete Rest API has a limit of 1 request per 30 seconds for each account
+// https://docs.aws.amazon.com/apigateway/latest/developerguide/limits.html
+// Note: due to time drift, set to 31 seconds to be safe.
+var deleteAPIKeyLimit = ratelimit.New(1, ratelimit.Per(32*time.Second))
 
 func init() {
 	registry.Register(&registry.Registration{
@@ -72,6 +80,8 @@ type APIGatewayAPIKey struct {
 }
 
 func (r *APIGatewayAPIKey) Remove(_ context.Context) error {
+	deleteAPIKeyLimit.Take()
+
 	_, err := r.svc.DeleteApiKey(&apigateway.DeleteApiKeyInput{
 		ApiKey: r.apiKey,
 	})
