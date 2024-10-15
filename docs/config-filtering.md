@@ -21,6 +21,33 @@ against some resources and not others.
 Global works by taking all filters defined under `__global__` and prepends to any filters found for a resource type. If
 a resource does NOT have any filters defined, the `__global__` ones will still be used.
 
+## Filter Groups
+
+!!! important
+    Filter groups are an experimental feature and are disabled by default. To enable filter groups, use the
+    `--feature-flag filter-groups` flag.
+
+Filter groups are used to group filters together. This is useful when filters need to be AND'd together. For example,
+if you want to delete all resources that are tagged with `env:dev` and `namespace:test` you can use the following filter
+group:
+
+```yaml
+filters:
+  ResourceType:
+    - property: tag:env
+      value: dev
+      group: group1
+    - property: tag:namespace
+      value: test
+      group: group2
+```
+
+In this example, the `group1` and `group2` filters are AND'd together. This means that a resource must match both filters
+to be excluded from deletion.
+
+Only a single filter in a group is required to match. This means that if a resource matches any filter in a group it will
+count as a match for the group.
+
 ### Example
 
 In this example, we are ignoring all resources that have the tag `aws-nuke` set to `ignore`. Additionally filtering

@@ -77,6 +77,7 @@ nav:
       - Overview: features/overview.md
       - Bypass Alias Check: features/bypass-alias-check.md
       - Global Filters: features/global-filters.md
+      - Filter Groups: features/filter-groups.md
       - Enabled Regions: features/enabled-regions.md
       - Signed Binaries: features/signed-binaries.md
   - CLI:
