@@ -5,6 +5,7 @@ package resources
 import (
 	"context"
 	"fmt"
+	"io"
 	"strings"
 	"testing"
 	"time"
@@ -13,19 +14,24 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 
 	libsettings "github.com/ekristen/libnuke/pkg/settings"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/awsmod"
 )
 
+type readSeekCloser struct{ io.ReadSeeker }
+
+func (readSeekCloser) Close() error { return nil }
+
 type TestS3BucketSuite struct {
 	suite.Suite
 	bucket string
-	svc    *s3.S3
+	svc    *s3.Client
 }
 
 func (suite *TestS3BucketSuite) SetupSuite() {
@@ -33,29 +39,32 @@ func (suite *TestS3BucketSuite) SetupSuite() {
 
 	suite.bucket = fmt.Sprintf("aws-nuke-testing-bucket-%d", time.Now().UnixNano())
 
-	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String("us-west-2")},
-	)
+	ctx := context.TODO()
+
+	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion("us-west-2"))
 	if err != nil {
 		suite.T().Fatalf("failed to create session, %v", err)
 	}
 
 	// Create S3 service client
-	suite.svc = s3.New(sess)
+	suite.svc = s3.NewFromConfig(cfg)
 
 	// Create the bucket
-	_, err = suite.svc.CreateBucket(&s3.CreateBucketInput{
+	_, err = suite.svc.CreateBucket(ctx, &s3.CreateBucketInput{
 		Bucket: aws.String(suite.bucket),
+		CreateBucketConfiguration: &s3types.CreateBucketConfiguration{
+			LocationConstraint: s3types.BucketLocationConstraint("us-west-2"),
+		},
 	})
 	if err != nil {
 		suite.T().Fatalf("failed to create bucket, %v", err)
 	}
 
 	// enable versioning
-	_, err = suite.svc.PutBucketVersioning(&s3.PutBucketVersioningInput{
+	_, err = suite.svc.PutBucketVersioning(ctx, &s3.PutBucketVersioningInput{
 		Bucket: aws.String(suite.bucket),
-		VersioningConfiguration: &s3.VersioningConfiguration{
-			Status: aws.String("Enabled"),
+		VersioningConfiguration: &s3types.VersioningConfiguration{
+			Status: s3types.BucketVersioningStatusEnabled,
 		},
 	})
 	if err != nil {
@@ -63,14 +72,14 @@ func (suite *TestS3BucketSuite) SetupSuite() {
 	}
 
 	// Set the object lock configuration to governance mode
-	_, err = suite.svc.PutObjectLockConfiguration(&s3.PutObjectLockConfigurationInput{
+	_, err = suite.svc.PutObjectLockConfiguration(ctx, &s3.PutObjectLockConfigurationInput{
 		Bucket: aws.String(suite.bucket),
-		ObjectLockConfiguration: &s3.ObjectLockConfiguration{
-			ObjectLockEnabled: aws.String("Enabled"),
-			Rule: &s3.ObjectLockRule{
-				DefaultRetention: &s3.DefaultRetention{
-					Mode: aws.String("GOVERNANCE"),
-					Days: aws.Int64(1),
+		ObjectLockConfiguration: &s3types.ObjectLockConfiguration{
+			ObjectLockEnabled: s3types.ObjectLockEnabledEnabled,
+			Rule: &s3types.ObjectLockRule{
+				DefaultRetention: &s3types.DefaultRetention{
+					Mode: s3types.ObjectLockRetentionModeGovernance,
+					Days: aws.Int32(1),
 				},
 			},
 		},
@@ -80,10 +89,11 @@ func (suite *TestS3BucketSuite) SetupSuite() {
 	}
 
 	// Create an object in the bucket
-	_, err = suite.svc.PutObject(&s3.PutObjectInput{
-		Bucket: aws.String(suite.bucket),
-		Key:    aws.String("test-object"),
-		Body:   aws.ReadSeekCloser(strings.NewReader("test content")),
+	_, err = suite.svc.PutObject(ctx, &s3.PutObjectInput{
+		Bucket:            aws.String(suite.bucket),
+		Key:               aws.String("test-object"),
+		Body:              readSeekCloser{strings.NewReader("test content")},
+		ChecksumAlgorithm: s3types.ChecksumAlgorithmCrc32,
 	})
 	if err != nil {
 		suite.T().Fatalf("failed to create object, %v", err)
@@ -100,7 +110,7 @@ func (suite *TestS3BucketSuite) TearDownSuite() {
 		}
 	}
 
-	iterator2 := newS3ObjectDeleteListIterator(suite.svc, &s3.ListObjectsInput{
+	iterator2 := newS3ObjectDeleteListIterator(suite.svc, &s3.ListObjectsV2Input{
 		Bucket: &suite.bucket,
 	}, true)
 	if err := awsmod.NewBatchDeleteWithClient(suite.svc).Delete(context.TODO(), iterator2, bypassGovernanceRetention); err != nil {
@@ -109,7 +119,7 @@ func (suite *TestS3BucketSuite) TearDownSuite() {
 		}
 	}
 
-	_, err := suite.svc.DeleteBucket(&s3.DeleteBucketInput{
+	_, err := suite.svc.DeleteBucket(context.TODO(), &s3.DeleteBucketInput{
 		Bucket: aws.String(suite.bucket),
 	})
 	if err != nil {
@@ -125,16 +135,16 @@ type TestS3BucketObjectLockSuite struct {
 
 func (suite *TestS3BucketObjectLockSuite) TestS3BucketObjectLock() {
 	// Verify the object lock configuration
-	result, err := suite.svc.GetObjectLockConfiguration(&s3.GetObjectLockConfigurationInput{
+	result, err := suite.svc.GetObjectLockConfiguration(context.TODO(), &s3.GetObjectLockConfigurationInput{
 		Bucket: aws.String(suite.bucket),
 	})
 	if err != nil {
 		suite.T().Fatalf("failed to get object lock configuration, %v", err)
 	}
 
-	assert.Equal(suite.T(), "Enabled", *result.ObjectLockConfiguration.ObjectLockEnabled)
-	assert.Equal(suite.T(), "GOVERNANCE", *result.ObjectLockConfiguration.Rule.DefaultRetention.Mode)
-	assert.Equal(suite.T(), int64(1), *result.ObjectLockConfiguration.Rule.DefaultRetention.Days)
+	assert.Equal(suite.T(), s3types.ObjectLockEnabledEnabled, result.ObjectLockConfiguration.ObjectLockEnabled)
+	assert.Equal(suite.T(), s3types.ObjectLockRetentionModeGovernance, result.ObjectLockConfiguration.Rule.DefaultRetention.Mode)
+	assert.Equal(suite.T(), int32(1), *result.ObjectLockConfiguration.Rule.DefaultRetention.Days)
 }
 
 func (suite *TestS3BucketObjectLockSuite) TestS3BucketRemove() {

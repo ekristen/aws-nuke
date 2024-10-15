@@ -2,14 +2,13 @@ package awsmod
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/aws/client"
-	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 )
 
 const (
@@ -64,8 +63,8 @@ func (err *Error) Error() string {
 		origErr = ":\n" + err.OrigErr.Error()
 	}
 	return fmt.Sprintf("failed to perform batch operation on %q to %q%s",
-		aws.StringValue(err.Key),
-		aws.StringValue(err.Bucket),
+		aws.ToString(err.Key),
+		aws.ToString(err.Bucket),
 		origErr,
 	)
 }
@@ -137,25 +136,18 @@ type BatchDeleteIterator interface {
 //	}
 type DeleteListIterator struct {
 	Bucket    *string
-	Paginator request.Pagination
-	objects   []*s3.Object
+	Paginator *s3.ListObjectsV2Paginator
+	objects   []s3types.Object
+	err       error
 }
 
 // NewDeleteListIterator will return a new DeleteListIterator.
-func NewDeleteListIterator(svc s3iface.S3API, input *s3.ListObjectsInput, opts ...func(*DeleteListIterator)) BatchDeleteIterator {
+func NewDeleteListIterator(
+	svc s3.ListObjectsV2APIClient, input *s3.ListObjectsV2Input, opts ...func(*DeleteListIterator),
+) BatchDeleteIterator {
 	iter := &DeleteListIterator{
-		Bucket: input.Bucket,
-		Paginator: request.Pagination{
-			NewRequest: func() (*request.Request, error) {
-				var inCpy *s3.ListObjectsInput
-				if input != nil {
-					tmp := *input
-					inCpy = &tmp
-				}
-				req, _ := svc.ListObjectsRequest(inCpy)
-				return req, nil
-			},
-		},
+		Bucket:    input.Bucket,
+		Paginator: s3.NewListObjectsV2Paginator(svc, input),
 	}
 
 	for _, opt := range opts {
@@ -168,18 +160,28 @@ func NewDeleteListIterator(svc s3iface.S3API, input *s3.ListObjectsInput, opts .
 func (iter *DeleteListIterator) Next() bool {
 	if len(iter.objects) > 0 {
 		iter.objects = iter.objects[1:]
+		if len(iter.objects) > 0 {
+			return true
+		}
 	}
 
-	if len(iter.objects) == 0 && iter.Paginator.Next() {
-		iter.objects = iter.Paginator.Page().(*s3.ListObjectsOutput).Contents
+	if !iter.Paginator.HasMorePages() {
+		return false
 	}
 
+	page, err := iter.Paginator.NextPage(context.TODO())
+	if err != nil {
+		iter.err = err
+		return false
+	}
+
+	iter.objects = page.Contents
 	return len(iter.objects) > 0
 }
 
 // Err will return the last known error from Next.
 func (iter *DeleteListIterator) Err() error {
-	return iter.Paginator.Err()
+	return iter.err
 }
 
 // DeleteObject will return the current object to be deleted.
@@ -192,10 +194,15 @@ func (iter *DeleteListIterator) DeleteObject() BatchDeleteObject {
 	}
 }
 
+// DeleteObjectsAPIClient implements the S3.DeleteObjects operation.
+type DeleteObjectsAPIClient interface {
+	DeleteObjects(context.Context, *s3.DeleteObjectsInput, ...func(*s3.Options)) (*s3.DeleteObjectsOutput, error)
+}
+
 // BatchDelete will use the s3 package's service client to perform a batch
 // delete.
 type BatchDelete struct {
-	Client    s3iface.S3API
+	Client    DeleteObjectsAPIClient
 	BatchSize int
 }
 
@@ -220,7 +227,7 @@ type BatchDelete struct {
 //	}); err != nil {
 //		return err
 //	}
-func NewBatchDeleteWithClient(s3client s3iface.S3API, options ...func(*BatchDelete)) *BatchDelete {
+func NewBatchDeleteWithClient(s3client DeleteObjectsAPIClient, options ...func(*BatchDelete)) *BatchDelete {
 	svc := &BatchDelete{
 		Client:    s3client,
 		BatchSize: DefaultBatchSize,
@@ -254,8 +261,8 @@ func NewBatchDeleteWithClient(s3client s3iface.S3API, options ...func(*BatchDele
 //	}); err != nil {
 //		return err
 //	}
-func NewBatchDelete(c client.ConfigProvider, options ...func(*BatchDelete)) *BatchDelete {
-	s3client := s3.New(c)
+func NewBatchDelete(c *aws.Config, options ...func(*BatchDelete)) *BatchDelete {
+	s3client := s3.NewFromConfig(*c)
 	return NewBatchDeleteWithClient(s3client, options...)
 }
 
@@ -300,7 +307,7 @@ func (iter *DeleteObjectsIterator) DeleteObject() BatchDeleteObject {
 
 // Delete will use the iterator to queue up objects that need to be deleted.
 // Once the batch size is met, this will call the deleteBatch function.
-func (d *BatchDelete) Delete(ctx aws.Context, iter BatchDeleteIterator, opts ...func(input *s3.DeleteObjectsInput)) error {
+func (d *BatchDelete) Delete(ctx context.Context, iter BatchDeleteIterator, opts ...func(input *s3.DeleteObjectsInput)) error {
 	var errs []Error
 	var objects []BatchDeleteObject
 	var input *s3.DeleteObjectsInput
@@ -318,7 +325,7 @@ func (d *BatchDelete) Delete(ctx aws.Context, iter BatchDeleteIterator, opts ...
 
 		parity := hasParity(input, o)
 		if parity {
-			input.Delete.Objects = append(input.Delete.Objects, &s3.ObjectIdentifier{
+			input.Delete.Objects = append(input.Delete.Objects, s3types.ObjectIdentifier{
 				Key:       o.Object.Key,
 				VersionId: o.Object.VersionId,
 			})
@@ -341,7 +348,7 @@ func (d *BatchDelete) Delete(ctx aws.Context, iter BatchDeleteIterator, opts ...
 					opt(input)
 				}
 
-				input.Delete.Objects = append(input.Delete.Objects, &s3.ObjectIdentifier{
+				input.Delete.Objects = append(input.Delete.Objects, s3types.ObjectIdentifier{
 					Key:       o.Object.Key,
 					VersionId: o.Object.VersionId,
 				})
@@ -371,7 +378,7 @@ func initDeleteObjectsInput(o *s3.DeleteObjectInput) *s3.DeleteObjectsInput {
 		Bucket:       o.Bucket,
 		MFA:          o.MFA,
 		RequestPayer: o.RequestPayer,
-		Delete:       &s3.Delete{},
+		Delete:       &s3types.Delete{},
 	}
 }
 
@@ -383,10 +390,10 @@ const (
 )
 
 // deleteBatch will delete a batch of items in the objects parameters.
-func deleteBatch(ctx aws.Context, d *BatchDelete, input *s3.DeleteObjectsInput, objects []BatchDeleteObject) []Error {
+func deleteBatch(ctx context.Context, d *BatchDelete, input *s3.DeleteObjectsInput, objects []BatchDeleteObject) []Error {
 	var errs []Error
 
-	if result, err := d.Client.DeleteObjectsWithContext(ctx, input); err != nil {
+	if result, err := d.Client.DeleteObjects(ctx, input); err != nil {
 		for i := 0; i < len(input.Delete.Objects); i++ {
 			errs = append(errs, newError(err, input.Bucket, input.Delete.Objects[i].Key))
 		}
@@ -433,8 +440,8 @@ func hasParity(o1 *s3.DeleteObjectsInput, o2 BatchDeleteObject) bool {
 		return false
 	}
 
-	if o1.RequestPayer != nil && o2.Object.RequestPayer != nil {
-		if *o1.RequestPayer != *o2.Object.RequestPayer {
+	if o1.RequestPayer != "" && o2.Object.RequestPayer != "" {
+		if o1.RequestPayer != o2.Object.RequestPayer {
 			return false
 		}
 	} else if o1.RequestPayer != o2.Object.RequestPayer {

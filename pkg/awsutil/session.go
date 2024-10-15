@@ -1,14 +1,18 @@
 package awsutil
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"net"
 	"net/http"
+	"os"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
 
+	awsv2 "github.com/aws/aws-sdk-go-v2/aws"
+	credentialsv2 "github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
@@ -27,10 +31,10 @@ const (
 
 var (
 	// DefaultRegionID The default region. Can be customized for non AWS implementations
-	DefaultRegionID = endpoints.UsEast1RegionID
+	DefaultRegionID = "us-east-1"
 
 	// DefaultAWSPartitionID The default aws partition. Can be customized for non AWS implementations
-	DefaultAWSPartitionID = endpoints.AwsPartitionID
+	DefaultAWSPartitionID = "aws"
 )
 
 type Credentials struct {
@@ -47,6 +51,7 @@ type Credentials struct {
 
 	CustomEndpoints config.CustomEndpoints
 	session         *session.Session
+	cfg             *awsv2.Config
 }
 
 func (c *Credentials) HasProfile() bool {
@@ -73,6 +78,8 @@ func (c *Credentials) Validate() error {
 	return nil
 }
 
+// FUTURE(187): when all services are migrated to SDK v2, remove usage of
+// session.Session throughout
 func (c *Credentials) rootSession() (*session.Session, error) {
 	if c.session == nil {
 		var opts session.Options
@@ -140,6 +147,17 @@ func (c *Credentials) awsNewStaticCredentials() *credentials.Credentials {
 		return credentials.NewEnvCredentials()
 	}
 	return credentials.NewStaticCredentials(
+		strings.TrimSpace(c.AccessKeyID),
+		strings.TrimSpace(c.SecretAccessKey),
+		strings.TrimSpace(c.SessionToken),
+	)
+}
+
+func (c *Credentials) awsNewStaticCredentialsV2() awsv2.CredentialsProvider {
+	if !c.HasKeys() {
+		return envCredentialsProviderV2{}
+	}
+	return credentialsv2.NewStaticCredentialsProvider(
 		strings.TrimSpace(c.AccessKeyID),
 		strings.TrimSpace(c.SecretAccessKey),
 		strings.TrimSpace(c.SessionToken),
@@ -273,4 +291,37 @@ func skipGlobalHandler(global bool) func(r *request.Request) {
 			return
 		}
 	}
+}
+
+// SDK v2 does not directly expose an environment creds provider since that
+// functionality has been opaquely rolled into LoadDefaultConfig
+//
+// this provider recreates the behavior that v1 had (including support for
+// extra nonstandard envs)
+type envCredentialsProviderV2 struct{}
+
+func (envCredentialsProviderV2) Retrieve(ctx context.Context) (awsv2.Credentials, error) {
+	id := os.Getenv("AWS_ACCESS_KEY_ID")
+	if id == "" {
+		id = os.Getenv("AWS_ACCESS_KEY")
+	}
+
+	secret := os.Getenv("AWS_SECRET_ACCESS_KEY")
+	if secret == "" {
+		secret = os.Getenv("AWS_SECRET_KEY")
+	}
+
+	if id == "" {
+		return awsv2.Credentials{}, fmt.Errorf("AWS access key unset")
+	}
+
+	if secret == "" {
+		return awsv2.Credentials{}, fmt.Errorf("AWS secret key unset")
+	}
+
+	return awsv2.Credentials{
+		AccessKeyID:     id,
+		SecretAccessKey: secret,
+		SessionToken:    os.Getenv("AWS_SESSION_TOKEN"),
+	}, nil
 }
