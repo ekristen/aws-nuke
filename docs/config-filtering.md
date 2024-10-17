@@ -80,6 +80,7 @@ The following are comparisons  that you can use to filter resources. These are u
 - `glob`
 - `regex` 
 - `dateOlderThan`
+- `dateOlderThanNow`
 
 To use a non-default comparison type, it is required to specify an object with `type` and `value` instead of the
 plain string.
@@ -141,6 +142,10 @@ IAMUser:
 
 ### DateOlderThan
 
+!!! warning
+    You likely do not want this filter, instead you likely want [dateOlderThanNow](#dateolderthannow)
+
+
 This works by parsing the specified property into a timestamp and comparing it to the current time minus the specified
 duration. The duration is specified in the `value` field. The duration syntax is based on golang's duration syntax.
 
@@ -166,6 +171,42 @@ EC2Image:
     property: CreationDate
     value: 1h
 ```
+
+### DateOlderThanNow
+
+!!! note
+    Typically this filter is used in conjunction with `invert: true` as the primary use case is to find resources
+    older than a date and **NOT** filtering them out, and instead filtering anything newer than now minus the duration
+    provided in the `value` field of the property.
+
+Unlike `dateOlderThan`, this filter uses the property's value, assumed to be a date, compared against the current now
+time modified by the duration provided in the value of the filter.
+
+The `value` in the filter must be a [golang time duration value,](https://www.geeksforgeeks.org/time-parseduration-function-in-golang-with-examples/) and it is
+added (if positive) or subtracted (if negative) from the current time and then the value of the property is compared
+to the modified time. **Note:** you almost always want the value to be negative.
+
+> ParseDuration parses a duration string. A duration string is a possibly signed sequence of decimal numbers, each with
+> optional fraction and a unit suffix, such as "300ms", "-1.5h" or "2h45m". Valid time units are "ns", "us" (or "µs"),
+> "ms", "s", "m", "h".
+
+#### Example with Invert
+
+```yaml
+IAMRole:
+  - type: dateOlderThanNow
+    property: LastUsedDate
+    value: -12h
+    invert: true
+```
+
+If the current time is `2024-10-15T00:00:00Z`, then the modified now time is `2024-10-14T12:00:00Z`.
+
+If the value of `LastUsedDate` is `2024-10-14T14:30:00Z` then the result of the filter will be `true`. It is **NOT**
+older than the modified time, and since the invert is set to true, anything **newer** to the modified time is filtered. 
+
+If the value of `LastUsedDate` is `2024-10-13T12:30:00Z` then the result of the filter will be `false` and the resource
+will be marked for removal.
 
 ## Properties
 
