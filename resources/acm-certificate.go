@@ -94,23 +94,23 @@ type ACMCertificate struct {
 	tags              []*acm.Tag
 }
 
-func (f *ACMCertificate) Remove(_ context.Context) error {
-	_, err := f.svc.DeleteCertificate(&acm.DeleteCertificateInput{
-		CertificateArn: f.certificateARN,
+func (r *ACMCertificate) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteCertificate(&acm.DeleteCertificateInput{
+		CertificateArn: r.certificateARN,
 	})
 
 	return err
 }
 
-func (f *ACMCertificate) Properties() types.Properties {
+func (r *ACMCertificate) Properties() types.Properties {
 	properties := types.NewProperties()
-	for _, tag := range f.tags {
+	for _, tag := range r.tags {
 		properties.SetTag(tag.Key, tag.Value)
 	}
-	properties.Set("DomainName", f.certificateDetail.DomainName)
+	properties.Set("DomainName", r.certificateDetail.DomainName)
 	return properties
 }
 
-func (f *ACMCertificate) String() string {
-	return *f.certificateARN
+func (r *ACMCertificate) String() string {
+	return *r.certificateARN
 }
