@@ -20,6 +20,8 @@ aws-nuke run --feature-flag "wait-on-dependencies"
 
 ## Available Feature Flags
 
+- `filter-groups` - This feature flag will cause aws-nuke to filter based on a grouping method which allows for AND'ing
+  filters together.
 - `wait-on-dependencies` - This feature flag will cause aws-nuke to wait for all resource type dependencies to be 
   deleted before deleting the next resource type.
 
@@ -33,3 +35,20 @@ The problem is that if you delete the IAM Role first, it will fail because it ha
 
 This feature flag will cause aws-nuke to wait for all resources of a given type to be deleted before deleting the next
 resource type. This will reduce the number of errors and unnecessary API calls.
+
+### filter-groups
+
+This feature flag will cause aws-nuke to filter resources based on a group method. This is useful when filters need
+to be AND'd together. For example, if you want to delete all resources that are tagged with `env:dev` and `namespace:test`
+you can use the following filter group:
+
+```yaml
+filters:
+  ResourceType:
+    - property: tag:env
+      value: dev
+      group: group1
+    - property: tag:namespace
+      value: test
+      group: group2
+```

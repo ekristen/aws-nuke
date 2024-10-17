@@ -68,6 +68,10 @@ func execute(c *cli.Context) error { //nolint:funlen,gocyclo
 		if slices.Contains(c.StringSlice("feature-flag"), "wait-on-dependencies") {
 			params.WaitOnDependencies = true
 		}
+
+		if slices.Contains(c.StringSlice("feature-flag"), "filter-groups") {
+			params.UseFilterGroups = true
+		}
 	}
 
 	// Parse the user supplied configuration file to pass in part to configure the nuke process.
