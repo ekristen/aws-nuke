@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/acm"
@@ -17,9 +18,10 @@ const ACMCertificateResource = "ACMCertificate"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ACMCertificateResource,
-		Scope:  nuke.Account,
-		Lister: &ACMCertificateLister{},
+		Name:     ACMCertificateResource,
+		Scope:    nuke.Account,
+		Resource: &ACMCertificate{},
+		Lister:   &ACMCertificateLister{},
 	})
 }
 
@@ -70,10 +72,12 @@ func (l *ACMCertificateLister) List(_ context.Context, o interface{}) ([]resourc
 			}
 
 			resources = append(resources, &ACMCertificate{
-				svc:               svc,
-				certificateARN:    certificate.CertificateArn,
-				certificateDetail: certificateDescribe.Certificate,
-				tags:              tagResp.Tags,
+				svc:        svc,
+				ARN:        certificate.CertificateArn,
+				DomainName: certificateDescribe.Certificate.DomainName,
+				Status:     certificateDescribe.Certificate.Status,
+				CreatedAt:  certificateDescribe.Certificate.CreatedAt,
+				Tags:       tagResp.Tags,
 			})
 		}
 
@@ -88,29 +92,26 @@ func (l *ACMCertificateLister) List(_ context.Context, o interface{}) ([]resourc
 }
 
 type ACMCertificate struct {
-	svc               *acm.ACM
-	certificateARN    *string
-	certificateDetail *acm.CertificateDetail
-	tags              []*acm.Tag
+	svc        *acm.ACM
+	ARN        *string    `description:"The ARN of the certificate"`
+	DomainName *string    `description:"The domain name of the certificate"`
+	Status     *string    `description:"The status of the certificate"`
+	CreatedAt  *time.Time `description:"The creation time of the certificate"`
+	Tags       []*acm.Tag `description:"The tags of the certificate"`
 }
 
 func (r *ACMCertificate) Remove(_ context.Context) error {
 	_, err := r.svc.DeleteCertificate(&acm.DeleteCertificateInput{
-		CertificateArn: r.certificateARN,
+		CertificateArn: r.ARN,
 	})
 
 	return err
 }
 
 func (r *ACMCertificate) Properties() types.Properties {
-	properties := types.NewProperties()
-	for _, tag := range r.tags {
-		properties.SetTag(tag.Key, tag.Value)
-	}
-	properties.Set("DomainName", r.certificateDetail.DomainName)
-	return properties
+	return types.NewPropertiesFromStruct(r)
 }
 
 func (r *ACMCertificate) String() string {
-	return *r.certificateARN
+	return *r.ARN
 }
