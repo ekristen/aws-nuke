@@ -52,7 +52,7 @@ func (l *EC2VPCEndpointConnectionLister) List(_ context.Context, o interface{}) 
 				VPCEndpointID: endpointConnection.VpcEndpointId,
 				State:         endpointConnection.VpcEndpointState,
 				Owner:         endpointConnection.VpcEndpointOwner,
-				tags:          endpointConnection.Tags,
+				Tags:          endpointConnection.Tags,
 			})
 		}
 
@@ -72,7 +72,7 @@ type EC2VPCEndpointConnection struct {
 	VPCEndpointID *string
 	State         *string
 	Owner         *string
-	tags          []*ec2.Tag
+	Tags          []*ec2.Tag
 }
 
 func (r *EC2VPCEndpointConnection) Filter() error {
