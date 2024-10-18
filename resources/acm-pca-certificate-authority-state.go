@@ -18,9 +18,10 @@ const ACMPCACertificateAuthorityStateResource = "ACMPCACertificateAuthorityState
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ACMPCACertificateAuthorityStateResource,
-		Scope:  nuke.Account,
-		Lister: &ACMPCACertificateAuthorityStateLister{},
+		Name:     ACMPCACertificateAuthorityStateResource,
+		Scope:    nuke.Account,
+		Resource: &ACMPCACertificateAuthorityState{},
+		Lister:   &ACMPCACertificateAuthorityStateLister{},
 	})
 }
 
@@ -66,8 +67,8 @@ func (l *ACMPCACertificateAuthorityStateLister) List(_ context.Context, o interf
 			resources = append(resources, &ACMPCACertificateAuthorityState{
 				svc:    svc,
 				ARN:    certificateAuthority.Arn,
-				status: certificateAuthority.Status,
-				tags:   tags,
+				Status: certificateAuthority.Status,
+				Tags:   tags,
 			})
 		}
 		if resp.NextToken == nil {
@@ -81,9 +82,9 @@ func (l *ACMPCACertificateAuthorityStateLister) List(_ context.Context, o interf
 
 type ACMPCACertificateAuthorityState struct {
 	svc    *acmpca.ACMPCA
-	ARN    *string
-	status *string
-	tags   []*acmpca.Tag
+	ARN    *string       `description:"The Amazon Resource Name (ARN) that was assigned to the CA when it was created."`
+	Status *string       `description:"The status of the CA, indicating whether it is active, creating, pending_certificate, disabled, or deleted."`
+	Tags   []*acmpca.Tag `description:"Tags associated with the CA."`
 }
 
 func (r *ACMPCACertificateAuthorityState) Remove(_ context.Context) error {
@@ -100,7 +101,7 @@ func (r *ACMPCACertificateAuthorityState) String() string {
 }
 
 func (r *ACMPCACertificateAuthorityState) Filter() error {
-	switch *r.status {
+	switch *r.Status {
 	case "CREATING":
 		return fmt.Errorf("available for deletion")
 	case "PENDING_CERTIFICATE":
@@ -115,12 +116,5 @@ func (r *ACMPCACertificateAuthorityState) Filter() error {
 }
 
 func (r *ACMPCACertificateAuthorityState) Properties() types.Properties {
-	properties := types.NewProperties()
-	for _, tag := range r.tags {
-		properties.SetTag(tag.Key, tag.Value)
-	}
-	properties.
-		Set("ARN", r.ARN).
-		Set("Status", r.status)
-	return properties
+	return types.NewPropertiesFromStruct(r)
 }

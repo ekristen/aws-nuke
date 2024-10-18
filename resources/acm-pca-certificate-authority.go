@@ -21,6 +21,7 @@ func init() {
 	registry.Register(&registry.Registration{
 		Name:                ACMPCACertificateAuthorityResource,
 		Scope:               nuke.Account,
+		Resource:            &ACMPCACertificateAuthority{},
 		Lister:              &ACMPCACertificateAuthorityLister{},
 		AlternativeResource: "AWS::ACMPCA::CertificateAuthority",
 	})
@@ -68,8 +69,8 @@ func (l *ACMPCACertificateAuthorityLister) List(_ context.Context, o interface{}
 			resources = append(resources, &ACMPCACertificateAuthority{
 				svc:    svc,
 				ARN:    certificateAuthority.Arn,
-				status: certificateAuthority.Status,
-				tags:   tags,
+				Status: certificateAuthority.Status,
+				Tags:   tags,
 			})
 		}
 		if resp.NextToken == nil {
@@ -83,9 +84,9 @@ func (l *ACMPCACertificateAuthorityLister) List(_ context.Context, o interface{}
 
 type ACMPCACertificateAuthority struct {
 	svc    *acmpca.ACMPCA
-	ARN    *string
-	status *string
-	tags   []*acmpca.Tag
+	ARN    *string       `description:"The Amazon Resource Name (ARN) of the private CA."`
+	Status *string       `description:"Status of the private CA."`
+	Tags   []*acmpca.Tag `description:"Tags attached to the private CA."`
 }
 
 func (r *ACMPCACertificateAuthority) Remove(_ context.Context) error {
@@ -101,7 +102,7 @@ func (r *ACMPCACertificateAuthority) String() string {
 }
 
 func (r *ACMPCACertificateAuthority) Filter() error {
-	if *r.status == "DELETED" {
+	if *r.Status == "DELETED" {
 		return fmt.Errorf("already deleted")
 	} else {
 		return nil
@@ -109,12 +110,5 @@ func (r *ACMPCACertificateAuthority) Filter() error {
 }
 
 func (r *ACMPCACertificateAuthority) Properties() types.Properties {
-	properties := types.NewProperties()
-	for _, tag := range r.tags {
-		properties.SetTag(tag.Key, tag.Value)
-	}
-	properties.
-		Set("ARN", r.ARN).
-		Set("Status", r.status)
-	return properties
+	return types.NewPropertiesFromStruct(r)
 }
