@@ -104,6 +104,8 @@ nav:
   - Resources:
     - Overview: resources/overview.md
     - ACM Certificate: resources/acm-certificate.md
+    - ACMpca Certificate Authority State: resources/acmpca-certificate-authority-state.md
+    - ACMpca Certificate Authority: resources/acmpca-certificate-authority.md
     - Access Analyzer Archive Rule: resources/access-analyzer-archive-rule.md
     - Access Analyzer: resources/access-analyzer.md
     - Cognito User Pool: resources/cognito-user-pool.md
