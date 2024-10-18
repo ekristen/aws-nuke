@@ -15,19 +15,20 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-const ACMPCACertificateAuthorityStateResource = "ACMPCACertificateAuthorityState"
+const ACMPCACertificateAuthorityResource = "ACMPCACertificateAuthority"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ACMPCACertificateAuthorityStateResource,
-		Scope:  nuke.Account,
-		Lister: &ACMPCACertificateAuthorityStateLister{},
+		Name:                ACMPCACertificateAuthorityResource,
+		Scope:               nuke.Account,
+		Lister:              &ACMPCACertificateAuthorityLister{},
+		AlternativeResource: "AWS::ACMPCA::CertificateAuthority",
 	})
 }
 
-type ACMPCACertificateAuthorityStateLister struct{}
+type ACMPCACertificateAuthorityLister struct{}
 
-func (l *ACMPCACertificateAuthorityStateLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *ACMPCACertificateAuthorityLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 	svc := acmpca.New(opts.Session)
 
@@ -64,7 +65,7 @@ func (l *ACMPCACertificateAuthorityStateLister) List(_ context.Context, o interf
 				tagParams.NextToken = tagResp.NextToken
 			}
 
-			resources = append(resources, &ACMPCACertificateAuthorityState{
+			resources = append(resources, &ACMPCACertificateAuthority{
 				svc:    svc,
 				ARN:    certificateAuthority.Arn,
 				status: certificateAuthority.Status,
@@ -80,48 +81,40 @@ func (l *ACMPCACertificateAuthorityStateLister) List(_ context.Context, o interf
 	return resources, nil
 }
 
-type ACMPCACertificateAuthorityState struct {
+type ACMPCACertificateAuthority struct {
 	svc    *acmpca.ACMPCA
 	ARN    *string
 	status *string
 	tags   []*acmpca.Tag
 }
 
-func (f *ACMPCACertificateAuthorityState) Remove(_ context.Context) error {
-	_, err := f.svc.UpdateCertificateAuthority(&acmpca.UpdateCertificateAuthorityInput{
-		CertificateAuthorityArn: f.ARN,
-		Status:                  aws.String("DISABLED"),
+func (r *ACMPCACertificateAuthority) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteCertificateAuthority(&acmpca.DeleteCertificateAuthorityInput{
+		CertificateAuthorityArn: r.ARN,
 	})
 
 	return err
 }
 
-func (f *ACMPCACertificateAuthorityState) String() string {
-	return *f.ARN
+func (r *ACMPCACertificateAuthority) String() string {
+	return *r.ARN
 }
 
-func (f *ACMPCACertificateAuthorityState) Filter() error {
-	switch *f.status {
-	case "CREATING":
-		return fmt.Errorf("available for deletion")
-	case "PENDING_CERTIFICATE":
-		return fmt.Errorf("available for deletion")
-	case "DISABLED":
-		return fmt.Errorf("available for deletion")
-	case "DELETED":
+func (r *ACMPCACertificateAuthority) Filter() error {
+	if *r.status == "DELETED" {
 		return fmt.Errorf("already deleted")
-	default:
+	} else {
 		return nil
 	}
 }
 
-func (f *ACMPCACertificateAuthorityState) Properties() types.Properties {
+func (r *ACMPCACertificateAuthority) Properties() types.Properties {
 	properties := types.NewProperties()
-	for _, tag := range f.tags {
+	for _, tag := range r.tags {
 		properties.SetTag(tag.Key, tag.Value)
 	}
 	properties.
-		Set("ARN", f.ARN).
-		Set("Status", f.status)
+		Set("ARN", r.ARN).
+		Set("Status", r.status)
 	return properties
 }
