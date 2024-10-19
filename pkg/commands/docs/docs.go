@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"embed"
 	"fmt"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 	"html/template"
 	"os"
 	"path/filepath"
@@ -14,6 +12,9 @@ import (
 	"strings"
 
 	"github.com/urfave/cli/v2"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 
 	"github.com/ekristen/libnuke/pkg/docs"
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -37,7 +38,7 @@ type TemplateData struct {
 	AlternativeResource string
 }
 
-func execute(c *cli.Context) error {
+func execute(c *cli.Context) error { //nolint:funlen,gocyclo
 	var regs registry.Registrations
 
 	if c.String("resource") == "all" {
@@ -88,7 +89,7 @@ func execute(c *cli.Context) error {
 		if c.Bool("write-to-disk") {
 			err := os.WriteFile(
 				fmt.Sprintf("docs/resources/%s.md",
-					KebabCase(strings.ToLower(SplitCamelCase(reg.Name)))), buf.Bytes(), 0644)
+					KebabCase(strings.ToLower(SplitCamelCase(reg.Name)))), buf.Bytes(), 0600)
 			if err != nil {
 				return err
 			}
@@ -143,7 +144,7 @@ func execute(c *cli.Context) error {
 	newMkdocs := updateResources(string(mkdocs), newResources)
 
 	if c.Bool("write-to-disk") {
-		err := os.WriteFile("mkdocs.yml", []byte(newMkdocs), 0644)
+		err := os.WriteFile("mkdocs.yml", []byte(newMkdocs), 0600)
 		if err != nil {
 			return err
 		}
@@ -210,7 +211,7 @@ func toLower(in string) string {
 func SplitCamelCase(input string) string {
 	// Regular expression to find boundaries between lowercase and uppercase letters,
 	// and between sequences of uppercase letters followed by lowercase letters.
-	re := regexp.MustCompile(`([a-z])([A-Z0-9])|([A-Z]+)([A-Z][a-z])|([0-9])([A-Z])`)
+	re := regexp.MustCompile(`([a-z])([A-Z0-9])|([A-Z]+)([A-Z][a-z])|(\d)([A-Z])`)
 	// Replace boundaries with a space followed by the uppercase letter.
 	return re.ReplaceAllString(input, "${1}${3}${5} ${2}${4}${6}")
 }

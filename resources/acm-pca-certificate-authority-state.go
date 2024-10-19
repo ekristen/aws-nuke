@@ -83,7 +83,7 @@ func (l *ACMPCACertificateAuthorityStateLister) List(_ context.Context, o interf
 type ACMPCACertificateAuthorityState struct {
 	svc    *acmpca.ACMPCA
 	ARN    *string       `description:"The Amazon Resource Name (ARN) that was assigned to the CA when it was created."`
-	Status *string       `description:"The status of the CA, indicating whether it is active, creating, pending_certificate, disabled, or deleted."`
+	Status *string       `description:"The status of the CA, indicating whether it is active, creating, pending_certificate, disabled, or deleted."` //nolint:lll
 	Tags   []*acmpca.Tag `description:"Tags associated with the CA."`
 }
 

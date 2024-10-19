@@ -1,10 +1,12 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/service/acmpca"
+	"testing"
+
 	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/assert"
-	"testing"
+
+	"github.com/aws/aws-sdk-go/service/acmpca"
 )
 
 func Test_Mock_ACMPCACertificateAuthority_Properties(t *testing.T) {
