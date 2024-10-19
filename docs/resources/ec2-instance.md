@@ -13,9 +13,6 @@ EC2Instance
 
 ## Properties
 
-Properties are what [Filters](../config-filtering.md) are written against in your configuration. You use the property
-names to write filters for what you want to **keep** and omit from the nuke process.
-
 
 - `Identifier`: The instance ID (e.g. i-1234567890abcdef0)
 - `ImageIdentifier`: The ID of the AMI used to launch the instance
@@ -24,6 +21,10 @@ names to write filters for what you want to **keep** and omit from the nuke proc
 - `LaunchTime`: The time the instance was launched
 - `tag:&lt;key&gt;:`: This resource has tags with property `Tags`. These are key/value pairs that are
 	added as their own property with the prefix of `tag:` (e.g. [tag:example: &#34;value&#34;]) 
+
+!!! note - Using Properties
+    Properties are what [Filters](../config-filtering.md) are written against in your configuration. You use the property
+    names to write filters for what you want to **keep** and omit from the nuke process.
 
 ### String Property
 
