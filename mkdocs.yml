@@ -110,6 +110,7 @@ nav:
     - Access Analyzer: resources/access-analyzer.md
     - Cognito User Pool: resources/cognito-user-pool.md
     - EC2 Image: resources/ec2-image.md
+    - EC2 Instance: resources/ec2-instance.md
     - IAM Role: resources/iam-role.md
     - S3 Bucket: resources/s3-bucket.md
     - S3 Object: resources/s3-object.md
