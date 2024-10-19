@@ -34,7 +34,7 @@ names to write filters for what you want to **keep** and omit from the nuke proc
 {{- end }}
 {{- end }}
 
-## String Property
+### String Property
 
 The string representation of a resource is generally the value of the Name, ID or ARN field of the resource. Not all
 resources support properties. To write a filter against the string representation, simply omit the `property` field in
@@ -46,12 +46,18 @@ The string value is always what is used in the output of the log format when a r
 ## Settings
 {{ range .Settings }}
 - `{{ . }}`
-{{ end -}}
+{{- end }}
 
 {{ range .Settings }}
 ### {{ . }}
 
-Description
+!!! note
+    There is currently no description for this setting. Often times settings are fairly self-explanatory. However, we
+    are working on adding descriptions for all settings.
+
+```text
+{{ . }}
+```
 
 {{ end }}
 {{- end -}}

@@ -210,9 +210,9 @@ func toLower(in string) string {
 func SplitCamelCase(input string) string {
 	// Regular expression to find boundaries between lowercase and uppercase letters,
 	// and between sequences of uppercase letters followed by lowercase letters.
-	re := regexp.MustCompile("([a-z])([A-Z])|([A-Z]+)([A-Z][a-z])")
+	re := regexp.MustCompile(`([a-z])([A-Z0-9])|([A-Z]+)([A-Z][a-z])|([0-9])([A-Z])`)
 	// Replace boundaries with a space followed by the uppercase letter.
-	return re.ReplaceAllString(input, "${1}${3} ${2}${4}")
+	return re.ReplaceAllString(input, "${1}${3}${5} ${2}${4}${6}")
 }
 
 // Function to update the 'Resources' section with new list values
