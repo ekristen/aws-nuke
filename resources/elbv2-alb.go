@@ -31,6 +31,9 @@ func init() {
 		Name:   ELBv2Resource,
 		Scope:  nuke.Account,
 		Lister: &ELBv2Lister{},
+		Settings: []string{
+			"DisableDeletionProtection",
+		},
 	})
 }
 
