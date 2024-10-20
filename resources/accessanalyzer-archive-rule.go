@@ -12,42 +12,41 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-const AccessAnalyzerArchiveRuleResource = "ArchiveRule"
+const AccessAnalyzerArchiveRuleResource = "AccessAnalyzerArchiveRule"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   AccessAnalyzerArchiveRuleResource,
-		Scope:  nuke.Account,
-		Lister: &AccessAnalyzerArchiveRuleLister{},
+		Name:     AccessAnalyzerArchiveRuleResource,
+		Scope:    nuke.Account,
+		Resource: &ArchiveRule{},
+		Lister:   &AccessAnalyzerArchiveRuleLister{},
+		DeprecatedAliases: []string{
+			"ArchiveRule",
+		},
 	})
 }
 
 type ArchiveRule struct {
 	svc          *accessanalyzer.AccessAnalyzer
-	ruleName     string
-	analyzerName string
+	RuleName     *string `description:"The name of the archive rule"`
+	AnalyzerName *string `description:"The name of the analyzer the rule is associated with"`
 }
 
-func (a *ArchiveRule) Remove(_ context.Context) error {
-	_, err := a.svc.DeleteArchiveRule(&accessanalyzer.DeleteArchiveRuleInput{
-		AnalyzerName: &a.analyzerName,
-		RuleName:     &a.ruleName,
+func (r *ArchiveRule) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteArchiveRule(&accessanalyzer.DeleteArchiveRuleInput{
+		AnalyzerName: r.AnalyzerName,
+		RuleName:     r.RuleName,
 	})
 
 	return err
 }
 
-func (a *ArchiveRule) Properties() types.Properties {
-	properties := types.NewProperties()
-
-	properties.Set("RuleName", a.ruleName)
-	properties.Set("AnalyzerName", a.analyzerName)
-
-	return properties
+func (r *ArchiveRule) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
 
-func (a *ArchiveRule) String() string {
-	return a.ruleName
+func (r *ArchiveRule) String() string {
+	return *r.RuleName
 }
 
 // ---------------------------
@@ -74,7 +73,7 @@ func (l *AccessAnalyzerArchiveRuleLister) List(ctx context.Context, o interface{
 		}
 
 		params := &accessanalyzer.ListArchiveRulesInput{
-			AnalyzerName: &a.name,
+			AnalyzerName: a.Name,
 		}
 
 		err = svc.ListArchiveRulesPages(params,
@@ -82,8 +81,8 @@ func (l *AccessAnalyzerArchiveRuleLister) List(ctx context.Context, o interface{
 				for _, archiveRule := range page.ArchiveRules {
 					resources = append(resources, &ArchiveRule{
 						svc:          svc,
-						ruleName:     *archiveRule.RuleName,
-						analyzerName: a.name,
+						RuleName:     archiveRule.RuleName,
+						AnalyzerName: a.Name,
 					})
 				}
 				return true

@@ -24,6 +24,9 @@ func init() {
 		Name:   QuickSightSubscriptionResource,
 		Scope:  nuke.Account,
 		Lister: &QuickSightSubscriptionLister{},
+		Settings: []string{
+			"DisableTerminationProtection",
+		},
 	})
 }
 
@@ -33,12 +36,12 @@ type QuickSightSubscriptionLister struct {
 
 type QuickSightSubscription struct {
 	svc               quicksightiface.QuickSightAPI
+	settings          *libsettings.Setting
 	accountID         *string
 	name              *string
 	notificationEmail *string
 	edition           *string
 	status            *string
-	settings          *libsettings.Setting
 }
 
 func (l *QuickSightSubscriptionLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
