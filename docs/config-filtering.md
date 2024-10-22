@@ -54,21 +54,23 @@ In this example, we are ignoring all resources that have the tag `aws-nuke` set 
 a specific instance by its `id`. When the `EC2Instance` resource is processed, it will have both filters applied. These
 
 ```yaml
-__global__:
-  - property: tag:aws-nuke
-    value: "ignore"
+filters:
+  __global__:
+    - property: tag:aws-nuke
+      value: "ignore"
 
-EC2Instance:
-  - "i-01b489457a60298dd"
+  EC2Instance:
+    - "i-01b489457a60298dd"
 ```
 
 This will ultimately render as the following filters for the `EC2Instance` resource:
 
 ```yaml
-EC2Instance:
-  - "i-01b489457a60298dd"
-  - property: tag:aws-nuke
-    value: "ignore"
+filters:
+  EC2Instance:
+    - "i-01b489457a60298dd"
+    - property: tag:aws-nuke
+      value: "ignore"
 ```
 
 ## Types
@@ -89,9 +91,10 @@ These types can be used to simplify the configuration. For example, it is possib
 single user by using `glob`:
 
 ```yaml
-IAMUserAccessKey:
-- type: glob
-  value: "admin -> *"
+filters:
+  IAMUserAccessKey:
+  - type: glob
+    value: "admin -> *"
 ```
 
 ### Exact
@@ -101,10 +104,11 @@ The identifier must exactly match the given string. **This is the default.**
 Exact is just that, an exact match to a resource. The following examples are identical for the `exact` filter.
 
 ```yaml
-IAMUser:
-- AWSNukeUser
-- type: exact
-  value: AWSNukeUser
+filters:
+  IAMUser:
+  - AWSNukeUser
+  - type: exact
+    value: AWSNukeUser
 ```
 
 ### Contains
@@ -112,9 +116,10 @@ IAMUser:
 The `contains` filter is a simple string contains match. The following examples are identical for the `contains` filter.
 
 ```yaml
-IAMUser:
-  - type: contains
-    value: Nuke
+filters:
+  IAMUser:
+    - type: contains
+      value: Nuke
 ```
 
 ### Glob
@@ -124,9 +129,10 @@ wildcards like `*` and `?`. Note that globbing is designed for file paths, so th
 separator (`/`). Details about the glob pattern can be found in the [library documentation](https://godoc.org/github.com/mb0/glob)
 
 ```yaml
-IAMUser:
-  - type: glob
-    value: "AWSNuke*"
+filters:
+  IAMUser:
+    - type: glob
+      value: "AWSNuke*"
 ```
 
 ### Regex
@@ -135,9 +141,10 @@ The identifier must match against the given regular expression. Details about th
 in the [library documentation](https://golang.org/pkg/regexp/syntax/).
 
 ```yaml
-IAMUser:
-  - type: regex
-    value: "AWSNuke.*"
+filters:
+  IAMUser:
+    - type: regex
+      value: "AWSNuke.*"
 ```
 
 ### DateOlderThan
@@ -166,10 +173,11 @@ The value from the property is parsed as a timestamp and the following are the s
 In the follow example we are filtering EC2 Images that have a `CreationDate` older than 1 hour.
 
 ```yaml
-EC2Image:
-  - type: dateOlderThan
-    property: CreationDate
-    value: 1h
+filters:
+  EC2Image:
+    - type: dateOlderThan
+      property: CreationDate
+      value: 1h
 ```
 
 ### DateOlderThanNow
@@ -193,11 +201,12 @@ to the modified time. **Note:** you almost always want the value to be negative.
 #### Example with Invert
 
 ```yaml
-IAMRole:
-  - type: dateOlderThanNow
-    property: LastUsedDate
-    value: -12h
-    invert: true
+filters:
+  IAMRole:
+    - type: dateOlderThanNow
+      property: LastUsedDate
+      value: -12h
+      invert: true
 ```
 
 If the current time is `2024-10-15T00:00:00Z`, then the modified now time is `2024-10-14T12:00:00Z`.
@@ -227,9 +236,10 @@ These types can be used to simplify the configuration. For example, it is possib
 of a single user:
 
 ```yaml
-IAMUserAccessKey:
-  - property: UserName
-    value: "admin"
+filters:
+  IAMUserAccessKey:
+    - property: UserName
+      value: "admin"
 ```
 
 ## Inverting
@@ -237,10 +247,11 @@ IAMUserAccessKey:
 Any filter result can be inverted by using `invert: true`, for example:
 
 ```yaml
-CloudFormationStack:
-  - property: Name
-    value: "foo"
-    invert: true
+filters:
+  CloudFormationStack:
+    - property: Name
+      value: "foo"
+      invert: true
 ```
 
 In this case *any* CloudFormationStack ***but*** the ones called "foo" will be filtered. Be aware that *aws-nuke*
@@ -252,10 +263,11 @@ It is also possible to use Filter Properties and Filter Types together. For exam
 specific TLD:
 
 ```yaml
-Route53HostedZone:
-  - property: Name
-    type: glob
-    value: "*.rebuy.cloud."
+filters:
+  Route53HostedZone:
+    - property: Name
+      type: glob
+      value: "*.rebuy.cloud."
 ```
 
 ## Account Level
