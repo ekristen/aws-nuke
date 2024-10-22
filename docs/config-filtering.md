@@ -21,6 +21,17 @@ against some resources and not others.
 Global works by taking all filters defined under `__global__` and prepends to any filters found for a resource type. If
 a resource does NOT have any filters defined, the `__global__` ones will still be used.
 
+Filters can only be defined under [presets](#presets) or [account level](#account-level) configurations.
+
+```yaml
+presets:
+  example:
+    filters:
+      __global__:
+        - property: tag:Name
+          value: "aws-nuke"
+```
+
 ## Filter Groups
 
 !!! important
@@ -32,14 +43,16 @@ if you want to delete all resources that are tagged with `env:dev` and `namespac
 group:
 
 ```yaml
-filters:
-  ResourceType:
-    - property: tag:env
-      value: dev
-      group: group1
-    - property: tag:namespace
-      value: test
-      group: group2
+presets:
+  example:
+    filters:
+      ResourceType:
+        - property: tag:env
+          value: dev
+          group: group1
+        - property: tag:namespace
+          value: test
+          group: group2
 ```
 
 In this example, the `group1` and `group2` filters are AND'd together. This means that a resource must match both filters
@@ -54,21 +67,26 @@ In this example, we are ignoring all resources that have the tag `aws-nuke` set 
 a specific instance by its `id`. When the `EC2Instance` resource is processed, it will have both filters applied. These
 
 ```yaml
-__global__:
-  - property: tag:aws-nuke
-    value: "ignore"
-
-EC2Instance:
-  - "i-01b489457a60298dd"
+presets:
+  example:
+    filters:
+      __global__:
+        - property: tag:aws-nuke
+          value: "ignore"
+      EC2Instance:
+        - "i-01b489457a60298dd"
 ```
 
 This will ultimately render as the following filters for the `EC2Instance` resource:
 
 ```yaml
-EC2Instance:
-  - "i-01b489457a60298dd"
-  - property: tag:aws-nuke
-    value: "ignore"
+presets:
+  example:
+    filters:
+      EC2Instance:
+        - "i-01b489457a60298dd"
+        - property: tag:aws-nuke
+          value: "ignore"
 ```
 
 ## Types
@@ -89,9 +107,12 @@ These types can be used to simplify the configuration. For example, it is possib
 single user by using `glob`:
 
 ```yaml
-IAMUserAccessKey:
-- type: glob
-  value: "admin -> *"
+presets:
+  example:
+    filters:
+      IAMUserAccessKey:
+        - type: glob
+          value: "admin -> *"
 ```
 
 ### Exact
@@ -101,10 +122,13 @@ The identifier must exactly match the given string. **This is the default.**
 Exact is just that, an exact match to a resource. The following examples are identical for the `exact` filter.
 
 ```yaml
-IAMUser:
-- AWSNukeUser
-- type: exact
-  value: AWSNukeUser
+presets:
+  example:
+    filters:
+      IAMUser:
+        - AWSNukeUser
+        - type: exact
+          value: AWSNukeUser
 ```
 
 ### Contains
@@ -112,9 +136,12 @@ IAMUser:
 The `contains` filter is a simple string contains match. The following examples are identical for the `contains` filter.
 
 ```yaml
-IAMUser:
-  - type: contains
-    value: Nuke
+presets:
+  example:
+    filters:
+      IAMUser:
+        - type: contains
+          value: Nuke
 ```
 
 ### Glob
@@ -124,9 +151,12 @@ wildcards like `*` and `?`. Note that globbing is designed for file paths, so th
 separator (`/`). Details about the glob pattern can be found in the [library documentation](https://godoc.org/github.com/mb0/glob)
 
 ```yaml
-IAMUser:
-  - type: glob
-    value: "AWSNuke*"
+presets:
+  example:
+    filters:
+      IAMUser:
+        - type: glob
+          value: "AWSNuke*"
 ```
 
 ### Regex
@@ -135,9 +165,12 @@ The identifier must match against the given regular expression. Details about th
 in the [library documentation](https://golang.org/pkg/regexp/syntax/).
 
 ```yaml
-IAMUser:
-  - type: regex
-    value: "AWSNuke.*"
+presets:
+  example:
+    filters:
+      IAMUser:
+        - type: regex
+          value: "AWSNuke.*"
 ```
 
 ### DateOlderThan
@@ -166,10 +199,13 @@ The value from the property is parsed as a timestamp and the following are the s
 In the follow example we are filtering EC2 Images that have a `CreationDate` older than 1 hour.
 
 ```yaml
-EC2Image:
-  - type: dateOlderThan
-    property: CreationDate
-    value: 1h
+presets:
+  example:
+    filters:
+      EC2Image:
+        - type: dateOlderThan
+          property: CreationDate
+          value: 1h
 ```
 
 ### DateOlderThanNow
@@ -193,11 +229,14 @@ to the modified time. **Note:** you almost always want the value to be negative.
 #### Example with Invert
 
 ```yaml
-IAMRole:
-  - type: dateOlderThanNow
-    property: LastUsedDate
-    value: -12h
-    invert: true
+presets:
+  example:
+    filters:
+      IAMRole:
+        - type: dateOlderThanNow
+          property: LastUsedDate
+          value: -12h
+          invert: true
 ```
 
 If the current time is `2024-10-15T00:00:00Z`, then the modified now time is `2024-10-14T12:00:00Z`.
@@ -227,9 +266,12 @@ These types can be used to simplify the configuration. For example, it is possib
 of a single user:
 
 ```yaml
-IAMUserAccessKey:
-  - property: UserName
-    value: "admin"
+presets:
+  example:
+    filters:
+      IAMUserAccessKey:
+        - property: UserName
+          value: "admin"
 ```
 
 ## Inverting
@@ -237,10 +279,13 @@ IAMUserAccessKey:
 Any filter result can be inverted by using `invert: true`, for example:
 
 ```yaml
-CloudFormationStack:
-  - property: Name
-    value: "foo"
-    invert: true
+presets:
+  example:
+    filters:
+      CloudFormationStack:
+        - property: Name
+          value: "foo"
+          invert: true
 ```
 
 In this case *any* CloudFormationStack ***but*** the ones called "foo" will be filtered. Be aware that *aws-nuke*
@@ -252,10 +297,13 @@ It is also possible to use Filter Properties and Filter Types together. For exam
 specific TLD:
 
 ```yaml
-Route53HostedZone:
-  - property: Name
-    type: glob
-    value: "*.rebuy.cloud."
+presets:
+  example:
+    filters:
+      Route53HostedZone:
+        - property: Name
+          type: glob
+          value: "*.rebuy.cloud."
 ```
 
 ## Account Level
@@ -366,7 +414,7 @@ account-blocklist:
 resource-types:
   # Specifying this in the configuration will ensure that only these three
   # resources are targeted by aws-nuke during it's run.
-  targets:
+  includes:
     - S3Object
     - S3Bucket
     - IAMRole
@@ -392,8 +440,8 @@ accounts:
   555133742: {}
 ```
 
-If targets are specified in multiple places (e.g. CLI and account specific), then a resource type must be specified in
-all places. In other words each configuration limits the previous ones.
+If `includes` are specified in multiple places (e.g. CLI and account specific), then a resource type must be specified
+in all places. In other words each configuration limits the previous ones.
 
 If an exclude is used, then all its resource types will not be deleted.
 
@@ -405,5 +453,5 @@ aws-nuke resource-types
 
 It is also possible to include and exclude resources using the command line arguments:
 
-- The `--target` flag limits nuking to the specified resource types.
+- The `--include` flag limits nuking to the specified resource types.
 - The `--exclude` flag prevent nuking of the specified resource types.
