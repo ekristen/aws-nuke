@@ -15,18 +15,11 @@ import (
 
 const AccessAnalyzerResource = "AccessAnalyzer"
 
-type AccessAnalyzer struct {
-	svc    *accessanalyzer.AccessAnalyzer
-	arn    string
-	name   string
-	status string
-	tags   map[string]*string
-}
-
 func init() {
 	registry.Register(&registry.Registration{
 		Name:                AccessAnalyzerResource,
 		Scope:               nuke.Account,
+		Resource:            &AccessAnalyzer{},
 		Lister:              &AccessAnalyzerLister{},
 		AlternativeResource: "AWS::AccessAnalyzer::Analyzer",
 	})
@@ -48,10 +41,10 @@ func (l *AccessAnalyzerLister) List(_ context.Context, o interface{}) ([]resourc
 			for _, analyzer := range page.Analyzers {
 				resources = append(resources, &AccessAnalyzer{
 					svc:    svc,
-					arn:    *analyzer.Arn,
-					name:   *analyzer.Name,
-					status: *analyzer.Status,
-					tags:   analyzer.Tags,
+					ARN:    analyzer.Arn,
+					Name:   analyzer.Name,
+					Status: analyzer.Status,
+					Tags:   analyzer.Tags,
 				})
 			}
 			return true
@@ -62,25 +55,24 @@ func (l *AccessAnalyzerLister) List(_ context.Context, o interface{}) ([]resourc
 	return resources, nil
 }
 
-func (a *AccessAnalyzer) Remove(_ context.Context) error {
-	_, err := a.svc.DeleteAnalyzer(&accessanalyzer.DeleteAnalyzerInput{AnalyzerName: &a.name})
+type AccessAnalyzer struct {
+	svc    *accessanalyzer.AccessAnalyzer
+	ARN    *string            `description:"The ARN of the analyzer"`
+	Name   *string            `description:"The name of the analyzer"`
+	Status *string            `description:"The status of the analyzer"`
+	Tags   map[string]*string `description:"The tags of the analyzer"`
+}
+
+func (r *AccessAnalyzer) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteAnalyzer(&accessanalyzer.DeleteAnalyzerInput{AnalyzerName: r.Name})
 
 	return err
 }
 
-func (a *AccessAnalyzer) Properties() types.Properties {
-	properties := types.NewProperties()
-
-	properties.Set("ARN", a.arn)
-	properties.Set("Name", a.name)
-	properties.Set("Status", a.status)
-	for k, v := range a.tags {
-		properties.SetTag(&k, v)
-	}
-
-	return properties
+func (r *AccessAnalyzer) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
 
-func (a *AccessAnalyzer) String() string {
-	return a.name
+func (r *AccessAnalyzer) String() string {
+	return *r.Name
 }

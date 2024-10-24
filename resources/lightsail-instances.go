@@ -22,6 +22,9 @@ func init() {
 		Name:   LightsailInstanceResource,
 		Scope:  nuke.Account,
 		Lister: &LightsailInstanceLister{},
+		Settings: []string{
+			"ForceDeleteAddOns",
+		},
 	})
 }
 

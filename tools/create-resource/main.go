@@ -30,9 +30,10 @@ const {{.Combined}}Resource = "{{.Combined}}"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   {{.Combined}}Resource,
-		Scope:  nuke.Account,
-		Lister: &{{.Combined}}Lister{},
+		Name:     {{.Combined}}Resource,
+		Scope:    nuke.Account,
+		Resource: &{{.Combined}}{},
+		Lister:   &{{.Combined}}Lister{},
 	})
 }
 
@@ -53,8 +54,8 @@ func (l *{{.Combined}}Lister) List(_ context.Context, o interface{}) ([]resource
 	for _, p := range res.{{.ResourceTypeTitle}}s {
 		resources = append(resources, &{{.Combined}}{
 			svc:  svc,
-			id:   p.Id,
-			tags: p.Tags,
+			ID:   p.Id,
+			Tags: p.Tags,
 		})
 	}
 
@@ -63,8 +64,8 @@ func (l *{{.Combined}}Lister) List(_ context.Context, o interface{}) ([]resource
 
 type {{.Combined}} struct {
 	svc  *{{.Service}}.{{.ServiceTitle}}
-	id   *string
-	tags []*{{.Service}}.Tag
+	ID   *string
+	Tags []*{{.Service}}.Tag
 }
 
 func (r *{{.Combined}}) Remove(_ context.Context) error {
@@ -75,15 +76,11 @@ func (r *{{.Combined}}) Remove(_ context.Context) error {
 }
 
 func (r *{{.Combined}}) Properties() types.Properties {
-	properties := types.NewProperties()
-	for _, tag := range f.tags {
-		properties.SetTag(tag.Key, tag.Value)
-	}
-	return properties
+	return types.NewPropertiesFromStruct(r)
 }
 
 func (r *{{.Combined}}) String() string {
-	return *r.id
+	return *r.ID
 }
 `
 
