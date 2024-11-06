@@ -168,6 +168,12 @@ func Test_Mock_KMSKey_Filter(t *testing.T) {
 			error:   "is already in PendingDeletion state",
 		},
 		{
+			name:    "pending-replica-deletion-key",
+			state:   kms.KeyStatePendingReplicaDeletion,
+			manager: kms.KeyManagerTypeCustomer,
+			error:   "is already in PendingReplicaDeletion state",
+		},
+		{
 			name:    "enabled-key",
 			state:   kms.KeyStateEnabled,
 			manager: kms.KeyManagerTypeCustomer,
