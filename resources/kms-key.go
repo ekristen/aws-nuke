@@ -134,8 +134,8 @@ type KMSKey struct {
 }
 
 func (r *KMSKey) Filter() error {
-	if ptr.ToString(r.State) == kms.KeyStatePendingDeletion {
-		return fmt.Errorf("is already in PendingDeletion state")
+	if state := ptr.ToString(r.State); state == kms.KeyStatePendingDeletion || state == kms.KeyStatePendingReplicaDeletion {
+		return fmt.Errorf("is already in %v state", state)
 	}
 
 	if ptr.ToString(r.Manager) == kms.KeyManagerTypeAws {
