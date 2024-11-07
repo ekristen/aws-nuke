@@ -3,6 +3,7 @@ package awsutil
 import (
 	"context"
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -21,8 +22,10 @@ import (
 func (c *Credentials) NewConfig(ctx context.Context, region, serviceType string) (*aws.Config, error) {
 	log.Debugf("creating new config in %s for %s", region, serviceType)
 
+	var global bool
 	if region == GlobalRegionID {
 		region = "us-east-1"
+		global = true
 	}
 
 	var cfg *aws.Config
@@ -66,6 +69,11 @@ func (c *Credentials) NewConfig(ctx context.Context, region, serviceType string)
 
 		cfgCopy := root.Copy()
 		cfgCopy.Region = region
+		if global {
+			cfgCopy.APIOptions = append(cfgCopy.APIOptions, func(stack *middleware.Stack) error {
+				return stack.Initialize.Add(SkipGlobal{}, middleware.After)
+			})
+		}
 		cfg = &cfgCopy
 	}
 
@@ -80,10 +88,10 @@ func (c *Credentials) rootConfig(ctx context.Context) (*aws.Config, error) {
 	var opts []func(*config.LoadOptions) error
 	opts = append(opts, config.WithAPIOptions([]func(*middleware.Stack) error{
 		func(stack *middleware.Stack) error {
-			if err := stack.Finalize.Add(traceRequest{}, middleware.After); err != nil {
-				return err
-			}
-			return stack.Deserialize.Add(traceResponse{}, middleware.After)
+			return errors.Join(
+				stack.Finalize.Add(traceRequest{}, middleware.After),
+				stack.Deserialize.Add(traceResponse{}, middleware.After),
+			)
 		},
 	}))
 
@@ -143,6 +151,43 @@ func (c *Credentials) rootConfig(ctx context.Context) (*aws.Config, error) {
 
 	c.cfg = &cfg
 	return c.cfg, nil
+}
+
+// SkipGlobal returns ErrSkipRequest when operating in the global
+// pseudo-region.
+//
+// FUTURE: define mechanism for allowing specific resources, such as those in
+// IAM, to override this skip.
+//
+// The simplest way to do this would be to remove this middleware through
+// functional options on relevant operations. e.g.:
+//
+//	 func isGlobalResource(o *iam.Options) {
+//		o.APIOptions = append(o.APIOptions, func(stack *middleware.Stack) error {
+//			stack.Initialize.Remove(config.SkipGlobal{}.ID())
+//		})
+//	 }
+//
+//	 // per-operation
+//	 out, err := svc.ListRoles(context.Background(), nil, isGlobalResource)
+//	 // on a client, if you know you're only operating in the context of global resources
+//	 svc := iam.NewFromConfig(cfg, isGlobalResource)
+//
+// You could also define some kind of "is global resource" Context flag, which
+// SkipGlobal could react to. That may be preferrable to having SkipGlobal be
+// exported from this package.
+type SkipGlobal struct{}
+
+func (SkipGlobal) ID() string {
+	return "aws-nuke::skipGlobal"
+}
+
+func (SkipGlobal) HandleInitialize(
+	ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler,
+) (
+	out middleware.InitializeOutput, md middleware.Metadata, err error,
+) {
+	return out, md, liberrors.ErrSkipRequest(fmt.Sprintf("skip global: '%s'", middleware.GetServiceID(ctx)))
 }
 
 type traceRequest struct{}
