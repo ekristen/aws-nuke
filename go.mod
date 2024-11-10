@@ -4,7 +4,7 @@ go 1.21.6
 
 require (
 	github.com/aws/aws-sdk-go v1.54.20
-	github.com/ekristen/libnuke v0.21.1
+	github.com/ekristen/libnuke v0.21.3
 	github.com/fatih/color v1.17.0
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.6.0
@@ -33,7 +33,7 @@ require (
 	github.com/stevenle/topsort v0.2.0 // indirect
 	github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1 // indirect
 	golang.org/x/mod v0.17.0 // indirect
-	golang.org/x/sync v0.8.0 // indirect
+	golang.org/x/sync v0.9.0 // indirect
 	golang.org/x/sys v0.20.0 // indirect
 	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
