@@ -1,36 +1,57 @@
 {
-    "extends": ["config:recommended"],
+    "extends": [
+        "config:recommended"
+    ],
     "packageRules": [
         {
-            "matchManagers": ["dockerfile"],
-            "matchUpdateTypes": ["pin", "digest"],
+            "matchManagers": [
+                "dockerfile"
+            ],
+            "matchUpdateTypes": [
+                "pin",
+                "digest"
+            ],
             "automerge": true,
             "automergeStrategy": "squash"
         },
         {
-            "matchPackagePatterns": ["^golang.*"],
             "groupName": "golang",
-            "groupSlug": "golang"
+            "groupSlug": "golang",
+            "matchPackageNames": [
+                "/^golang.*/"
+            ]
         },
         {
-            "matchFileNames": [".github/workflows/*.yml"],
-            "matchDepTypes": ["action"],
+            "matchFileNames": [
+                ".github/workflows/*.yml"
+            ],
+            "matchDepTypes": [
+                "action"
+            ],
             "matchCurrentVersion": "!/^0/",
             "automerge": true,
             "automergeStrategy": "squash",
-            "labels": ["bot"],
+            "labels": [
+                "bot"
+            ],
             "commitMessageSuffix": " [release skip]"
         },
         {
-            "matchPackagePatterns": "aws-sdk-go",
-            "separateMinorPatch": true
+            "separateMinorPatch": true,
+            "matchPackageNames": [
+                "/aws-sdk-go/"
+            ]
         }
     ],
     "customManagers": [
         {
             "customType": "regex",
-            "fileMatch": ["^.github/workflows/.*"],
-            "matchStrings": ["go-version: (?<currentValue>.*?)\n"],
+            "fileMatch": [
+                "^.github/workflows/.*"
+            ],
+            "matchStrings": [
+                "go-version: (?<currentValue>.*?)\n"
+            ],
             "depNameTemplate": "golang",
             "datasourceTemplate": "docker"
         }
