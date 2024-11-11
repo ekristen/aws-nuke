@@ -46,10 +46,10 @@ func (l *OSPackageLister) List(_ context.Context, o interface{}) ([]resource.Res
 		for _, pkg := range listResp.PackageDetailsList {
 			resources = append(resources, &OSPackage{
 				svc:         svc,
-				packageID:   pkg.PackageID,
-				packageName: pkg.PackageName,
-				packageType: pkg.PackageType,
-				createdTime: pkg.CreatedAt,
+				PackageID:   pkg.PackageID,
+				PackageName: pkg.PackageName,
+				PackageType: pkg.PackageType,
+				CreatedTime: pkg.CreatedAt,
 			})
 		}
 
@@ -67,40 +67,35 @@ func (l *OSPackageLister) List(_ context.Context, o interface{}) ([]resource.Res
 
 type OSPackage struct {
 	svc         *opensearchservice.OpenSearchService
-	packageID   *string
-	packageName *string
-	packageType *string
-	createdTime *time.Time
+	PackageID   *string
+	PackageName *string
+	PackageType *string
+	CreatedTime *time.Time
 }
 
-func (o *OSPackage) Filter() error {
-	if strings.HasPrefix(*o.packageID, "G") {
+func (r *OSPackage) Filter() error {
+	if strings.HasPrefix(*r.PackageID, "G") {
 		return fmt.Errorf("cannot delete default opensearch packages")
 	}
 
-	if *o.packageType == "ZIP-PLUGIN" {
+	if *r.PackageType == "ZIP-PLUGIN" {
 		return fmt.Errorf("cannot delete opensearch package plugin")
 	}
 	return nil
 }
 
-func (o *OSPackage) Remove(_ context.Context) error {
-	_, err := o.svc.DeletePackage(&opensearchservice.DeletePackageInput{
-		PackageID: o.packageID,
+func (r *OSPackage) Remove(_ context.Context) error {
+	_, err := r.svc.DeletePackage(&opensearchservice.DeletePackageInput{
+		PackageID: r.PackageID,
 	})
 
 	return err
 }
 
-func (o *OSPackage) Properties() types.Properties {
-	properties := types.NewProperties()
-	properties.Set("PackageID", o.packageID)
-	properties.Set("PackageName", o.packageName)
-	properties.Set("PackageType", o.packageType)
-	properties.Set("CreatedTime", o.createdTime.Format(time.RFC3339))
-	return properties
+func (r *OSPackage) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
 
-func (o *OSPackage) String() string {
-	return *o.packageID
+func (r *OSPackage) String() string {
+	return *r.PackageID
 }
