@@ -48,6 +48,7 @@ func (l *OSPackageLister) List(_ context.Context, o interface{}) ([]resource.Res
 				svc:         svc,
 				packageID:   pkg.PackageID,
 				packageName: pkg.PackageName,
+				packageType: pkg.PackageType,
 				createdTime: pkg.CreatedAt,
 			})
 		}
@@ -68,12 +69,17 @@ type OSPackage struct {
 	svc         *opensearchservice.OpenSearchService
 	packageID   *string
 	packageName *string
+	packageType *string
 	createdTime *time.Time
 }
 
 func (o *OSPackage) Filter() error {
 	if strings.HasPrefix(*o.packageID, "G") {
 		return fmt.Errorf("cannot delete default opensearch packages")
+	}
+
+	if *o.packageType == "ZIP-PLUGIN" {
+		return fmt.Errorf("cannot delete opensearch package plugin")
 	}
 	return nil
 }
@@ -90,6 +96,7 @@ func (o *OSPackage) Properties() types.Properties {
 	properties := types.NewProperties()
 	properties.Set("PackageID", o.packageID)
 	properties.Set("PackageName", o.packageName)
+	properties.Set("PackageType", o.packageType)
 	properties.Set("CreatedTime", o.createdTime.Format(time.RFC3339))
 	return properties
 }
