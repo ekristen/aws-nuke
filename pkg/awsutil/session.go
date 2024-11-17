@@ -15,6 +15,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/iottwinmaker"
 	"github.com/aws/aws-sdk-go/service/s3control"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/config"
@@ -241,6 +242,11 @@ func skipGlobalHandler(global bool) func(r *request.Request) {
 			service = s3control.EndpointsID
 			// Rewrite S3 Control ServiceName to proper EndpointsID
 			// https://github.com/rebuy-de/aws-nuke/issues/708
+		}
+		if service == iottwinmaker.ServiceName {
+			service = iottwinmaker.EndpointsID
+			// IoTTwinMaker have two endpoints, must point on "api" one
+			// https://docs.aws.amazon.com/iot-twinmaker/latest/guide/endpionts-and-quotas.html
 		}
 		rs, ok := endpoints.RegionsForService(endpoints.DefaultPartitions(), DefaultAWSPartitionID, service)
 		if !ok {
