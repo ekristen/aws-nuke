@@ -113,14 +113,14 @@ package example
 import (
 	"context"
 
-	"github.com/sirupsen/logrus"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 
-	"github.com/ekristen/libnuke/pkg/settings"
+	"github.com/ekristen/libnuke/pkg/registry"
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
 
-	"github.com/ekristen/aws-nuke/pkg/types"
+	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 ```
 
