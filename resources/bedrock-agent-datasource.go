@@ -101,11 +101,32 @@ func (r *BedrockDataSource) Properties() types.Properties {
 }
 
 func (r *BedrockDataSource) Remove(_ context.Context) error {
-	_, err := r.svc.DeleteDataSource(&bedrockagent.DeleteDataSourceInput{
+	// Must set retention to RETAIN to be able to delete datasource when data is already removed
+	// Reference: https://github.com/ekristen/aws-nuke/issues/431
+	current, err := r.svc.GetDataSource(&bedrockagent.GetDataSourceInput{
 		DataSourceId:    r.ID,
 		KnowledgeBaseId: r.KnowledgeBaseID,
 	})
-
+	if err != nil {
+		return err
+	}
+	_, err = r.svc.UpdateDataSource(&bedrockagent.UpdateDataSourceInput{
+		DataDeletionPolicy:                aws.String(bedrockagent.DataDeletionPolicyRetain),
+		DataSourceConfiguration:           current.DataSource.DataSourceConfiguration,
+		DataSourceId:                      r.ID,
+		Description:                       current.DataSource.Description,
+		KnowledgeBaseId:                   r.KnowledgeBaseID,
+		Name:                              current.DataSource.Name,
+		ServerSideEncryptionConfiguration: current.DataSource.ServerSideEncryptionConfiguration,
+		VectorIngestionConfiguration:      current.DataSource.VectorIngestionConfiguration,
+	})
+	if err != nil {
+		return err
+	}
+	_, err = r.svc.DeleteDataSource(&bedrockagent.DeleteDataSourceInput{
+		DataSourceId:    r.ID,
+		KnowledgeBaseId: r.KnowledgeBaseID,
+	})
 	return err
 }
 
