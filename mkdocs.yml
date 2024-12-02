@@ -74,12 +74,12 @@ nav:
     - Starter Config: starter-config.md
     - Migration Guide: migration-guide.md
   - Features:
-      - Overview: features/overview.md
-      - Bypass Alias Check: features/bypass-alias-check.md
-      - Global Filters: features/global-filters.md
-      - Filter Groups: features/filter-groups.md
-      - Enabled Regions: features/enabled-regions.md
-      - Signed Binaries: features/signed-binaries.md
+    - Overview: features/overview.md
+    - Bypass Alias Check: features/bypass-alias-check.md
+    - Global Filters: features/global-filters.md
+    - Filter Groups: features/filter-groups.md
+    - Enabled Regions: features/enabled-regions.md
+    - Signed Binaries: features/signed-binaries.md
   - CLI:
     - Usage: cli-usage.md
     - Options: cli-options.md
@@ -93,18 +93,26 @@ nav:
     - Custom Endpoints: config-custom-endpoints.md
     - Migration Guide: config-migration.md
     - Examples & Presets: config-contrib.md
-  - Resources:
-    - Overview: resources/overview.md
-    - Cognito User Pool: resources/cognito-user-pool.md
-    - EC2 Image: resources/ec2-image.md
-    - IAM Role: resources/iam-role.md
-    - S3 Bucket: resources/s3-bucket.md
-    - S3 Object: resources/s3-object.md
   - Development:
     - Overview: development.md
+    - Documentation: documentation.md
     - Contributing: contributing.md
     - Standards: standards.md
     - Resources: resources.md
     - Releases: releases.md
     - Testing: testing.md
-
+  - Resources:
+    - Overview: resources/overview.md
+    - ACM Certificate: resources/acm-certificate.md
+    - ACMPCA Certificate Authority State: resources/acmpca-certificate-authority-state.md
+    - ACMPCA Certificate Authority: resources/acmpca-certificate-authority.md
+    - Access Analyzer Archive Rule: resources/access-analyzer-archive-rule.md
+    - Access Analyzer: resources/access-analyzer.md
+    - Cognito User Pool: resources/cognito-user-pool.md
+    - EC2 Image: resources/ec2-image.md
+    - EC2 Instance: resources/ec2-instance.md
+    - ELBv2: resources/elbv2.md
+    - IAM Role: resources/iam-role.md
+    - Lightsail Instance: resources/lightsail-instance.md
+    - S3 Bucket: resources/s3-bucket.md
+    - S3 Object: resources/s3-object.md

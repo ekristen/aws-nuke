@@ -22,6 +22,9 @@ func init() {
 		Name:   QLDBLedgerResource,
 		Scope:  nuke.Account,
 		Lister: &QLDBLedgerLister{},
+		Settings: []string{
+			"DisableDeletionProtection",
+		},
 	})
 }
 

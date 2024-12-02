@@ -19,9 +19,13 @@ const LightsailInstanceResource = "LightsailInstance"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   LightsailInstanceResource,
-		Scope:  nuke.Account,
-		Lister: &LightsailInstanceLister{},
+		Name:     LightsailInstanceResource,
+		Scope:    nuke.Account,
+		Resource: &LightsailInstance{},
+		Lister:   &LightsailInstanceLister{},
+		Settings: []string{
+			"ForceDeleteAddOns",
+		},
 	})
 }
 
@@ -43,9 +47,9 @@ func (l *LightsailInstanceLister) List(_ context.Context, o interface{}) ([]reso
 
 		for _, instance := range output.Instances {
 			resources = append(resources, &LightsailInstance{
-				svc:          svc,
-				instanceName: instance.Name,
-				tags:         instance.Tags,
+				svc:  svc,
+				Name: instance.Name,
+				Tags: instance.Tags,
 			})
 		}
 
@@ -60,35 +64,30 @@ func (l *LightsailInstanceLister) List(_ context.Context, o interface{}) ([]reso
 }
 
 type LightsailInstance struct {
-	svc          *lightsail.Lightsail
-	instanceName *string
-	tags         []*lightsail.Tag
+	svc  *lightsail.Lightsail
+	Name *string `description:"The name of the instance."`
+	Tags []*lightsail.Tag
 
 	settings *libsettings.Setting
 }
 
-func (f *LightsailInstance) Settings(setting *libsettings.Setting) {
-	f.settings = setting
+func (r *LightsailInstance) Settings(setting *libsettings.Setting) {
+	r.settings = setting
 }
 
-func (f *LightsailInstance) Remove(_ context.Context) error {
-	_, err := f.svc.DeleteInstance(&lightsail.DeleteInstanceInput{
-		InstanceName:      f.instanceName,
-		ForceDeleteAddOns: ptr.Bool(f.settings.GetBool("ForceDeleteAddOns")),
+func (r *LightsailInstance) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteInstance(&lightsail.DeleteInstanceInput{
+		InstanceName:      r.Name,
+		ForceDeleteAddOns: ptr.Bool(r.settings.GetBool("ForceDeleteAddOns")),
 	})
 
 	return err
 }
 
-func (f *LightsailInstance) Properties() types.Properties {
-	properties := types.NewProperties()
-	for _, tag := range f.tags {
-		properties.SetTag(tag.Key, tag.Value)
-	}
-	properties.Set("Name", f.instanceName)
-	return properties
+func (r *LightsailInstance) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
 
-func (f *LightsailInstance) String() string {
-	return *f.instanceName
+func (r *LightsailInstance) String() string {
+	return *r.Name
 }

@@ -168,3 +168,139 @@ redirect to a file like so:
 go run tools/create-resource/main.go <service> <resource-type> > resources/<resource-type>.go
 ```
 
+## Converting a resource for self documenting
+
+To convert a resource for self documenting, you need to do the following:
+
+- Write a test for the resource to verify its current properties
+- Add the `Resource` field to the registration struct
+- Capitalize the first letter of the field names
+- Match the field names to the property names that are defined in `Properties()` method
+- Switch to `NewPropertiesFromStruct` method in `Properties()` method
+- Run the tests to verify the properties are still correct
+- Run the `generate-resource-docs` command to generate the documentation
+- Commit your changes and open a pull request
+
+### Example
+
+**Before**
+
+```go
+package resources
+
+import (
+	"context"
+
+	"fmt"
+
+	"github.com/aws/aws-sdk-go/service/sns"
+
+	"github.com/ekristen/libnuke/pkg/registry"
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
+)
+
+const SNSTopicResource = "SNSTopic"
+
+func init() {
+	registry.Register(&registry.Registration{
+		Name:   SNSTopicResource,
+		Scope:  nuke.Account,
+		Lister: &SNSTopicLister{},
+	})
+}
+
+type SNSTopic struct {
+	svc  *sns.SNS
+	id   *string
+	tags []*sns.Tag
+}
+
+func (r *SNSTopic) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteTopic(&sns.DeleteTopicInput{
+		TopicArn: r.id,
+	})
+	return err
+}
+
+func (r *SNSTopic) Properties() types.Properties {
+	properties := types.NewProperties()
+
+	for _, tag := range r.tags {
+		properties.SetTag(tag.Key, tag.Value)
+	}
+	properties.Set("TopicARN", r.id)
+
+	return properties
+}
+
+func (r *SNSTopic) String() string {
+	return fmt.Sprintf("TopicARN: %s", *r.id)
+}
+
+type SNSTopicLister struct{}
+
+func (l *SNSTopicLister) List(_ context.Context, _ interface{}) ([]resource.Resource, error) {
+	return nil, nil
+}
+```
+
+**After**
+
+```go
+package resources
+
+import (
+	"context"
+
+	"fmt"
+
+	"github.com/aws/aws-sdk-go/service/sns"
+
+	"github.com/ekristen/libnuke/pkg/registry"
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
+)
+
+const SNSTopicResource = "SNSTopic"
+
+func init() {
+	registry.Register(&registry.Registration{
+		Name:     SNSTopicResource,
+		Scope:    nuke.Account,
+		Resource: &SNSTopic{},
+		Lister:   &SNSTopicLister{},
+	})
+}
+
+type SNSTopic struct {
+	svc      *sns.SNS
+	TopicARN *string
+	Tags     []*sns.Tag
+}
+
+func (r *SNSTopic) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteTopic(&sns.DeleteTopicInput{
+		TopicArn: r.TopicARN,
+	})
+	return err
+}
+
+func (r *SNSTopic) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
+}
+
+func (r *SNSTopic) String() string {
+	return fmt.Sprintf("TopicARN: %s", *r.TopicARN)
+}
+
+type SNSTopicLister struct{}
+
+func (l *SNSTopicLister) List(_ context.Context, _ interface{}) ([]resource.Resource, error) {
+	return nil, nil
+}
+```

@@ -12,6 +12,8 @@ goreleaser build --clean --snapshot --single-target
 
 This is built using Material for MkDocs and can be run very easily locally providing you have docker available.
 
+[Read more about it here.](documentation.md)
+
 ### Running Locally
 
 ```console

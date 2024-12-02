@@ -21,6 +21,7 @@ func init() {
 	registry.Register(&registry.Registration{
 		Name:                ACMPCACertificateAuthorityResource,
 		Scope:               nuke.Account,
+		Resource:            &ACMPCACertificateAuthority{},
 		Lister:              &ACMPCACertificateAuthorityLister{},
 		AlternativeResource: "AWS::ACMPCA::CertificateAuthority",
 	})
@@ -68,8 +69,8 @@ func (l *ACMPCACertificateAuthorityLister) List(_ context.Context, o interface{}
 			resources = append(resources, &ACMPCACertificateAuthority{
 				svc:    svc,
 				ARN:    certificateAuthority.Arn,
-				status: certificateAuthority.Status,
-				tags:   tags,
+				Status: certificateAuthority.Status,
+				Tags:   tags,
 			})
 		}
 		if resp.NextToken == nil {
@@ -83,38 +84,31 @@ func (l *ACMPCACertificateAuthorityLister) List(_ context.Context, o interface{}
 
 type ACMPCACertificateAuthority struct {
 	svc    *acmpca.ACMPCA
-	ARN    *string
-	status *string
-	tags   []*acmpca.Tag
+	ARN    *string       `description:"The Amazon Resource Name (ARN) of the private CA."`
+	Status *string       `description:"Status of the private CA."`
+	Tags   []*acmpca.Tag `description:"Tags attached to the private CA."`
 }
 
-func (f *ACMPCACertificateAuthority) Remove(_ context.Context) error {
-	_, err := f.svc.DeleteCertificateAuthority(&acmpca.DeleteCertificateAuthorityInput{
-		CertificateAuthorityArn: f.ARN,
+func (r *ACMPCACertificateAuthority) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteCertificateAuthority(&acmpca.DeleteCertificateAuthorityInput{
+		CertificateAuthorityArn: r.ARN,
 	})
 
 	return err
 }
 
-func (f *ACMPCACertificateAuthority) String() string {
-	return *f.ARN
+func (r *ACMPCACertificateAuthority) String() string {
+	return *r.ARN
 }
 
-func (f *ACMPCACertificateAuthority) Filter() error {
-	if *f.status == "DELETED" {
+func (r *ACMPCACertificateAuthority) Filter() error {
+	if *r.Status == "DELETED" {
 		return fmt.Errorf("already deleted")
 	} else {
 		return nil
 	}
 }
 
-func (f *ACMPCACertificateAuthority) Properties() types.Properties {
-	properties := types.NewProperties()
-	for _, tag := range f.tags {
-		properties.SetTag(tag.Key, tag.Value)
-	}
-	properties.
-		Set("ARN", f.ARN).
-		Set("Status", f.status)
-	return properties
+func (r *ACMPCACertificateAuthority) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }

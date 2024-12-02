@@ -17,20 +17,17 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-type ELBv2LoadBalancer struct {
-	svc      *elbv2.ELBV2
-	tags     []*elbv2.Tag
-	elb      *elbv2.LoadBalancer
-	settings *libsettings.Setting
-}
-
 const ELBv2Resource = "ELBv2"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ELBv2Resource,
-		Scope:  nuke.Account,
-		Lister: &ELBv2Lister{},
+		Name:     ELBv2Resource,
+		Scope:    nuke.Account,
+		Resource: &ELBv2LoadBalancer{},
+		Lister:   &ELBv2Lister{},
+		Settings: []string{
+			"DisableDeletionProtection",
+		},
 	})
 }
 
@@ -45,9 +42,9 @@ func (l *ELBv2Lister) List(_ context.Context, o interface{}) ([]resource.Resourc
 
 	err := svc.DescribeLoadBalancersPages(nil,
 		func(page *elbv2.DescribeLoadBalancersOutput, lastPage bool) bool {
-			for _, elbv2 := range page.LoadBalancers {
-				tagReqELBv2ARNs = append(tagReqELBv2ARNs, elbv2.LoadBalancerArn)
-				elbv2ARNToRsc[*elbv2.LoadBalancerArn] = elbv2
+			for _, elbv2lb := range page.LoadBalancers {
+				tagReqELBv2ARNs = append(tagReqELBv2ARNs, elbv2lb.LoadBalancerArn)
+				elbv2ARNToRsc[*elbv2lb.LoadBalancerArn] = elbv2lb
 			}
 			return !lastPage
 		})
@@ -75,9 +72,11 @@ func (l *ELBv2Lister) List(_ context.Context, o interface{}) ([]resource.Resourc
 		for _, elbv2TagInfo := range tagResp.TagDescriptions {
 			elb := elbv2ARNToRsc[*elbv2TagInfo.ResourceArn]
 			resources = append(resources, &ELBv2LoadBalancer{
-				svc:  svc,
-				elb:  elb,
-				tags: elbv2TagInfo.Tags,
+				svc:         svc,
+				ARN:         elb.LoadBalancerArn,
+				Name:        elb.LoadBalancerName,
+				CreatedTime: elb.CreatedTime,
+				Tags:        elbv2TagInfo.Tags,
 			})
 		}
 
@@ -87,27 +86,36 @@ func (l *ELBv2Lister) List(_ context.Context, o interface{}) ([]resource.Resourc
 	return resources, nil
 }
 
-func (e *ELBv2LoadBalancer) Settings(setting *libsettings.Setting) {
-	e.settings = setting
+type ELBv2LoadBalancer struct {
+	svc         *elbv2.ELBV2
+	settings    *libsettings.Setting
+	ARN         *string    `description:"ARN of the load balancer"`
+	Name        *string    `description:"Name of the load balancer"`
+	CreatedTime *time.Time `description:"Creation time of the load balancer"`
+	Tags        []*elbv2.Tag
 }
 
-func (e *ELBv2LoadBalancer) Remove(_ context.Context) error {
+func (r *ELBv2LoadBalancer) Settings(setting *libsettings.Setting) {
+	r.settings = setting
+}
+
+func (r *ELBv2LoadBalancer) Remove(_ context.Context) error {
 	params := &elbv2.DeleteLoadBalancerInput{
-		LoadBalancerArn: e.elb.LoadBalancerArn,
+		LoadBalancerArn: r.ARN,
 	}
 
-	if _, err := e.svc.DeleteLoadBalancer(params); err != nil {
-		if e.settings.GetBool("DisableDeletionProtection") {
+	if _, err := r.svc.DeleteLoadBalancer(params); err != nil {
+		if r.settings.GetBool("DisableDeletionProtection") {
 			var awsErr awserr.Error
 			ok := errors.As(err, &awsErr)
 			if ok && awsErr.Code() == "OperationNotPermitted" &&
-				awsErr.Message() == "Load balancer '"+*e.elb.LoadBalancerArn+"' cannot be deleted because deletion protection is enabled" {
-				err = e.DisableProtection()
+				awsErr.Message() == "Load balancer '"+*r.ARN+"' cannot be deleted because deletion protection is enabled" {
+				err = r.DisableProtection()
 				if err != nil {
 					return err
 				}
 
-				_, err := e.svc.DeleteLoadBalancer(params)
+				_, err := r.svc.DeleteLoadBalancer(params)
 				if err != nil {
 					return err
 				}
@@ -122,9 +130,9 @@ func (e *ELBv2LoadBalancer) Remove(_ context.Context) error {
 	return nil
 }
 
-func (e *ELBv2LoadBalancer) DisableProtection() error {
+func (r *ELBv2LoadBalancer) DisableProtection() error {
 	params := &elbv2.ModifyLoadBalancerAttributesInput{
-		LoadBalancerArn: e.elb.LoadBalancerArn,
+		LoadBalancerArn: r.ARN,
 		Attributes: []*elbv2.LoadBalancerAttribute{
 			{
 				Key:   aws.String("deletion_protection.enabled"),
@@ -133,7 +141,7 @@ func (e *ELBv2LoadBalancer) DisableProtection() error {
 		},
 	}
 
-	_, err := e.svc.ModifyLoadBalancerAttributes(params)
+	_, err := r.svc.ModifyLoadBalancerAttributes(params)
 	if err != nil {
 		return err
 	}
@@ -141,18 +149,10 @@ func (e *ELBv2LoadBalancer) DisableProtection() error {
 	return nil
 }
 
-func (e *ELBv2LoadBalancer) Properties() types.Properties {
-	properties := types.NewProperties().
-		Set("CreatedTime", e.elb.CreatedTime.Format(time.RFC3339)).
-		Set("ARN", e.elb.LoadBalancerArn)
-
-	for _, tagValue := range e.tags {
-		properties.SetTag(tagValue.Key, tagValue.Value)
-	}
-
-	return properties
+func (r *ELBv2LoadBalancer) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
 
-func (e *ELBv2LoadBalancer) String() string {
-	return *e.elb.LoadBalancerName
+func (r *ELBv2LoadBalancer) String() string {
+	return *r.Name
 }
