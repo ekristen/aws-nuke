@@ -104,13 +104,15 @@ nav:
   - Resources:
     - Overview: resources/overview.md
     - ACM Certificate: resources/acm-certificate.md
-    - ACMpca Certificate Authority State: resources/acmpca-certificate-authority-state.md
-    - ACMpca Certificate Authority: resources/acmpca-certificate-authority.md
+    - ACMPCA Certificate Authority State: resources/acmpca-certificate-authority-state.md
+    - ACMPCA Certificate Authority: resources/acmpca-certificate-authority.md
     - Access Analyzer Archive Rule: resources/access-analyzer-archive-rule.md
     - Access Analyzer: resources/access-analyzer.md
     - Cognito User Pool: resources/cognito-user-pool.md
     - EC2 Image: resources/ec2-image.md
     - EC2 Instance: resources/ec2-instance.md
+    - ELBv2: resources/elbv2.md
+    - El Bv2: resources/el-bv2.md
     - IAM Role: resources/iam-role.md
     - Lightsail Instance: resources/lightsail-instance.md
     - S3 Bucket: resources/s3-bucket.md

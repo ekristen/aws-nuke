@@ -28,6 +28,10 @@ import (
 //go:embed files/*
 var ResourceTemplates embed.FS
 
+var SkipCamelCase = []string{
+	"ELBv2",
+}
+
 type TemplateData struct {
 	Name                string
 	Description         string
@@ -133,8 +137,10 @@ func execute(c *cli.Context) error { //nolint:funlen,gocyclo
 		title = strings.Replace(title, "Efs", "EFS", 1)
 		title = strings.Replace(title, "Rds", "RDS", 1)
 		title = strings.Replace(title, "Vpc", "VPC", 1)
+		title = strings.Replace(title, "Acmpca", "ACMPCA", 1)
 		title = strings.Replace(title, "Acm", "ACM", 1)
 		title = strings.Replace(title, "Sns", "SNS", 1)
+		title = strings.Replace(title, "Elb", "ELB", 1)
 
 		newResources = append(newResources, fmt.Sprintf("%s: %s", title, newResource))
 	}
@@ -224,6 +230,10 @@ func toLower(in string) string {
 }
 
 func SplitCamelCase(input string) string {
+	if slices.Contains(SkipCamelCase, input) {
+		return input
+	}
+
 	// Regular expression to find boundaries between lowercase and uppercase letters,
 	// and between sequences of uppercase letters followed by lowercase letters.
 	re := regexp.MustCompile(`([a-z])([A-Z0-9])|([A-Z]+)([A-Z][a-z])|(\d)([A-Z])`)
