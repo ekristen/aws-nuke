@@ -11,7 +11,6 @@ import (
 	_ "github.com/ekristen/aws-nuke/v3/pkg/commands/account"
 	_ "github.com/ekristen/aws-nuke/v3/pkg/commands/completion"
 	_ "github.com/ekristen/aws-nuke/v3/pkg/commands/config"
-	_ "github.com/ekristen/aws-nuke/v3/pkg/commands/docs"
 	_ "github.com/ekristen/aws-nuke/v3/pkg/commands/list"
 	_ "github.com/ekristen/aws-nuke/v3/pkg/commands/nuke"
 	_ "github.com/ekristen/aws-nuke/v3/pkg/commands/version"
