@@ -71,23 +71,23 @@ type LightsailInstance struct {
 	settings *libsettings.Setting
 }
 
-func (f *LightsailInstance) Settings(setting *libsettings.Setting) {
-	f.settings = setting
+func (r *LightsailInstance) Settings(setting *libsettings.Setting) {
+	r.settings = setting
 }
 
-func (f *LightsailInstance) Remove(_ context.Context) error {
-	_, err := f.svc.DeleteInstance(&lightsail.DeleteInstanceInput{
-		InstanceName:      f.Name,
-		ForceDeleteAddOns: ptr.Bool(f.settings.GetBool("ForceDeleteAddOns")),
+func (r *LightsailInstance) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteInstance(&lightsail.DeleteInstanceInput{
+		InstanceName:      r.Name,
+		ForceDeleteAddOns: ptr.Bool(r.settings.GetBool("ForceDeleteAddOns")),
 	})
 
 	return err
 }
 
-func (f *LightsailInstance) Properties() types.Properties {
-	return types.NewPropertiesFromStruct(f)
+func (r *LightsailInstance) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
 
-func (f *LightsailInstance) String() string {
-	return *f.Name
+func (r *LightsailInstance) String() string {
+	return *r.Name
 }
