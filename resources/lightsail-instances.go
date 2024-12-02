@@ -19,9 +19,10 @@ const LightsailInstanceResource = "LightsailInstance"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   LightsailInstanceResource,
-		Scope:  nuke.Account,
-		Lister: &LightsailInstanceLister{},
+		Name:     LightsailInstanceResource,
+		Scope:    nuke.Account,
+		Resource: &LightsailInstance{},
+		Lister:   &LightsailInstanceLister{},
 		Settings: []string{
 			"ForceDeleteAddOns",
 		},
@@ -46,9 +47,9 @@ func (l *LightsailInstanceLister) List(_ context.Context, o interface{}) ([]reso
 
 		for _, instance := range output.Instances {
 			resources = append(resources, &LightsailInstance{
-				svc:          svc,
-				instanceName: instance.Name,
-				tags:         instance.Tags,
+				svc:  svc,
+				Name: instance.Name,
+				Tags: instance.Tags,
 			})
 		}
 
@@ -63,9 +64,9 @@ func (l *LightsailInstanceLister) List(_ context.Context, o interface{}) ([]reso
 }
 
 type LightsailInstance struct {
-	svc          *lightsail.Lightsail
-	instanceName *string
-	tags         []*lightsail.Tag
+	svc  *lightsail.Lightsail
+	Name *string `description:"The name of the instance."`
+	Tags []*lightsail.Tag
 
 	settings *libsettings.Setting
 }
@@ -76,7 +77,7 @@ func (f *LightsailInstance) Settings(setting *libsettings.Setting) {
 
 func (f *LightsailInstance) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteInstance(&lightsail.DeleteInstanceInput{
-		InstanceName:      f.instanceName,
+		InstanceName:      f.Name,
 		ForceDeleteAddOns: ptr.Bool(f.settings.GetBool("ForceDeleteAddOns")),
 	})
 
@@ -84,14 +85,9 @@ func (f *LightsailInstance) Remove(_ context.Context) error {
 }
 
 func (f *LightsailInstance) Properties() types.Properties {
-	properties := types.NewProperties()
-	for _, tag := range f.tags {
-		properties.SetTag(tag.Key, tag.Value)
-	}
-	properties.Set("Name", f.instanceName)
-	return properties
+	return types.NewPropertiesFromStruct(f)
 }
 
 func (f *LightsailInstance) String() string {
-	return *f.instanceName
+	return *f.Name
 }
