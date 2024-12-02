@@ -1,16 +1,17 @@
-package docs
+package main
 
 import (
 	"bytes"
 	"embed"
 	"fmt"
-	"html/template"
 	"os"
 	"path/filepath"
 	"regexp"
 	"slices"
 	"strings"
+	"text/template"
 
+	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 
 	"golang.org/x/text/cases"
@@ -19,7 +20,6 @@ import (
 	"github.com/ekristen/libnuke/pkg/docs"
 	"github.com/ekristen/libnuke/pkg/registry"
 
-	"github.com/ekristen/aws-nuke/v3/pkg/commands/global"
 	"github.com/ekristen/aws-nuke/v3/pkg/common"
 
 	_ "github.com/ekristen/aws-nuke/v3/resources"
@@ -159,7 +159,7 @@ func execute(c *cli.Context) error { //nolint:funlen,gocyclo
 	return nil
 }
 
-func init() {
+func main() {
 	flags := []cli.Flag{
 		&cli.StringFlag{
 			Name:  "resource",
@@ -171,17 +171,32 @@ func init() {
 		},
 	}
 
-	cmd := &cli.Command{
-		Name:        "generate-resource-docs",
-		Usage:       "generate resource docs",
-		Description: "generate resource docs",
-		Flags:       append(flags, global.Flags()...),
-		Before:      global.Before,
-		Action:      execute,
-		Hidden:      true,
-	}
+	defer func() {
+		if r := recover(); r != nil {
+			// log panics forces exit
+			if _, ok := r.(*logrus.Entry); ok {
+				os.Exit(1)
+			}
+			panic(r)
+		}
+	}()
 
-	common.RegisterCommand(cmd)
+	app := cli.NewApp()
+	app.Name = "generate-docs"
+	app.Usage = "generate resource docs from code"
+	app.Version = common.AppVersion.Summary
+	app.Authors = []*cli.Author{
+		{
+			Name:  "Erik Kristensen",
+			Email: "erik@erikkristensen.com",
+		},
+	}
+	app.Flags = flags
+	app.Action = execute
+
+	if err := app.Run(os.Args); err != nil {
+		logrus.Fatal(err)
+	}
 }
 
 var (
