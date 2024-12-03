@@ -38,7 +38,6 @@ func (l *CloudWatchLogsLogGroupLister) List(_ context.Context, o interface{}) ([
 	// them to the bottom, because really it's per-second, and we should be fine querying at this rate for clearing
 	// Ref: https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/cloudwatch_limits_cwl.html
 	groupRl := ratelimit.New(10)
-	streamRl := ratelimit.New(15)
 
 	params := &cloudwatchlogs.DescribeLogGroupsInput{
 		Limit: aws.Int64(50),
