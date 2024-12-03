@@ -2,13 +2,9 @@ package resources
 
 import (
 	"context"
-	"strings"
-	"time"
-
-	"go.uber.org/ratelimit"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
+	"go.uber.org/ratelimit"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
@@ -48,6 +44,8 @@ func (l *CloudWatchLogsLogGroupLister) List(_ context.Context, o interface{}) ([
 		Limit: aws.Int64(50),
 	}
 
+	pageLimit := 20 // limit to 50*20 = 1000 log groups
+
 	for {
 		groupRl.Take() // Wait for DescribeLogGroup rate limiter
 
@@ -57,40 +55,9 @@ func (l *CloudWatchLogsLogGroupLister) List(_ context.Context, o interface{}) ([
 		}
 
 		for _, logGroup := range output.LogGroups {
-			streamRl.Take() // Wait for DescribeLogStream rate limiter
-
-			arn := strings.TrimSuffix(*logGroup.Arn, ":*")
-			tagResp, err := svc.ListTagsForResource(
-				&cloudwatchlogs.ListTagsForResourceInput{
-					ResourceArn: &arn,
-				})
-			if err != nil {
-				return nil, err
-			}
-
-			// get last event ingestion time
-			lsResp, err := svc.DescribeLogStreams(&cloudwatchlogs.DescribeLogStreamsInput{
-				LogGroupName: logGroup.LogGroupName,
-				OrderBy:      aws.String("LastEventTime"),
-				Limit:        aws.Int64(1),
-				Descending:   aws.Bool(true),
-			})
-			if err != nil {
-				return nil, err
-			}
-
-			var lastEvent time.Time
-			if len(lsResp.LogStreams) > 0 && lsResp.LogStreams[0].LastIngestionTime != nil {
-				lastEvent = time.Unix(*lsResp.LogStreams[0].LastIngestionTime/1000, 0)
-			} else {
-				lastEvent = time.Unix(*logGroup.CreationTime/1000, 0)
-			}
-
 			resources = append(resources, &CloudWatchLogsLogGroup{
-				svc:       svc,
-				logGroup:  logGroup,
-				lastEvent: lastEvent.Format(time.RFC3339),
-				tags:      tagResp.Tags,
+				svc:      svc,
+				logGroup: logGroup,
 			})
 		}
 
@@ -99,6 +66,12 @@ func (l *CloudWatchLogsLogGroupLister) List(_ context.Context, o interface{}) ([
 		}
 
 		params.NextToken = output.NextToken
+
+		if pageLimit == 0 {
+			break
+		}
+
+		pageLimit--
 	}
 
 	return resources, nil
