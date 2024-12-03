@@ -31,9 +31,21 @@ The underlying library that drives the bulk of this tool is [libnuke](https://gi
 has tooling to help generate documentation for a resource. Primary the library focuses on inspecting the resource struct
 and generating documentation based on the fields of the struct for properties.
 
-There's an additional sub command called `generate-resource-docs` that is hidden from standard usage. This command is
-used to generate documentation for a resource and write it to disk. This command leverages the struct inspection to get
-details about the properties and intertwine them with the markdown template to generate the documentation.
+There's an additional tool called `generate-docs`. This command is used to generate documentation for a resource and
+write it to disk. This command leverages the struct inspection to get details about the properties and intertwine them
+with the markdown template to generate the documentation.
 
 However, for this to work the resource needs to be updated to export all it's fields. This is done by capitalizing the
 first letter of the field name. The field name should match what the existing property name is if it is defined.
+
+#### Generating Documentation for All Resources
+
+```console
+go run tools/generate-docs/main.go --write
+```
+
+#### Generating Documentation for a Single Resource
+
+```console
+go run tools/generate-docs/main.go --resource EC2Instance --write
+```

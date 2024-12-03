@@ -27,35 +27,40 @@ It can optionally have the following methods defined:
 package resources
 
 import (
-    "context"
-    
-    "github.com/ekristen/libnuke/pkg/resource"
-    "github.com/ekristen/libnuke/pkg/types"
+	"context"
 
-    "github.com/ekristen/aws-nuke/v3/pkg/nuke"
+	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
 type ExampleResource struct {
-    ID *string
+	ID *string `description:"The ID of the resource"`
 }
 
 func (r *ExampleResource) Remove(_ context.Context) error {
-    // remove the resource, an error will put the resource in failed state
-    // resources in failed state are retried a number of times
-    return nil
+	// remove the resource, an error will put the resource in failed state
+	// resources in failed state are retried a number of times
+	return nil
 }
 
 func (r *ExampleResource) Filter() error {
-    // filter the resource, this is useful for built-in resources that cannot
-    // be removed, like an AWS managed resource, return an error here to filter
-    // it before it even gets to the user supplied filters.
-    return nil
+	// filter the resource, this is useful for built-in resources that cannot
+	// be removed, like an AWS managed resource, return an error here to filter
+	// it before it even gets to the user supplied filters.
+	return nil
 }
 
 func (r *ExampleResource) String() string {
-    // return a string representation of the resource, this is legacy, but still
-    // used for a number of reasons.
-    return *r.ID
+	// return a string representation of the resource, this is legacy, but still
+	// used for a number of reasons.
+	return *r.ID
+}
+
+func (r *ExampleResource) Properties() types.Properties {
+    // return a properties representation of the resource via struct inspection
+	return types.NewPropertiesFromStruct(r)
 }
 ```
 
@@ -116,7 +121,7 @@ func (l *ExampleResourceLister) List(_ context.Context, o interface{}) ([]resour
 // -----------------------------------------------------------------------------
 
 type ExampleResource struct {
-	ID *string
+	ID *string `description:"The unique ID of the resource"`
 }
 
 func (r *ExampleResource) Remove(_ context.Context) error {
@@ -139,10 +144,8 @@ func (r *ExampleResource) String() string {
 }
 
 func (r *ExampleResource) Properties() types.Properties {
-	// return a properties representation of the resource
-	props := types.NewProperties()
-	props.Set("ID", r.ID)
-	return props
+	// return a properties representation of the resource from struct inspection
+	return types.NewPropertiesFromStruct(r)
 }
 ```
 
@@ -279,7 +282,7 @@ func init() {
 
 type SNSTopic struct {
 	svc      *sns.SNS
-	TopicARN *string
+	TopicARN *string `description:"The ARN of the SNS Topic"`
 	Tags     []*sns.Tag
 }
 
