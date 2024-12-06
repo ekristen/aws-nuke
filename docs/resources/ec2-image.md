@@ -1,6 +1,9 @@
-# EC2 Image
+---
+generated: true
+---
 
-This will remove all EC2 Images (AMI) in an AWS account.
+# EC2Image
+
 
 ## Resource
 
@@ -8,29 +11,56 @@ This will remove all EC2 Images (AMI) in an AWS account.
 EC2Image
 ```
 
+
+
+!!! note - Using Properties
+    Properties are what [Filters](../config-filtering.md) are written against in your configuration. You use the property
+    names to write filters for what you want to **keep** and omit from the nuke process.
+
+### String Property
+
+The string representation of a resource is generally the value of the Name, ID or ARN field of the resource. Not all
+resources support properties. To write a filter against the string representation, simply omit the `property` field in
+the filter.
+
+The string value is always what is used in the output of the log format when a resource is identified.
+
 ## Settings
 
-- `IncludeDisabled`
-- `IncludeDeprecated`
 - `DisableDeregistrationProtection`
+- `IncludeDeprecated`
+- `IncludeDisabled`
 
-### IncludeDisabled
-
-This will include any EC2 Images (AMI) that are disabled in the deletion process. By default, disabled images are excluded
-from the discovery process.
-
-Default is `false`.
-
-### IncludeDeprecated
-
-This will include any EC2 Images (AMI) that are deprecated in the deletion process. By default, deprecated images are excluded
-from the discovery process.
-
-Default is `false`.
 
 ### DisableDeregistrationProtection
 
-This will disable the deregistration protection on the EC2 Image (AMI) prior to deletion. By default, deregistration protection
-is not disabled.
+!!! note
+    There is currently no description for this setting. Often times settings are fairly self-explanatory. However, we
+    are working on adding descriptions for all settings.
 
-Default is `false`.
+```text
+DisableDeregistrationProtection
+```
+
+
+### IncludeDeprecated
+
+!!! note
+    There is currently no description for this setting. Often times settings are fairly self-explanatory. However, we
+    are working on adding descriptions for all settings.
+
+```text
+IncludeDeprecated
+```
+
+
+### IncludeDisabled
+
+!!! note
+    There is currently no description for this setting. Often times settings are fairly self-explanatory. However, we
+    are working on adding descriptions for all settings.
+
+```text
+IncludeDisabled
+```
+

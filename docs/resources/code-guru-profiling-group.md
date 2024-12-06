@@ -14,8 +14,8 @@ CodeGuruProfilingGroup
 ## Properties
 
 
-- `ComputePlatform`: 
-- `Name`: 
+- `ComputePlatform`: No Description
+- `Name`: No Description
 
 !!! note - Using Properties
     Properties are what [Filters](../config-filtering.md) are written against in your configuration. You use the property

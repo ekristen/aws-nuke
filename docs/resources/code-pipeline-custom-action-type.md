@@ -14,10 +14,10 @@ CodePipelineCustomActionType
 ## Properties
 
 
-- `Category`: 
-- `Owner`: 
-- `Provider`: 
-- `Version`: 
+- `Category`: No Description
+- `Owner`: No Description
+- `Provider`: No Description
+- `Version`: No Description
 
 !!! note - Using Properties
     Properties are what [Filters](../config-filtering.md) are written against in your configuration. You use the property

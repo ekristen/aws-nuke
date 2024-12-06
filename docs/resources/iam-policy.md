@@ -14,11 +14,11 @@ IAMPolicy
 ## Properties
 
 
-- `ARN`: 
-- `CreateDate`: 
-- `Name`: 
-- `Path`: 
-- `PolicyID`: 
+- `ARN`: No Description
+- `CreateDate`: No Description
+- `Name`: No Description
+- `Path`: No Description
+- `PolicyID`: No Description
 - `tag:<key>:`: This resource has tags with property `Tags`. These are key/value pairs that are
 	added as their own property with the prefix of `tag:` (e.g. [tag:example: "value"]) 
 

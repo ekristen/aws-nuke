@@ -14,10 +14,10 @@ BedrockGuardrail
 ## Properties
 
 
-- `ID`: 
-- `Name`: 
-- `Status`: 
-- `Version`: 
+- `ID`: No Description
+- `Name`: No Description
+- `Status`: No Description
+- `Version`: No Description
 - `tag:<key>:`: This resource has tags with property `Tags`. These are key/value pairs that are
 	added as their own property with the prefix of `tag:` (e.g. [tag:example: "value"]) 
 

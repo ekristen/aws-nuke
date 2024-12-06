@@ -14,13 +14,13 @@ PollyLexicon
 ## Properties
 
 
-- `Alphabet`: 
-- `LanguageCode`: 
-- `LastModified`: 
-- `LexemesCount`: 
-- `LexiconArn`: 
-- `Name`: 
-- `Size`: 
+- `Alphabet`: No Description
+- `LanguageCode`: No Description
+- `LastModified`: No Description
+- `LexemesCount`: No Description
+- `LexiconArn`: No Description
+- `Name`: No Description
+- `Size`: No Description
 
 !!! note - Using Properties
     Properties are what [Filters](../config-filtering.md) are written against in your configuration. You use the property

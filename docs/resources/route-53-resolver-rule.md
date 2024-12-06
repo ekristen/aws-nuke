@@ -14,9 +14,9 @@ Route53ResolverRule
 ## Properties
 
 
-- `DomainName`: 
-- `ID`: 
-- `Name`: 
+- `DomainName`: No Description
+- `ID`: No Description
+- `Name`: No Description
 
 !!! note - Using Properties
     Properties are what [Filters](../config-filtering.md) are written against in your configuration. You use the property

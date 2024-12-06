@@ -14,12 +14,12 @@ PipesPipe
 ## Properties
 
 
-- `CreationDate`: 
-- `CurrentState`: 
-- `ModifiedDate`: 
-- `Name`: 
-- `Source`: 
-- `Target`: 
+- `CreationDate`: No Description
+- `CurrentState`: No Description
+- `ModifiedDate`: No Description
+- `Name`: No Description
+- `Source`: No Description
+- `Target`: No Description
 - `tag:<key>:`: This resource has tags with property `Tags`. These are key/value pairs that are
 	added as their own property with the prefix of `tag:` (e.g. [tag:example: "value"]) 
 

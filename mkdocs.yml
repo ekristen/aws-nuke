@@ -106,13 +106,528 @@ nav:
     - ACM Certificate: resources/acm-certificate.md
     - ACMPCA Certificate Authority State: resources/acmpca-certificate-authority-state.md
     - ACMPCA Certificate Authority: resources/acmpca-certificate-authority.md
+    - AWS App Flow Connector Profile: resources/aws-app-flow-connector-profile.md
+    - AWS App Flow Flow: resources/aws-app-flow-flow.md
+    - AWS App Runner Service: resources/aws-app-runner-service.md
+    - AWS Application Insights Application: resources/aws-application-insights-application.md
+    - AWS Backup Framework: resources/aws-backup-framework.md
+    - AWS Backup Plan: resources/aws-backup-plan.md
+    - AWS Backup Recovery Point: resources/aws-backup-recovery-point.md
+    - AWS Backup Selection: resources/aws-backup-selection.md
+    - AWS Backup Vault Access Policy: resources/aws-backup-vault-access-policy.md
+    - AWS Ecr Pull Through Cache Rule: resources/aws-ecr-pull-through-cache-rule.md
+    - AWS Ecr Registry Policy: resources/aws-ecr-registry-policy.md
+    - AWS Ecr Replication Configuration: resources/aws-ecr-replication-configuration.md
+    - AWS Mwaa Environment: resources/aws-mwaa-environment.md
+    - AWS Network Firewall Firewall Policy: resources/aws-network-firewall-firewall-policy.md
+    - AWS Network Firewall Firewall: resources/aws-network-firewall-firewall.md
+    - AWS Network Firewall Rule Group: resources/aws-network-firewall-rule-group.md
+    - AWS Synthetics Canary: resources/aws-synthetics-canary.md
+    - AWS Timestream Database: resources/aws-timestream-database.md
+    - AWS Timestream Scheduled Query: resources/aws-timestream-scheduled-query.md
+    - AWS Timestream Table: resources/aws-timestream-table.md
+    - AWS Transfer Workflow: resources/aws-transfer-workflow.md
     - Access Analyzer Archive Rule: resources/access-analyzer-archive-rule.md
     - Access Analyzer: resources/access-analyzer.md
+    - Amg Workspace: resources/amg-workspace.md
+    - Amp Workspace: resources/amp-workspace.md
+    - Amplify App: resources/amplify-app.md
+    - Api Gateway Api Key: resources/api-gateway-api-key.md
+    - Api Gateway Client Certificate: resources/api-gateway-client-certificate.md
+    - Api Gateway Domain Name: resources/api-gateway-domain-name.md
+    - Api Gateway Rest Api: resources/api-gateway-rest-api.md
+    - Api Gateway Usage Plan: resources/api-gateway-usage-plan.md
+    - Api Gateway V2 Api: resources/api-gateway-v2-api.md
+    - Api Gateway V2 VPC Link: resources/api-gateway-v2-vpc-link.md
+    - Api Gateway VPC Link: resources/api-gateway-vpc-link.md
+    - App Config Application: resources/app-config-application.md
+    - App Config Configuration Profile: resources/app-config-configuration-profile.md
+    - App Config Deployment Strategy: resources/app-config-deployment-strategy.md
+    - App Config Environment: resources/app-config-environment.md
+    - App Config Hosted Configuration Version: resources/app-config-hosted-configuration-version.md
+    - App Mesh Gateway Route: resources/app-mesh-gateway-route.md
+    - App Mesh Mesh: resources/app-mesh-mesh.md
+    - App Mesh Route: resources/app-mesh-route.md
+    - App Mesh Virtual Gateway: resources/app-mesh-virtual-gateway.md
+    - App Mesh Virtual Node: resources/app-mesh-virtual-node.md
+    - App Mesh Virtual Router: resources/app-mesh-virtual-router.md
+    - App Mesh Virtual Service: resources/app-mesh-virtual-service.md
+    - App Registry Application: resources/app-registry-application.md
+    - App Runner Connection: resources/app-runner-connection.md
+    - App Runner Service: resources/app-runner-service.md
+    - App Stream Directory Config: resources/app-stream-directory-config.md
+    - App Stream Fleet State: resources/app-stream-fleet-state.md
+    - App Stream Fleet: resources/app-stream-fleet.md
+    - App Stream Image Builder Waiter: resources/app-stream-image-builder-waiter.md
+    - App Stream Image Builder: resources/app-stream-image-builder.md
+    - App Stream Image: resources/app-stream-image.md
+    - App Stream Stack Fleet Attachment: resources/app-stream-stack-fleet-attachment.md
+    - App Stream Stack: resources/app-stream-stack.md
+    - App Sync Graphql Api: resources/app-sync-graphql-api.md
+    - Application Auto Scaling Scalable Target: resources/application-auto-scaling-scalable-target.md
+    - Athena Data Catalog: resources/athena-data-catalog.md
+    - Athena Named Query: resources/athena-named-query.md
+    - Athena Prepared Statement: resources/athena-prepared-statement.md
+    - Athena Work Group: resources/athena-work-group.md
+    - Auto Scaling Group: resources/auto-scaling-group.md
+    - Auto Scaling Launch Configuration: resources/auto-scaling-launch-configuration.md
+    - Auto Scaling Lifecycle Hook: resources/auto-scaling-lifecycle-hook.md
+    - Auto Scaling Plans Scaling Plan: resources/auto-scaling-plans-scaling-plan.md
+    - Backup Report Plan: resources/backup-report-plan.md
+    - Backup Vault: resources/backup-vault.md
+    - Batch Compute Environment State: resources/batch-compute-environment-state.md
+    - Batch Compute Environment: resources/batch-compute-environment.md
+    - Batch Job Queue State: resources/batch-job-queue-state.md
+    - Batch Job Queue: resources/batch-job-queue.md
+    - Bedrock Agent: resources/bedrock-agent.md
+    - Bedrock Custom Model: resources/bedrock-custom-model.md
+    - Bedrock Data Source: resources/bedrock-data-source.md
+    - Bedrock Evaluation Job: resources/bedrock-evaluation-job.md
+    - Bedrock Guardrail: resources/bedrock-guardrail.md
+    - Bedrock Knowledge Base: resources/bedrock-knowledge-base.md
+    - Bedrock Model Customization Job: resources/bedrock-model-customization-job.md
+    - Bedrock Model Invocation Logging Configuration: resources/bedrock-model-invocation-logging-configuration.md
+    - Bedrock Prompt: resources/bedrock-prompt.md
+    - Bedrock Provisioned Model Throughput: resources/bedrock-provisioned-model-throughput.md
+    - Billing Costand Usage Report: resources/billing-costand-usage-report.md
+    - Budgets Budget: resources/budgets-budget.md
+    - Cloud 9Environment: resources/cloud-9environment.md
+    - Cloud Directory Directory: resources/cloud-directory-directory.md
+    - Cloud Directory Schema: resources/cloud-directory-schema.md
+    - Cloud Formation Stack Set: resources/cloud-formation-stack-set.md
+    - Cloud Formation Stack: resources/cloud-formation-stack.md
+    - Cloud Formation Type: resources/cloud-formation-type.md
+    - Cloud Front Cache Policy: resources/cloud-front-cache-policy.md
+    - Cloud Front Distribution Deployment: resources/cloud-front-distribution-deployment.md
+    - Cloud Front Distribution: resources/cloud-front-distribution.md
+    - Cloud Front Function: resources/cloud-front-function.md
+    - Cloud Front Key Group: resources/cloud-front-key-group.md
+    - Cloud Front Origin Access Control: resources/cloud-front-origin-access-control.md
+    - Cloud Front Origin Access Identity: resources/cloud-front-origin-access-identity.md
+    - Cloud Front Origin Request Policy: resources/cloud-front-origin-request-policy.md
+    - Cloud Front Public Key: resources/cloud-front-public-key.md
+    - Cloud Front Response Headers Policy: resources/cloud-front-response-headers-policy.md
+    - Cloud Hsmv2 Cluster Hsm: resources/cloud-hsmv2-cluster-hsm.md
+    - Cloud Hsmv2 Cluster: resources/cloud-hsmv2-cluster.md
+    - Cloud Search Domain: resources/cloud-search-domain.md
+    - Cloud Trail Trail: resources/cloud-trail-trail.md
+    - Cloud Watch Alarm: resources/cloud-watch-alarm.md
+    - Cloud Watch Anomaly Detector: resources/cloud-watch-anomaly-detector.md
+    - Cloud Watch Dashboard: resources/cloud-watch-dashboard.md
+    - Cloud Watch Events Buses: resources/cloud-watch-events-buses.md
+    - Cloud Watch Events Rule: resources/cloud-watch-events-rule.md
+    - Cloud Watch Events Target: resources/cloud-watch-events-target.md
+    - Cloud Watch Insight Rule: resources/cloud-watch-insight-rule.md
+    - Cloud Watch Logs Destination: resources/cloud-watch-logs-destination.md
+    - Cloud Watch Logs Log Group: resources/cloud-watch-logs-log-group.md
+    - Cloud Watch Logs Resource Policy: resources/cloud-watch-logs-resource-policy.md
+    - Cloud Watch Rum App: resources/cloud-watch-rum-app.md
+    - Code Artifact Domain: resources/code-artifact-domain.md
+    - Code Artifact Repository: resources/code-artifact-repository.md
+    - Code Build Build Batch: resources/code-build-build-batch.md
+    - Code Build Build: resources/code-build-build.md
+    - Code Build Project: resources/code-build-project.md
+    - Code Build Report Group: resources/code-build-report-group.md
+    - Code Build Report: resources/code-build-report.md
+    - Code Build Source Credential: resources/code-build-source-credential.md
+    - Code Commit Repository: resources/code-commit-repository.md
+    - Code Deploy Application: resources/code-deploy-application.md
+    - Code Deploy Deployment Config: resources/code-deploy-deployment-config.md
+    - Code Deploy Deployment Group: resources/code-deploy-deployment-group.md
+    - Code Guru Profiling Group: resources/code-guru-profiling-group.md
+    - Code Guru Reviewer Repository Association: resources/code-guru-reviewer-repository-association.md
+    - Code Pipeline Custom Action Type: resources/code-pipeline-custom-action-type.md
+    - Code Pipeline Pipeline: resources/code-pipeline-pipeline.md
+    - Code Pipeline Webhook: resources/code-pipeline-webhook.md
+    - Code Star Connection: resources/code-star-connection.md
+    - Code Star Project: resources/code-star-project.md
+    - Cognito Identity Pool: resources/cognito-identity-pool.md
+    - Cognito Identity Provider: resources/cognito-identity-provider.md
+    - Cognito User Pool Client: resources/cognito-user-pool-client.md
+    - Cognito User Pool Domain: resources/cognito-user-pool-domain.md
     - Cognito User Pool: resources/cognito-user-pool.md
+    - Comprehend Document Classifier: resources/comprehend-document-classifier.md
+    - Comprehend Dominant Language Detection Job: resources/comprehend-dominant-language-detection-job.md
+    - Comprehend Endpoint: resources/comprehend-endpoint.md
+    - Comprehend Entities Detection Job: resources/comprehend-entities-detection-job.md
+    - Comprehend Entity Recognizer: resources/comprehend-entity-recognizer.md
+    - Comprehend Events Detection Job: resources/comprehend-events-detection-job.md
+    - Comprehend Key Phrases Detection Job: resources/comprehend-key-phrases-detection-job.md
+    - Comprehend Pii Entities Detection Job: resources/comprehend-pii-entities-detection-job.md
+    - Comprehend Sentiment Detection Job: resources/comprehend-sentiment-detection-job.md
+    - Comprehend Targeted Sentiment Detection Job: resources/comprehend-targeted-sentiment-detection-job.md
+    - Config Service Config Rule: resources/config-service-config-rule.md
+    - Config Service Configuration Recorder: resources/config-service-configuration-recorder.md
+    - Config Service Conformance Pack: resources/config-service-conformance-pack.md
+    - Config Service Delivery Channel: resources/config-service-delivery-channel.md
+    - Data Pipeline Pipeline: resources/data-pipeline-pipeline.md
+    - Database Migration Service Certificate: resources/database-migration-service-certificate.md
+    - Database Migration Service Endpoint: resources/database-migration-service-endpoint.md
+    - Database Migration Service Event Subscription: resources/database-migration-service-event-subscription.md
+    - Database Migration Service Replication Instance: resources/database-migration-service-replication-instance.md
+    - Database Migration Service Replication Task: resources/database-migration-service-replication-task.md
+    - Database Migration Service Subnet Group: resources/database-migration-service-subnet-group.md
+    - Dax Cluster: resources/dax-cluster.md
+    - Dax Parameter Group: resources/dax-parameter-group.md
+    - Dax Subnet Group: resources/dax-subnet-group.md
+    - Device Farm Project: resources/device-farm-project.md
+    - Directory Service Directory: resources/directory-service-directory.md
+    - Dynamo Db Backup: resources/dynamo-db-backup.md
+    - Dynamo Db Table Item: resources/dynamo-db-table-item.md
+    - Dynamo Db Table: resources/dynamo-db-table.md
+    - EC2 Address: resources/ec2-address.md
+    - EC2 Client Vpn Endpoint Attachment: resources/ec2-client-vpn-endpoint-attachment.md
+    - EC2 Client Vpn Endpoint: resources/ec2-client-vpn-endpoint.md
+    - EC2 Customer Gateway: resources/ec2-customer-gateway.md
+    - EC2 Default Security Group Rule: resources/ec2-default-security-group-rule.md
+    - EC2 Dhcp Option: resources/ec2-dhcp-option.md
+    - EC2 Egress Only Internet Gateway: resources/ec2-egress-only-internet-gateway.md
+    - EC2 Host: resources/ec2-host.md
     - EC2 Image: resources/ec2-image.md
+    - EC2 Instance Connect Endpoint: resources/ec2-instance-connect-endpoint.md
     - EC2 Instance: resources/ec2-instance.md
+    - EC2 Internet Gateway Attachment: resources/ec2-internet-gateway-attachment.md
+    - EC2 Internet Gateway: resources/ec2-internet-gateway.md
+    - EC2 Key Pair: resources/ec2-key-pair.md
+    - EC2 Launch Template: resources/ec2-launch-template.md
+    - EC2 Nat Gateway: resources/ec2-nat-gateway.md
+    - EC2 Network Acl: resources/ec2-network-acl.md
+    - EC2 Network Interface: resources/ec2-network-interface.md
+    - EC2 Placement Group: resources/ec2-placement-group.md
+    - EC2 Route Table: resources/ec2-route-table.md
+    - EC2 Security Group: resources/ec2-security-group.md
+    - EC2 Snapshot: resources/ec2-snapshot.md
+    - EC2 Spot Fleet Request: resources/ec2-spot-fleet-request.md
+    - EC2 Subnet: resources/ec2-subnet.md
+    - EC2 Tgw Attachment: resources/ec2-tgw-attachment.md
+    - EC2 Tgw Connect Peer: resources/ec2-tgw-connect-peer.md
+    - EC2 Tgw: resources/ec2-tgw.md
+    - EC2 VPC Endpoint Connection: resources/ec2-vpc-endpoint-connection.md
+    - EC2 VPC Endpoint Service Configuration: resources/ec2-vpc-endpoint-service-configuration.md
+    - EC2 VPC Endpoint: resources/ec2-vpc-endpoint.md
+    - EC2 VPC Peering Connection: resources/ec2-vpc-peering-connection.md
+    - EC2 VPC: resources/ec2-vpc.md
+    - EC2 Volume: resources/ec2-volume.md
+    - EC2 Vpn Connection: resources/ec2-vpn-connection.md
+    - EC2 Vpn Gateway Attachment: resources/ec2-vpn-gateway-attachment.md
+    - EC2 Vpn Gateway: resources/ec2-vpn-gateway.md
+    - EFS File System: resources/efs-file-system.md
+    - EFS Mount Target: resources/efs-mount-target.md
+    - EKS Cluster: resources/eks-cluster.md
+    - EKS Fargate Profile: resources/eks-fargate-profile.md
+    - EKS Nodegroup: resources/eks-nodegroup.md
+    - ELB: resources/elb.md
+    - ELBv2 Listener Rule: resources/elbv2-listener-rule.md
+    - ELBv2 Target Group: resources/elbv2-target-group.md
     - ELBv2: resources/elbv2.md
+    - Ecr Public Repository: resources/ecr-public-repository.md
+    - Ecr Repository: resources/ecr-repository.md
+    - Ecs Capacity Provider: resources/ecs-capacity-provider.md
+    - Ecs Cluster Instance: resources/ecs-cluster-instance.md
+    - Ecs Cluster: resources/ecs-cluster.md
+    - Ecs Service: resources/ecs-service.md
+    - Ecs Task Definition: resources/ecs-task-definition.md
+    - Ecs Task: resources/ecs-task.md
+    - Elastic Beanstalk Application: resources/elastic-beanstalk-application.md
+    - Elastic Beanstalk Environment: resources/elastic-beanstalk-environment.md
+    - Elastic Transcoder Pipeline: resources/elastic-transcoder-pipeline.md
+    - Elastic Transcoder Preset: resources/elastic-transcoder-preset.md
+    - Elasticache Cache Cluster: resources/elasticache-cache-cluster.md
+    - Elasticache Cache Parameter Group: resources/elasticache-cache-parameter-group.md
+    - Elasticache Replication Group: resources/elasticache-replication-group.md
+    - Elasticache Subnet Group: resources/elasticache-subnet-group.md
+    - Elasticache User Group: resources/elasticache-user-group.md
+    - Elasticache User: resources/elasticache-user.md
+    - Emr Cluster: resources/emr-cluster.md
+    - Emr Security Configuration: resources/emr-security-configuration.md
+    - Es Domain: resources/es-domain.md
+    - Firehose Delivery Stream: resources/firehose-delivery-stream.md
+    - Fms Notification Channel: resources/fms-notification-channel.md
+    - Fms Policy: resources/fms-policy.md
+    - Fsx Backup: resources/fsx-backup.md
+    - Fsx File System: resources/fsx-file-system.md
+    - Game Lift Build: resources/game-lift-build.md
+    - Game Lift Fleet: resources/game-lift-fleet.md
+    - Game Lift Matchmaking Configuration: resources/game-lift-matchmaking-configuration.md
+    - Game Lift Matchmaking Rule Set: resources/game-lift-matchmaking-rule-set.md
+    - Game Lift Queue: resources/game-lift-queue.md
+    - Global Accelerator Endpoint Group: resources/global-accelerator-endpoint-group.md
+    - Global Accelerator Listener: resources/global-accelerator-listener.md
+    - Global Accelerator: resources/global-accelerator.md
+    - Glue Blueprint: resources/glue-blueprint.md
+    - Glue Classifier: resources/glue-classifier.md
+    - Glue Connection: resources/glue-connection.md
+    - Glue Crawler: resources/glue-crawler.md
+    - Glue Data Brew Datasets: resources/glue-data-brew-datasets.md
+    - Glue Data Brew Jobs: resources/glue-data-brew-jobs.md
+    - Glue Data Brew Projects: resources/glue-data-brew-projects.md
+    - Glue Data Brew Recipe: resources/glue-data-brew-recipe.md
+    - Glue Data Brew Rulesets: resources/glue-data-brew-rulesets.md
+    - Glue Data Brew Schedules: resources/glue-data-brew-schedules.md
+    - Glue Database: resources/glue-database.md
+    - Glue Dev Endpoint: resources/glue-dev-endpoint.md
+    - Glue Job: resources/glue-job.md
+    - Glue Ml Transform: resources/glue-ml-transform.md
+    - Glue Security Configuration: resources/glue-security-configuration.md
+    - Glue Session: resources/glue-session.md
+    - Glue Trigger: resources/glue-trigger.md
+    - Glue Workflow: resources/glue-workflow.md
+    - Guard Duty Detector: resources/guard-duty-detector.md
+    - IAM Account Setting Password Policy: resources/iam-account-setting-password-policy.md
+    - IAM Group Policy Attachment: resources/iam-group-policy-attachment.md
+    - IAM Group Policy: resources/iam-group-policy.md
+    - IAM Group: resources/iam-group.md
+    - IAM Instance Profile Role: resources/iam-instance-profile-role.md
+    - IAM Instance Profile: resources/iam-instance-profile.md
+    - IAM Login Profile: resources/iam-login-profile.md
+    - IAM Open Id Connect Provider: resources/iam-open-id-connect-provider.md
+    - IAM Policy: resources/iam-policy.md
+    - IAM Role Policy Attachment: resources/iam-role-policy-attachment.md
+    - IAM Role Policy: resources/iam-role-policy.md
     - IAM Role: resources/iam-role.md
+    - IAM Roles Anywhere Crl: resources/iam-roles-anywhere-crl.md
+    - IAM Roles Anywhere Profile: resources/iam-roles-anywhere-profile.md
+    - IAM Roles Anywhere Trust Anchor: resources/iam-roles-anywhere-trust-anchor.md
+    - IAM Saml Provider: resources/iam-saml-provider.md
+    - IAM Server Certificate: resources/iam-server-certificate.md
+    - IAM Service Specific Credential: resources/iam-service-specific-credential.md
+    - IAM Signing Certificate: resources/iam-signing-certificate.md
+    - IAM User Access Key: resources/iam-user-access-key.md
+    - IAM User Group Attachment: resources/iam-user-group-attachment.md
+    - IAM User Https Git Credential: resources/iam-user-https-git-credential.md
+    - IAM User Mfa Device: resources/iam-user-mfa-device.md
+    - IAM User Policy Attachment: resources/iam-user-policy-attachment.md
+    - IAM User Policy: resources/iam-user-policy.md
+    - IAM User Ssh Public Key: resources/iam-user-ssh-public-key.md
+    - IAM User: resources/iam-user.md
+    - IAM Virtual Mfa Device: resources/iam-virtual-mfa-device.md
+    - Image Builder Component: resources/image-builder-component.md
+    - Image Builder Distribution Configuration: resources/image-builder-distribution-configuration.md
+    - Image Builder Image: resources/image-builder-image.md
+    - Image Builder Infrastructure Configuration: resources/image-builder-infrastructure-configuration.md
+    - Image Builder Pipeline: resources/image-builder-pipeline.md
+    - Image Builder Recipe: resources/image-builder-recipe.md
+    - Inspector 2: resources/inspector-2.md
+    - Inspector Assessment Run: resources/inspector-assessment-run.md
+    - Inspector Assessment Target: resources/inspector-assessment-target.md
+    - Inspector Assessment Template: resources/inspector-assessment-template.md
+    - Iot Authorizer: resources/iot-authorizer.md
+    - Iot Ca Certificate: resources/iot-ca-certificate.md
+    - Iot Certificate: resources/iot-certificate.md
+    - Iot Job: resources/iot-job.md
+    - Iot Ota Update: resources/iot-ota-update.md
+    - Iot Policy: resources/iot-policy.md
+    - Iot Role Alias: resources/iot-role-alias.md
+    - Iot Site Wise Access Policy: resources/iot-site-wise-access-policy.md
+    - Iot Site Wise Asset Model: resources/iot-site-wise-asset-model.md
+    - Iot Site Wise Asset: resources/iot-site-wise-asset.md
+    - Iot Site Wise Dashboard: resources/iot-site-wise-dashboard.md
+    - Iot Site Wise Gateway: resources/iot-site-wise-gateway.md
+    - Iot Site Wise Portal: resources/iot-site-wise-portal.md
+    - Iot Site Wise Project: resources/iot-site-wise-project.md
+    - Iot Stream: resources/iot-stream.md
+    - Iot Thing Group: resources/iot-thing-group.md
+    - Iot Thing Type State: resources/iot-thing-type-state.md
+    - Iot Thing Type: resources/iot-thing-type.md
+    - Iot Thing: resources/iot-thing.md
+    - Iot Topic Rule: resources/iot-topic-rule.md
+    - Iot Twin Maker Component Type: resources/iot-twin-maker-component-type.md
+    - Iot Twin Maker Entity: resources/iot-twin-maker-entity.md
+    - Iot Twin Maker Scene: resources/iot-twin-maker-scene.md
+    - Iot Twin Maker Sync Job: resources/iot-twin-maker-sync-job.md
+    - Iot Twin Maker Workspace: resources/iot-twin-maker-workspace.md
+    - KMS Alias: resources/kms-alias.md
+    - KMS Key: resources/kms-key.md
+    - Kendra Index: resources/kendra-index.md
+    - Kinesis Analytics Application: resources/kinesis-analytics-application.md
+    - Kinesis Stream: resources/kinesis-stream.md
+    - Kinesis Video Project: resources/kinesis-video-project.md
+    - Lambda Event Source Mapping: resources/lambda-event-source-mapping.md
+    - Lambda Function: resources/lambda-function.md
+    - Lambda Layer: resources/lambda-layer.md
+    - Lex Bot: resources/lex-bot.md
+    - Lex Intent: resources/lex-intent.md
+    - Lex Model Building Service Bot Alias: resources/lex-model-building-service-bot-alias.md
+    - Lex Slot Type: resources/lex-slot-type.md
+    - Lightsail Disk: resources/lightsail-disk.md
+    - Lightsail Domain: resources/lightsail-domain.md
     - Lightsail Instance: resources/lightsail-instance.md
+    - Lightsail Key Pair: resources/lightsail-key-pair.md
+    - Lightsail Load Balancer: resources/lightsail-load-balancer.md
+    - Lightsail Static Ip: resources/lightsail-static-ip.md
+    - Machine Learning Branch Prediction: resources/machine-learning-branch-prediction.md
+    - Machine Learning Data Source: resources/machine-learning-data-source.md
+    - Machine Learning Evaluation: resources/machine-learning-evaluation.md
+    - Machine Learning Ml Model: resources/machine-learning-ml-model.md
+    - Macie: resources/macie.md
+    - Managed Blockchain Member: resources/managed-blockchain-member.md
+    - Media Convert Job Template: resources/media-convert-job-template.md
+    - Media Convert Preset: resources/media-convert-preset.md
+    - Media Convert Queue: resources/media-convert-queue.md
+    - Media Live Channel: resources/media-live-channel.md
+    - Media Live Input Security Group: resources/media-live-input-security-group.md
+    - Media Live Input: resources/media-live-input.md
+    - Media Package Channel: resources/media-package-channel.md
+    - Media Package Origin Endpoint: resources/media-package-origin-endpoint.md
+    - Media Store Container: resources/media-store-container.md
+    - Media Store Data Items: resources/media-store-data-items.md
+    - Media Tailor Configuration: resources/media-tailor-configuration.md
+    - Memory Db Cluster: resources/memory-db-cluster.md
+    - Memory Db Parameter Group: resources/memory-db-parameter-group.md
+    - Memory Db Subnet Group: resources/memory-db-subnet-group.md
+    - Memory Db User: resources/memory-db-user.md
+    - Memory Dbacl: resources/memory-dbacl.md
+    - Mgn Job: resources/mgn-job.md
+    - Mgn Source Server: resources/mgn-source-server.md
+    - Mobile Project: resources/mobile-project.md
+    - Mq Broker: resources/mq-broker.md
+    - Msk Cluster: resources/msk-cluster.md
+    - Msk Configuration: resources/msk-configuration.md
+    - Neptune Cluster: resources/neptune-cluster.md
+    - Neptune Instance: resources/neptune-instance.md
+    - Neptune Snapshot: resources/neptune-snapshot.md
+    - Network Manager Connect Peer: resources/network-manager-connect-peer.md
+    - Network Manager Core Network: resources/network-manager-core-network.md
+    - Network Manager Global Network: resources/network-manager-global-network.md
+    - Network Manager Network Attachment: resources/network-manager-network-attachment.md
+    - Ops Works App: resources/ops-works-app.md
+    - Ops Works Cm Backup: resources/ops-works-cm-backup.md
+    - Ops Works Cm Server State: resources/ops-works-cm-server-state.md
+    - Ops Works Cm Server: resources/ops-works-cm-server.md
+    - Ops Works Instance: resources/ops-works-instance.md
+    - Ops Works Layer: resources/ops-works-layer.md
+    - Ops Works User Profile: resources/ops-works-user-profile.md
+    - Os Domain: resources/os-domain.md
+    - Os Package: resources/os-package.md
+    - Os Pipeline: resources/os-pipeline.md
+    - Osvpc Endpoint: resources/osvpc-endpoint.md
+    - Pinpoint App: resources/pinpoint-app.md
+    - Pinpoint Phone Number: resources/pinpoint-phone-number.md
+    - Pipes Pipe: resources/pipes-pipe.md
+    - Polly Lexicon: resources/polly-lexicon.md
+    - Qldb Ledger: resources/qldb-ledger.md
+    - Quick Sight Subscription: resources/quick-sight-subscription.md
+    - Quick Sight User: resources/quick-sight-user.md
+    - RDS Cluster Snapshot: resources/rds-cluster-snapshot.md
+    - RDS Event Subscription: resources/rds-event-subscription.md
+    - RDS Instance: resources/rds-instance.md
+    - RDS Option Group: resources/rds-option-group.md
+    - RDS Proxy: resources/rds-proxy.md
+    - RDS Snapshot: resources/rds-snapshot.md
+    - RDSdb Cluster Parameter Group: resources/rdsdb-cluster-parameter-group.md
+    - RDSdb Cluster: resources/rdsdb-cluster.md
+    - RDSdb Parameter Group: resources/rdsdb-parameter-group.md
+    - RDSdb Subnet Group: resources/rdsdb-subnet-group.md
+    - Redshift Cluster: resources/redshift-cluster.md
+    - Redshift Parameter Group: resources/redshift-parameter-group.md
+    - Redshift Scheduled Action: resources/redshift-scheduled-action.md
+    - Redshift Serverless Namespace: resources/redshift-serverless-namespace.md
+    - Redshift Serverless Snapshot: resources/redshift-serverless-snapshot.md
+    - Redshift Serverless Workgroup: resources/redshift-serverless-workgroup.md
+    - Redshift Snapshot Schedule: resources/redshift-snapshot-schedule.md
+    - Redshift Snapshot: resources/redshift-snapshot.md
+    - Redshift Subnet Group: resources/redshift-subnet-group.md
+    - Rekognition Collection: resources/rekognition-collection.md
+    - Rekognition Dataset: resources/rekognition-dataset.md
+    - Rekognition Project: resources/rekognition-project.md
+    - Resource Explorer 2Index: resources/resource-explorer-2index.md
+    - Resource Explorer 2View: resources/resource-explorer-2view.md
+    - Resource Group Group: resources/resource-group-group.md
+    - Robo Maker Robot Application: resources/robo-maker-robot-application.md
+    - Robo Maker Simulation Application: resources/robo-maker-simulation-application.md
+    - Robo Maker Simulation Job: resources/robo-maker-simulation-job.md
+    - Route 53 Health Check: resources/route-53-health-check.md
+    - Route 53 Hosted Zone: resources/route-53-hosted-zone.md
+    - Route 53 Resolver Endpoint: resources/route-53-resolver-endpoint.md
+    - Route 53 Resolver Rule: resources/route-53-resolver-rule.md
+    - Route 53 Resource Record Set: resources/route-53-resource-record-set.md
+    - Route 53 Traffic Policy: resources/route-53-traffic-policy.md
+    - S3 Access Point: resources/s3-access-point.md
     - S3 Bucket: resources/s3-bucket.md
+    - S3 Multipart Upload: resources/s3-multipart-upload.md
     - S3 Object: resources/s3-object.md
+    - SNS Endpoint: resources/sns-endpoint.md
+    - SNS Platform Application: resources/sns-platform-application.md
+    - SNS Subscription: resources/sns-subscription.md
+    - SNS Topic: resources/sns-topic.md
+    - SQS Queue: resources/sqs-queue.md
+    - SSM Activation: resources/ssm-activation.md
+    - SSM Association: resources/ssm-association.md
+    - SSM Document: resources/ssm-document.md
+    - SSM Maintenance Window: resources/ssm-maintenance-window.md
+    - SSM Parameter: resources/ssm-parameter.md
+    - SSM Patch Baseline: resources/ssm-patch-baseline.md
+    - SSM Resource Data Sync: resources/ssm-resource-data-sync.md
+    - Sage Maker App: resources/sage-maker-app.md
+    - Sage Maker Domain: resources/sage-maker-domain.md
+    - Sage Maker Endpoint Config: resources/sage-maker-endpoint-config.md
+    - Sage Maker Endpoint: resources/sage-maker-endpoint.md
+    - Sage Maker Model: resources/sage-maker-model.md
+    - Sage Maker Notebook Instance Lifecycle Config: resources/sage-maker-notebook-instance-lifecycle-config.md
+    - Sage Maker Notebook Instance State: resources/sage-maker-notebook-instance-state.md
+    - Sage Maker Notebook Instance: resources/sage-maker-notebook-instance.md
+    - Sage Maker Space: resources/sage-maker-space.md
+    - Sage Maker User Profiles: resources/sage-maker-user-profiles.md
+    - Scheduler Schedule: resources/scheduler-schedule.md
+    - Secrets Manager Secret: resources/secrets-manager-secret.md
+    - Security Hub: resources/security-hub.md
+    - Service Catalog Constraint Portfolio Attachment: resources/service-catalog-constraint-portfolio-attachment.md
+    - Service Catalog Portfolio Product Attachment: resources/service-catalog-portfolio-product-attachment.md
+    - Service Catalog Portfolio Share Attachment: resources/service-catalog-portfolio-share-attachment.md
+    - Service Catalog Portfolio: resources/service-catalog-portfolio.md
+    - Service Catalog Principal Portfolio Attachment: resources/service-catalog-principal-portfolio-attachment.md
+    - Service Catalog Product: resources/service-catalog-product.md
+    - Service Catalog Provisioned Product: resources/service-catalog-provisioned-product.md
+    - Service Catalog Tag Option Portfolio Attachment: resources/service-catalog-tag-option-portfolio-attachment.md
+    - Service Catalog Tag Option: resources/service-catalog-tag-option.md
+    - Service Discovery Instance: resources/service-discovery-instance.md
+    - Service Discovery Namespace: resources/service-discovery-namespace.md
+    - Service Discovery Service: resources/service-discovery-service.md
+    - Ses Configuration Set: resources/ses-configuration-set.md
+    - Ses Identity: resources/ses-identity.md
+    - Ses Receipt Filter: resources/ses-receipt-filter.md
+    - Ses Receipt Rule Set: resources/ses-receipt-rule-set.md
+    - Ses Template: resources/ses-template.md
+    - Sfn State Machine: resources/sfn-state-machine.md
+    - Signer Signing Job: resources/signer-signing-job.md
+    - Simple Db Domain: resources/simple-db-domain.md
+    - Storage Gateway File Share: resources/storage-gateway-file-share.md
+    - Storage Gateway Gateway: resources/storage-gateway-gateway.md
+    - Storage Gateway Tape: resources/storage-gateway-tape.md
+    - Storage Gateway Volume: resources/storage-gateway-volume.md
+    - Transcribe Call Analytics Category: resources/transcribe-call-analytics-category.md
+    - Transcribe Call Analytics Job: resources/transcribe-call-analytics-job.md
+    - Transcribe Language Model: resources/transcribe-language-model.md
+    - Transcribe Medical Transcription Job: resources/transcribe-medical-transcription-job.md
+    - Transcribe Medical Vocabulary: resources/transcribe-medical-vocabulary.md
+    - Transcribe Transcription Job: resources/transcribe-transcription-job.md
+    - Transcribe Vocabulary Filter: resources/transcribe-vocabulary-filter.md
+    - Transcribe Vocabulary: resources/transcribe-vocabulary.md
+    - Transfer Server User: resources/transfer-server-user.md
+    - Transfer Server: resources/transfer-server.md
+    - WAF Regional Byte Match Set Ip: resources/waf-regional-byte-match-set-ip.md
+    - WAF Regional Byte Match Set: resources/waf-regional-byte-match-set.md
+    - WAF Regional Ip Set Ip: resources/waf-regional-ip-set-ip.md
+    - WAF Regional Ip Set: resources/waf-regional-ip-set.md
+    - WAF Regional Rate Based Rule Predicate: resources/waf-regional-rate-based-rule-predicate.md
+    - WAF Regional Rate Based Rule: resources/waf-regional-rate-based-rule.md
+    - WAF Regional Regex Match Set: resources/waf-regional-regex-match-set.md
+    - WAF Regional Regex Match Tuple: resources/waf-regional-regex-match-tuple.md
+    - WAF Regional Regex Pattern Set: resources/waf-regional-regex-pattern-set.md
+    - WAF Regional Regex Pattern String: resources/waf-regional-regex-pattern-string.md
+    - WAF Regional Rule Group: resources/waf-regional-rule-group.md
+    - WAF Regional Rule Predicate: resources/waf-regional-rule-predicate.md
+    - WAF Regional Rule: resources/waf-regional-rule.md
+    - WAF Regional Web Acl Rule Attachment: resources/waf-regional-web-acl-rule-attachment.md
+    - WAF Regional Web Acl: resources/waf-regional-web-acl.md
+    - WAF Rule: resources/waf-rule.md
+    - WAF Web Acl Rule Attachment: resources/waf-web-acl-rule-attachment.md
+    - WAF Web Acl: resources/waf-web-acl.md
+    - WAFv2 Api Key: resources/wafv2-api-key.md
+    - WAFv2 Ip Set: resources/wafv2-ip-set.md
+    - WAFv2 Regex Pattern Set: resources/wafv2-regex-pattern-set.md
+    - WAFv2 Rule Group: resources/wafv2-rule-group.md
+    - WAFv2 Web Acl: resources/wafv2-web-acl.md
+    - Work Spaces Workspace: resources/work-spaces-workspace.md
+    - XRay Group: resources/xray-group.md
+    - XRay Sampling Rule: resources/xray-sampling-rule.md

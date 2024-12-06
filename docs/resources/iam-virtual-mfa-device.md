@@ -14,8 +14,8 @@ IAMVirtualMFADevice
 ## Properties
 
 
-- `Assigned`: 
-- `SerialNumber`: 
+- `Assigned`: No Description
+- `SerialNumber`: No Description
 
 !!! note - Using Properties
     Properties are what [Filters](../config-filtering.md) are written against in your configuration. You use the property

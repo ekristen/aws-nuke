@@ -14,9 +14,9 @@ BedrockPrompt
 ## Properties
 
 
-- `ID`: 
-- `Name`: 
-- `Version`: 
+- `ID`: No Description
+- `Name`: No Description
+- `Version`: No Description
 
 !!! note - Using Properties
     Properties are what [Filters](../config-filtering.md) are written against in your configuration. You use the property

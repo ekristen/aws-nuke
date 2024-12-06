@@ -14,14 +14,14 @@ IAMUser
 ## Properties
 
 
-- `CreateDate`: 
-- `HasPermissionBoundary`: 
-- `Name`: 
-- `PasswordLastUsed`: 
-- `Path`: 
-- `PermissionBoundaryARN`: 
-- `PermissionBoundaryType`: 
-- `UserID`: 
+- `CreateDate`: No Description
+- `HasPermissionBoundary`: No Description
+- `Name`: No Description
+- `PasswordLastUsed`: No Description
+- `Path`: No Description
+- `PermissionBoundaryARN`: No Description
+- `PermissionBoundaryType`: No Description
+- `UserID`: No Description
 - `tag:<key>:`: This resource has tags with property `Tags`. These are key/value pairs that are
 	added as their own property with the prefix of `tag:` (e.g. [tag:example: "value"]) 
 

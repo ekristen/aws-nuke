@@ -14,10 +14,10 @@ ConfigServiceConfigRule
 ## Properties
 
 
-- `CreatedBy`: 
-- `HasRemediationConfig`: 
-- `Name`: 
-- `Scope`: 
+- `CreatedBy`: No Description
+- `HasRemediationConfig`: No Description
+- `Name`: No Description
+- `Scope`: No Description
 
 !!! note - Using Properties
     Properties are what [Filters](../config-filtering.md) are written against in your configuration. You use the property
