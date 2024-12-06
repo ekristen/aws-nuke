@@ -18,9 +18,10 @@ const ECSClusterInstanceResource = "ECSClusterInstance"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ECSClusterInstanceResource,
-		Scope:  nuke.Account,
-		Lister: &ECSClusterInstanceLister{},
+		Name:     ECSClusterInstanceResource,
+		Scope:    nuke.Account,
+		Resource: &ECSClusterInstance{},
+		Lister:   &ECSClusterInstanceLister{},
 	})
 }
 

@@ -15,9 +15,10 @@ const OpsWorksLayerResource = "OpsWorksLayer"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   OpsWorksLayerResource,
-		Scope:  nuke.Account,
-		Lister: &OpsWorksLayerLister{},
+		Name:     OpsWorksLayerResource,
+		Scope:    nuke.Account,
+		Resource: &OpsWorksLayer{},
+		Lister:   &OpsWorksLayerLister{},
 	})
 }
 

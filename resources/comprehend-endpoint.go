@@ -16,9 +16,10 @@ const ComprehendEndpointResource = "ComprehendEndpoint"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ComprehendEndpointResource,
-		Scope:  nuke.Account,
-		Lister: &ComprehendEndpointLister{},
+		Name:     ComprehendEndpointResource,
+		Scope:    nuke.Account,
+		Resource: &ComprehendEndpoint{},
+		Lister:   &ComprehendEndpointLister{},
 	})
 }
 

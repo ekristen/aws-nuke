@@ -17,9 +17,10 @@ const RedshiftClusterResource = "RedshiftCluster"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   RedshiftClusterResource,
-		Scope:  nuke.Account,
-		Lister: &RedshiftClusterLister{},
+		Name:     RedshiftClusterResource,
+		Scope:    nuke.Account,
+		Resource: &RedshiftCluster{},
+		Lister:   &RedshiftClusterLister{},
 	})
 }
 

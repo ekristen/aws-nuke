@@ -16,9 +16,10 @@ const SESConfigurationSetResource = "SESConfigurationSet"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   SESConfigurationSetResource,
-		Scope:  nuke.Account,
-		Lister: &SESConfigurationSetLister{},
+		Name:     SESConfigurationSetResource,
+		Scope:    nuke.Account,
+		Resource: &SESConfigurationSet{},
+		Lister:   &SESConfigurationSetLister{},
 	})
 }
 

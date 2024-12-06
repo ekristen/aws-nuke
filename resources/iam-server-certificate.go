@@ -16,9 +16,10 @@ const IAMServerCertificateResource = "IAMServerCertificate"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   IAMServerCertificateResource,
-		Scope:  nuke.Account,
-		Lister: &IAMServerCertificateLister{},
+		Name:     IAMServerCertificateResource,
+		Scope:    nuke.Account,
+		Resource: &IAMServerCertificate{},
+		Lister:   &IAMServerCertificateLister{},
 		DeprecatedAliases: []string{
 			"IamServerCertificate",
 		},

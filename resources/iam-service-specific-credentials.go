@@ -20,9 +20,10 @@ const IAMServiceSpecificCredentialResource = "IAMServiceSpecificCredential"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   IAMServiceSpecificCredentialResource,
-		Scope:  nuke.Account,
-		Lister: &IAMServiceSpecificCredentialLister{},
+		Name:     IAMServiceSpecificCredentialResource,
+		Scope:    nuke.Account,
+		Resource: &IAMServiceSpecificCredential{},
+		Lister:   &IAMServiceSpecificCredentialLister{},
 	})
 }
 

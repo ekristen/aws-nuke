@@ -17,9 +17,10 @@ const EC2KeyPairResource = "EC2KeyPair"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   EC2KeyPairResource,
-		Scope:  nuke.Account,
-		Lister: &EC2KeyPairLister{},
+		Name:     EC2KeyPairResource,
+		Scope:    nuke.Account,
+		Resource: &EC2KeyPair{},
+		Lister:   &EC2KeyPairLister{},
 	})
 }
 

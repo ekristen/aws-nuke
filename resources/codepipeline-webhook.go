@@ -16,9 +16,10 @@ const CodePipelineWebhookResource = "CodePipelineWebhook"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   CodePipelineWebhookResource,
-		Scope:  nuke.Account,
-		Lister: &CodePipelineWebhookLister{},
+		Name:     CodePipelineWebhookResource,
+		Scope:    nuke.Account,
+		Resource: &CodePipelineWebhook{},
+		Lister:   &CodePipelineWebhookLister{},
 	})
 }
 

@@ -19,9 +19,10 @@ const AppStreamStackResource = "AppStreamStack"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   AppStreamStackResource,
-		Scope:  nuke.Account,
-		Lister: &AppStreamStackLister{},
+		Name:     AppStreamStackResource,
+		Scope:    nuke.Account,
+		Resource: &AppStreamStack{},
+		Lister:   &AppStreamStackLister{},
 	})
 }
 

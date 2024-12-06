@@ -18,9 +18,10 @@ const WAFRegionalRegexPatternSetResource = "WAFRegionalRegexPatternSet"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   WAFRegionalRegexPatternSetResource,
-		Scope:  nuke.Account,
-		Lister: &WAFRegionalRegexPatternSetLister{},
+		Name:     WAFRegionalRegexPatternSetResource,
+		Scope:    nuke.Account,
+		Resource: &WAFRegionalRegexPatternSet{},
+		Lister:   &WAFRegionalRegexPatternSetLister{},
 	})
 }
 

@@ -16,9 +16,10 @@ const DatabaseMigrationServiceEndpointResource = "DatabaseMigrationServiceEndpoi
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   DatabaseMigrationServiceEndpointResource,
-		Scope:  nuke.Account,
-		Lister: &DatabaseMigrationServiceEndpointLister{},
+		Name:     DatabaseMigrationServiceEndpointResource,
+		Scope:    nuke.Account,
+		Resource: &DatabaseMigrationServiceEndpoint{},
+		Lister:   &DatabaseMigrationServiceEndpointLister{},
 	})
 }
 

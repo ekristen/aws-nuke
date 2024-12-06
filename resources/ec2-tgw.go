@@ -18,9 +18,10 @@ const EC2TGWResource = "EC2TGW"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   EC2TGWResource,
-		Scope:  nuke.Account,
-		Lister: &EC2TGWLister{},
+		Name:     EC2TGWResource,
+		Scope:    nuke.Account,
+		Resource: &EC2TGW{},
+		Lister:   &EC2TGWLister{},
 		DependsOn: []string{
 			EC2TGWAttachmentResource,
 		},

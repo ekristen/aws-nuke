@@ -17,9 +17,10 @@ const FMSPolicyResource = "FMSPolicy"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   FMSPolicyResource,
-		Scope:  nuke.Account,
-		Lister: &FMSPolicyLister{},
+		Name:     FMSPolicyResource,
+		Scope:    nuke.Account,
+		Resource: &FMSPolicy{},
+		Lister:   &FMSPolicyLister{},
 	})
 }
 

@@ -16,9 +16,10 @@ const RedshiftScheduledActionResource = "RedshiftScheduledAction"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   RedshiftScheduledActionResource,
-		Scope:  nuke.Account,
-		Lister: &RedshiftScheduledActionLister{},
+		Name:     RedshiftScheduledActionResource,
+		Scope:    nuke.Account,
+		Resource: &RedshiftScheduledAction{},
+		Lister:   &RedshiftScheduledActionLister{},
 	})
 }
 

@@ -18,9 +18,10 @@ const EC2DHCPOptionResource = "EC2DHCPOption"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   EC2DHCPOptionResource,
-		Scope:  nuke.Account,
-		Lister: &EC2DHCPOptionLister{},
+		Name:     EC2DHCPOptionResource,
+		Scope:    nuke.Account,
+		Resource: &EC2DHCPOption{},
+		Lister:   &EC2DHCPOptionLister{},
 		DeprecatedAliases: []string{
 			"EC2DhcpOptions",
 			"EC2DHCPOptions",

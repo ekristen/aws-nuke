@@ -12,18 +12,14 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-type CloudFrontOriginRequestPolicy struct {
-	svc *cloudfront.CloudFront
-	ID  *string
-}
-
 const CloudFrontOriginRequestPolicyResource = "CloudFrontOriginRequestPolicy"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   CloudFrontOriginRequestPolicyResource,
-		Scope:  nuke.Account,
-		Lister: &CloudFrontOriginRequestPolicyLister{},
+		Name:     CloudFrontOriginRequestPolicyResource,
+		Scope:    nuke.Account,
+		Resource: &CloudFrontOriginRequestPolicy{},
+		Lister:   &CloudFrontOriginRequestPolicyLister{},
 	})
 }
 
@@ -59,6 +55,11 @@ func (l *CloudFrontOriginRequestPolicyLister) List(_ context.Context, o interfac
 	}
 
 	return resources, nil
+}
+
+type CloudFrontOriginRequestPolicy struct {
+	svc *cloudfront.CloudFront
+	ID  *string
 }
 
 func (f *CloudFrontOriginRequestPolicy) Remove(_ context.Context) error {

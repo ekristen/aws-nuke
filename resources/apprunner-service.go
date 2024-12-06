@@ -12,20 +12,14 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-type AppRunnerService struct {
-	svc         *apprunner.AppRunner
-	ServiceARN  *string
-	ServiceID   *string
-	ServiceName *string
-}
-
 const AppRunnerServiceResource = "AppRunnerService"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   AppRunnerServiceResource,
-		Scope:  nuke.Account,
-		Lister: &AppRunnerServiceLister{},
+		Name:     AppRunnerServiceResource,
+		Scope:    nuke.Account,
+		Resource: &AppRunnerService{},
+		Lister:   &AppRunnerServiceLister{},
 	})
 }
 
@@ -62,6 +56,13 @@ func (l *AppRunnerServiceLister) List(_ context.Context, o interface{}) ([]resou
 	}
 
 	return resources, nil
+}
+
+type AppRunnerService struct {
+	svc         *apprunner.AppRunner
+	ServiceARN  *string
+	ServiceID   *string
+	ServiceName *string
 }
 
 func (f *AppRunnerService) Remove(_ context.Context) error {

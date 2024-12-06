@@ -14,19 +14,14 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-type AppStreamFleetState struct {
-	svc   *appstream.AppStream
-	name  *string
-	state *string
-}
-
 const AppStreamFleetStateResource = "AppStreamFleetState"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   AppStreamFleetStateResource,
-		Scope:  nuke.Account,
-		Lister: &AppStreamFleetStateLister{},
+		Name:     AppStreamFleetStateResource,
+		Scope:    nuke.Account,
+		Resource: &AppStreamFleetState{},
+		Lister:   &AppStreamFleetStateLister{},
 	})
 }
 
@@ -62,6 +57,12 @@ func (l *AppStreamFleetStateLister) List(_ context.Context, o interface{}) ([]re
 	}
 
 	return resources, nil
+}
+
+type AppStreamFleetState struct {
+	svc   *appstream.AppStream
+	name  *string
+	state *string
 }
 
 func (f *AppStreamFleetState) Remove(_ context.Context) error {

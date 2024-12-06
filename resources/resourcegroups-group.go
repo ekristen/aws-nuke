@@ -21,9 +21,10 @@ const ResourceGroupGroupResource = "ResourceGroupGroup"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ResourceGroupGroupResource,
-		Scope:  nuke.Account,
-		Lister: &ResourceGroupGroupLister{},
+		Name:     ResourceGroupGroupResource,
+		Scope:    nuke.Account,
+		Resource: &ResourceGroupGroup{},
+		Lister:   &ResourceGroupGroupLister{},
 	})
 }
 

@@ -15,9 +15,10 @@ const ElasticBeanstalkApplicationResource = "ElasticBeanstalkApplication"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ElasticBeanstalkApplicationResource,
-		Scope:  nuke.Account,
-		Lister: &ElasticBeanstalkApplicationLister{},
+		Name:     ElasticBeanstalkApplicationResource,
+		Scope:    nuke.Account,
+		Resource: &ElasticBeanstalkApplication{},
+		Lister:   &ElasticBeanstalkApplicationLister{},
 	})
 }
 

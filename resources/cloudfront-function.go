@@ -16,9 +16,10 @@ const CloudFrontFunctionResource = "CloudFrontFunction"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   CloudFrontFunctionResource,
-		Scope:  nuke.Account,
-		Lister: &CloudFrontFunctionLister{},
+		Name:     CloudFrontFunctionResource,
+		Scope:    nuke.Account,
+		Resource: &CloudFrontFunction{},
+		Lister:   &CloudFrontFunctionLister{},
 	})
 }
 

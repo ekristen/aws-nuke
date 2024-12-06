@@ -18,9 +18,10 @@ const SSMPatchBaselineResource = "SSMPatchBaseline"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   SSMPatchBaselineResource,
-		Scope:  nuke.Account,
-		Lister: &SSMPatchBaselineLister{},
+		Name:     SSMPatchBaselineResource,
+		Scope:    nuke.Account,
+		Resource: &SSMPatchBaseline{},
+		Lister:   &SSMPatchBaselineLister{},
 	})
 }
 

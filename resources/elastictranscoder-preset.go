@@ -18,9 +18,10 @@ const ElasticTranscoderPresetResource = "ElasticTranscoderPreset"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ElasticTranscoderPresetResource,
-		Scope:  nuke.Account,
-		Lister: &ElasticTranscoderPresetLister{},
+		Name:     ElasticTranscoderPresetResource,
+		Scope:    nuke.Account,
+		Resource: &ElasticTranscoderPreset{},
+		Lister:   &ElasticTranscoderPresetLister{},
 	})
 }
 

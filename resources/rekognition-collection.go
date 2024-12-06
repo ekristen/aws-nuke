@@ -16,9 +16,10 @@ const RekognitionCollectionResource = "RekognitionCollection"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   RekognitionCollectionResource,
-		Scope:  nuke.Account,
-		Lister: &RekognitionCollectionLister{},
+		Name:     RekognitionCollectionResource,
+		Scope:    nuke.Account,
+		Resource: &RekognitionCollection{},
+		Lister:   &RekognitionCollectionLister{},
 	})
 }
 

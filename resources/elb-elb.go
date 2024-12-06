@@ -18,9 +18,10 @@ const ELBResource = "ELB"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ELBResource,
-		Scope:  nuke.Account,
-		Lister: &ELBLister{},
+		Name:     ELBResource,
+		Scope:    nuke.Account,
+		Resource: &ELBLister{},
+		Lister:   &ELBLister{},
 	})
 }
 

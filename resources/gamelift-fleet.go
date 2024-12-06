@@ -16,9 +16,10 @@ const GameLiftFleetResource = "GameLiftFleet"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   GameLiftFleetResource,
-		Scope:  nuke.Account,
-		Lister: &GameLiftFleetLister{},
+		Name:     GameLiftFleetResource,
+		Scope:    nuke.Account,
+		Resource: &GameLiftFleet{},
+		Lister:   &GameLiftFleetLister{},
 	})
 }
 

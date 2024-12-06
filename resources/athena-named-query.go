@@ -16,9 +16,10 @@ const AthenaNamedQueryResource = "AthenaNamedQuery"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   AthenaNamedQueryResource,
-		Scope:  nuke.Account,
-		Lister: &AthenaNamedQueryLister{},
+		Name:     AthenaNamedQueryResource,
+		Scope:    nuke.Account,
+		Resource: &AthenaNamedQuery{},
+		Lister:   &AthenaNamedQueryLister{},
 	})
 }
 

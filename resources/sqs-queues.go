@@ -21,9 +21,10 @@ const SQSQueueResource = "SQSQueue"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   SQSQueueResource,
-		Scope:  nuke.Account,
-		Lister: &SQSQueueLister{},
+		Name:     SQSQueueResource,
+		Scope:    nuke.Account,
+		Resource: &SQSQueue{},
+		Lister:   &SQSQueueLister{},
 	})
 }
 

@@ -20,9 +20,10 @@ const EC2SecurityGroupResource = "EC2SecurityGroup"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   EC2SecurityGroupResource,
-		Scope:  nuke.Account,
-		Lister: &EC2SecurityGroupLister{},
+		Name:     EC2SecurityGroupResource,
+		Scope:    nuke.Account,
+		Resource: &EC2SecurityGroup{},
+		Lister:   &EC2SecurityGroupLister{},
 		DependsOn: []string{
 			ELBv2Resource,
 			EC2DefaultSecurityGroupRuleResource,

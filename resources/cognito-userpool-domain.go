@@ -18,9 +18,10 @@ const CognitoUserPoolDomainResource = "CognitoUserPoolDomain"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   CognitoUserPoolDomainResource,
-		Scope:  nuke.Account,
-		Lister: &CognitoUserPoolDomainLister{},
+		Name:     CognitoUserPoolDomainResource,
+		Scope:    nuke.Account,
+		Resource: &CognitoUserPoolDomain{},
+		Lister:   &CognitoUserPoolDomainLister{},
 	})
 }
 

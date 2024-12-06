@@ -20,9 +20,10 @@ const EC2InternetGatewayAttachmentResource = "EC2InternetGatewayAttachment"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   EC2InternetGatewayAttachmentResource,
-		Scope:  nuke.Account,
-		Lister: &EC2InternetGatewayAttachmentLister{},
+		Name:     EC2InternetGatewayAttachmentResource,
+		Scope:    nuke.Account,
+		Resource: &EC2InternetGatewayAttachment{},
+		Lister:   &EC2InternetGatewayAttachmentLister{},
 		DeprecatedAliases: []string{
 			"EC2InternetGatewayAttachement",
 		},

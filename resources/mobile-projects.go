@@ -16,9 +16,10 @@ const MobileProjectResource = "MobileProject"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   MobileProjectResource,
-		Scope:  nuke.Account,
-		Lister: &MobileProjectLister{},
+		Name:     MobileProjectResource,
+		Scope:    nuke.Account,
+		Resource: &MobileProject{},
+		Lister:   &MobileProjectLister{},
 	})
 }
 

@@ -19,9 +19,10 @@ const GlueSecurityConfigurationResource = "GlueSecurityConfiguration"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   GlueSecurityConfigurationResource,
-		Scope:  nuke.Account,
-		Lister: &GlueSecurityConfigurationLister{},
+		Name:     GlueSecurityConfigurationResource,
+		Scope:    nuke.Account,
+		Resource: &GlueSecurityConfiguration{},
+		Lister:   &GlueSecurityConfigurationLister{},
 	})
 }
 

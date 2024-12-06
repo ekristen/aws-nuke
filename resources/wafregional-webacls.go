@@ -14,19 +14,14 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-type WAFRegionalWebACL struct {
-	svc  *wafregional.WAFRegional
-	ID   *string
-	name *string
-}
-
 const WAFRegionalWebACLResource = "WAFRegionalWebACL"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   WAFRegionalWebACLResource,
-		Scope:  nuke.Account,
-		Lister: &WAFRegionalWebACLLister{},
+		Name:     WAFRegionalWebACLResource,
+		Scope:    nuke.Account,
+		Resource: &WAFRegionalWebACL{},
+		Lister:   &WAFRegionalWebACLLister{},
 	})
 }
 
@@ -64,6 +59,12 @@ func (l *WAFRegionalWebACLLister) List(_ context.Context, o interface{}) ([]reso
 	}
 
 	return resources, nil
+}
+
+type WAFRegionalWebACL struct {
+	svc  *wafregional.WAFRegional
+	ID   *string
+	name *string
 }
 
 func (f *WAFRegionalWebACL) Remove(_ context.Context) error {

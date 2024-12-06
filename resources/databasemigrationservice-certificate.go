@@ -17,9 +17,10 @@ const DatabaseMigrationServiceCertificateResource = "DatabaseMigrationServiceCer
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   DatabaseMigrationServiceCertificateResource,
-		Scope:  nuke.Account,
-		Lister: &DatabaseMigrationServiceCertificateLister{},
+		Name:     DatabaseMigrationServiceCertificateResource,
+		Scope:    nuke.Account,
+		Resource: &DatabaseMigrationServiceCertificate{},
+		Lister:   &DatabaseMigrationServiceCertificateLister{},
 	})
 }
 

@@ -17,9 +17,10 @@ const LexIntentResource = "LexIntent"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   LexIntentResource,
-		Scope:  nuke.Account,
-		Lister: &LexIntentLister{},
+		Name:     LexIntentResource,
+		Scope:    nuke.Account,
+		Resource: &LexIntent{},
+		Lister:   &LexIntentLister{},
 	})
 }
 

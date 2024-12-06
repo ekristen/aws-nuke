@@ -20,9 +20,10 @@ const ServiceDiscoveryNamespaceResource = "ServiceDiscoveryNamespace"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ServiceDiscoveryNamespaceResource,
-		Scope:  nuke.Account,
-		Lister: &ServiceDiscoveryNamespaceLister{},
+		Name:     ServiceDiscoveryNamespaceResource,
+		Scope:    nuke.Account,
+		Resource: &ServiceDiscoveryNamespace{},
+		Lister:   &ServiceDiscoveryNamespaceLister{},
 	})
 }
 

@@ -15,9 +15,10 @@ const CodeCommitRepositoryResource = "CodeCommitRepository"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   CodeCommitRepositoryResource,
-		Scope:  nuke.Account,
-		Lister: &CodeCommitRepositoryLister{},
+		Name:     CodeCommitRepositoryResource,
+		Scope:    nuke.Account,
+		Resource: &CodeCommitRepository{},
+		Lister:   &CodeCommitRepositoryLister{},
 	})
 }
 

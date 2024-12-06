@@ -18,9 +18,10 @@ const ECSServiceResource = "ECSService"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ECSServiceResource,
-		Scope:  nuke.Account,
-		Lister: &ECSServiceLister{},
+		Name:     ECSServiceResource,
+		Scope:    nuke.Account,
+		Resource: &ECSService{},
+		Lister:   &ECSServiceLister{},
 	})
 }
 

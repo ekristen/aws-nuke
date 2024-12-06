@@ -22,9 +22,10 @@ const IAMUserMFADeviceResource = "IAMUserMFADevice"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   IAMUserMFADeviceResource,
-		Scope:  nuke.Account,
-		Lister: &IAMUserMFADeviceLister{},
+		Name:     IAMUserMFADeviceResource,
+		Scope:    nuke.Account,
+		Resource: &IAMUserMFADevice{},
+		Lister:   &IAMUserMFADeviceLister{},
 	})
 }
 

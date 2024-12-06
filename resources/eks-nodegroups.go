@@ -20,9 +20,10 @@ const EKSNodegroupResource = "EKSNodegroup"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   EKSNodegroupResource,
-		Scope:  nuke.Account,
-		Lister: &EKSNodegroupLister{},
+		Name:     EKSNodegroupResource,
+		Scope:    nuke.Account,
+		Resource: &EKSNodegroup{},
+		Lister:   &EKSNodegroupLister{},
 		DeprecatedAliases: []string{
 			"EKSNodegroups",
 		},

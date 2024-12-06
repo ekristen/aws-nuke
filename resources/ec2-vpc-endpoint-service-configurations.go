@@ -17,9 +17,10 @@ const EC2VPCEndpointServiceConfigurationResource = "EC2VPCEndpointServiceConfigu
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   EC2VPCEndpointServiceConfigurationResource,
-		Scope:  nuke.Account,
-		Lister: &EC2VPCEndpointServiceConfigurationLister{},
+		Name:     EC2VPCEndpointServiceConfigurationResource,
+		Scope:    nuke.Account,
+		Resource: &EC2VPCEndpointServiceConfiguration{},
+		Lister:   &EC2VPCEndpointServiceConfigurationLister{},
 	})
 }
 

@@ -19,9 +19,10 @@ const IAMUserGroupAttachmentResource = "IAMUserGroupAttachment"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   IAMUserGroupAttachmentResource,
-		Scope:  nuke.Account,
-		Lister: &IAMUserGroupAttachmentLister{},
+		Name:     IAMUserGroupAttachmentResource,
+		Scope:    nuke.Account,
+		Resource: &IAMUserGroupAttachment{},
+		Lister:   &IAMUserGroupAttachmentLister{},
 		DeprecatedAliases: []string{
 			"IamUserGroupAttachement",
 		},

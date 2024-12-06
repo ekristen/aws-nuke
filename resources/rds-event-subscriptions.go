@@ -17,9 +17,10 @@ const RDSEventSubscriptionResource = "RDSEventSubscription"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   RDSEventSubscriptionResource,
-		Scope:  nuke.Account,
-		Lister: &RDSEventSubscriptionLister{},
+		Name:     RDSEventSubscriptionResource,
+		Scope:    nuke.Account,
+		Resource: &RDSEventSubscription{},
+		Lister:   &RDSEventSubscriptionLister{},
 	})
 }
 

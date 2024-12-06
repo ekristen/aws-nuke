@@ -16,9 +16,10 @@ const LambdaFunctionResource = "LambdaFunction"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   LambdaFunctionResource,
-		Scope:  nuke.Account,
-		Lister: &LambdaFunctionLister{},
+		Name:     LambdaFunctionResource,
+		Scope:    nuke.Account,
+		Resource: &LambdaFunction{},
+		Lister:   &LambdaFunctionLister{},
 	})
 }
 

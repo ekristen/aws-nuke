@@ -27,9 +27,10 @@ const S3BucketResource = "S3Bucket"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   S3BucketResource,
-		Scope:  nuke.Account,
-		Lister: &S3BucketLister{},
+		Name:     S3BucketResource,
+		Scope:    nuke.Account,
+		Resource: &S3Bucket{},
+		Lister:   &S3BucketLister{},
 		DependsOn: []string{
 			S3ObjectResource,
 		},

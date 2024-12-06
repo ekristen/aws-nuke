@@ -19,6 +19,7 @@ func init() {
 	registry.Register(&registry.Registration{
 		Name:                APIGatewayUsagePlanResource,
 		Scope:               nuke.Account,
+		Resource:            &APIGatewayUsagePlan{},
 		Lister:              &APIGatewayUsagePlanLister{},
 		AlternativeResource: "AWS::ApiGateway::UsagePlan",
 	})

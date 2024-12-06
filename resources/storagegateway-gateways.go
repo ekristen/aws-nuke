@@ -16,9 +16,10 @@ const StorageGatewayGatewayResource = "StorageGatewayGateway"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   StorageGatewayGatewayResource,
-		Scope:  nuke.Account,
-		Lister: &StorageGatewayGatewayLister{},
+		Name:     StorageGatewayGatewayResource,
+		Scope:    nuke.Account,
+		Resource: &StorageGatewayGateway{},
+		Lister:   &StorageGatewayGatewayLister{},
 	})
 }
 

@@ -17,9 +17,10 @@ const RDSDBClusterResource = "RDSDBCluster"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   RDSDBClusterResource,
-		Scope:  nuke.Account,
-		Lister: &RDSDBClusterLister{},
+		Name:     RDSDBClusterResource,
+		Scope:    nuke.Account,
+		Resource: &RDSDBCluster{},
+		Lister:   &RDSDBClusterLister{},
 		DeprecatedAliases: []string{
 			"RDSCluster",
 		},

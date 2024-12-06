@@ -17,9 +17,10 @@ const MSKClusterResource = "MSKCluster"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   MSKClusterResource,
-		Scope:  nuke.Account,
-		Lister: &MSKClusterLister{},
+		Name:     MSKClusterResource,
+		Scope:    nuke.Account,
+		Resource: &MSKCluster{},
+		Lister:   &MSKClusterLister{},
 	})
 }
 

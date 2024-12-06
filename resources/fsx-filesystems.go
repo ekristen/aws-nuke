@@ -17,9 +17,10 @@ const FSxFileSystemResource = "FSxFileSystem"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   FSxFileSystemResource,
-		Scope:  nuke.Account,
-		Lister: &FSxFileSystemLister{},
+		Name:     FSxFileSystemResource,
+		Scope:    nuke.Account,
+		Resource: &FSxFileSystem{},
+		Lister:   &FSxFileSystemLister{},
 	})
 }
 

@@ -16,9 +16,10 @@ const CloudHSMV2ClusterResource = "CloudHSMV2Cluster"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   CloudHSMV2ClusterResource,
-		Scope:  nuke.Account,
-		Lister: &CloudHSMV2ClusterLister{},
+		Name:     CloudHSMV2ClusterResource,
+		Scope:    nuke.Account,
+		Resource: &CloudHSMV2Cluster{},
+		Lister:   &CloudHSMV2ClusterLister{},
 	})
 }
 

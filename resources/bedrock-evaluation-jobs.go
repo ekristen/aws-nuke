@@ -18,9 +18,10 @@ const BedrockEvaluationJobResource = "BedrockEvaluationJob"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   BedrockEvaluationJobResource,
-		Scope:  nuke.Account,
-		Lister: &BedrockEvaluationJobLister{},
+		Name:     BedrockEvaluationJobResource,
+		Scope:    nuke.Account,
+		Resource: &BedrockEvaluationJob{},
+		Lister:   &BedrockEvaluationJobLister{},
 	})
 }
 

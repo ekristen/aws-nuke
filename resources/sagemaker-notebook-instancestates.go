@@ -20,9 +20,10 @@ const SageMakerNotebookInstanceStateResource = "SageMakerNotebookInstanceState"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   SageMakerNotebookInstanceStateResource,
-		Scope:  nuke.Account,
-		Lister: &SageMakerNotebookInstanceStateLister{},
+		Name:     SageMakerNotebookInstanceStateResource,
+		Scope:    nuke.Account,
+		Resource: &SageMakerNotebookInstanceState{},
+		Lister:   &SageMakerNotebookInstanceStateLister{},
 	})
 }
 

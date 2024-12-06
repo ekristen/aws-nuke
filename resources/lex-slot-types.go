@@ -17,9 +17,10 @@ const LexSlotTypeResource = "LexSlotType"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   LexSlotTypeResource,
-		Scope:  nuke.Account,
-		Lister: &LexSlotTypeLister{},
+		Name:     LexSlotTypeResource,
+		Scope:    nuke.Account,
+		Resource: &LexSlotType{},
+		Lister:   &LexSlotTypeLister{},
 	})
 }
 

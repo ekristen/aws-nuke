@@ -16,9 +16,10 @@ const SESTemplateResource = "SESTemplate"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   SESTemplateResource,
-		Scope:  nuke.Account,
-		Lister: &SESTemplateLister{},
+		Name:     SESTemplateResource,
+		Scope:    nuke.Account,
+		Resource: &SESTemplate{},
+		Lister:   &SESTemplateLister{},
 	})
 }
 

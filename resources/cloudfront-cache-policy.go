@@ -22,9 +22,10 @@ const CloudFrontCachePolicyResource = "CloudFrontCachePolicy"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   CloudFrontCachePolicyResource,
-		Scope:  nuke.Account,
-		Lister: &CloudFrontCachePolicyLister{},
+		Name:     CloudFrontCachePolicyResource,
+		Scope:    nuke.Account,
+		Resource: &CloudFrontCachePolicy{},
+		Lister:   &CloudFrontCachePolicyLister{},
 	})
 }
 

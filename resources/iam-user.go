@@ -20,9 +20,10 @@ const IAMUserResource = "IAMUser"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   IAMUserResource,
-		Scope:  nuke.Account,
-		Lister: &IAMUserLister{},
+		Name:     IAMUserResource,
+		Scope:    nuke.Account,
+		Resource: &IAMUser{},
+		Lister:   &IAMUserLister{},
 		DependsOn: []string{
 			IAMUserAccessKeyResource,
 			IAMUserHTTPSGitCredentialResource,

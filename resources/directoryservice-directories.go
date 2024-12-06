@@ -16,9 +16,10 @@ const DirectoryServiceDirectoryResource = "DirectoryServiceDirectory"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   DirectoryServiceDirectoryResource,
-		Scope:  nuke.Account,
-		Lister: &DirectoryServiceDirectoryLister{},
+		Name:     DirectoryServiceDirectoryResource,
+		Scope:    nuke.Account,
+		Resource: &DirectoryServiceDirectory{},
+		Lister:   &DirectoryServiceDirectoryLister{},
 	})
 }
 

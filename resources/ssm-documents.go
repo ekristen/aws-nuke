@@ -16,9 +16,10 @@ const SSMDocumentResource = "SSMDocument"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   SSMDocumentResource,
-		Scope:  nuke.Account,
-		Lister: &SSMDocumentLister{},
+		Name:     SSMDocumentResource,
+		Scope:    nuke.Account,
+		Resource: &SSMDocument{},
+		Lister:   &SSMDocumentLister{},
 	})
 }
 

@@ -19,9 +19,10 @@ const EC2EgressOnlyInternetGatewayResource = "EC2EgressOnlyInternetGateway"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   EC2EgressOnlyInternetGatewayResource,
-		Scope:  nuke.Account,
-		Lister: &EC2EgressOnlyInternetGatewayLister{},
+		Name:     EC2EgressOnlyInternetGatewayResource,
+		Scope:    nuke.Account,
+		Resource: &EC2EgressOnlyInternetGateway{},
+		Lister:   &EC2EgressOnlyInternetGatewayLister{},
 	})
 }
 

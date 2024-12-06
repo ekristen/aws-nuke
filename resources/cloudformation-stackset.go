@@ -23,9 +23,10 @@ const CloudFormationStackSetResource = "CloudFormationStackSet"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   CloudFormationStackSetResource,
-		Scope:  nuke.Account,
-		Lister: &CloudFormationStackSetLister{},
+		Name:     CloudFormationStackSetResource,
+		Scope:    nuke.Account,
+		Resource: &CloudFormationStackSet{},
+		Lister:   &CloudFormationStackSetLister{},
 	})
 }
 

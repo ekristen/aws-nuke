@@ -18,9 +18,10 @@ const RedshiftParameterGroupResource = "RedshiftParameterGroup"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   RedshiftParameterGroupResource,
-		Scope:  nuke.Account,
-		Lister: &RedshiftParameterGroupLister{},
+		Name:     RedshiftParameterGroupResource,
+		Scope:    nuke.Account,
+		Resource: &RedshiftParameterGroup{},
+		Lister:   &RedshiftParameterGroupLister{},
 	})
 }
 

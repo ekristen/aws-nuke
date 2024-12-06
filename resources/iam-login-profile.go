@@ -23,9 +23,10 @@ const IAMLoginProfileResource = "IAMLoginProfile"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   IAMLoginProfileResource,
-		Scope:  nuke.Account,
-		Lister: &IAMLoginProfileLister{},
+		Name:     IAMLoginProfileResource,
+		Scope:    nuke.Account,
+		Resource: &IAMLoginProfile{},
+		Lister:   &IAMLoginProfileLister{},
 	})
 }
 

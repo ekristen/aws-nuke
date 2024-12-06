@@ -23,6 +23,7 @@ func init() {
 	registry.Register(&registry.Registration{
 		Name:                ECRRepositoryResource,
 		Scope:               nuke.Account,
+		Resource:            &ECRRepository{},
 		Lister:              &ECRRepositoryLister{},
 		AlternativeResource: ECRRepositoryCloudControlResource,
 		DeprecatedAliases: []string{

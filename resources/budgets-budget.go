@@ -20,9 +20,10 @@ const BudgetsBudgetResource = "BudgetsBudget"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   BudgetsBudgetResource,
-		Scope:  nuke.Account,
-		Lister: &BudgetsBudgetLister{},
+		Name:     BudgetsBudgetResource,
+		Scope:    nuke.Account,
+		Resource: &BudgetsBudget{},
+		Lister:   &BudgetsBudgetLister{},
 		DeprecatedAliases: []string{
 			"Budget",
 		},

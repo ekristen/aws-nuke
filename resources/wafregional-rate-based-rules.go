@@ -17,9 +17,10 @@ const WAFRegionalRateBasedRuleResource = "WAFRegionalRateBasedRule"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   WAFRegionalRateBasedRuleResource,
-		Scope:  nuke.Account,
-		Lister: &WAFRegionalRateBasedRuleLister{},
+		Name:     WAFRegionalRateBasedRuleResource,
+		Scope:    nuke.Account,
+		Resource: &WAFRegionalRateBasedRule{},
+		Lister:   &WAFRegionalRateBasedRuleLister{},
 	})
 }
 

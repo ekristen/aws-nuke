@@ -18,9 +18,10 @@ const TranscribeVocabularyFilterResource = "TranscribeVocabularyFilter"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   TranscribeVocabularyFilterResource,
-		Scope:  nuke.Account,
-		Lister: &TranscribeVocabularyFilterLister{},
+		Name:     TranscribeVocabularyFilterResource,
+		Scope:    nuke.Account,
+		Resource: &TranscribeVocabularyFilter{},
+		Lister:   &TranscribeVocabularyFilterLister{},
 	})
 }
 

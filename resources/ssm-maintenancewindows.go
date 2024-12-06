@@ -16,9 +16,10 @@ const SSMMaintenanceWindowResource = "SSMMaintenanceWindow"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   SSMMaintenanceWindowResource,
-		Scope:  nuke.Account,
-		Lister: &SSMMaintenanceWindowLister{},
+		Name:     SSMMaintenanceWindowResource,
+		Scope:    nuke.Account,
+		Resource: &SSMMaintenanceWindow{},
+		Lister:   &SSMMaintenanceWindowLister{},
 	})
 }
 

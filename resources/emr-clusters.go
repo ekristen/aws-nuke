@@ -20,9 +20,10 @@ const EMRClusterResource = "EMRCluster"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   EMRClusterResource,
-		Scope:  nuke.Account,
-		Lister: &EMRClusterLister{},
+		Name:     EMRClusterResource,
+		Scope:    nuke.Account,
+		Resource: &EMRCluster{},
+		Lister:   &EMRClusterLister{},
 	})
 }
 

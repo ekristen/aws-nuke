@@ -16,9 +16,10 @@ const DatabaseMigrationServiceReplicationTaskResource = "DatabaseMigrationServic
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   DatabaseMigrationServiceReplicationTaskResource,
-		Scope:  nuke.Account,
-		Lister: &DatabaseMigrationServiceReplicationTaskLister{},
+		Name:     DatabaseMigrationServiceReplicationTaskResource,
+		Scope:    nuke.Account,
+		Resource: &DatabaseMigrationServiceReplicationTask{},
+		Lister:   &DatabaseMigrationServiceReplicationTaskLister{},
 	})
 }
 

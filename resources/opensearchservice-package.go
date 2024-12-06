@@ -19,9 +19,10 @@ const OSPackageResource = "OSPackage"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   OSPackageResource,
-		Scope:  nuke.Account,
-		Lister: &OSPackageLister{},
+		Name:     OSPackageResource,
+		Scope:    nuke.Account,
+		Resource: &OSPackage{},
+		Lister:   &OSPackageLister{},
 	})
 }
 

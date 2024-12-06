@@ -20,9 +20,10 @@ const EC2NetworkInterfaceResource = "EC2NetworkInterface"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   EC2NetworkInterfaceResource,
-		Scope:  nuke.Account,
-		Lister: &EC2NetworkInterfaceLister{},
+		Name:     EC2NetworkInterfaceResource,
+		Scope:    nuke.Account,
+		Resource: &EC2NetworkInterface{},
+		Lister:   &EC2NetworkInterfaceLister{},
 	})
 }
 

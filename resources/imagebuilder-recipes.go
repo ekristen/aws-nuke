@@ -16,9 +16,10 @@ const ImageBuilderRecipeResource = "ImageBuilderRecipe"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ImageBuilderRecipeResource,
-		Scope:  nuke.Account,
-		Lister: &ImageBuilderRecipeLister{},
+		Name:     ImageBuilderRecipeResource,
+		Scope:    nuke.Account,
+		Resource: &ImageBuilderRecipe{},
+		Lister:   &ImageBuilderRecipeLister{},
 	})
 }
 

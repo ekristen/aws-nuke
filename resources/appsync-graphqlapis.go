@@ -17,9 +17,10 @@ const AppSyncGraphqlAPIResource = "AppSyncGraphqlAPI"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   AppSyncGraphqlAPIResource,
-		Scope:  nuke.Account,
-		Lister: &AppSyncGraphqlAPILister{},
+		Name:     AppSyncGraphqlAPIResource,
+		Scope:    nuke.Account,
+		Resource: &AppSyncGraphqlAPI{},
+		Lister:   &AppSyncGraphqlAPILister{},
 	})
 }
 

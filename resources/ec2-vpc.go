@@ -17,9 +17,10 @@ const EC2VPCResource = "EC2VPC"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   EC2VPCResource,
-		Scope:  nuke.Account,
-		Lister: &EC2VPCLister{},
+		Name:     EC2VPCResource,
+		Scope:    nuke.Account,
+		Resource: &EC2VPC{},
+		Lister:   &EC2VPCLister{},
 		DependsOn: []string{
 			EC2SubnetResource,
 			EC2RouteTableResource,

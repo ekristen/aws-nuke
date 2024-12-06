@@ -21,9 +21,10 @@ const ManagedBlockchainMemberResource = "ManagedBlockchainMember"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ManagedBlockchainMemberResource,
-		Scope:  nuke.Account,
-		Lister: &ManagedBlockchainMemberLister{},
+		Name:     ManagedBlockchainMemberResource,
+		Scope:    nuke.Account,
+		Resource: &ManagedBlockchainMember{},
+		Lister:   &ManagedBlockchainMemberLister{},
 	})
 }
 

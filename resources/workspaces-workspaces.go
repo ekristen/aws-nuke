@@ -16,9 +16,10 @@ const WorkSpacesWorkspaceResource = "WorkSpacesWorkspace"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   WorkSpacesWorkspaceResource,
-		Scope:  nuke.Account,
-		Lister: &WorkSpacesWorkspaceLister{},
+		Name:     WorkSpacesWorkspaceResource,
+		Scope:    nuke.Account,
+		Resource: &WorkSpacesWorkspace{},
+		Lister:   &WorkSpacesWorkspaceLister{},
 	})
 }
 

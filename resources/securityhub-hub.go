@@ -17,9 +17,10 @@ const SecurityHubResource = "SecurityHub"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   SecurityHubResource,
-		Scope:  nuke.Account,
-		Lister: &SecurityHubLister{},
+		Name:     SecurityHubResource,
+		Scope:    nuke.Account,
+		Resource: &SecurityHub{},
+		Lister:   &SecurityHubLister{},
 	})
 }
 

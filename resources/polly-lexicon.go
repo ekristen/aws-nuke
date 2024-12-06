@@ -17,9 +17,10 @@ const PollyLexiconResource = "PollyLexicon"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   PollyLexiconResource,
-		Scope:  nuke.Account,
-		Lister: &PollyLexiconLister{},
+		Name:     PollyLexiconResource,
+		Scope:    nuke.Account,
+		Resource: &PollyLexicon{},
+		Lister:   &PollyLexiconLister{},
 	})
 }
 

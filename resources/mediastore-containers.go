@@ -16,9 +16,10 @@ const MediaStoreContainerResource = "MediaStoreContainer"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   MediaStoreContainerResource,
-		Scope:  nuke.Account,
-		Lister: &MediaStoreContainerLister{},
+		Name:     MediaStoreContainerResource,
+		Scope:    nuke.Account,
+		Resource: &MediaStoreContainer{},
+		Lister:   &MediaStoreContainerLister{},
 	})
 }
 

@@ -20,9 +20,10 @@ const WAFv2APIKeyResource = "WAFv2APIKey" // #nosec G101
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   WAFv2APIKeyResource,
-		Scope:  nuke.Account,
-		Lister: &WAFv2APIKeyLister{},
+		Name:     WAFv2APIKeyResource,
+		Scope:    nuke.Account,
+		Resource: &WAFv2APIKey{},
+		Lister:   &WAFv2APIKeyLister{},
 	})
 }
 

@@ -22,9 +22,10 @@ const IAMInstanceProfileRoleResource = "IAMInstanceProfileRole"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   IAMInstanceProfileRoleResource,
-		Scope:  nuke.Account,
-		Lister: &IAMInstanceProfileRoleLister{},
+		Name:     IAMInstanceProfileRoleResource,
+		Scope:    nuke.Account,
+		Resource: &IAMInstanceProfileRole{},
+		Lister:   &IAMInstanceProfileRoleLister{},
 		DeprecatedAliases: []string{
 			"IamInstanceProfileRole",
 		},

@@ -20,9 +20,10 @@ const BatchComputeEnvironmentStateResource = "BatchComputeEnvironmentState"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   BatchComputeEnvironmentStateResource,
-		Scope:  nuke.Account,
-		Lister: &BatchComputeEnvironmentStateLister{},
+		Name:     BatchComputeEnvironmentStateResource,
+		Scope:    nuke.Account,
+		Resource: &BatchComputeEnvironmentState{},
+		Lister:   &BatchComputeEnvironmentStateLister{},
 	})
 }
 

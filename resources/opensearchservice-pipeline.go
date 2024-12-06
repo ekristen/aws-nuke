@@ -17,9 +17,10 @@ const OSPipelineResource = "OSPipeline"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   OSPipelineResource,
-		Scope:  nuke.Account,
-		Lister: &OSPipelineLister{},
+		Name:     OSPipelineResource,
+		Scope:    nuke.Account,
+		Resource: &OSPipeline{},
+		Lister:   &OSPipelineLister{},
 	})
 }
 

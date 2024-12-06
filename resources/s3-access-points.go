@@ -19,9 +19,10 @@ const S3AccessPointResource = "S3AccessPoint"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   S3AccessPointResource,
-		Scope:  nuke.Account,
-		Lister: &S3AccessPointLister{},
+		Name:     S3AccessPointResource,
+		Scope:    nuke.Account,
+		Resource: &S3AccessPoint{},
+		Lister:   &S3AccessPointLister{},
 	})
 }
 

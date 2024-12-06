@@ -19,9 +19,10 @@ const EC2NetworkACLResource = "EC2NetworkACL"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   EC2NetworkACLResource,
-		Scope:  nuke.Account,
-		Lister: &EC2NetworkACLLister{},
+		Name:     EC2NetworkACLResource,
+		Scope:    nuke.Account,
+		Resource: &EC2NetworkACL{},
+		Lister:   &EC2NetworkACLLister{},
 	})
 }
 

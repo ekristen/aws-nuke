@@ -17,9 +17,10 @@ const KendraIndexResource = "KendraIndex"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   KendraIndexResource,
-		Scope:  nuke.Account,
-		Lister: &KendraIndexLister{},
+		Name:     KendraIndexResource,
+		Scope:    nuke.Account,
+		Resource: &KendraIndex{},
+		Lister:   &KendraIndexLister{},
 	})
 }
 

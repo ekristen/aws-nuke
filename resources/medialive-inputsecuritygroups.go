@@ -16,9 +16,10 @@ const MediaLiveInputSecurityGroupResource = "MediaLiveInputSecurityGroup"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   MediaLiveInputSecurityGroupResource,
-		Scope:  nuke.Account,
-		Lister: &MediaLiveInputSecurityGroupLister{},
+		Name:     MediaLiveInputSecurityGroupResource,
+		Scope:    nuke.Account,
+		Resource: &MediaLiveInputSecurityGroup{},
+		Lister:   &MediaLiveInputSecurityGroupLister{},
 	})
 }
 

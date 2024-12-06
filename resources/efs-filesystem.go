@@ -16,9 +16,10 @@ const EFSFileSystemResource = "EFSFileSystem"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   EFSFileSystemResource,
-		Scope:  nuke.Account,
-		Lister: &EFSFileSystemLister{},
+		Name:     EFSFileSystemResource,
+		Scope:    nuke.Account,
+		Resource: &EFSFileSystem{},
+		Lister:   &EFSFileSystemLister{},
 	})
 }
 

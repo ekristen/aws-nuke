@@ -16,9 +16,10 @@ const MQBrokerResource = "MQBroker"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   MQBrokerResource,
-		Scope:  nuke.Account,
-		Lister: &MQBrokerLister{},
+		Name:     MQBrokerResource,
+		Scope:    nuke.Account,
+		Resource: &MQBroker{},
+		Lister:   &MQBrokerLister{},
 	})
 }
 

@@ -18,9 +18,10 @@ const CloudWatchAnomalyDetectorResource = "CloudWatchAnomalyDetector"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   CloudWatchAnomalyDetectorResource,
-		Scope:  nuke.Account,
-		Lister: &CloudWatchAnomalyDetectorLister{},
+		Name:     CloudWatchAnomalyDetectorResource,
+		Scope:    nuke.Account,
+		Resource: &CloudWatchAnomalyDetector{},
+		Lister:   &CloudWatchAnomalyDetectorLister{},
 	})
 }
 

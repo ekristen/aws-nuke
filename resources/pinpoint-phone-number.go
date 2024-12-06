@@ -20,9 +20,10 @@ const PinpointPhoneNumberResource = "PinpointPhoneNumber"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   PinpointPhoneNumberResource,
-		Scope:  nuke.Account,
-		Lister: &PinpointPhoneNumberLister{},
+		Name:     PinpointPhoneNumberResource,
+		Scope:    nuke.Account,
+		Resource: &PinpointPhoneNumber{},
+		Lister:   &PinpointPhoneNumberLister{},
 		Settings: []string{
 			"DisableDeletionProtection",
 		},

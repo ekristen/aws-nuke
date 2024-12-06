@@ -16,9 +16,10 @@ const MSKConfigurationResource = "MSKConfiguration"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   MSKConfigurationResource,
-		Scope:  nuke.Account,
-		Lister: &MSKConfigurationLister{},
+		Name:     MSKConfigurationResource,
+		Scope:    nuke.Account,
+		Resource: &MSKConfiguration{},
+		Lister:   &MSKConfigurationLister{},
 	})
 }
 

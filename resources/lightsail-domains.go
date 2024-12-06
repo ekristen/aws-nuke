@@ -18,9 +18,10 @@ const LightsailDomainResource = "LightsailDomain"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   LightsailDomainResource,
-		Scope:  nuke.Account,
-		Lister: &LightsailDomainLister{},
+		Name:     LightsailDomainResource,
+		Scope:    nuke.Account,
+		Resource: &LightsailDomain{},
+		Lister:   &LightsailDomainLister{},
 	})
 }
 

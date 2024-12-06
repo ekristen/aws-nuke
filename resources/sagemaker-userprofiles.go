@@ -21,9 +21,10 @@ const SageMakerUserProfilesResource = "SageMakerUserProfiles"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   SageMakerUserProfilesResource,
-		Scope:  nuke.Account,
-		Lister: &SageMakerUserProfilesLister{},
+		Name:     SageMakerUserProfilesResource,
+		Scope:    nuke.Account,
+		Resource: &SageMakerUserProfile{},
+		Lister:   &SageMakerUserProfilesLister{},
 	})
 }
 

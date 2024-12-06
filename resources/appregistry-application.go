@@ -18,9 +18,10 @@ const AppRegistryApplicationResource = "AppRegistryApplication"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   AppRegistryApplicationResource,
-		Scope:  nuke.Account,
-		Lister: &AppRegistryApplicationLister{},
+		Name:     AppRegistryApplicationResource,
+		Scope:    nuke.Account,
+		Resource: &AppRegistryApplication{},
+		Lister:   &AppRegistryApplicationLister{},
 	})
 }
 

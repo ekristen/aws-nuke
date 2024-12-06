@@ -17,9 +17,10 @@ const EC2InstanceConnectEndpointResource = "EC2InstanceConnectEndpoint"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   EC2InstanceConnectEndpointResource,
-		Scope:  nuke.Account,
-		Lister: &EC2InstanceConnectEndpointLister{},
+		Name:     EC2InstanceConnectEndpointResource,
+		Scope:    nuke.Account,
+		Resource: &EC2InstanceConnectEndpoint{},
+		Lister:   &EC2InstanceConnectEndpointLister{},
 	})
 }
 

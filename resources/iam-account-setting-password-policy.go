@@ -19,9 +19,10 @@ const IAMAccountSettingPasswordPolicyResource = "IAMAccountSettingPasswordPolicy
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   IAMAccountSettingPasswordPolicyResource,
-		Scope:  nuke.Account,
-		Lister: &IAMAccountSettingPasswordPolicyLister{},
+		Name:     IAMAccountSettingPasswordPolicyResource,
+		Scope:    nuke.Account,
+		Resource: &IAMAccountSettingPasswordPolicy{},
+		Lister:   &IAMAccountSettingPasswordPolicyLister{},
 	})
 }
 

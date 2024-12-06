@@ -15,9 +15,10 @@ const EMRSecurityConfigurationResource = "EMRSecurityConfiguration"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   EMRSecurityConfigurationResource,
-		Scope:  nuke.Account,
-		Lister: &EMRSecurityConfigurationLister{},
+		Name:     EMRSecurityConfigurationResource,
+		Scope:    nuke.Account,
+		Resource: &EMRSecurityConfiguration{},
+		Lister:   &EMRSecurityConfigurationLister{},
 	})
 }
 

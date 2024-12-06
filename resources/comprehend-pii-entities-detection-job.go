@@ -18,9 +18,10 @@ const ComprehendPiiEntitiesDetectionJobResource = "ComprehendPiiEntitiesDetectio
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ComprehendPiiEntitiesDetectionJobResource,
-		Scope:  nuke.Account,
-		Lister: &ComprehendPiiEntitiesDetectionJobLister{},
+		Name:     ComprehendPiiEntitiesDetectionJobResource,
+		Scope:    nuke.Account,
+		Resource: &ComprehendPiiEntitiesDetectionJob{},
+		Lister:   &ComprehendPiiEntitiesDetectionJobLister{},
 		DeprecatedAliases: []string{
 			"ComprehendPiiEntititesDetectionJob",
 		},

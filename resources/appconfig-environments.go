@@ -15,20 +15,14 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-type AppConfigEnvironment struct {
-	svc           *appconfig.AppConfig
-	applicationID *string
-	id            *string
-	name          *string
-}
-
 const AppConfigEnvironmentResource = "AppConfigEnvironment"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   AppConfigEnvironmentResource,
-		Scope:  nuke.Account,
-		Lister: &AppConfigEnvironmentLister{},
+		Name:     AppConfigEnvironmentResource,
+		Scope:    nuke.Account,
+		Resource: &AppConfigEnvironment{},
+		Lister:   &AppConfigEnvironmentLister{},
 	})
 }
 
@@ -71,6 +65,13 @@ func (l *AppConfigEnvironmentLister) List(ctx context.Context, o interface{}) ([
 		}
 	}
 	return resources, nil
+}
+
+type AppConfigEnvironment struct {
+	svc           *appconfig.AppConfig
+	applicationID *string
+	id            *string
+	name          *string
 }
 
 func (f *AppConfigEnvironment) Remove(_ context.Context) error {

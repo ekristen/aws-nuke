@@ -17,9 +17,10 @@ const PinpointAppResource = "PinpointApp"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   PinpointAppResource,
-		Scope:  nuke.Account,
-		Lister: &PinpointAppLister{},
+		Name:     PinpointAppResource,
+		Scope:    nuke.Account,
+		Resource: &PinpointApp{},
+		Lister:   &PinpointAppLister{},
 	})
 }
 

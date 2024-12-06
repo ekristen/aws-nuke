@@ -17,9 +17,10 @@ const CloudWatchLogsResourcePolicyResource = "CloudWatchLogsResourcePolicy"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   CloudWatchLogsResourcePolicyResource,
-		Scope:  nuke.Account,
-		Lister: &CloudWatchLogsResourcePolicyLister{},
+		Name:     CloudWatchLogsResourcePolicyResource,
+		Scope:    nuke.Account,
+		Resource: &CloudWatchLogsResourcePolicy{},
+		Lister:   &CloudWatchLogsResourcePolicyLister{},
 	})
 }
 

@@ -17,9 +17,10 @@ const RekognitionDatasetResource = "RekognitionDataset"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   RekognitionDatasetResource,
-		Scope:  nuke.Account,
-		Lister: &RekognitionDatasetLister{},
+		Name:     RekognitionDatasetResource,
+		Scope:    nuke.Account,
+		Resource: &RekognitionDataset{},
+		Lister:   &RekognitionDatasetLister{},
 	})
 }
 

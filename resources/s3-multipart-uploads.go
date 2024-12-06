@@ -19,9 +19,10 @@ const S3MultipartUploadResource = "S3MultipartUpload"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   S3MultipartUploadResource,
-		Scope:  nuke.Account,
-		Lister: &S3MultipartUploadLister{},
+		Name:     S3MultipartUploadResource,
+		Scope:    nuke.Account,
+		Resource: &S3MultipartUpload{},
+		Lister:   &S3MultipartUploadLister{},
 	})
 }
 

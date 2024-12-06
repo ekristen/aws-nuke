@@ -14,18 +14,14 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-type GlueBlueprint struct {
-	svc  *glue.Glue
-	name *string
-}
-
 const GlueBlueprintResource = "GlueBlueprint"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   GlueBlueprintResource,
-		Scope:  nuke.Account,
-		Lister: &GlueBlueprintLister{},
+		Name:     GlueBlueprintResource,
+		Scope:    nuke.Account,
+		Resource: &GlueBlueprint{},
+		Lister:   &GlueBlueprintLister{},
 	})
 }
 
@@ -62,6 +58,11 @@ func (l *GlueBlueprintLister) List(_ context.Context, o interface{}) ([]resource
 	}
 
 	return resources, nil
+}
+
+type GlueBlueprint struct {
+	svc  *glue.Glue
+	name *string
 }
 
 func (f *GlueBlueprint) Remove(_ context.Context) error {

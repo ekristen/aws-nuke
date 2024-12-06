@@ -17,9 +17,10 @@ const LexModelBuildingServiceBotAliasResource = "LexModelBuildingServiceBotAlias
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   LexModelBuildingServiceBotAliasResource,
-		Scope:  nuke.Account,
-		Lister: &LexModelBuildingServiceBotAliasLister{},
+		Name:     LexModelBuildingServiceBotAliasResource,
+		Scope:    nuke.Account,
+		Resource: &LexModelBuildingServiceBotAlias{},
+		Lister:   &LexModelBuildingServiceBotAliasLister{},
 	})
 }
 

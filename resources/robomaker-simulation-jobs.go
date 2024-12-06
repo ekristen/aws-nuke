@@ -17,9 +17,10 @@ const RoboMakerSimulationJobResource = "RoboMakerSimulationJob"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   RoboMakerSimulationJobResource,
-		Scope:  nuke.Account,
-		Lister: &RoboMakerSimulationJobLister{},
+		Name:     RoboMakerSimulationJobResource,
+		Scope:    nuke.Account,
+		Resource: &RoboMakerSimulationJob{},
+		Lister:   &RoboMakerSimulationJobLister{},
 	})
 }
 

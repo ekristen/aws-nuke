@@ -16,9 +16,10 @@ const GlueDataBrewProjectsResource = "GlueDataBrewProjects"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   GlueDataBrewProjectsResource,
-		Scope:  nuke.Account,
-		Lister: &GlueDataBrewProjectsLister{},
+		Name:     GlueDataBrewProjectsResource,
+		Scope:    nuke.Account,
+		Resource: &GlueDataBrewProjects{},
+		Lister:   &GlueDataBrewProjectsLister{},
 	})
 }
 

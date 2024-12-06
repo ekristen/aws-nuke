@@ -17,9 +17,10 @@ const BedrockKnowledgeBaseResource = "BedrockKnowledgeBase"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   BedrockKnowledgeBaseResource,
-		Scope:  nuke.Account,
-		Lister: &BedrockKnowledgeBaseLister{},
+		Name:     BedrockKnowledgeBaseResource,
+		Scope:    nuke.Account,
+		Resource: &BedrockKnowledgeBase{},
+		Lister:   &BedrockKnowledgeBaseLister{},
 		DependsOn: []string{
 			BedrockDataSourceResource,
 		},

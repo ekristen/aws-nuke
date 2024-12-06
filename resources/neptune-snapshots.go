@@ -16,9 +16,10 @@ const NeptuneSnapshotResource = "NeptuneSnapshot"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   NeptuneSnapshotResource,
-		Scope:  nuke.Account,
-		Lister: &NeptuneSnapshotLister{},
+		Name:     NeptuneSnapshotResource,
+		Scope:    nuke.Account,
+		Resource: &NeptuneSnapshot{},
+		Lister:   &NeptuneSnapshotLister{},
 		DeprecatedAliases: []string{
 			"NetpuneSnapshot",
 		},

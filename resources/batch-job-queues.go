@@ -16,9 +16,10 @@ const BatchJobQueueResource = "BatchJobQueue"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   BatchJobQueueResource,
-		Scope:  nuke.Account,
-		Lister: &BatchJobQueueLister{},
+		Name:     BatchJobQueueResource,
+		Scope:    nuke.Account,
+		Resource: &BatchJobQueue{},
+		Lister:   &BatchJobQueueLister{},
 	})
 }
 

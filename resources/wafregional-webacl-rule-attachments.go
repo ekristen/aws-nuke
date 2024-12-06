@@ -19,9 +19,10 @@ const WAFRegionalWebACLRuleAttachmentResource = "WAFRegionalWebACLRuleAttachment
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   WAFRegionalWebACLRuleAttachmentResource,
-		Scope:  nuke.Account,
-		Lister: &WAFRegionalWebACLRuleAttachmentLister{},
+		Name:     WAFRegionalWebACLRuleAttachmentResource,
+		Scope:    nuke.Account,
+		Resource: &WAFRegionalWebACLRuleAttachment{},
+		Lister:   &WAFRegionalWebACLRuleAttachmentLister{},
 	})
 }
 

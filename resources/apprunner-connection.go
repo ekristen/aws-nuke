@@ -12,19 +12,14 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-type AppRunnerConnection struct {
-	svc            *apprunner.AppRunner
-	ConnectionArn  *string
-	ConnectionName *string
-}
-
 const AppRunnerConnectionResource = "AppRunnerConnection"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   AppRunnerConnectionResource,
-		Scope:  nuke.Account,
-		Lister: &AppRunnerConnectionLister{},
+		Name:     AppRunnerConnectionResource,
+		Scope:    nuke.Account,
+		Resource: &AppRunnerConnection{},
+		Lister:   &AppRunnerConnectionLister{},
 	})
 }
 
@@ -60,6 +55,12 @@ func (l *AppRunnerConnectionLister) List(_ context.Context, o interface{}) ([]re
 	}
 
 	return resources, nil
+}
+
+type AppRunnerConnection struct {
+	svc            *apprunner.AppRunner
+	ConnectionArn  *string
+	ConnectionName *string
 }
 
 func (f *AppRunnerConnection) Remove(_ context.Context) error {

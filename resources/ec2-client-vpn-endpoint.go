@@ -16,9 +16,10 @@ const EC2ClientVpnEndpointResource = "EC2ClientVpnEndpoint"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   EC2ClientVpnEndpointResource,
-		Scope:  nuke.Account,
-		Lister: &EC2ClientVpnEndpointLister{},
+		Name:     EC2ClientVpnEndpointResource,
+		Scope:    nuke.Account,
+		Resource: &EC2ClientVpnEndpoint{},
+		Lister:   &EC2ClientVpnEndpointLister{},
 		DependsOn: []string{
 			EC2ClientVpnEndpointAttachmentResource,
 		},

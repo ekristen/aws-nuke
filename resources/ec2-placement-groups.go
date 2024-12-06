@@ -17,9 +17,10 @@ const EC2PlacementGroupResource = "EC2PlacementGroup"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   EC2PlacementGroupResource,
-		Scope:  nuke.Account,
-		Lister: &EC2PlacementGroupLister{},
+		Name:     EC2PlacementGroupResource,
+		Scope:    nuke.Account,
+		Resource: &EC2PlacementGroup{},
+		Lister:   &EC2PlacementGroupLister{},
 	})
 }
 

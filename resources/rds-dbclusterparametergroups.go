@@ -20,9 +20,10 @@ const RDSDBClusterParameterGroupResource = "RDSDBClusterParameterGroup"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   RDSDBClusterParameterGroupResource,
-		Scope:  nuke.Account,
-		Lister: &RDSDBClusterParameterGroupLister{},
+		Name:     RDSDBClusterParameterGroupResource,
+		Scope:    nuke.Account,
+		Resource: &RDSDBClusterParameterGroup{},
+		Lister:   &RDSDBClusterParameterGroupLister{},
 	})
 }
 

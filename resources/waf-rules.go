@@ -17,9 +17,10 @@ const WAFRuleResource = "WAFRule"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   WAFRuleResource,
-		Scope:  nuke.Account,
-		Lister: &WAFRuleLister{},
+		Name:     WAFRuleResource,
+		Scope:    nuke.Account,
+		Resource: &WAFRule{},
+		Lister:   &WAFRuleLister{},
 	})
 }
 

@@ -18,9 +18,10 @@ const OSDomainResource = "OSDomain"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   OSDomainResource,
-		Scope:  nuke.Account,
-		Lister: &OSDomainLister{},
+		Name:     OSDomainResource,
+		Scope:    nuke.Account,
+		Resource: &OSDomain{},
+		Lister:   &OSDomainLister{},
 	})
 }
 

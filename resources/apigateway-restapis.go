@@ -26,9 +26,10 @@ var deleteRestAPILimit = ratelimit.New(1, ratelimit.Per(32*time.Second))
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   APIGatewayRestAPIResource,
-		Scope:  nuke.Account,
-		Lister: &APIGatewayRestAPILister{},
+		Name:     APIGatewayRestAPIResource,
+		Scope:    nuke.Account,
+		Resource: &APIGatewayRestAPI{},
+		Lister:   &APIGatewayRestAPILister{},
 	})
 }
 

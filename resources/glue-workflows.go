@@ -14,18 +14,14 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-type GlueWorkflow struct {
-	svc  *glue.Glue
-	name *string
-}
-
 const GlueWorkflowResource = "GlueWorkflow"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   GlueWorkflowResource,
-		Scope:  nuke.Account,
-		Lister: &GlueWorkflowLister{},
+		Name:     GlueWorkflowResource,
+		Scope:    nuke.Account,
+		Resource: &GlueWorkflow{},
+		Lister:   &GlueWorkflowLister{},
 	})
 }
 
@@ -62,6 +58,11 @@ func (l *GlueWorkflowLister) List(_ context.Context, o interface{}) ([]resource.
 	}
 
 	return resources, nil
+}
+
+type GlueWorkflow struct {
+	svc  *glue.Glue
+	name *string
 }
 
 func (f *GlueWorkflow) Remove(_ context.Context) error {

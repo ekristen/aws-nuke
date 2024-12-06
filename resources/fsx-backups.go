@@ -17,9 +17,10 @@ const FSxBackupResource = "FSxBackup"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   FSxBackupResource,
-		Scope:  nuke.Account,
-		Lister: &FSxBackupLister{},
+		Name:     FSxBackupResource,
+		Scope:    nuke.Account,
+		Resource: &FSxBackup{},
+		Lister:   &FSxBackupLister{},
 	})
 }
 

@@ -13,18 +13,14 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-type ElasticacheUserGroup struct {
-	svc     *elasticache.ElastiCache
-	groupID *string
-}
-
 const ElasticacheUserGroupResource = "ElasticacheUserGroup"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ElasticacheUserGroupResource,
-		Scope:  nuke.Account,
-		Lister: &ElasticacheUserGroupLister{},
+		Name:     ElasticacheUserGroupResource,
+		Scope:    nuke.Account,
+		Resource: &ElasticacheUserGroup{},
+		Lister:   &ElasticacheUserGroupLister{},
 	})
 }
 
@@ -64,6 +60,11 @@ func (l *ElasticacheUserGroupLister) List(_ context.Context, o interface{}) ([]r
 	}
 
 	return resources, nil
+}
+
+type ElasticacheUserGroup struct {
+	svc     *elasticache.ElastiCache
+	groupID *string
 }
 
 func (i *ElasticacheUserGroup) Remove(_ context.Context) error {

@@ -19,9 +19,10 @@ const MediaConvertQueueResource = "MediaConvertQueue"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   MediaConvertQueueResource,
-		Scope:  nuke.Account,
-		Lister: &MediaConvertQueueLister{},
+		Name:     MediaConvertQueueResource,
+		Scope:    nuke.Account,
+		Resource: &MediaConvertQueue{},
+		Lister:   &MediaConvertQueueLister{},
 	})
 }
 

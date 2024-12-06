@@ -17,9 +17,10 @@ const EC2VPCEndpointResource = "EC2VPCEndpoint"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   EC2VPCEndpointResource,
-		Scope:  nuke.Account,
-		Lister: &EC2VPCEndpointLister{},
+		Name:     EC2VPCEndpointResource,
+		Scope:    nuke.Account,
+		Resource: &EC2VPCEndpoint{},
+		Lister:   &EC2VPCEndpointLister{},
 		DependsOn: []string{
 			EC2VPCEndpointConnectionResource,
 			EC2VPCEndpointServiceConfigurationResource,

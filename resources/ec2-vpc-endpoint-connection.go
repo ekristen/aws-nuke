@@ -22,9 +22,10 @@ const EC2VPCEndpointConnectionResource = "EC2VPCEndpointConnection" //nolint:gos
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   EC2VPCEndpointConnectionResource,
-		Scope:  nuke.Account,
-		Lister: &EC2VPCEndpointConnectionLister{},
+		Name:     EC2VPCEndpointConnectionResource,
+		Scope:    nuke.Account,
+		Resource: &EC2VPCEndpointConnection{},
+		Lister:   &EC2VPCEndpointConnectionLister{},
 	})
 }
 

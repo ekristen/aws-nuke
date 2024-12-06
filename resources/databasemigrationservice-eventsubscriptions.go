@@ -16,9 +16,10 @@ const DatabaseMigrationServiceEventSubscriptionResource = "DatabaseMigrationServ
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   DatabaseMigrationServiceEventSubscriptionResource,
-		Scope:  nuke.Account,
-		Lister: &DatabaseMigrationServiceEventSubscriptionLister{},
+		Name:     DatabaseMigrationServiceEventSubscriptionResource,
+		Scope:    nuke.Account,
+		Resource: &DatabaseMigrationServiceEventSubscription{},
+		Lister:   &DatabaseMigrationServiceEventSubscriptionLister{},
 	})
 }
 

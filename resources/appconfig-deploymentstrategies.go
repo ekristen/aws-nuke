@@ -15,19 +15,14 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-type AppConfigDeploymentStrategy struct {
-	svc  *appconfig.AppConfig
-	id   *string
-	name *string
-}
-
 const AppConfigDeploymentStrategyResource = "AppConfigDeploymentStrategy"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   AppConfigDeploymentStrategyResource,
-		Scope:  nuke.Account,
-		Lister: &AppConfigDeploymentStrategyLister{},
+		Name:     AppConfigDeploymentStrategyResource,
+		Scope:    nuke.Account,
+		Resource: &AppConfigDeploymentStrategy{},
+		Lister:   &AppConfigDeploymentStrategyLister{},
 	})
 }
 
@@ -55,6 +50,12 @@ func (l *AppConfigDeploymentStrategyLister) List(_ context.Context, o interface{
 		return nil, err
 	}
 	return resources, nil
+}
+
+type AppConfigDeploymentStrategy struct {
+	svc  *appconfig.AppConfig
+	id   *string
+	name *string
 }
 
 func (f *AppConfigDeploymentStrategy) Filter() error {

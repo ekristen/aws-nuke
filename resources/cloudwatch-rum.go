@@ -16,9 +16,10 @@ const CloudWatchRUMAppResource = "CloudWatchRUMApp"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   CloudWatchRUMAppResource,
-		Scope:  nuke.Account,
-		Lister: &CloudWatchRUMAppLister{},
+		Name:     CloudWatchRUMAppResource,
+		Scope:    nuke.Account,
+		Resource: &CloudWatchRumApp{},
+		Lister:   &CloudWatchRUMAppLister{},
 	})
 }
 

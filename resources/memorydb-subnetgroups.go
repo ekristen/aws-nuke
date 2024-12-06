@@ -13,19 +13,14 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-type MemoryDBSubnetGroup struct {
-	svc  *memorydb.MemoryDB
-	name *string
-	tags []*memorydb.Tag
-}
-
 const MemoryDBSubnetGroupResource = "MemoryDBSubnetGroup"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   MemoryDBSubnetGroupResource,
-		Scope:  nuke.Account,
-		Lister: &MemoryDBSubnetGroupLister{},
+		Name:     MemoryDBSubnetGroupResource,
+		Scope:    nuke.Account,
+		Resource: &MemoryDBSubnetGroup{},
+		Lister:   &MemoryDBSubnetGroupLister{},
 	})
 }
 
@@ -68,6 +63,12 @@ func (l *MemoryDBSubnetGroupLister) List(_ context.Context, o interface{}) ([]re
 	}
 
 	return resources, nil
+}
+
+type MemoryDBSubnetGroup struct {
+	svc  *memorydb.MemoryDB
+	name *string
+	tags []*memorydb.Tag
 }
 
 func (i *MemoryDBSubnetGroup) Remove(_ context.Context) error {

@@ -16,9 +16,10 @@ const MediaConvertJobTemplateResource = "MediaConvertJobTemplate"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   MediaConvertJobTemplateResource,
-		Scope:  nuke.Account,
-		Lister: &MediaConvertJobTemplateLister{},
+		Name:     MediaConvertJobTemplateResource,
+		Scope:    nuke.Account,
+		Resource: &MediaConvertJobTemplate{},
+		Lister:   &MediaConvertJobTemplateLister{},
 	})
 }
 

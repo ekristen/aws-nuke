@@ -16,9 +16,10 @@ const KinesisAnalyticsApplicationResource = "KinesisAnalyticsApplication"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   KinesisAnalyticsApplicationResource,
-		Scope:  nuke.Account,
-		Lister: &KinesisAnalyticsApplicationLister{},
+		Name:     KinesisAnalyticsApplicationResource,
+		Scope:    nuke.Account,
+		Resource: &KinesisAnalyticsApplication{},
+		Lister:   &KinesisAnalyticsApplicationLister{},
 	})
 }
 

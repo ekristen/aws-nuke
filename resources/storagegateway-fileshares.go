@@ -16,9 +16,10 @@ const StorageGatewayFileShareResource = "StorageGatewayFileShare"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   StorageGatewayFileShareResource,
-		Scope:  nuke.Account,
-		Lister: &StorageGatewayFileShareLister{},
+		Name:     StorageGatewayFileShareResource,
+		Scope:    nuke.Account,
+		Resource: &StorageGatewayFileShare{},
+		Lister:   &StorageGatewayFileShareLister{},
 	})
 }
 

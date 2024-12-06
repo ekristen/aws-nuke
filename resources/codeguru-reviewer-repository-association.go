@@ -16,9 +16,10 @@ const CodeGuruReviewerRepositoryAssociationResource = "CodeGuruReviewerRepositor
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   CodeGuruReviewerRepositoryAssociationResource,
-		Scope:  nuke.Account,
-		Lister: &CodeGuruReviewerRepositoryAssociationLister{},
+		Name:     CodeGuruReviewerRepositoryAssociationResource,
+		Scope:    nuke.Account,
+		Resource: &CodeGuruReviewerRepositoryAssociation{},
+		Lister:   &CodeGuruReviewerRepositoryAssociationLister{},
 	})
 }
 

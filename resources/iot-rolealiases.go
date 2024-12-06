@@ -16,9 +16,10 @@ const IoTRoleAliasResource = "IoTRoleAlias"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   IoTRoleAliasResource,
-		Scope:  nuke.Account,
-		Lister: &IoTRoleAliasLister{},
+		Name:     IoTRoleAliasResource,
+		Scope:    nuke.Account,
+		Resource: &IoTRoleAlias{},
+		Lister:   &IoTRoleAliasLister{},
 	})
 }
 

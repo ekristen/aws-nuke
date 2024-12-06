@@ -21,9 +21,10 @@ const IAMRolesAnywhereCRLResource = "IAMRolesAnywhereCRL"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   IAMRolesAnywhereCRLResource,
-		Scope:  nuke.Account,
-		Lister: &IAMRolesAnywhereCRLLister{},
+		Name:     IAMRolesAnywhereCRLResource,
+		Scope:    nuke.Account,
+		Resource: &IAMRolesAnywhereCRL{},
+		Lister:   &IAMRolesAnywhereCRLLister{},
 	})
 }
 

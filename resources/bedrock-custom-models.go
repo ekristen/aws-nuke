@@ -17,9 +17,10 @@ const BedrockCustomModelResource = "BedrockCustomModel"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   BedrockCustomModelResource,
-		Scope:  nuke.Account,
-		Lister: &BedrockCustomModelLister{},
+		Name:     BedrockCustomModelResource,
+		Scope:    nuke.Account,
+		Resource: &BedrockCustomModel{},
+		Lister:   &BedrockCustomModelLister{},
 	})
 }
 

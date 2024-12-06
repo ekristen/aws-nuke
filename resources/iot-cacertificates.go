@@ -16,9 +16,10 @@ const IoTCACertificateResource = "IoTCACertificate"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   IoTCACertificateResource,
-		Scope:  nuke.Account,
-		Lister: &IoTCACertificateLister{},
+		Name:     IoTCACertificateResource,
+		Scope:    nuke.Account,
+		Resource: &IoTCACertificate{},
+		Lister:   &IoTCACertificateLister{},
 	})
 }
 

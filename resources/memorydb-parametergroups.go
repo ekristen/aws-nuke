@@ -15,20 +15,14 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-type MemoryDBParameterGroup struct {
-	svc    *memorydb.MemoryDB
-	name   *string
-	family *string
-	tags   []*memorydb.Tag
-}
-
 const MemoryDBParameterGroupResource = "MemoryDBParameterGroup"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   MemoryDBParameterGroupResource,
-		Scope:  nuke.Account,
-		Lister: &MemoryDBParameterGroupLister{},
+		Name:     MemoryDBParameterGroupResource,
+		Scope:    nuke.Account,
+		Resource: &MemoryDBParameterGroup{},
+		Lister:   &MemoryDBParameterGroupLister{},
 	})
 }
 
@@ -73,6 +67,13 @@ func (l *MemoryDBParameterGroupLister) List(_ context.Context, o interface{}) ([
 	}
 
 	return resources, nil
+}
+
+type MemoryDBParameterGroup struct {
+	svc    *memorydb.MemoryDB
+	name   *string
+	family *string
+	tags   []*memorydb.Tag
 }
 
 func (i *MemoryDBParameterGroup) Filter() error {

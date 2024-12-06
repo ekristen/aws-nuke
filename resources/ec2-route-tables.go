@@ -19,9 +19,10 @@ const EC2RouteTableResource = "EC2RouteTable"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   EC2RouteTableResource,
-		Scope:  nuke.Account,
-		Lister: &EC2RouteTableLister{},
+		Name:     EC2RouteTableResource,
+		Scope:    nuke.Account,
+		Resource: &EC2RouteTable{},
+		Lister:   &EC2RouteTableLister{},
 		DependsOn: []string{
 			EC2SubnetResource,
 		},

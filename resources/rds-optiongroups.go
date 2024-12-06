@@ -20,9 +20,10 @@ const RDSOptionGroupResource = "RDSOptionGroup"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   RDSOptionGroupResource,
-		Scope:  nuke.Account,
-		Lister: &RDSOptionGroupLister{},
+		Name:     RDSOptionGroupResource,
+		Scope:    nuke.Account,
+		Resource: &RDSOptionGroup{},
+		Lister:   &RDSOptionGroupLister{},
 	})
 }
 

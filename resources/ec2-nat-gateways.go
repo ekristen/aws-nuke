@@ -21,9 +21,10 @@ const EC2NATGatewayResource = "EC2NATGateway"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   EC2NATGatewayResource,
-		Scope:  nuke.Account,
-		Lister: &EC2NATGatewayLister{},
+		Name:     EC2NATGatewayResource,
+		Scope:    nuke.Account,
+		Resource: &EC2NATGateway{},
+		Lister:   &EC2NATGatewayLister{},
 		DeprecatedAliases: []string{
 			"EC2NatGateway",
 		},

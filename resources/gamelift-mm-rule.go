@@ -17,9 +17,10 @@ const GameLiftMatchmakingRuleSetResource = "GameLiftMatchmakingRuleSet"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   GameLiftMatchmakingRuleSetResource,
-		Scope:  nuke.Account,
-		Lister: &GameLiftMatchmakingRuleSetLister{},
+		Name:     GameLiftMatchmakingRuleSetResource,
+		Scope:    nuke.Account,
+		Resource: &GameLiftMatchmakingRuleSet{},
+		Lister:   &GameLiftMatchmakingRuleSetLister{},
 	})
 }
 

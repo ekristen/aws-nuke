@@ -16,9 +16,10 @@ const IoTTopicRuleResource = "IoTTopicRule"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   IoTTopicRuleResource,
-		Scope:  nuke.Account,
-		Lister: &IoTTopicRuleLister{},
+		Name:     IoTTopicRuleResource,
+		Scope:    nuke.Account,
+		Resource: &IoTTopicRule{},
+		Lister:   &IoTTopicRuleLister{},
 	})
 }
 

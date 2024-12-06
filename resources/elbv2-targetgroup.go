@@ -16,9 +16,10 @@ const ELBv2TargetGroupResource = "ELBv2TargetGroup"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ELBv2TargetGroupResource,
-		Scope:  nuke.Account,
-		Lister: &ELBv2TargetGroupLister{},
+		Name:     ELBv2TargetGroupResource,
+		Scope:    nuke.Account,
+		Resource: &ELBv2TargetGroup{},
+		Lister:   &ELBv2TargetGroupLister{},
 		DependsOn: []string{
 			ELBv2Resource,
 		},

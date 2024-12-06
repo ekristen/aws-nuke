@@ -16,9 +16,10 @@ const CodeBuildBuildBatchResource = "CodeBuildBuildBatch"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   CodeBuildBuildBatchResource,
-		Scope:  nuke.Account,
-		Lister: &CodeBuildBuildBatchLister{},
+		Name:     CodeBuildBuildBatchResource,
+		Scope:    nuke.Account,
+		Resource: &CodeBuildBuildBatch{},
+		Lister:   &CodeBuildBuildBatchLister{},
 	})
 }
 

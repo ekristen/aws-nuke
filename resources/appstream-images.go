@@ -15,19 +15,14 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-type AppStreamImage struct {
-	svc        *appstream.AppStream
-	name       *string
-	visibility *string
-}
-
 const AppStreamImageResource = "AppStreamImage"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   AppStreamImageResource,
-		Scope:  nuke.Account,
-		Lister: &AppStreamImageLister{},
+		Name:     AppStreamImageResource,
+		Scope:    nuke.Account,
+		Resource: &AppStreamImage{},
+		Lister:   &AppStreamImageLister{},
 	})
 }
 
@@ -55,6 +50,12 @@ func (l *AppStreamImageLister) List(_ context.Context, o interface{}) ([]resourc
 	}
 
 	return resources, nil
+}
+
+type AppStreamImage struct {
+	svc        *appstream.AppStream
+	name       *string
+	visibility *string
 }
 
 func (f *AppStreamImage) Remove(_ context.Context) error {

@@ -16,9 +16,10 @@ const GlueClassifierResource = "GlueClassifier"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   GlueClassifierResource,
-		Scope:  nuke.Account,
-		Lister: &GlueClassifierLister{},
+		Name:     GlueClassifierResource,
+		Scope:    nuke.Account,
+		Resource: &GlueClassifier{},
+		Lister:   &GlueClassifierLister{},
 	})
 }
 

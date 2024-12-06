@@ -17,9 +17,10 @@ const DAXClusterResource = "DAXCluster"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   DAXClusterResource,
-		Scope:  nuke.Account,
-		Lister: &DAXClusterLister{},
+		Name:     DAXClusterResource,
+		Scope:    nuke.Account,
+		Resource: &DAXCluster{},
+		Lister:   &DAXClusterLister{},
 		DependsOn: []string{
 			DAXParameterGroupResource,
 			DAXSubnetGroupResource,

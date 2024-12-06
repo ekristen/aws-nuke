@@ -10,18 +10,14 @@ import (
 	"github.com/aws/aws-sdk-go/service/backup"
 )
 
-type BackupVaultAccessPolicy struct {
-	svc             *backup.Backup
-	backupVaultName string
-}
-
 const AWSBackupVaultAccessPolicyResource = "AWSBackupVaultAccessPolicy"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   AWSBackupVaultAccessPolicyResource,
-		Scope:  nuke.Account,
-		Lister: &AWSBackupVaultAccessPolicyLister{},
+		Name:     AWSBackupVaultAccessPolicyResource,
+		Scope:    nuke.Account,
+		Resource: &BackupVaultAccessPolicy{},
+		Lister:   &AWSBackupVaultAccessPolicyLister{},
 	})
 }
 
@@ -70,6 +66,11 @@ func (l *AWSBackupVaultAccessPolicyLister) List(_ context.Context, o interface{}
 	}
 
 	return resources, nil
+}
+
+type BackupVaultAccessPolicy struct {
+	svc             *backup.Backup
+	backupVaultName string
 }
 
 func (b *BackupVaultAccessPolicy) Remove(_ context.Context) error {

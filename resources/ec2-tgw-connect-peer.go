@@ -18,9 +18,10 @@ const EC2TGWConnectPeerResource = "EC2TGWConnectPeer"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   EC2TGWConnectPeerResource,
-		Scope:  nuke.Account,
-		Lister: &EC2TGWConnectPeerLister{},
+		Name:     EC2TGWConnectPeerResource,
+		Scope:    nuke.Account,
+		Resource: &EC2TGWConnectPeer{},
+		Lister:   &EC2TGWConnectPeerLister{},
 	})
 }
 

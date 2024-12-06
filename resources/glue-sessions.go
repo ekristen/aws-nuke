@@ -23,9 +23,10 @@ const GlueSessionResource = "GlueSession"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   GlueSessionResource,
-		Scope:  nuke.Account,
-		Lister: &GlueSessionLister{},
+		Name:     GlueSessionResource,
+		Scope:    nuke.Account,
+		Resource: &GlueSession{},
+		Lister:   &GlueSessionLister{},
 	})
 }
 

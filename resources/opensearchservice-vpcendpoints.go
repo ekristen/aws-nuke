@@ -16,9 +16,10 @@ const OSVPCEndpointResource = "OSVPCEndpoint"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   OSVPCEndpointResource,
-		Scope:  nuke.Account,
-		Lister: &OSVPCEndpointLister{},
+		Name:     OSVPCEndpointResource,
+		Scope:    nuke.Account,
+		Resource: &OSVPCEndpoint{},
+		Lister:   &OSVPCEndpointLister{},
 	})
 }
 

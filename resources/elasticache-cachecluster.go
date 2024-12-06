@@ -20,9 +20,10 @@ const ElasticacheCacheClusterResource = "ElasticacheCacheCluster"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ElasticacheCacheClusterResource,
-		Scope:  nuke.Account,
-		Lister: &ElasticacheCacheClusterLister{},
+		Name:     ElasticacheCacheClusterResource,
+		Scope:    nuke.Account,
+		Resource: &ElasticacheCacheCluster{},
+		Lister:   &ElasticacheCacheClusterLister{},
 		DependsOn: []string{
 			ElasticacheCacheParameterGroupResource,
 			ElasticacheReplicationGroupResource,

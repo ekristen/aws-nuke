@@ -23,9 +23,10 @@ const IAMVirtualMFADeviceResource = "IAMVirtualMFADevice"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   IAMVirtualMFADeviceResource,
-		Scope:  nuke.Account,
-		Lister: &IAMVirtualMFADeviceLister{},
+		Name:     IAMVirtualMFADeviceResource,
+		Scope:    nuke.Account,
+		Resource: &IAMVirtualMFADevice{},
+		Lister:   &IAMVirtualMFADeviceLister{},
 	})
 }
 

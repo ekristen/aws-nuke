@@ -18,9 +18,10 @@ const ComprehendKeyPhrasesDetectionJobResource = "ComprehendKeyPhrasesDetectionJ
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ComprehendKeyPhrasesDetectionJobResource,
-		Scope:  nuke.Account,
-		Lister: &ComprehendKeyPhrasesDetectionJobLister{},
+		Name:     ComprehendKeyPhrasesDetectionJobResource,
+		Scope:    nuke.Account,
+		Resource: &ComprehendKeyPhrasesDetectionJob{},
+		Lister:   &ComprehendKeyPhrasesDetectionJobLister{},
 	})
 }
 

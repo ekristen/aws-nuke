@@ -16,9 +16,10 @@ const ImageBuilderPipelineResource = "ImageBuilderPipeline"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ImageBuilderPipelineResource,
-		Scope:  nuke.Account,
-		Lister: &ImageBuilderPipelineLister{},
+		Name:     ImageBuilderPipelineResource,
+		Scope:    nuke.Account,
+		Resource: &ImageBuilderPipeline{},
+		Lister:   &ImageBuilderPipelineLister{},
 	})
 }
 

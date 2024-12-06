@@ -15,9 +15,10 @@ const DataPipelinePipelineResource = "DataPipelinePipeline"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   DataPipelinePipelineResource,
-		Scope:  nuke.Account,
-		Lister: &DataPipelinePipelineLister{},
+		Name:     DataPipelinePipelineResource,
+		Scope:    nuke.Account,
+		Resource: &DataPipelinePipeline{},
+		Lister:   &DataPipelinePipelineLister{},
 	})
 }
 

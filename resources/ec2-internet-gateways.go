@@ -17,9 +17,10 @@ const EC2InternetGatewayResource = "EC2InternetGateway"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   EC2InternetGatewayResource,
-		Scope:  nuke.Account,
-		Lister: &EC2InternetGatewayLister{},
+		Name:     EC2InternetGatewayResource,
+		Scope:    nuke.Account,
+		Resource: &EC2InternetGateway{},
+		Lister:   &EC2InternetGatewayLister{},
 	})
 }
 

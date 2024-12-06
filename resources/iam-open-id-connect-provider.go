@@ -17,9 +17,10 @@ const IAMOpenIDConnectProviderResource = "IAMOpenIDConnectProvider"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   IAMOpenIDConnectProviderResource,
-		Scope:  nuke.Account,
-		Lister: &IAMOpenIDConnectProviderLister{},
+		Name:     IAMOpenIDConnectProviderResource,
+		Scope:    nuke.Account,
+		Resource: &IAMOpenIDConnectProvider{},
+		Lister:   &IAMOpenIDConnectProviderLister{},
 	})
 }
 

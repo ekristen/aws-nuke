@@ -16,9 +16,10 @@ const AppMeshGatewayRouteResource = "AppMeshGatewayRoute"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   AppMeshGatewayRouteResource,
-		Scope:  nuke.Account,
-		Lister: &AppMeshGatewayRouteLister{},
+		Name:     AppMeshGatewayRouteResource,
+		Scope:    nuke.Account,
+		Resource: &AppMeshGatewayRoute{},
+		Lister:   &AppMeshGatewayRouteLister{},
 	})
 }
 

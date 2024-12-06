@@ -18,9 +18,10 @@ const ComprehendDominantLanguageDetectionJobResource = "ComprehendDominantLangua
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ComprehendDominantLanguageDetectionJobResource,
-		Scope:  nuke.Account,
-		Lister: &ComprehendDominantLanguageDetectionJobLister{},
+		Name:     ComprehendDominantLanguageDetectionJobResource,
+		Scope:    nuke.Account,
+		Resource: &ComprehendDominantLanguageDetectionJob{},
+		Lister:   &ComprehendDominantLanguageDetectionJobLister{},
 	})
 }
 

@@ -16,9 +16,10 @@ const CloudDirectorySchemaResource = "CloudDirectorySchema"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   CloudDirectorySchemaResource,
-		Scope:  nuke.Account,
-		Lister: &CloudDirectorySchemaLister{},
+		Name:     CloudDirectorySchemaResource,
+		Scope:    nuke.Account,
+		Resource: &CloudDirectorySchema{},
+		Lister:   &CloudDirectorySchemaLister{},
 	})
 }
 

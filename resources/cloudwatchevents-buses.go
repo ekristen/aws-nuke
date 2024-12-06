@@ -18,9 +18,10 @@ const CloudWatchEventsBusesResource = "CloudWatchEventsBuses"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   CloudWatchEventsBusesResource,
-		Scope:  nuke.Account,
-		Lister: &CloudWatchEventsBusesLister{},
+		Name:     CloudWatchEventsBusesResource,
+		Scope:    nuke.Account,
+		Resource: &CloudWatchEventsBusesLister{},
+		Lister:   &CloudWatchEventsBusesLister{},
 	})
 }
 

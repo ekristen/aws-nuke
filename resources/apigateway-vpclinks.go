@@ -17,9 +17,10 @@ const APIGatewayVpcLinkResource = "APIGatewayVpcLink"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   APIGatewayVpcLinkResource,
-		Scope:  nuke.Account,
-		Lister: &APIGatewayVpcLinkLister{},
+		Name:     APIGatewayVpcLinkResource,
+		Scope:    nuke.Account,
+		Resource: &APIGatewayVpcLink{},
+		Lister:   &APIGatewayVpcLinkLister{},
 	})
 }
 

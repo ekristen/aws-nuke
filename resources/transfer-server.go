@@ -19,9 +19,10 @@ const TransferServerResource = "TransferServer"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   TransferServerResource,
-		Scope:  nuke.Account,
-		Lister: &TransferServerLister{},
+		Name:     TransferServerResource,
+		Scope:    nuke.Account,
+		Resource: &TransferServer{},
+		Lister:   &TransferServerLister{},
 	})
 }
 

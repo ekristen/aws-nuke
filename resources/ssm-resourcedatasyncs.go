@@ -16,9 +16,10 @@ const SSMResourceDataSyncResource = "SSMResourceDataSync"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   SSMResourceDataSyncResource,
-		Scope:  nuke.Account,
-		Lister: &SSMResourceDataSyncLister{},
+		Name:     SSMResourceDataSyncResource,
+		Scope:    nuke.Account,
+		Resource: &SSMResourceDataSync{},
+		Lister:   &SSMResourceDataSyncLister{},
 	})
 }
 

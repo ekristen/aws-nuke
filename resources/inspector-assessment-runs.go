@@ -15,9 +15,10 @@ const InspectorAssessmentRunResource = "InspectorAssessmentRun"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   InspectorAssessmentRunResource,
-		Scope:  nuke.Account,
-		Lister: &InspectorAssessmentRunLister{},
+		Name:     InspectorAssessmentRunResource,
+		Scope:    nuke.Account,
+		Resource: &InspectorAssessmentRun{},
+		Lister:   &InspectorAssessmentRunLister{},
 	})
 }
 

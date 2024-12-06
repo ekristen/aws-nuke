@@ -20,9 +20,10 @@ const IAMInstanceProfileResource = "IAMInstanceProfile"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   IAMInstanceProfileResource,
-		Scope:  nuke.Account,
-		Lister: &IAMInstanceProfileLister{},
+		Name:     IAMInstanceProfileResource,
+		Scope:    nuke.Account,
+		Resource: &IAMInstanceProfile{},
+		Lister:   &IAMInstanceProfileLister{},
 		DeprecatedAliases: []string{
 			"IamInstanceProfile",
 		},

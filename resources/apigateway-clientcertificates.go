@@ -18,6 +18,7 @@ func init() {
 	registry.Register(&registry.Registration{
 		Name:                APIGatewayClientCertificateResource,
 		Scope:               nuke.Account,
+		Resource:            &APIGatewayClientCertificate{},
 		Lister:              &APIGatewayClientCertificateLister{},
 		AlternativeResource: "AWS::ApiGateway::ClientCertificate",
 	})

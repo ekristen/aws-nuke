@@ -16,9 +16,10 @@ const AutoScalingPlansScalingPlanResource = "AutoScalingPlansScalingPlan"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   AutoScalingPlansScalingPlanResource,
-		Scope:  nuke.Account,
-		Lister: &AutoScalingPlansScalingPlanLister{},
+		Name:     AutoScalingPlansScalingPlanResource,
+		Scope:    nuke.Account,
+		Resource: &AutoScalingPlansScalingPlan{},
+		Lister:   &AutoScalingPlansScalingPlanLister{},
 	})
 }
 

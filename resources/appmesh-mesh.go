@@ -17,9 +17,10 @@ const AppMeshMeshResource = "AppMeshMesh"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   AppMeshMeshResource,
-		Scope:  nuke.Account,
-		Lister: &AppMeshMeshLister{},
+		Name:     AppMeshMeshResource,
+		Scope:    nuke.Account,
+		Resource: &AppMeshMesh{},
+		Lister:   &AppMeshMeshLister{},
 	})
 }
 

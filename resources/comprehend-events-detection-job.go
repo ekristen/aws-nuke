@@ -18,9 +18,10 @@ const ComprehendEventsDetectionJobResource = "ComprehendEventsDetectionJob"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ComprehendEventsDetectionJobResource,
-		Scope:  nuke.Account,
-		Lister: &ComprehendEventsDetectionJobLister{},
+		Name:     ComprehendEventsDetectionJobResource,
+		Scope:    nuke.Account,
+		Resource: &ComprehendEventsDetectionJob{},
+		Lister:   &ComprehendEventsDetectionJobLister{},
 	})
 }
 

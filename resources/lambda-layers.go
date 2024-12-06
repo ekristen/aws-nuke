@@ -16,9 +16,10 @@ const LambdaLayerResource = "LambdaLayer"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   LambdaLayerResource,
-		Scope:  nuke.Account,
-		Lister: &LambdaLayerLister{},
+		Name:     LambdaLayerResource,
+		Scope:    nuke.Account,
+		Resource: &LambdaLayer{},
+		Lister:   &LambdaLayerLister{},
 	})
 }
 

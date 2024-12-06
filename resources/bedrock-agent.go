@@ -17,9 +17,10 @@ const BedrockAgentResource = "BedrockAgent"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   BedrockAgentResource,
-		Scope:  nuke.Account,
-		Lister: &BedrockAgentLister{},
+		Name:     BedrockAgentResource,
+		Scope:    nuke.Account,
+		Resource: &BedrockAgent{},
+		Lister:   &BedrockAgentLister{},
 	})
 }
 

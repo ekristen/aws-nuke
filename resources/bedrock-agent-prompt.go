@@ -17,9 +17,10 @@ const BedrockPromptResource = "BedrockPrompt"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   BedrockPromptResource,
-		Scope:  nuke.Account,
-		Lister: &BedrockPromptLister{},
+		Name:     BedrockPromptResource,
+		Scope:    nuke.Account,
+		Resource: &BedrockPrompt{},
+		Lister:   &BedrockPromptLister{},
 	})
 }
 

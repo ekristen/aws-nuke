@@ -17,9 +17,10 @@ const MediaStoreDataItemsResource = "MediaStoreDataItems"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   MediaStoreDataItemsResource,
-		Scope:  nuke.Account,
-		Lister: &MediaStoreDataItemsLister{},
+		Name:     MediaStoreDataItemsResource,
+		Scope:    nuke.Account,
+		Resource: &MediaStoreDataItems{},
+		Lister:   &MediaStoreDataItemsLister{},
 	})
 }
 

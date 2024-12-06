@@ -20,9 +20,10 @@ const SignerSigningJobResource = "SignerSigningJob"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   SignerSigningJobResource,
-		Scope:  nuke.Account,
-		Lister: &SignerSigningJobLister{},
+		Name:     SignerSigningJobResource,
+		Scope:    nuke.Account,
+		Resource: &SignerSigningJob{},
+		Lister:   &SignerSigningJobLister{},
 	})
 }
 

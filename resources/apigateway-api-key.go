@@ -28,6 +28,7 @@ func init() {
 	registry.Register(&registry.Registration{
 		Name:                APIGatewayAPIKeyResource,
 		Scope:               nuke.Account,
+		Resource:            &APIGatewayAPIKey{},
 		Lister:              &APIGatewayAPIKeyLister{},
 		AlternativeResource: "AWS::ApiGateway::ApiKey",
 	})

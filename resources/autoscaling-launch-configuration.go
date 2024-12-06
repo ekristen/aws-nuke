@@ -18,9 +18,10 @@ const AutoScalingLaunchConfigurationResource = "AutoScalingLaunchConfiguration"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   AutoScalingLaunchConfigurationResource,
-		Scope:  nuke.Account,
-		Lister: &AutoScalingLaunchConfigurationLister{},
+		Name:     AutoScalingLaunchConfigurationResource,
+		Scope:    nuke.Account,
+		Resource: &AutoScalingLaunchConfiguration{},
+		Lister:   &AutoScalingLaunchConfigurationLister{},
 		DeprecatedAliases: []string{
 			"LaunchConfiguration",
 		},
