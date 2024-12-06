@@ -10,7 +10,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 
@@ -168,7 +167,7 @@ func (suite *TestS3BucketBypassGovernanceSuite) TestS3BucketRemoveWithBypass() {
 	bucket := &S3Bucket{
 		svc:        suite.svc,
 		name:       suite.bucket,
-		ObjectLock: ptr.String("Enabled"),
+		ObjectLock: s3types.ObjectLockEnabledEnabled,
 		settings: &libsettings.Setting{
 			"BypassGovernanceRetention": true,
 		},
