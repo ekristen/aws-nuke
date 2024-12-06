@@ -3,6 +3,7 @@ package nuke
 import (
 	"github.com/sirupsen/logrus"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -16,7 +17,8 @@ const Account registry.Scope = "account"
 // the interface{} to get the options it needs.
 type ListerOpts struct {
 	Region    *Region
-	Session   *session.Session
+	Session   *session.Session // SDK v1
+	Config    *aws.Config      // SDK v2
 	AccountID *string
 	Logger    *logrus.Entry
 }
@@ -33,6 +35,13 @@ var MutateOpts = func(opts interface{}, resourceType string) interface{} {
 	}
 
 	o.Session = session
+
+	cfg, err := o.Region.Config(resourceType)
+	if err != nil {
+		panic(err)
+	}
+
+	o.Config = cfg
 
 	if o.Logger != nil {
 		o.Logger = o.Logger.WithField("resource", resourceType)

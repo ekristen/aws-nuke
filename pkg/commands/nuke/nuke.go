@@ -185,7 +185,7 @@ func execute(c *cli.Context) error { //nolint:funlen,gocyclo
 	// Register the scanners for each region that is defined in the configuration.
 	for _, regionName := range parsedConfig.Regions {
 		// Step 1 - Create the region object
-		region := nuke.NewRegion(regionName, account.ResourceTypeToServiceType, account.NewSession)
+		region := nuke.NewRegion(regionName, account.ResourceTypeToServiceType, account.NewSession, account.NewConfig)
 
 		// Step 2 - Create the scannerActual object
 		scannerActual := scanner.New(regionName, resourceTypes, &nuke.ListerOpts{

@@ -5,8 +5,8 @@ import (
 
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
@@ -27,13 +27,13 @@ func init() {
 
 type S3MultipartUploadLister struct{}
 
-func (l *S3MultipartUploadLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *S3MultipartUploadLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
-	svc := s3.New(opts.Session)
+	svc := s3.NewFromConfig(*opts.Config)
 
 	resources := make([]resource.Resource, 0)
 
-	buckets, err := DescribeS3Buckets(svc)
+	buckets, err := DescribeS3Buckets(ctx, svc)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +44,7 @@ func (l *S3MultipartUploadLister) List(_ context.Context, o interface{}) ([]reso
 		}
 
 		for {
-			resp, err := svc.ListMultipartUploads(params)
+			resp, err := svc.ListMultipartUploads(ctx, params)
 			if err != nil {
 				return nil, err
 			}
@@ -56,7 +56,7 @@ func (l *S3MultipartUploadLister) List(_ context.Context, o interface{}) ([]reso
 
 				resources = append(resources, &S3MultipartUpload{
 					svc:      svc,
-					bucket:   aws.StringValue(bucket.Name),
+					bucket:   aws.ToString(bucket.Name),
 					key:      *upload.Key,
 					uploadID: *upload.UploadId,
 				})
@@ -75,20 +75,20 @@ func (l *S3MultipartUploadLister) List(_ context.Context, o interface{}) ([]reso
 }
 
 type S3MultipartUpload struct {
-	svc      *s3.S3
+	svc      *s3.Client
 	bucket   string
 	key      string
 	uploadID string
 }
 
-func (e *S3MultipartUpload) Remove(_ context.Context) error {
+func (e *S3MultipartUpload) Remove(ctx context.Context) error {
 	params := &s3.AbortMultipartUploadInput{
 		Bucket:   &e.bucket,
 		Key:      &e.key,
 		UploadId: &e.uploadID,
 	}
 
-	_, err := e.svc.AbortMultipartUpload(params)
+	_, err := e.svc.AbortMultipartUpload(ctx, params)
 	if err != nil {
 		return err
 	}
