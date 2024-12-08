@@ -17,9 +17,10 @@ const BillingCostandUsageReportResource = "BillingCostandUsageReport"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   BillingCostandUsageReportResource,
-		Scope:  nuke.Account,
-		Lister: &BillingCostandUsageReportLister{},
+		Name:     BillingCostandUsageReportResource,
+		Scope:    nuke.Account,
+		Resource: &BillingCostandUsageReport{},
+		Lister:   &BillingCostandUsageReportLister{},
 	})
 }
 

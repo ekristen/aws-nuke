@@ -17,9 +17,10 @@ const SSMParameterResource = "SSMParameter"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   SSMParameterResource,
-		Scope:  nuke.Account,
-		Lister: &SSMParameterLister{},
+		Name:     SSMParameterResource,
+		Scope:    nuke.Account,
+		Resource: &SSMParameter{},
+		Lister:   &SSMParameterLister{},
 	})
 }
 

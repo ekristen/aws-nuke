@@ -17,9 +17,10 @@ const IoTSiteWiseAccessPolicyResource = "IoTSiteWiseAccessPolicy"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   IoTSiteWiseAccessPolicyResource,
-		Scope:  nuke.Account,
-		Lister: &IoTSiteWiseAccessPolicyLister{},
+		Name:     IoTSiteWiseAccessPolicyResource,
+		Scope:    nuke.Account,
+		Resource: &IoTSiteWiseAccessPolicy{},
+		Lister:   &IoTSiteWiseAccessPolicyLister{},
 	})
 }
 

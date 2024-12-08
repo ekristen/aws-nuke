@@ -20,9 +20,10 @@ const EC2SnapshotResource = "EC2Snapshot"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   EC2SnapshotResource,
-		Scope:  nuke.Account,
-		Lister: &EC2SnapshotLister{},
+		Name:     EC2SnapshotResource,
+		Scope:    nuke.Account,
+		Resource: &EC2Snapshot{},
+		Lister:   &EC2SnapshotLister{},
 		DependsOn: []string{
 			EC2ImageResource,
 		},

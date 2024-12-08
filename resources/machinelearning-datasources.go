@@ -16,9 +16,10 @@ const MachineLearningDataSourceResource = "MachineLearningDataSource"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   MachineLearningDataSourceResource,
-		Scope:  nuke.Account,
-		Lister: &MachineLearningDataSourceLister{},
+		Name:     MachineLearningDataSourceResource,
+		Scope:    nuke.Account,
+		Resource: &MachineLearningDataSource{},
+		Lister:   &MachineLearningDataSourceLister{},
 	})
 }
 

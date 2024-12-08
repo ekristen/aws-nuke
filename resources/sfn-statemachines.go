@@ -16,9 +16,10 @@ const SFNStateMachineResource = "SFNStateMachine"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   SFNStateMachineResource,
-		Scope:  nuke.Account,
-		Lister: &SFNStateMachineLister{},
+		Name:     SFNStateMachineResource,
+		Scope:    nuke.Account,
+		Resource: &SFNStateMachine{},
+		Lister:   &SFNStateMachineLister{},
 	})
 }
 

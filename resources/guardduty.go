@@ -16,9 +16,10 @@ const GuardDutyDetectorResource = "GuardDutyDetector"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   GuardDutyDetectorResource,
-		Scope:  nuke.Account,
-		Lister: &GuardDutyDetectorLister{},
+		Name:     GuardDutyDetectorResource,
+		Scope:    nuke.Account,
+		Resource: &GuardDutyDetector{},
+		Lister:   &GuardDutyDetectorLister{},
 	})
 }
 

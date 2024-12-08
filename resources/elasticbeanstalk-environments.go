@@ -17,9 +17,10 @@ const ElasticBeanstalkEnvironmentResource = "ElasticBeanstalkEnvironment"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ElasticBeanstalkEnvironmentResource,
-		Scope:  nuke.Account,
-		Lister: &ElasticBeanstalkEnvironmentLister{},
+		Name:     ElasticBeanstalkEnvironmentResource,
+		Scope:    nuke.Account,
+		Resource: &ElasticBeanstalkEnvironment{},
+		Lister:   &ElasticBeanstalkEnvironmentLister{},
 	})
 }
 

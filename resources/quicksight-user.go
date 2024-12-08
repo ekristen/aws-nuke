@@ -20,9 +20,10 @@ const QuickSightUserResource = "QuickSightUser"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   QuickSightUserResource,
-		Scope:  nuke.Account,
-		Lister: &QuickSightUserLister{},
+		Name:     QuickSightUserResource,
+		Scope:    nuke.Account,
+		Resource: &QuickSightUserLister{},
+		Lister:   &QuickSightUserLister{},
 	})
 }
 

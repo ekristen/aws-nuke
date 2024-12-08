@@ -18,9 +18,10 @@ const OpsWorksCMServerResource = "OpsWorksCMServer"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   OpsWorksCMServerResource,
-		Scope:  nuke.Account,
-		Lister: &OpsWorksCMServerLister{},
+		Name:     OpsWorksCMServerResource,
+		Scope:    nuke.Account,
+		Resource: &OpsWorksCMServer{},
+		Lister:   &OpsWorksCMServerLister{},
 	})
 }
 

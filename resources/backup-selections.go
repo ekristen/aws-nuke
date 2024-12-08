@@ -15,20 +15,14 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-type BackupSelection struct {
-	svc           *backup.Backup
-	planID        string
-	selectionID   string
-	selectionName string
-}
-
 const AWSBackupSelectionResource = "AWSBackupSelection"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   AWSBackupSelectionResource,
-		Scope:  nuke.Account,
-		Lister: &AWSBackupSelectionLister{},
+		Name:     AWSBackupSelectionResource,
+		Scope:    nuke.Account,
+		Resource: &BackupSelection{},
+		Lister:   &AWSBackupSelectionLister{},
 	})
 }
 
@@ -72,6 +66,13 @@ func (l *AWSBackupSelectionLister) List(_ context.Context, o interface{}) ([]res
 	}
 
 	return resources, nil
+}
+
+type BackupSelection struct {
+	svc           *backup.Backup
+	planID        string
+	selectionID   string
+	selectionName string
 }
 
 func (b *BackupSelection) Properties() types.Properties {

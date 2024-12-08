@@ -18,9 +18,10 @@ const DAXSubnetGroupResource = "DAXSubnetGroup"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   DAXSubnetGroupResource,
-		Scope:  nuke.Account,
-		Lister: &DAXSubnetGroupLister{},
+		Name:     DAXSubnetGroupResource,
+		Scope:    nuke.Account,
+		Resource: &DAXSubnetGroup{},
+		Lister:   &DAXSubnetGroupLister{},
 	})
 }
 

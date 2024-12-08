@@ -54,8 +54,9 @@ func init() {
 
 func registerCloudControl(typeName string) {
 	registry.Register(&registry.Registration{
-		Name:  typeName,
-		Scope: nuke.Account,
+		Name:     typeName,
+		Scope:    nuke.Account,
+		Resource: &CloudControlResource{},
 		Lister: &CloudControlResourceLister{
 			TypeName: typeName,
 		},

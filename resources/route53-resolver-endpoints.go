@@ -18,9 +18,10 @@ const Route53ResolverEndpointResource = "Route53ResolverEndpoint"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   Route53ResolverEndpointResource,
-		Scope:  nuke.Account,
-		Lister: &Route53ResolverEndpointLister{},
+		Name:     Route53ResolverEndpointResource,
+		Scope:    nuke.Account,
+		Resource: &Route53ResolverEndpoint{},
+		Lister:   &Route53ResolverEndpointLister{},
 	})
 }
 

@@ -27,7 +27,7 @@ generated: true
 ## Properties
 
 {{ range $key, $value := .Properties }}
-- `{{ $key }}`: {{ $value }}
+- `{{ $key }}`: {{ if ne $value "" }}{{ $value }}{{ else }}No Description{{ end }}
 {{- end }}
 {{- end }}
 

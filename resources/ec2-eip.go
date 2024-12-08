@@ -16,9 +16,10 @@ const EC2AddressResource = "EC2Address"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   EC2AddressResource,
-		Scope:  nuke.Account,
-		Lister: &EC2AddressLister{},
+		Name:     EC2AddressResource,
+		Scope:    nuke.Account,
+		Resource: &EC2Address{},
+		Lister:   &EC2AddressLister{},
 	})
 }
 

@@ -21,9 +21,10 @@ const IAMPolicyResource = "IAMPolicy"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   IAMPolicyResource,
-		Scope:  nuke.Account,
-		Lister: &IAMPolicyLister{},
+		Name:     IAMPolicyResource,
+		Scope:    nuke.Account,
+		Resource: &IAMPolicy{},
+		Lister:   &IAMPolicyLister{},
 		DependsOn: []string{
 			IAMUserPolicyAttachmentResource,
 			IAMGroupPolicyAttachmentResource,

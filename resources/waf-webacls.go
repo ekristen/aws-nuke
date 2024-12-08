@@ -16,9 +16,10 @@ const WAFWebACLResource = "WAFWebACL"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   WAFWebACLResource,
-		Scope:  nuke.Account,
-		Lister: &WAFWebACLLister{},
+		Name:     WAFWebACLResource,
+		Scope:    nuke.Account,
+		Resource: &WAFWebACL{},
+		Lister:   &WAFWebACLLister{},
 	})
 }
 

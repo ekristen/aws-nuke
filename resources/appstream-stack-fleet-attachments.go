@@ -12,19 +12,14 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-type AppStreamStackFleetAttachment struct {
-	svc       *appstream.AppStream
-	stackName *string
-	fleetName *string
-}
-
 const AppStreamStackFleetAttachmentResource = "AppStreamStackFleetAttachment"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   AppStreamStackFleetAttachmentResource,
-		Scope:  nuke.Account,
-		Lister: &AppStreamStackFleetAttachmentLister{},
+		Name:     AppStreamStackFleetAttachmentResource,
+		Scope:    nuke.Account,
+		Resource: &AppStreamStackFleetAttachment{},
+		Lister:   &AppStreamStackFleetAttachmentLister{},
 	})
 }
 
@@ -71,6 +66,12 @@ func (l *AppStreamStackFleetAttachmentLister) List(_ context.Context, o interfac
 	}
 
 	return resources, nil
+}
+
+type AppStreamStackFleetAttachment struct {
+	svc       *appstream.AppStream
+	stackName *string
+	fleetName *string
 }
 
 func (f *AppStreamStackFleetAttachment) Remove(_ context.Context) error {

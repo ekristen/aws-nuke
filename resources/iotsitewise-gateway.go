@@ -17,9 +17,10 @@ const IoTSiteWiseGatewayResource = "IoTSiteWiseGateway"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   IoTSiteWiseGatewayResource,
-		Scope:  nuke.Account,
-		Lister: &IoTSiteWiseGatewayLister{},
+		Name:     IoTSiteWiseGatewayResource,
+		Scope:    nuke.Account,
+		Resource: &IoTSiteWiseGateway{},
+		Lister:   &IoTSiteWiseGatewayLister{},
 	})
 }
 

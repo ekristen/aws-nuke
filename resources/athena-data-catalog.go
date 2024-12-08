@@ -19,9 +19,10 @@ const AthenaDataCatalogResource = "AthenaDataCatalog"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   AthenaDataCatalogResource,
-		Scope:  nuke.Account,
-		Lister: &AthenaDataCatalogLister{},
+		Name:     AthenaDataCatalogResource,
+		Scope:    nuke.Account,
+		Resource: &AthenaDataCatalog{},
+		Lister:   &AthenaDataCatalogLister{},
 	})
 }
 

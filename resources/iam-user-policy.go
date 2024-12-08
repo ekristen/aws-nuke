@@ -18,9 +18,10 @@ const IAMUserPolicyResource = "IAMUserPolicy"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   IAMUserPolicyResource,
-		Scope:  nuke.Account,
-		Lister: &IAMUserPolicyLister{},
+		Name:     IAMUserPolicyResource,
+		Scope:    nuke.Account,
+		Resource: &IAMUserPolicy{},
+		Lister:   &IAMUserPolicyLister{},
 	})
 }
 

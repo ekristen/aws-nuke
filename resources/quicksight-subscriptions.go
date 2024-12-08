@@ -21,9 +21,10 @@ const subscriptionNameWhenNotAvailable = "NOT_AVAILABLE"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   QuickSightSubscriptionResource,
-		Scope:  nuke.Account,
-		Lister: &QuickSightSubscriptionLister{},
+		Name:     QuickSightSubscriptionResource,
+		Scope:    nuke.Account,
+		Resource: &QuickSightSubscription{},
+		Lister:   &QuickSightSubscriptionLister{},
 		Settings: []string{
 			"DisableTerminationProtection",
 		},

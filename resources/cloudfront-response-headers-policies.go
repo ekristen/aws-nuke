@@ -18,9 +18,10 @@ const CloudFrontResponseHeadersPolicyResource = "CloudFrontResponseHeadersPolicy
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   CloudFrontResponseHeadersPolicyResource,
-		Scope:  nuke.Account,
-		Lister: &CloudFrontResponseHeadersPolicyLister{},
+		Name:     CloudFrontResponseHeadersPolicyResource,
+		Scope:    nuke.Account,
+		Resource: &CloudFrontResponseHeadersPolicy{},
+		Lister:   &CloudFrontResponseHeadersPolicyLister{},
 	})
 }
 

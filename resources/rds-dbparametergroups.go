@@ -20,9 +20,10 @@ const RDSDBParameterGroupResource = "RDSDBParameterGroup"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   RDSDBParameterGroupResource,
-		Scope:  nuke.Account,
-		Lister: &RDSDBParameterGroupLister{},
+		Name:     RDSDBParameterGroupResource,
+		Scope:    nuke.Account,
+		Resource: &RDSDBParameterGroup{},
+		Lister:   &RDSDBParameterGroupLister{},
 	})
 }
 

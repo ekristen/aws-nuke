@@ -20,9 +20,10 @@ const ECSTaskResource = "ECSTask"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ECSTaskResource,
-		Scope:  nuke.Account,
-		Lister: &ECSTaskLister{},
+		Name:     ECSTaskResource,
+		Scope:    nuke.Account,
+		Resource: &ECSTask{},
+		Lister:   &ECSTaskLister{},
 	})
 }
 

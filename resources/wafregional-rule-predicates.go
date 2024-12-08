@@ -18,9 +18,10 @@ const WAFRegionalRulePredicateResource = "WAFRegionalRulePredicate"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   WAFRegionalRulePredicateResource,
-		Scope:  nuke.Account,
-		Lister: &WAFRegionalRulePredicateLister{},
+		Name:     WAFRegionalRulePredicateResource,
+		Scope:    nuke.Account,
+		Resource: &WAFRegionalRulePredicate{},
+		Lister:   &WAFRegionalRulePredicateLister{},
 	})
 }
 

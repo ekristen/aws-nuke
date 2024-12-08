@@ -15,9 +15,10 @@ const MacieResource = "Macie"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   MacieResource,
-		Scope:  nuke.Account,
-		Lister: &MacieLister{},
+		Name:     MacieResource,
+		Scope:    nuke.Account,
+		Resource: &Macie{},
+		Lister:   &MacieLister{},
 	})
 }
 

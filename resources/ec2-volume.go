@@ -17,9 +17,10 @@ const EC2VolumeResource = "EC2Volume"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   EC2VolumeResource,
-		Scope:  nuke.Account,
-		Lister: &EC2VolumeLister{},
+		Name:     EC2VolumeResource,
+		Scope:    nuke.Account,
+		Resource: &EC2Volume{},
+		Lister:   &EC2VolumeLister{},
 	})
 }
 

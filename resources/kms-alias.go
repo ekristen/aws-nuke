@@ -19,9 +19,10 @@ const KMSAliasResource = "KMSAlias"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   KMSAliasResource,
-		Scope:  nuke.Account,
-		Lister: &KMSAliasLister{},
+		Name:     KMSAliasResource,
+		Scope:    nuke.Account,
+		Resource: &KMSAlias{},
+		Lister:   &KMSAliasLister{},
 	})
 }
 

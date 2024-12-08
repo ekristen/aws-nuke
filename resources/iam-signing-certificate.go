@@ -22,9 +22,10 @@ const IAMSigningCertificateResource = "IAMSigningCertificate"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   IAMSigningCertificateResource,
-		Scope:  nuke.Account,
-		Lister: &IAMSigningCertificateLister{},
+		Name:     IAMSigningCertificateResource,
+		Scope:    nuke.Account,
+		Resource: &IAMSigningCertificate{},
+		Lister:   &IAMSigningCertificateLister{},
 	})
 }
 

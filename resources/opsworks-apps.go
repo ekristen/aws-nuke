@@ -15,9 +15,10 @@ const OpsWorksAppResource = "OpsWorksApp"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   OpsWorksAppResource,
-		Scope:  nuke.Account,
-		Lister: &OpsWorksAppLister{},
+		Name:     OpsWorksAppResource,
+		Scope:    nuke.Account,
+		Resource: &OpsWorksApp{},
+		Lister:   &OpsWorksAppLister{},
 	})
 }
 

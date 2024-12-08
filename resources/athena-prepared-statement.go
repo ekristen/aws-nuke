@@ -18,9 +18,10 @@ const AthenaPreparedStatementResource = "AthenaPreparedStatement"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   AthenaPreparedStatementResource,
-		Scope:  nuke.Account,
-		Lister: &AthenaPreparedStatementLister{},
+		Name:     AthenaPreparedStatementResource,
+		Scope:    nuke.Account,
+		Resource: &AthenaPreparedStatement{},
+		Lister:   &AthenaPreparedStatementLister{},
 	})
 }
 

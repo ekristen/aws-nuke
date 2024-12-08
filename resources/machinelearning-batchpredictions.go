@@ -16,9 +16,10 @@ const MachineLearningBranchPredictionResource = "MachineLearningBranchPrediction
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   MachineLearningBranchPredictionResource,
-		Scope:  nuke.Account,
-		Lister: &MachineLearningBranchPredictionLister{},
+		Name:     MachineLearningBranchPredictionResource,
+		Scope:    nuke.Account,
+		Resource: &MachineLearningBranchPrediction{},
+		Lister:   &MachineLearningBranchPredictionLister{},
 	})
 }
 

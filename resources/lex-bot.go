@@ -17,9 +17,10 @@ const LexBotResource = "LexBot"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   LexBotResource,
-		Scope:  nuke.Account,
-		Lister: &LexBotLister{},
+		Name:     LexBotResource,
+		Scope:    nuke.Account,
+		Resource: &LexBot{},
+		Lister:   &LexBotLister{},
 	})
 }
 

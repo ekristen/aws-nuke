@@ -16,9 +16,10 @@ const SESIdentityResource = "SESIdentity"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   SESIdentityResource,
-		Scope:  nuke.Account,
-		Lister: &SESIdentityLister{},
+		Name:     SESIdentityResource,
+		Scope:    nuke.Account,
+		Resource: &SESIdentity{},
+		Lister:   &SESIdentityLister{},
 	})
 }
 

@@ -16,9 +16,10 @@ const ConfigServiceDeliveryChannelResource = "ConfigServiceDeliveryChannel"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ConfigServiceDeliveryChannelResource,
-		Scope:  nuke.Account,
-		Lister: &ConfigServiceDeliveryChannelLister{},
+		Name:     ConfigServiceDeliveryChannelResource,
+		Scope:    nuke.Account,
+		Resource: &ConfigServiceDeliveryChannel{},
+		Lister:   &ConfigServiceDeliveryChannelLister{},
 	})
 }
 

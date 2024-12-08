@@ -19,9 +19,10 @@ const MGNSourceServerResource = "MGNSourceServer"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   MGNSourceServerResource,
-		Scope:  nuke.Account,
-		Lister: &MGNSourceServerLister{},
+		Name:     MGNSourceServerResource,
+		Scope:    nuke.Account,
+		Resource: &MGNSourceServer{},
+		Lister:   &MGNSourceServerLister{},
 	})
 }
 

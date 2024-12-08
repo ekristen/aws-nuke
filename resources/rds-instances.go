@@ -19,9 +19,10 @@ const RDSInstanceResource = "RDSInstance"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   RDSInstanceResource,
-		Scope:  nuke.Account,
-		Lister: &RDSInstanceLister{},
+		Name:     RDSInstanceResource,
+		Scope:    nuke.Account,
+		Resource: &RDSInstance{},
+		Lister:   &RDSInstanceLister{},
 		Settings: []string{
 			"DisableDeletionProtection",
 		},

@@ -18,9 +18,10 @@ const IAMSAMLProviderResource = "IAMSAMLProvider"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   IAMSAMLProviderResource,
-		Scope:  nuke.Account,
-		Lister: &IAMSAMLProviderLister{},
+		Name:     IAMSAMLProviderResource,
+		Scope:    nuke.Account,
+		Resource: &IAMSAMLProvider{},
+		Lister:   &IAMSAMLProviderLister{},
 	})
 }
 

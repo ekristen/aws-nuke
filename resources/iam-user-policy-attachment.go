@@ -21,9 +21,10 @@ const IAMUserPolicyAttachmentResource = "IAMUserPolicyAttachment"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   IAMUserPolicyAttachmentResource,
-		Scope:  nuke.Account,
-		Lister: &IAMUserPolicyAttachmentLister{},
+		Name:     IAMUserPolicyAttachmentResource,
+		Scope:    nuke.Account,
+		Resource: &IAMUserPolicyAttachment{},
+		Lister:   &IAMUserPolicyAttachmentLister{},
 		DeprecatedAliases: []string{
 			"IamUserPolicyAttachement",
 		},

@@ -17,9 +17,10 @@ const EC2VPCPeeringConnectionResource = "EC2VPCPeeringConnection"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   EC2VPCPeeringConnectionResource,
-		Scope:  nuke.Account,
-		Lister: &EC2VPCPeeringConnectionLister{},
+		Name:     EC2VPCPeeringConnectionResource,
+		Scope:    nuke.Account,
+		Resource: &EC2VPCPeeringConnection{},
+		Lister:   &EC2VPCPeeringConnectionLister{},
 	})
 }
 

@@ -10,18 +10,14 @@ import (
 	"github.com/ekristen/libnuke/pkg/resource"
 )
 
-type AppStreamFleet struct {
-	svc  *appstream.AppStream
-	name *string
-}
-
 const AppStreamFleetResource = "AppStreamFleet"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   AppStreamFleetResource,
-		Scope:  nuke.Account,
-		Lister: &AppStreamFleetLister{},
+		Name:     AppStreamFleetResource,
+		Scope:    nuke.Account,
+		Resource: &AppStreamFleet{},
+		Lister:   &AppStreamFleetLister{},
 	})
 }
 
@@ -56,6 +52,11 @@ func (l *AppStreamFleetLister) List(_ context.Context, o interface{}) ([]resourc
 	}
 
 	return resources, nil
+}
+
+type AppStreamFleet struct {
+	svc  *appstream.AppStream
+	name *string
 }
 
 func (f *AppStreamFleet) Remove(_ context.Context) error {

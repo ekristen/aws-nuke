@@ -22,9 +22,10 @@ const ServiceCatalogConstraintPortfolioAttachmentResource = "ServiceCatalogConst
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ServiceCatalogConstraintPortfolioAttachmentResource,
-		Scope:  nuke.Account,
-		Lister: &ServiceCatalogConstraintPortfolioAttachmentLister{},
+		Name:     ServiceCatalogConstraintPortfolioAttachmentResource,
+		Scope:    nuke.Account,
+		Resource: &ServiceCatalogConstraintPortfolioAttachment{},
+		Lister:   &ServiceCatalogConstraintPortfolioAttachmentLister{},
 	})
 }
 

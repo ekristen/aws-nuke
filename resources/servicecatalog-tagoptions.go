@@ -20,9 +20,10 @@ const ServiceCatalogTagOptionResource = "ServiceCatalogTagOption"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ServiceCatalogTagOptionResource,
-		Scope:  nuke.Account,
-		Lister: &ServiceCatalogTagOptionLister{},
+		Name:     ServiceCatalogTagOptionResource,
+		Scope:    nuke.Account,
+		Resource: &ServiceCatalogTagOption{},
+		Lister:   &ServiceCatalogTagOptionLister{},
 	})
 }
 

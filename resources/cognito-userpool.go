@@ -22,9 +22,10 @@ const CognitoUserPoolResource = "CognitoUserPool"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   CognitoUserPoolResource,
-		Scope:  nuke.Account,
-		Lister: &CognitoUserPoolLister{},
+		Name:     CognitoUserPoolResource,
+		Scope:    nuke.Account,
+		Resource: &CognitoUserPool{},
+		Lister:   &CognitoUserPoolLister{},
 		Settings: []string{
 			"DisableDeletionProtection",
 		},

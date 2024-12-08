@@ -19,9 +19,10 @@ const IAMUserSSHPublicKeyResource = "IAMUserSSHPublicKey"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   IAMUserSSHPublicKeyResource,
-		Scope:  nuke.Account,
-		Lister: &IAMUserSSHPublicKeyLister{},
+		Name:     IAMUserSSHPublicKeyResource,
+		Scope:    nuke.Account,
+		Resource: &IAMUserSSHKey{},
+		Lister:   &IAMUserSSHPublicKeyLister{},
 	})
 }
 

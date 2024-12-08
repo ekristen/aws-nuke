@@ -19,9 +19,10 @@ const EC2HostResource = "EC2Host"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   EC2HostResource,
-		Scope:  nuke.Account,
-		Lister: &EC2HostLister{},
+		Name:     EC2HostResource,
+		Scope:    nuke.Account,
+		Resource: &EC2Host{},
+		Lister:   &EC2HostLister{},
 	})
 }
 

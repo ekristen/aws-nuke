@@ -14,9 +14,10 @@ const ResourceExplorer2IndexResource = "ResourceExplorer2Index"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ResourceExplorer2IndexResource,
-		Scope:  nuke.Account,
-		Lister: &ResourceExplorer2IndexLister{},
+		Name:     ResourceExplorer2IndexResource,
+		Scope:    nuke.Account,
+		Resource: &ResourceExplorer2Index{},
+		Lister:   &ResourceExplorer2IndexLister{},
 	})
 }
 

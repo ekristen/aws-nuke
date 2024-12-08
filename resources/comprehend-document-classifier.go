@@ -19,9 +19,10 @@ const ComprehendDocumentClassifierResource = "ComprehendDocumentClassifier"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ComprehendDocumentClassifierResource,
-		Scope:  nuke.Account,
-		Lister: &ComprehendDocumentClassifierLister{},
+		Name:     ComprehendDocumentClassifierResource,
+		Scope:    nuke.Account,
+		Resource: &ComprehendDocumentClassifier{},
+		Lister:   &ComprehendDocumentClassifierLister{},
 	})
 }
 

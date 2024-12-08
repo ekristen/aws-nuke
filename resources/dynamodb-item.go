@@ -22,9 +22,10 @@ const DynamoDBTableItemResource = "DynamoDBTableItem"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   DynamoDBTableItemResource,
-		Scope:  nuke.Account,
-		Lister: &DynamoDBTableItemLister{},
+		Name:     DynamoDBTableItemResource,
+		Scope:    nuke.Account,
+		Resource: &DynamoDBTableItem{},
+		Lister:   &DynamoDBTableItemLister{},
 	})
 }
 

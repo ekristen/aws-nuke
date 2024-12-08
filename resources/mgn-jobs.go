@@ -19,9 +19,10 @@ const MGNJobResource = "MGNJob"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   MGNJobResource,
-		Scope:  nuke.Account,
-		Lister: &MGNJobLister{},
+		Name:     MGNJobResource,
+		Scope:    nuke.Account,
+		Resource: &MGNJob{},
+		Lister:   &MGNJobLister{},
 	})
 }
 

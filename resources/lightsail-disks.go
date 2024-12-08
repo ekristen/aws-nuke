@@ -15,9 +15,10 @@ const LightsailDiskResource = "LightsailDisk"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   LightsailDiskResource,
-		Scope:  nuke.Account,
-		Lister: &LightsailDiskLister{},
+		Name:     LightsailDiskResource,
+		Scope:    nuke.Account,
+		Resource: &LightsailDisk{},
+		Lister:   &LightsailDiskLister{},
 	})
 }
 

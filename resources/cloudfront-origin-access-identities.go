@@ -16,9 +16,10 @@ const CloudFrontOriginAccessIdentityResource = "CloudFrontOriginAccessIdentity"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   CloudFrontOriginAccessIdentityResource,
-		Scope:  nuke.Account,
-		Lister: &CloudFrontOriginAccessIdentityLister{},
+		Name:     CloudFrontOriginAccessIdentityResource,
+		Scope:    nuke.Account,
+		Resource: &CloudFrontOriginAccessIdentity{},
+		Lister:   &CloudFrontOriginAccessIdentityLister{},
 	})
 }
 

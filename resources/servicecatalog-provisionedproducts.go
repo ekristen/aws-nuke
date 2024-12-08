@@ -17,9 +17,10 @@ const ServiceCatalogProvisionedProductResource = "ServiceCatalogProvisionedProdu
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ServiceCatalogProvisionedProductResource,
-		Scope:  nuke.Account,
-		Lister: &ServiceCatalogProvisionedProductLister{},
+		Name:     ServiceCatalogProvisionedProductResource,
+		Scope:    nuke.Account,
+		Resource: &ServiceCatalogProvisionedProduct{},
+		Lister:   &ServiceCatalogProvisionedProductLister{},
 	})
 }
 

@@ -18,9 +18,10 @@ const TranscribeTranscriptionJobResource = "TranscribeTranscriptionJob"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   TranscribeTranscriptionJobResource,
-		Scope:  nuke.Account,
-		Lister: &TranscribeTranscriptionJobLister{},
+		Name:     TranscribeTranscriptionJobResource,
+		Scope:    nuke.Account,
+		Resource: &TranscribeTranscriptionJob{},
+		Lister:   &TranscribeTranscriptionJobLister{},
 	})
 }
 

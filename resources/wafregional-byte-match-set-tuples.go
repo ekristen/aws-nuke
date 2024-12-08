@@ -18,9 +18,10 @@ const WAFRegionalByteMatchSetIPResource = "WAFRegionalByteMatchSetIP"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   WAFRegionalByteMatchSetIPResource,
-		Scope:  nuke.Account,
-		Lister: &WAFRegionalByteMatchSetIPLister{},
+		Name:     WAFRegionalByteMatchSetIPResource,
+		Scope:    nuke.Account,
+		Resource: &WAFRegionalByteMatchSetIP{},
+		Lister:   &WAFRegionalByteMatchSetIPLister{},
 	})
 }
 

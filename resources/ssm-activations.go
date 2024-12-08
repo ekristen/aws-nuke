@@ -17,9 +17,10 @@ const SSMActivationResource = "SSMActivation"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   SSMActivationResource,
-		Scope:  nuke.Account,
-		Lister: &SSMActivationLister{},
+		Name:     SSMActivationResource,
+		Scope:    nuke.Account,
+		Resource: &SSMActivation{},
+		Lister:   &SSMActivationLister{},
 	})
 }
 

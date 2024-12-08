@@ -17,9 +17,10 @@ const EC2CustomerGatewayResource = "EC2CustomerGateway"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   EC2CustomerGatewayResource,
-		Scope:  nuke.Account,
-		Lister: &EC2CustomerGatewayLister{},
+		Name:     EC2CustomerGatewayResource,
+		Scope:    nuke.Account,
+		Resource: &EC2CustomerGateway{},
+		Lister:   &EC2CustomerGatewayLister{},
 	})
 }
 

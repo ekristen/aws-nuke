@@ -18,9 +18,10 @@ const WAFv2IPSetResource = "WAFv2IPSet"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   WAFv2IPSetResource,
-		Scope:  nuke.Account,
-		Lister: &WAFv2IPSetLister{},
+		Name:     WAFv2IPSetResource,
+		Scope:    nuke.Account,
+		Resource: &WAFv2IPSet{},
+		Lister:   &WAFv2IPSetLister{},
 	})
 }
 

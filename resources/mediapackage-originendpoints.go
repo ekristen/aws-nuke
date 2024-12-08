@@ -16,9 +16,10 @@ const MediaPackageOriginEndpointResource = "MediaPackageOriginEndpoint"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   MediaPackageOriginEndpointResource,
-		Scope:  nuke.Account,
-		Lister: &MediaPackageOriginEndpointLister{},
+		Name:     MediaPackageOriginEndpointResource,
+		Scope:    nuke.Account,
+		Resource: &MediaPackageOriginEndpoint{},
+		Lister:   &MediaPackageOriginEndpointLister{},
 	})
 }
 

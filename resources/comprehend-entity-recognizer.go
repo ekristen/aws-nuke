@@ -18,9 +18,10 @@ const ComprehendEntityRecognizerResource = "ComprehendEntityRecognizer"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ComprehendEntityRecognizerResource,
-		Scope:  nuke.Account,
-		Lister: &ComprehendEntityRecognizerLister{},
+		Name:     ComprehendEntityRecognizerResource,
+		Scope:    nuke.Account,
+		Resource: &ComprehendEntityRecognizer{},
+		Lister:   &ComprehendEntityRecognizerLister{},
 	})
 }
 

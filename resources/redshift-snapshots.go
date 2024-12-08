@@ -17,9 +17,10 @@ const RedshiftSnapshotResource = "RedshiftSnapshot"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   RedshiftSnapshotResource,
-		Scope:  nuke.Account,
-		Lister: &RedshiftSnapshotLister{},
+		Name:     RedshiftSnapshotResource,
+		Scope:    nuke.Account,
+		Resource: &RedshiftSnapshot{},
+		Lister:   &RedshiftSnapshotLister{},
 	})
 }
 

@@ -16,9 +16,10 @@ const KinesisStreamResource = "KinesisStream"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   KinesisStreamResource,
-		Scope:  nuke.Account,
-		Lister: &KinesisStreamLister{},
+		Name:     KinesisStreamResource,
+		Scope:    nuke.Account,
+		Resource: &KinesisStream{},
+		Lister:   &KinesisStreamLister{},
 	})
 }
 

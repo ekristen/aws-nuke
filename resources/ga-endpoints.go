@@ -17,9 +17,10 @@ const GlobalAcceleratorEndpointGroupResource = "GlobalAcceleratorEndpointGroup"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   GlobalAcceleratorEndpointGroupResource,
-		Scope:  nuke.Account,
-		Lister: &GlobalAcceleratorEndpointGroupLister{},
+		Name:     GlobalAcceleratorEndpointGroupResource,
+		Scope:    nuke.Account,
+		Resource: &GlobalAcceleratorEndpointGroup{},
+		Lister:   &GlobalAcceleratorEndpointGroupLister{},
 	})
 }
 

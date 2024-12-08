@@ -17,18 +17,14 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-type NetworkManagerNetworkAttachment struct {
-	svc        *networkmanager.NetworkManager
-	attachment *networkmanager.Attachment
-}
-
 const NetworkManagerNetworkAttachmentResource = "NetworkManagerNetworkAttachment"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   NetworkManagerNetworkAttachmentResource,
-		Scope:  nuke.Account,
-		Lister: &NetworkManagerNetworkAttachmentLister{},
+		Name:     NetworkManagerNetworkAttachmentResource,
+		Scope:    nuke.Account,
+		Resource: &NetworkManagerNetworkAttachment{},
+		Lister:   &NetworkManagerNetworkAttachmentLister{},
 	})
 }
 
@@ -54,6 +50,11 @@ func (l *NetworkManagerNetworkAttachmentLister) List(_ context.Context, o interf
 	}
 
 	return resources, nil
+}
+
+type NetworkManagerNetworkAttachment struct {
+	svc        *networkmanager.NetworkManager
+	attachment *networkmanager.Attachment
 }
 
 func (n *NetworkManagerNetworkAttachment) Remove(_ context.Context) error {

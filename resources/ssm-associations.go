@@ -16,9 +16,10 @@ const SSMAssociationResource = "SSMAssociation"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   SSMAssociationResource,
-		Scope:  nuke.Account,
-		Lister: &SSMAssociationLister{},
+		Name:     SSMAssociationResource,
+		Scope:    nuke.Account,
+		Resource: &SSMAssociation{},
+		Lister:   &SSMAssociationLister{},
 	})
 }
 

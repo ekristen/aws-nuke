@@ -19,9 +19,10 @@ const PipesPipeResource = "PipesPipe"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   PipesPipeResource,
-		Scope:  nuke.Account,
-		Lister: &PipesPipeLister{},
+		Name:     PipesPipeResource,
+		Scope:    nuke.Account,
+		Resource: &PipesPipes{},
+		Lister:   &PipesPipeLister{},
 	})
 }
 

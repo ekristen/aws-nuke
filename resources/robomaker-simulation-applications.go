@@ -16,9 +16,10 @@ const RoboMakerSimulationApplicationResource = "RoboMakerSimulationApplication"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   RoboMakerSimulationApplicationResource,
-		Scope:  nuke.Account,
-		Lister: &RoboMakerSimulationApplicationLister{},
+		Name:     RoboMakerSimulationApplicationResource,
+		Scope:    nuke.Account,
+		Resource: &RoboMakerSimulationApplication{},
+		Lister:   &RoboMakerSimulationApplicationLister{},
 	})
 }
 

@@ -19,9 +19,10 @@ const IoTTwinMakerComponentTypeResource = "IoTTwinMakerComponentType"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   IoTTwinMakerComponentTypeResource,
-		Scope:  nuke.Account,
-		Lister: &IoTTwinMakerComponentTypeLister{},
+		Name:     IoTTwinMakerComponentTypeResource,
+		Scope:    nuke.Account,
+		Resource: &IoTTwinMakerComponentType{},
+		Lister:   &IoTTwinMakerComponentTypeLister{},
 	})
 }
 

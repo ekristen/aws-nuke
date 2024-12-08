@@ -16,19 +16,14 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-type BatchJobQueueState struct {
-	svc      *batch.Batch
-	jobQueue *string
-	state    *string
-}
-
 const BatchJobQueueStateResource = "BatchJobQueueState"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   BatchJobQueueStateResource,
-		Scope:  nuke.Account,
-		Lister: &BatchJobQueueStateLister{},
+		Name:     BatchJobQueueStateResource,
+		Scope:    nuke.Account,
+		Resource: &BatchJobQueueState{},
+		Lister:   &BatchJobQueueStateLister{},
 	})
 }
 
@@ -66,6 +61,12 @@ func (l *BatchJobQueueStateLister) List(_ context.Context, o interface{}) ([]res
 	}
 
 	return resources, nil
+}
+
+type BatchJobQueueState struct {
+	svc      *batch.Batch
+	jobQueue *string
+	state    *string
 }
 
 func (f *BatchJobQueueState) Remove(_ context.Context) error {

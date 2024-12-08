@@ -16,9 +16,10 @@ const LambdaEventSourceMappingResource = "LambdaEventSourceMapping"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   LambdaEventSourceMappingResource,
-		Scope:  nuke.Account,
-		Lister: &LambdaEventSourceMappingLister{},
+		Name:     LambdaEventSourceMappingResource,
+		Scope:    nuke.Account,
+		Resource: &LambdaEventSourceMapping{},
+		Lister:   &LambdaEventSourceMappingLister{},
 	})
 }
 

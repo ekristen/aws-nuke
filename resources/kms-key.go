@@ -24,9 +24,10 @@ const KMSKeyResource = "KMSKey"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   KMSKeyResource,
-		Scope:  nuke.Account,
-		Lister: &KMSKeyLister{},
+		Name:     KMSKeyResource,
+		Scope:    nuke.Account,
+		Resource: &KMSKey{},
+		Lister:   &KMSKeyLister{},
 		DependsOn: []string{
 			KMSAliasResource,
 		},

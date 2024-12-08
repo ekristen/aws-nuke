@@ -18,9 +18,10 @@ const OpsWorksUserProfileResource = "OpsWorksUserProfile"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   OpsWorksUserProfileResource,
-		Scope:  nuke.Account,
-		Lister: &OpsWorksUserProfileLister{},
+		Name:     OpsWorksUserProfileResource,
+		Scope:    nuke.Account,
+		Resource: &OpsWorksUserProfile{},
+		Lister:   &OpsWorksUserProfileLister{},
 	})
 }
 

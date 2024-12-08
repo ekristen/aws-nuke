@@ -19,9 +19,10 @@ const Route53HostedZoneResource = "Route53HostedZone"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   Route53HostedZoneResource,
-		Scope:  nuke.Account,
-		Lister: &Route53HostedZoneLister{},
+		Name:     Route53HostedZoneResource,
+		Scope:    nuke.Account,
+		Resource: &Route53HostedZone{},
+		Lister:   &Route53HostedZoneLister{},
 	})
 }
 

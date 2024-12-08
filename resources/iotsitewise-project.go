@@ -17,9 +17,10 @@ const IoTSiteWiseProjectResource = "IoTSiteWiseProject"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   IoTSiteWiseProjectResource,
-		Scope:  nuke.Account,
-		Lister: &IoTSiteWiseProjectLister{},
+		Name:     IoTSiteWiseProjectResource,
+		Scope:    nuke.Account,
+		Resource: &IoTSiteWiseProject{},
+		Lister:   &IoTSiteWiseProjectLister{},
 		DependsOn: []string{
 			IoTSiteWiseDashboardResource,
 			IoTSiteWiseAccessPolicyResource,

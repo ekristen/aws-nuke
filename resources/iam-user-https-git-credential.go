@@ -20,9 +20,10 @@ const IAMUserHTTPSGitCredentialResource = "IAMUserHTTPSGitCredential" //nolint:g
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   IAMUserHTTPSGitCredentialResource,
-		Scope:  nuke.Account,
-		Lister: &IAMUserHTTPSGitCredentialLister{},
+		Name:     IAMUserHTTPSGitCredentialResource,
+		Scope:    nuke.Account,
+		Resource: &IAMUserHTTPSGitCredential{},
+		Lister:   &IAMUserHTTPSGitCredentialLister{},
 	})
 }
 

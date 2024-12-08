@@ -17,9 +17,10 @@ const ServiceCatalogPortfolioResource = "ServiceCatalogPortfolio"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ServiceCatalogPortfolioResource,
-		Scope:  nuke.Account,
-		Lister: &ServiceCatalogPortfolioLister{},
+		Name:     ServiceCatalogPortfolioResource,
+		Scope:    nuke.Account,
+		Resource: &ServiceCatalogPortfolio{},
+		Lister:   &ServiceCatalogPortfolioLister{},
 	})
 }
 

@@ -17,9 +17,10 @@ const IoTTwinMakerSyncJobResource = "IoTTwinMakerSyncJob"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   IoTTwinMakerSyncJobResource,
-		Scope:  nuke.Account,
-		Lister: &IoTTwinMakerSyncJobLister{},
+		Name:     IoTTwinMakerSyncJobResource,
+		Scope:    nuke.Account,
+		Resource: &IoTTwinMakerSyncJob{},
+		Lister:   &IoTTwinMakerSyncJobLister{},
 	})
 }
 

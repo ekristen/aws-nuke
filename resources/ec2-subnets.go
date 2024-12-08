@@ -16,9 +16,10 @@ const EC2SubnetResource = "EC2Subnet"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   EC2SubnetResource,
-		Scope:  nuke.Account,
-		Lister: &EC2SubnetLister{},
+		Name:     EC2SubnetResource,
+		Scope:    nuke.Account,
+		Resource: &EC2Subnet{},
+		Lister:   &EC2SubnetLister{},
 		DependsOn: []string{
 			EC2NetworkInterfaceResource,
 		},

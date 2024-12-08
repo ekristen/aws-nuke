@@ -18,9 +18,10 @@ const GlueDevEndpointResource = "GlueDevEndpoint"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   GlueDevEndpointResource,
-		Scope:  nuke.Account,
-		Lister: &GlueDevEndpointLister{},
+		Name:     GlueDevEndpointResource,
+		Scope:    nuke.Account,
+		Resource: &GlueDevEndpoint{},
+		Lister:   &GlueDevEndpointLister{},
 	})
 }
 

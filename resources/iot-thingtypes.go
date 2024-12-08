@@ -16,9 +16,10 @@ const IoTThingTypeResource = "IoTThingType"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   IoTThingTypeResource,
-		Scope:  nuke.Account,
-		Lister: &IoTThingTypeLister{},
+		Name:     IoTThingTypeResource,
+		Scope:    nuke.Account,
+		Resource: &IoTThingType{},
+		Lister:   &IoTThingTypeLister{},
 	})
 }
 

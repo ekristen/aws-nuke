@@ -16,9 +16,10 @@ const ConfigServiceConfigurationRecorderResource = "ConfigServiceConfigurationRe
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ConfigServiceConfigurationRecorderResource,
-		Scope:  nuke.Account,
-		Lister: &ConfigServiceConfigurationRecorderLister{},
+		Name:     ConfigServiceConfigurationRecorderResource,
+		Scope:    nuke.Account,
+		Resource: &ConfigServiceConfigurationRecorder{},
+		Lister:   &ConfigServiceConfigurationRecorderLister{},
 	})
 }
 

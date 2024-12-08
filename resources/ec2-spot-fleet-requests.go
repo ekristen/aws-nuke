@@ -18,9 +18,10 @@ const EC2SpotFleetRequestResource = "EC2SpotFleetRequest"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   EC2SpotFleetRequestResource,
-		Scope:  nuke.Account,
-		Lister: &EC2SpotFleetRequestLister{},
+		Name:     EC2SpotFleetRequestResource,
+		Scope:    nuke.Account,
+		Resource: &EC2SpotFleetRequest{},
+		Lister:   &EC2SpotFleetRequestLister{},
 	})
 }
 

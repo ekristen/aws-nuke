@@ -17,9 +17,10 @@ const SNSSubscriptionResource = "SNSSubscription"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   SNSSubscriptionResource,
-		Scope:  nuke.Account,
-		Lister: &SNSSubscriptionLister{},
+		Name:     SNSSubscriptionResource,
+		Scope:    nuke.Account,
+		Resource: &SNSSubscription{},
+		Lister:   &SNSSubscriptionLister{},
 	})
 }
 

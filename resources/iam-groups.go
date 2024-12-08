@@ -17,9 +17,10 @@ const IAMGroupResource = "IAMGroup"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   IAMGroupResource,
-		Scope:  nuke.Account,
-		Lister: &IAMGroupLister{},
+		Name:     IAMGroupResource,
+		Scope:    nuke.Account,
+		Resource: &IAMGroup{},
+		Lister:   &IAMGroupLister{},
 		DependsOn: []string{
 			IAMUserGroupAttachmentResource,
 			IAMGroupPolicyResource,

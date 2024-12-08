@@ -18,9 +18,10 @@ const ECSCapacityProviderResource = "ECSCapacityProvider"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ECSCapacityProviderResource,
-		Scope:  nuke.Account,
-		Lister: &ECSCapacityProviderLister{},
+		Name:     ECSCapacityProviderResource,
+		Scope:    nuke.Account,
+		Resource: &ECSCapacityProvider{},
+		Lister:   &ECSCapacityProviderLister{},
 	})
 }
 

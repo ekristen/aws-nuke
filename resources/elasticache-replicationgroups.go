@@ -16,9 +16,10 @@ const ElasticacheReplicationGroupResource = "ElasticacheReplicationGroup"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ElasticacheReplicationGroupResource,
-		Scope:  nuke.Account,
-		Lister: &ElasticacheReplicationGroupLister{},
+		Name:     ElasticacheReplicationGroupResource,
+		Scope:    nuke.Account,
+		Resource: &ElasticacheReplicationGroup{},
+		Lister:   &ElasticacheReplicationGroupLister{},
 	})
 }
 

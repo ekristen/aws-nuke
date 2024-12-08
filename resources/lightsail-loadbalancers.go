@@ -15,9 +15,10 @@ const LightsailLoadBalancerResource = "LightsailLoadBalancer"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   LightsailLoadBalancerResource,
-		Scope:  nuke.Account,
-		Lister: &LightsailLoadBalancerLister{},
+		Name:     LightsailLoadBalancerResource,
+		Scope:    nuke.Account,
+		Resource: &LightsailLoadBalancer{},
+		Lister:   &LightsailLoadBalancerLister{},
 	})
 }
 

@@ -14,9 +14,10 @@ const RDSProxyResource = "RDSProxy"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   RDSProxyResource,
-		Scope:  nuke.Account,
-		Lister: &RDSProxyLister{},
+		Name:     RDSProxyResource,
+		Scope:    nuke.Account,
+		Resource: &RDSProxy{},
+		Lister:   &RDSProxyLister{},
 	})
 }
 

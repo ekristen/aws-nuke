@@ -18,9 +18,10 @@ const WAFRegionalRegexMatchSetResource = "WAFRegionalRegexMatchSet" //nolint:gos
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   WAFRegionalRegexMatchSetResource,
-		Scope:  nuke.Account,
-		Lister: &WAFRegionalRegexMatchSetLister{},
+		Name:     WAFRegionalRegexMatchSetResource,
+		Scope:    nuke.Account,
+		Resource: &WAFRegionalRegexMatchTuple{},
+		Lister:   &WAFRegionalRegexMatchSetLister{},
 	})
 }
 

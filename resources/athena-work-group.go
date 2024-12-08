@@ -21,9 +21,10 @@ const AthenaWorkGroupResource = "AthenaWorkGroup"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   AthenaWorkGroupResource,
-		Scope:  nuke.Account,
-		Lister: &AthenaWorkGroupLister{},
+		Name:     AthenaWorkGroupResource,
+		Scope:    nuke.Account,
+		Resource: &AthenaWorkGroup{},
+		Lister:   &AthenaWorkGroupLister{},
 	})
 }
 

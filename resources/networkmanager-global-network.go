@@ -18,18 +18,14 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-type NetworkManagerGlobalNetwork struct {
-	svc     *networkmanager.NetworkManager
-	network *networkmanager.GlobalNetwork
-}
-
 const NetworkManagerGlobalNetworkResource = "NetworkManagerGlobalNetwork"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   NetworkManagerGlobalNetworkResource,
-		Scope:  nuke.Account,
-		Lister: &NetworkManagerGlobalNetworkLister{},
+		Name:     NetworkManagerGlobalNetworkResource,
+		Scope:    nuke.Account,
+		Resource: &NetworkManagerGlobalNetwork{},
+		Lister:   &NetworkManagerGlobalNetworkLister{},
 	})
 }
 
@@ -65,6 +61,11 @@ func (l *NetworkManagerGlobalNetworkLister) List(_ context.Context, o interface{
 	}
 
 	return resources, nil
+}
+
+type NetworkManagerGlobalNetwork struct {
+	svc     *networkmanager.NetworkManager
+	network *networkmanager.GlobalNetwork
 }
 
 func (n *NetworkManagerGlobalNetwork) Remove(_ context.Context) error {

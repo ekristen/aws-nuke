@@ -15,21 +15,14 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-type BackupPlan struct {
-	svc  *backup.Backup
-	id   string
-	name string
-	arn  string
-	tags map[string]*string
-}
-
 const AWSBackupPlanResource = "AWSBackupPlan"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   AWSBackupPlanResource,
-		Scope:  nuke.Account,
-		Lister: &AWSBackupPlanLister{},
+		Name:     AWSBackupPlanResource,
+		Scope:    nuke.Account,
+		Resource: &AWSBackupPlanLister{},
+		Lister:   &AWSBackupPlanLister{},
 	})
 }
 
@@ -72,6 +65,14 @@ func (l *AWSBackupPlanLister) List(_ context.Context, o interface{}) ([]resource
 	}
 
 	return resources, nil
+}
+
+type BackupPlan struct {
+	svc  *backup.Backup
+	id   string
+	name string
+	arn  string
+	tags map[string]*string
 }
 
 func (b *BackupPlan) Properties() types.Properties {

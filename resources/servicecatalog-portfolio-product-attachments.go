@@ -19,9 +19,10 @@ const ServiceCatalogPortfolioProductAttachmentResource = "ServiceCatalogPortfoli
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ServiceCatalogPortfolioProductAttachmentResource,
-		Scope:  nuke.Account,
-		Lister: &ServiceCatalogPortfolioProductAttachmentLister{},
+		Name:     ServiceCatalogPortfolioProductAttachmentResource,
+		Scope:    nuke.Account,
+		Resource: &ServiceCatalogPortfolioProductAttachment{},
+		Lister:   &ServiceCatalogPortfolioProductAttachmentLister{},
 	})
 }
 

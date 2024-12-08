@@ -24,9 +24,10 @@ const RedshiftServerlessWorkgroupResource = "RedshiftServerlessWorkgroup"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   RedshiftServerlessWorkgroupResource,
-		Scope:  nuke.Account,
-		Lister: &RedshiftServerlessWorkgroupLister{},
+		Name:     RedshiftServerlessWorkgroupResource,
+		Scope:    nuke.Account,
+		Resource: &RedshiftServerlessWorkgroup{},
+		Lister:   &RedshiftServerlessWorkgroupLister{},
 	})
 }
 

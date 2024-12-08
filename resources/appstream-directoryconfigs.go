@@ -12,18 +12,14 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-type AppStreamDirectoryConfig struct {
-	svc  *appstream.AppStream
-	name *string
-}
-
 const AppStreamDirectoryConfigResource = "AppStreamDirectoryConfig"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   AppStreamDirectoryConfigResource,
-		Scope:  nuke.Account,
-		Lister: &AppStreamDirectoryConfigLister{},
+		Name:     AppStreamDirectoryConfigResource,
+		Scope:    nuke.Account,
+		Resource: &AppStreamDirectoryConfig{},
+		Lister:   &AppStreamDirectoryConfigLister{},
 	})
 }
 
@@ -60,6 +56,11 @@ func (l *AppStreamDirectoryConfigLister) List(_ context.Context, o interface{}) 
 	}
 
 	return resources, nil
+}
+
+type AppStreamDirectoryConfig struct {
+	svc  *appstream.AppStream
+	name *string
 }
 
 func (f *AppStreamDirectoryConfig) Remove(_ context.Context) error {

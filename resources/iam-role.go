@@ -24,9 +24,10 @@ const IAMRoleResource = "IAMRole"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   IAMRoleResource,
-		Scope:  nuke.Account,
-		Lister: &IAMRoleLister{},
+		Name:     IAMRoleResource,
+		Scope:    nuke.Account,
+		Resource: &IAMRole{},
+		Lister:   &IAMRoleLister{},
 		DependsOn: []string{
 			IAMRolePolicyAttachmentResource,
 		},

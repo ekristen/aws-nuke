@@ -15,9 +15,10 @@ const LightsailStaticIPResource = "LightsailStaticIP"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   LightsailStaticIPResource,
-		Scope:  nuke.Account,
-		Lister: &LightsailStaticIPLister{},
+		Name:     LightsailStaticIPResource,
+		Scope:    nuke.Account,
+		Resource: &LightsailStaticIP{},
+		Lister:   &LightsailStaticIPLister{},
 	})
 }
 

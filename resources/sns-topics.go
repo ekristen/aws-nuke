@@ -18,9 +18,10 @@ const SNSTopicResource = "SNSTopic"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   SNSTopicResource,
-		Scope:  nuke.Account,
-		Lister: &SNSTopicLister{},
+		Name:     SNSTopicResource,
+		Scope:    nuke.Account,
+		Resource: &SNSTopic{},
+		Lister:   &SNSTopicLister{},
 	})
 }
 

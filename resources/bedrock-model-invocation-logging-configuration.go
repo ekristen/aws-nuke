@@ -17,9 +17,10 @@ const BedrockModelInvocationLoggingConfigurationResource = "BedrockModelInvocati
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   BedrockModelInvocationLoggingConfigurationResource,
-		Scope:  nuke.Account,
-		Lister: &BedrockModelInvocationLoggingConfigurationLister{},
+		Name:     BedrockModelInvocationLoggingConfigurationResource,
+		Scope:    nuke.Account,
+		Resource: &BedrockModelInvocationLoggingConfiguration{},
+		Lister:   &BedrockModelInvocationLoggingConfigurationLister{},
 	})
 }
 

@@ -15,9 +15,10 @@ const ElasticTranscoderPipelineResource = "ElasticTranscoderPipeline"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ElasticTranscoderPipelineResource,
-		Scope:  nuke.Account,
-		Lister: &ElasticTranscoderPipelineLister{},
+		Name:     ElasticTranscoderPipelineResource,
+		Scope:    nuke.Account,
+		Resource: &ElasticTranscoderPipeline{},
+		Lister:   &ElasticTranscoderPipelineLister{},
 	})
 }
 

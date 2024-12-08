@@ -19,9 +19,10 @@ const SESReceiptFilterResource = "SESReceiptFilter"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   SESReceiptFilterResource,
-		Scope:  nuke.Account,
-		Lister: &SESReceiptFilterLister{},
+		Name:     SESReceiptFilterResource,
+		Scope:    nuke.Account,
+		Resource: &SESReceiptFilter{},
+		Lister:   &SESReceiptFilterLister{},
 	})
 }
 

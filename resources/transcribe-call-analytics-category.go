@@ -19,9 +19,10 @@ const TranscribeCallAnalyticsCategoryResource = "TranscribeCallAnalyticsCategory
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   TranscribeCallAnalyticsCategoryResource,
-		Scope:  nuke.Account,
-		Lister: &TranscribeCallAnalyticsCategoryLister{},
+		Name:     TranscribeCallAnalyticsCategoryResource,
+		Scope:    nuke.Account,
+		Resource: &TranscribeCallAnalyticsCategory{},
+		Lister:   &TranscribeCallAnalyticsCategoryLister{},
 	})
 }
 

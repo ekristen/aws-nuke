@@ -17,9 +17,10 @@ const CodeStarConnectionResource = "CodeStarConnection"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   CodeStarConnectionResource,
-		Scope:  nuke.Account,
-		Lister: &CodeStarConnectionLister{},
+		Name:     CodeStarConnectionResource,
+		Scope:    nuke.Account,
+		Resource: &CodeStarConnection{},
+		Lister:   &CodeStarConnectionLister{},
 	})
 }
 

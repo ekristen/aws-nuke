@@ -12,19 +12,14 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-type AppMeshVirtualService struct {
-	svc                *appmesh.AppMesh
-	meshName           *string
-	virtualServiceName *string
-}
-
 const AppMeshVirtualServiceResource = "AppMeshVirtualService"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   AppMeshVirtualServiceResource,
-		Scope:  nuke.Account,
-		Lister: &AppMeshVirtualServiceLister{},
+		Name:     AppMeshVirtualServiceResource,
+		Scope:    nuke.Account,
+		Resource: &AppMeshVirtualService{},
+		Lister:   &AppMeshVirtualServiceLister{},
 	})
 }
 
@@ -78,6 +73,12 @@ func (l *AppMeshVirtualServiceLister) List(_ context.Context, o interface{}) ([]
 	}
 
 	return resources, nil
+}
+
+type AppMeshVirtualService struct {
+	svc                *appmesh.AppMesh
+	meshName           *string
+	virtualServiceName *string
 }
 
 func (f *AppMeshVirtualService) Remove(_ context.Context) error {

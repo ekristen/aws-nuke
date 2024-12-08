@@ -16,9 +16,10 @@ const MediaTailorConfigurationResource = "MediaTailorConfiguration"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   MediaTailorConfigurationResource,
-		Scope:  nuke.Account,
-		Lister: &MediaTailorConfigurationLister{},
+		Name:     MediaTailorConfigurationResource,
+		Scope:    nuke.Account,
+		Resource: &MediaTailorConfiguration{},
+		Lister:   &MediaTailorConfigurationLister{},
 	})
 }
 

@@ -19,9 +19,10 @@ const ECRPublicRepositoryResource = "ECRPublicRepository"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ECRPublicRepositoryResource,
-		Scope:  nuke.Account,
-		Lister: &ECRPublicRepositoryLister{},
+		Name:     ECRPublicRepositoryResource,
+		Scope:    nuke.Account,
+		Resource: &ECRPublicRepository{},
+		Lister:   &ECRPublicRepositoryLister{},
 		DependsOn: []string{
 			EC2VPNGatewayAttachmentResource,
 		},

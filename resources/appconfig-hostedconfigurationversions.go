@@ -15,20 +15,14 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-type AppConfigHostedConfigurationVersion struct {
-	svc                    *appconfig.AppConfig
-	applicationID          *string
-	configurationProfileID *string
-	versionNumber          *int64
-}
-
 const AppConfigHostedConfigurationVersionResource = "AppConfigHostedConfigurationVersion"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   AppConfigHostedConfigurationVersionResource,
-		Scope:  nuke.Account,
-		Lister: &AppConfigHostedConfigurationVersionLister{},
+		Name:     AppConfigHostedConfigurationVersionResource,
+		Scope:    nuke.Account,
+		Resource: &AppConfigHostedConfigurationVersion{},
+		Lister:   &AppConfigHostedConfigurationVersionLister{},
 	})
 }
 
@@ -72,6 +66,13 @@ func (l *AppConfigHostedConfigurationVersionLister) List(ctx context.Context, o 
 		}
 	}
 	return resources, nil
+}
+
+type AppConfigHostedConfigurationVersion struct {
+	svc                    *appconfig.AppConfig
+	applicationID          *string
+	configurationProfileID *string
+	versionNumber          *int64
 }
 
 func (f *AppConfigHostedConfigurationVersion) Remove(_ context.Context) error {

@@ -15,9 +15,10 @@ const DeviceFarmProjectResource = "DeviceFarmProject"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   DeviceFarmProjectResource,
-		Scope:  nuke.Account,
-		Lister: &DeviceFarmProjectLister{},
+		Name:     DeviceFarmProjectResource,
+		Scope:    nuke.Account,
+		Resource: &DeviceFarmProject{},
+		Lister:   &DeviceFarmProjectLister{},
 	})
 }
 

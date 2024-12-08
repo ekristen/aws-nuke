@@ -13,19 +13,14 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-type MemoryDBCluster struct {
-	svc  *memorydb.MemoryDB
-	name *string
-	tags []*memorydb.Tag
-}
-
 const MemoryDBClusterResource = "MemoryDBCluster"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   MemoryDBClusterResource,
-		Scope:  nuke.Account,
-		Lister: &MemoryDBClusterLister{},
+		Name:     MemoryDBClusterResource,
+		Scope:    nuke.Account,
+		Resource: &MemoryDBCluster{},
+		Lister:   &MemoryDBClusterLister{},
 	})
 }
 
@@ -69,6 +64,12 @@ func (l *MemoryDBClusterLister) List(_ context.Context, o interface{}) ([]resour
 	}
 
 	return resources, nil
+}
+
+type MemoryDBCluster struct {
+	svc  *memorydb.MemoryDB
+	name *string
+	tags []*memorydb.Tag
 }
 
 func (c *MemoryDBCluster) Remove(_ context.Context) error {

@@ -16,9 +16,10 @@ const AppMeshVirtualNodeResource = "AppMeshVirtualNode"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   AppMeshVirtualNodeResource,
-		Scope:  nuke.Account,
-		Lister: &AppMeshVirtualNodeLister{},
+		Name:     AppMeshVirtualNodeResource,
+		Scope:    nuke.Account,
+		Resource: &AppMeshVirtualNode{},
+		Lister:   &AppMeshVirtualNodeLister{},
 	})
 }
 

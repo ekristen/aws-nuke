@@ -21,9 +21,10 @@ const DynamoDBTableResource = "DynamoDBTable"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   DynamoDBTableResource,
-		Scope:  nuke.Account,
-		Lister: &DynamoDBTableLister{},
+		Name:     DynamoDBTableResource,
+		Scope:    nuke.Account,
+		Resource: &DynamoDBTable{},
+		Lister:   &DynamoDBTableLister{},
 		Settings: []string{
 			"DisableDeletionProtection",
 		},

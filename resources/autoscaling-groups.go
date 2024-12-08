@@ -17,9 +17,10 @@ const AutoScalingGroupResource = "AutoScalingGroup"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   AutoScalingGroupResource,
-		Scope:  nuke.Account,
-		Lister: &AutoScalingGroupLister{},
+		Name:     AutoScalingGroupResource,
+		Scope:    nuke.Account,
+		Resource: &AutoScalingGroup{},
+		Lister:   &AutoScalingGroupLister{},
 	})
 }
 

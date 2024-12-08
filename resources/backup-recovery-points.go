@@ -12,19 +12,14 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-type BackupRecoveryPoint struct {
-	svc             *backup.Backup
-	arn             string
-	backupVaultName string
-}
-
 const AWSBackupRecoveryPointResource = "AWSBackupRecoveryPoint"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   AWSBackupRecoveryPointResource,
-		Scope:  nuke.Account,
-		Lister: &AWSBackupRecoveryPointLister{},
+		Name:     AWSBackupRecoveryPointResource,
+		Scope:    nuke.Account,
+		Resource: &BackupRecoveryPoint{},
+		Lister:   &AWSBackupRecoveryPointLister{},
 	})
 }
 
@@ -58,6 +53,12 @@ func (l *AWSBackupRecoveryPointLister) List(_ context.Context, o interface{}) ([
 	}
 
 	return resources, nil
+}
+
+type BackupRecoveryPoint struct {
+	svc             *backup.Backup
+	arn             string
+	backupVaultName string
 }
 
 func (b *BackupRecoveryPoint) Properties() types.Properties {

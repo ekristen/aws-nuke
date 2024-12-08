@@ -17,9 +17,10 @@ const BedrockDataSourceResource = "BedrockDataSource"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   BedrockDataSourceResource,
-		Scope:  nuke.Account,
-		Lister: &BedrockDataSourceLister{},
+		Name:     BedrockDataSourceResource,
+		Scope:    nuke.Account,
+		Resource: &BedrockDataSource{},
+		Lister:   &BedrockDataSourceLister{},
 	})
 }
 

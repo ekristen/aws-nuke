@@ -20,9 +20,10 @@ const IAMUserAccessKeyResource = "IAMUserAccessKey"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   IAMUserAccessKeyResource,
-		Scope:  nuke.Account,
-		Lister: &IAMUserAccessKeyLister{},
+		Name:     IAMUserAccessKeyResource,
+		Scope:    nuke.Account,
+		Resource: &IAMUserAccessKey{},
+		Lister:   &IAMUserAccessKeyLister{},
 		DeprecatedAliases: []string{
 			"IamUserAccessKeys",
 		},

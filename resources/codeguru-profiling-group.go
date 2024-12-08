@@ -17,9 +17,10 @@ const CodeGuruProfilingGroupResource = "CodeGuruProfilingGroup"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   CodeGuruProfilingGroupResource,
-		Scope:  nuke.Account,
-		Lister: &CodeGuruProfilingGroupResourceLister{},
+		Name:     CodeGuruProfilingGroupResource,
+		Scope:    nuke.Account,
+		Resource: &CodeGuruProfilingGroup{},
+		Lister:   &CodeGuruProfilingGroupResourceLister{},
 	})
 }
 

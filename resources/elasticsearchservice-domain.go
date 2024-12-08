@@ -16,9 +16,10 @@ const ESDomainResource = "ESDomain"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ESDomainResource,
-		Scope:  nuke.Account,
-		Lister: &ESDomainLister{},
+		Name:     ESDomainResource,
+		Scope:    nuke.Account,
+		Resource: &ESDomain{},
+		Lister:   &ESDomainLister{},
 	})
 }
 

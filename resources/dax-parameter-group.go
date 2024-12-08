@@ -19,9 +19,10 @@ const DAXParameterGroupResource = "DAXParameterGroup"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   DAXParameterGroupResource,
-		Scope:  nuke.Account,
-		Lister: &DAXParameterGroupLister{},
+		Name:     DAXParameterGroupResource,
+		Scope:    nuke.Account,
+		Resource: &DAXParameterGroup{},
+		Lister:   &DAXParameterGroupLister{},
 	})
 }
 

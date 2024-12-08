@@ -17,9 +17,10 @@ const AmplifyAppResource = "AmplifyApp"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   AmplifyAppResource,
-		Scope:  nuke.Account,
-		Lister: &AmplifyAppLister{},
+		Name:     AmplifyAppResource,
+		Scope:    nuke.Account,
+		Resource: &AmplifyApp{},
+		Lister:   &AmplifyAppLister{},
 	})
 }
 

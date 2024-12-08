@@ -16,9 +16,10 @@ const MediaConvertPresetResource = "MediaConvertPreset"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   MediaConvertPresetResource,
-		Scope:  nuke.Account,
-		Lister: &MediaConvertPresetLister{},
+		Name:     MediaConvertPresetResource,
+		Scope:    nuke.Account,
+		Resource: &MediaConvertPreset{},
+		Lister:   &MediaConvertPresetLister{},
 	})
 }
 

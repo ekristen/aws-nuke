@@ -16,9 +16,10 @@ const ECSTaskDefinitionResource = "ECSTaskDefinition"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ECSTaskDefinitionResource,
-		Scope:  nuke.Account,
-		Lister: &ECSTaskDefinitionLister{},
+		Name:     ECSTaskDefinitionResource,
+		Scope:    nuke.Account,
+		Resource: &ECSTaskDefinition{},
+		Lister:   &ECSTaskDefinitionLister{},
 	})
 }
 

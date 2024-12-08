@@ -16,9 +16,10 @@ const AMGWorkspaceResource = "AMGWorkspace"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   AMGWorkspaceResource,
-		Scope:  nuke.Account,
-		Lister: &AMGWorkspaceLister{},
+		Name:     AMGWorkspaceResource,
+		Scope:    nuke.Account,
+		Resource: &AMGWorkspace{},
+		Lister:   &AMGWorkspaceLister{},
 	})
 }
 

@@ -19,9 +19,10 @@ const QLDBLedgerResource = "QLDBLedger"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   QLDBLedgerResource,
-		Scope:  nuke.Account,
-		Lister: &QLDBLedgerLister{},
+		Name:     QLDBLedgerResource,
+		Scope:    nuke.Account,
+		Resource: &QLDBLedger{},
+		Lister:   &QLDBLedgerLister{},
 		Settings: []string{
 			"DisableDeletionProtection",
 		},

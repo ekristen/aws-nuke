@@ -18,9 +18,10 @@ const WAFRegionalRegexMatchTupleResource = "WAFRegionalRegexMatchTuple"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   WAFRegionalRegexMatchTupleResource,
-		Scope:  nuke.Account,
-		Lister: &WAFRegionalRegexMatchTupleLister{},
+		Name:     WAFRegionalRegexMatchTupleResource,
+		Scope:    nuke.Account,
+		Resource: &WAFRegionalRegexMatchTuple{},
+		Lister:   &WAFRegionalRegexMatchTupleLister{},
 	})
 }
 

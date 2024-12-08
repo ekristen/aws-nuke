@@ -18,9 +18,10 @@ const ComprehendTargetedSentimentDetectionJobResource = "ComprehendTargetedSenti
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ComprehendTargetedSentimentDetectionJobResource,
-		Scope:  nuke.Account,
-		Lister: &ComprehendTargetedSentimentDetectionJobLister{},
+		Name:     ComprehendTargetedSentimentDetectionJobResource,
+		Scope:    nuke.Account,
+		Resource: &ComprehendTargetedSentimentDetectionJob{},
+		Lister:   &ComprehendTargetedSentimentDetectionJobLister{},
 	})
 }
 

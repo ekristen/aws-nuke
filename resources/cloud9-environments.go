@@ -21,9 +21,10 @@ const Cloud9EnvironmentResource = "Cloud9Environment"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   Cloud9EnvironmentResource,
-		Scope:  nuke.Account,
-		Lister: &Cloud9EnvironmentLister{},
+		Name:     Cloud9EnvironmentResource,
+		Scope:    nuke.Account,
+		Resource: &Cloud9Environment{},
+		Lister:   &Cloud9EnvironmentLister{},
 	})
 }
 

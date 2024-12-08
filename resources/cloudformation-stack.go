@@ -30,9 +30,10 @@ const CloudFormationStackResource = "CloudFormationStack"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   CloudFormationStackResource,
-		Scope:  nuke.Account,
-		Lister: &CloudFormationStackLister{},
+		Name:     CloudFormationStackResource,
+		Scope:    nuke.Account,
+		Resource: &CloudFormationStack{},
+		Lister:   &CloudFormationStackLister{},
 		Settings: []string{
 			"DisableDeletionProtection",
 		},

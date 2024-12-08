@@ -18,9 +18,10 @@ const CodeDeployDeploymentConfigResource = "CodeDeployDeploymentConfig"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   CodeDeployDeploymentConfigResource,
-		Scope:  nuke.Account,
-		Lister: &CodeDeployDeploymentConfigLister{},
+		Name:     CodeDeployDeploymentConfigResource,
+		Scope:    nuke.Account,
+		Resource: &CodeDeployDeploymentConfig{},
+		Lister:   &CodeDeployDeploymentConfigLister{},
 	})
 }
 

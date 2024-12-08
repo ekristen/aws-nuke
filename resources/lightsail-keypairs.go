@@ -15,9 +15,10 @@ const LightsailKeyPairResource = "LightsailKeyPair"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   LightsailKeyPairResource,
-		Scope:  nuke.Account,
-		Lister: &LightsailKeyPairLister{},
+		Name:     LightsailKeyPairResource,
+		Scope:    nuke.Account,
+		Resource: &LightsailKeyPair{},
+		Lister:   &LightsailKeyPairLister{},
 	})
 }
 

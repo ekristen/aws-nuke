@@ -20,9 +20,10 @@ const RDSSnapshotResource = "RDSSnapshot"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   RDSSnapshotResource,
-		Scope:  nuke.Account,
-		Lister: &RDSSnapshotLister{},
+		Name:     RDSSnapshotResource,
+		Scope:    nuke.Account,
+		Resource: &RDSSnapshot{},
+		Lister:   &RDSSnapshotLister{},
 	})
 }
 

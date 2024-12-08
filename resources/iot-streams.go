@@ -16,9 +16,10 @@ const IoTStreamResource = "IoTStream"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   IoTStreamResource,
-		Scope:  nuke.Account,
-		Lister: &IoTStreamLister{},
+		Name:     IoTStreamResource,
+		Scope:    nuke.Account,
+		Resource: &IoTStream{},
+		Lister:   &IoTStreamLister{},
 	})
 }
 

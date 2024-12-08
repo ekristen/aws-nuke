@@ -17,9 +17,10 @@ const IoTAuthorizerResource = "IoTAuthorizer"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   IoTAuthorizerResource,
-		Scope:  nuke.Account,
-		Lister: &IoTAuthorizerLister{},
+		Name:     IoTAuthorizerResource,
+		Scope:    nuke.Account,
+		Resource: &IoTAuthorizer{},
+		Lister:   &IoTAuthorizerLister{},
 	})
 }
 

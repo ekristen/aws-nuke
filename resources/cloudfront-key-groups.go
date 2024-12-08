@@ -13,20 +13,14 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-type CloudFrontKeyGroup struct {
-	svc              *cloudfront.CloudFront
-	ID               *string
-	name             *string
-	lastModifiedTime *time.Time
-}
-
 const CloudFrontKeyGroupResource = "CloudFrontKeyGroup"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   CloudFrontKeyGroupResource,
-		Scope:  nuke.Account,
-		Lister: &CloudFrontKeyGroupLister{},
+		Name:     CloudFrontKeyGroupResource,
+		Scope:    nuke.Account,
+		Resource: &CloudFrontKeyGroup{},
+		Lister:   &CloudFrontKeyGroupLister{},
 	})
 }
 
@@ -62,6 +56,13 @@ func (l *CloudFrontKeyGroupLister) List(_ context.Context, o interface{}) ([]res
 	}
 
 	return resources, nil
+}
+
+type CloudFrontKeyGroup struct {
+	svc              *cloudfront.CloudFront
+	ID               *string
+	name             *string
+	lastModifiedTime *time.Time
 }
 
 func (f *CloudFrontKeyGroup) Remove(_ context.Context) error {

@@ -16,9 +16,10 @@ const AppMeshVirtualGatewayResource = "AppMeshVirtualGateway"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   AppMeshVirtualGatewayResource,
-		Scope:  nuke.Account,
-		Lister: &AppMeshVirtualGatewayLister{},
+		Name:     AppMeshVirtualGatewayResource,
+		Scope:    nuke.Account,
+		Resource: &AppMeshVirtualGateway{},
+		Lister:   &AppMeshVirtualGatewayLister{},
 	})
 }
 

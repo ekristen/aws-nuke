@@ -17,18 +17,14 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-type NetworkManagerCoreNetwork struct {
-	svc     *networkmanager.NetworkManager
-	network *networkmanager.CoreNetworkSummary
-}
-
 const NetworkManagerCoreNetworkResource = "NetworkManagerCoreNetwork"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   NetworkManagerCoreNetworkResource,
-		Scope:  nuke.Account,
-		Lister: &NetworkManagerCoreNetworkLister{},
+		Name:     NetworkManagerCoreNetworkResource,
+		Scope:    nuke.Account,
+		Resource: &NetworkManagerCoreNetwork{},
+		Lister:   &NetworkManagerCoreNetworkLister{},
 	})
 }
 
@@ -54,6 +50,11 @@ func (l *NetworkManagerCoreNetworkLister) List(_ context.Context, o interface{})
 	}
 
 	return resources, nil
+}
+
+type NetworkManagerCoreNetwork struct {
+	svc     *networkmanager.NetworkManager
+	network *networkmanager.CoreNetworkSummary
 }
 
 func (n *NetworkManagerCoreNetwork) Remove(_ context.Context) error {

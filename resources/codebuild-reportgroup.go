@@ -19,9 +19,10 @@ const CodeBuildReportGroupResource = "CodeBuildReportGroup"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   CodeBuildReportGroupResource,
-		Scope:  nuke.Account,
-		Lister: &CodebuildReportGroupLister{},
+		Name:     CodeBuildReportGroupResource,
+		Scope:    nuke.Account,
+		Resource: &CodebuildReportGroup{},
+		Lister:   &CodebuildReportGroupLister{},
 		DependsOn: []string{
 			CodeBuildReportResource,
 		},

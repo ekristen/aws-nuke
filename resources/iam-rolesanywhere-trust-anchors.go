@@ -21,9 +21,10 @@ const IAMRolesAnywhereTrustAnchorResource = "IAMRolesAnywhereTrustAnchor"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   IAMRolesAnywhereTrustAnchorResource,
-		Scope:  nuke.Account,
-		Lister: &IAMRolesAnywhereTrustAnchorLister{},
+		Name:     IAMRolesAnywhereTrustAnchorResource,
+		Scope:    nuke.Account,
+		Resource: &IAMRolesAnywhereTrustAnchor{},
+		Lister:   &IAMRolesAnywhereTrustAnchorLister{},
 	})
 }
 

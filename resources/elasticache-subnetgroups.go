@@ -22,9 +22,10 @@ const ElasticacheSubnetGroupResource = "ElasticacheSubnetGroup"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ElasticacheSubnetGroupResource,
-		Scope:  nuke.Account,
-		Lister: &ElasticacheSubnetGroupLister{},
+		Name:     ElasticacheSubnetGroupResource,
+		Scope:    nuke.Account,
+		Resource: &ElasticacheSubnetGroup{},
+		Lister:   &ElasticacheSubnetGroupLister{},
 	})
 }
 

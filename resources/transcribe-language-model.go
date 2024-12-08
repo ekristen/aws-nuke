@@ -18,9 +18,10 @@ const TranscribeLanguageModelResource = "TranscribeLanguageModel"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   TranscribeLanguageModelResource,
-		Scope:  nuke.Account,
-		Lister: &TranscribeLanguageModelLister{},
+		Name:     TranscribeLanguageModelResource,
+		Scope:    nuke.Account,
+		Resource: &TranscribeLanguageModel{},
+		Lister:   &TranscribeLanguageModelLister{},
 	})
 }
 

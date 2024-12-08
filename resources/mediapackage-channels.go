@@ -16,9 +16,10 @@ const MediaPackageChannelResource = "MediaPackageChannel"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   MediaPackageChannelResource,
-		Scope:  nuke.Account,
-		Lister: &MediaPackageChannelLister{},
+		Name:     MediaPackageChannelResource,
+		Scope:    nuke.Account,
+		Resource: &MediaPackageChannel{},
+		Lister:   &MediaPackageChannelLister{},
 	})
 }
 

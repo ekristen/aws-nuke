@@ -18,9 +18,10 @@ const Route53TrafficPolicyResource = "Route53TrafficPolicy"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   Route53TrafficPolicyResource,
-		Scope:  nuke.Account,
-		Lister: &Route53TrafficPolicyLister{},
+		Name:     Route53TrafficPolicyResource,
+		Scope:    nuke.Account,
+		Resource: &Route53TrafficPolicy{},
+		Lister:   &Route53TrafficPolicyLister{},
 	})
 }
 

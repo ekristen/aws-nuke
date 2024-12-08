@@ -16,9 +16,10 @@ const RedshiftSubnetGroupResource = "RedshiftSubnetGroup"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   RedshiftSubnetGroupResource,
-		Scope:  nuke.Account,
-		Lister: &RedshiftSubnetGroupLister{},
+		Name:     RedshiftSubnetGroupResource,
+		Scope:    nuke.Account,
+		Resource: &RedshiftSubnetGroup{},
+		Lister:   &RedshiftSubnetGroupLister{},
 	})
 }
 

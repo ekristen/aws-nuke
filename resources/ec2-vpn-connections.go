@@ -20,9 +20,10 @@ const EC2VPNConnectionResource = "EC2VPNConnection"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   EC2VPNConnectionResource,
-		Scope:  nuke.Account,
-		Lister: &EC2VPNConnectionLister{},
+		Name:     EC2VPNConnectionResource,
+		Scope:    nuke.Account,
+		Resource: &EC2VPNConnection{},
+		Lister:   &EC2VPNConnectionLister{},
 		DeprecatedAliases: []string{
 			"EC2VpnConnection",
 		},

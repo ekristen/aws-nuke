@@ -18,9 +18,10 @@ const EC2TGWAttachmentResource = "EC2TGWAttachment"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   EC2TGWAttachmentResource,
-		Scope:  nuke.Account,
-		Lister: &EC2TGWAttachmentLister{},
+		Name:     EC2TGWAttachmentResource,
+		Scope:    nuke.Account,
+		Resource: &EC2TGWAttachment{},
+		Lister:   &EC2TGWAttachmentLister{},
 	})
 }
 

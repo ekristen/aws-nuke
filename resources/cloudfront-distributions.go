@@ -19,9 +19,10 @@ const CloudFrontDistributionResource = "CloudFrontDistribution"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   CloudFrontDistributionResource,
-		Scope:  nuke.Account,
-		Lister: &CloudFrontDistributionLister{},
+		Name:     CloudFrontDistributionResource,
+		Scope:    nuke.Account,
+		Resource: &CloudFrontDistribution{},
+		Lister:   &CloudFrontDistributionLister{},
 		DependsOn: []string{
 			CloudFrontDistributionDeploymentResource,
 		},

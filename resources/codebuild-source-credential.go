@@ -16,9 +16,10 @@ const CodeBuildSourceCredentialResource = "CodeBuildSourceCredential"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   CodeBuildSourceCredentialResource,
-		Scope:  nuke.Account,
-		Lister: &CodeBuildSourceCredentialLister{},
+		Name:     CodeBuildSourceCredentialResource,
+		Scope:    nuke.Account,
+		Resource: &CodeBuildSourceCredential{},
+		Lister:   &CodeBuildSourceCredentialLister{},
 	})
 }
 

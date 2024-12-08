@@ -17,9 +17,10 @@ const SNSPlatformApplicationResource = "SNSPlatformApplication"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   SNSPlatformApplicationResource,
-		Scope:  nuke.Account,
-		Lister: &SNSPlatformApplicationLister{},
+		Name:     SNSPlatformApplicationResource,
+		Scope:    nuke.Account,
+		Resource: &SNSPlatformApplication{},
+		Lister:   &SNSPlatformApplicationLister{},
 	})
 }
 

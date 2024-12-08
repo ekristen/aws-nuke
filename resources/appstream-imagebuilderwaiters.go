@@ -15,19 +15,14 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-type AppStreamImageBuilderWaiter struct {
-	svc   *appstream.AppStream
-	name  *string
-	state *string
-}
-
 const AppStreamImageBuilderWaiterResource = "AppStreamImageBuilderWaiter"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   AppStreamImageBuilderWaiterResource,
-		Scope:  nuke.Account,
-		Lister: &AppStreamImageBuilderWaiterLister{},
+		Name:     AppStreamImageBuilderWaiterResource,
+		Scope:    nuke.Account,
+		Resource: &AppStreamImageBuilderWaiter{},
+		Lister:   &AppStreamImageBuilderWaiterLister{},
 	})
 }
 
@@ -65,6 +60,12 @@ func (l *AppStreamImageBuilderWaiterLister) List(_ context.Context, o interface{
 	}
 
 	return resources, nil
+}
+
+type AppStreamImageBuilderWaiter struct {
+	svc   *appstream.AppStream
+	name  *string
+	state *string
 }
 
 func (f *AppStreamImageBuilderWaiter) Remove(_ context.Context) error {

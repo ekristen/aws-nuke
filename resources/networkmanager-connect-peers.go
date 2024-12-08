@@ -17,18 +17,14 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-type NetworkManagerConnectPeer struct {
-	svc  *networkmanager.NetworkManager
-	peer *networkmanager.ConnectPeerSummary
-}
-
 const NetworkManagerConnectPeerResource = "NetworkManagerConnectPeer"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   NetworkManagerConnectPeerResource,
-		Scope:  nuke.Account,
-		Lister: &NetworkManagerConnectPeerLister{},
+		Name:     NetworkManagerConnectPeerResource,
+		Scope:    nuke.Account,
+		Resource: &NetworkManagerConnectPeer{},
+		Lister:   &NetworkManagerConnectPeerLister{},
 	})
 }
 
@@ -54,6 +50,11 @@ func (l *NetworkManagerConnectPeerLister) List(_ context.Context, o interface{})
 	}
 
 	return resources, nil
+}
+
+type NetworkManagerConnectPeer struct {
+	svc  *networkmanager.NetworkManager
+	peer *networkmanager.ConnectPeerSummary
 }
 
 func (n *NetworkManagerConnectPeer) Remove(_ context.Context) error {

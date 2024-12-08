@@ -20,9 +20,10 @@ const Route53ResourceRecordSetResource = "Route53ResourceRecordSet"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   Route53ResourceRecordSetResource,
-		Scope:  nuke.Account,
-		Lister: &Route53ResourceRecordSetLister{},
+		Name:     Route53ResourceRecordSetResource,
+		Scope:    nuke.Account,
+		Resource: &Route53ResourceRecordSet{},
+		Lister:   &Route53ResourceRecordSetLister{},
 	})
 }
 

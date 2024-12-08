@@ -22,9 +22,10 @@ const S3ObjectResource = "S3Object"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   S3ObjectResource,
-		Scope:  nuke.Account,
-		Lister: &S3ObjectLister{},
+		Name:     S3ObjectResource,
+		Scope:    nuke.Account,
+		Resource: &S3Object{},
+		Lister:   &S3ObjectLister{},
 	})
 }
 

@@ -17,9 +17,10 @@ const RDSDBSubnetGroupResource = "RDSDBSubnetGroup"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   RDSDBSubnetGroupResource,
-		Scope:  nuke.Account,
-		Lister: &RDSDBSubnetGroupLister{},
+		Name:     RDSDBSubnetGroupResource,
+		Scope:    nuke.Account,
+		Resource: &RDSDBSubnetGroup{},
+		Lister:   &RDSDBSubnetGroupLister{},
 	})
 }
 

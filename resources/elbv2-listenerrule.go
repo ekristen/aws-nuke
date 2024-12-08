@@ -22,9 +22,10 @@ const ELBv2ListenerRuleResource = "ELBv2ListenerRule"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ELBv2ListenerRuleResource,
-		Scope:  nuke.Account,
-		Lister: &ELBv2ListenerRuleLister{},
+		Name:     ELBv2ListenerRuleResource,
+		Scope:    nuke.Account,
+		Resource: &ELBv2ListenerRule{},
+		Lister:   &ELBv2ListenerRuleLister{},
 	})
 }
 

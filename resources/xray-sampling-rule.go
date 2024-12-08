@@ -16,9 +16,10 @@ const XRaySamplingRuleResource = "XRaySamplingRule"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   XRaySamplingRuleResource,
-		Scope:  nuke.Account,
-		Lister: &XRaySamplingRuleLister{},
+		Name:     XRaySamplingRuleResource,
+		Scope:    nuke.Account,
+		Resource: &XRaySamplingRule{},
+		Lister:   &XRaySamplingRuleLister{},
 	})
 }
 

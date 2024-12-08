@@ -16,9 +16,10 @@ const IoTOTAUpdateResource = "IoTOTAUpdate"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   IoTOTAUpdateResource,
-		Scope:  nuke.Account,
-		Lister: &IoTOTAUpdateLister{},
+		Name:     IoTOTAUpdateResource,
+		Scope:    nuke.Account,
+		Resource: &IoTOTAUpdate{},
+		Lister:   &IoTOTAUpdateLister{},
 	})
 }
 

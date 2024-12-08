@@ -20,9 +20,10 @@ const ElasticacheCacheParameterGroupResource = "ElasticacheCacheParameterGroup"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ElasticacheCacheParameterGroupResource,
-		Scope:  nuke.Account,
-		Lister: &ElasticacheCacheParameterGroupLister{},
+		Name:     ElasticacheCacheParameterGroupResource,
+		Scope:    nuke.Account,
+		Resource: &ElasticacheCacheParameterGroup{},
+		Lister:   &ElasticacheCacheParameterGroupLister{},
 	})
 }
 

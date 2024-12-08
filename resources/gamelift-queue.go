@@ -16,9 +16,10 @@ const GameLiftQueueResource = "GameLiftQueue"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   GameLiftQueueResource,
-		Scope:  nuke.Account,
-		Lister: &GameLiftQueueLister{},
+		Name:     GameLiftQueueResource,
+		Scope:    nuke.Account,
+		Resource: &GameLiftQueue{},
+		Lister:   &GameLiftQueueLister{},
 	})
 }
 

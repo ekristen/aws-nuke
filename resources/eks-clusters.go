@@ -19,9 +19,10 @@ const EKSClusterResource = "EKSCluster"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   EKSClusterResource,
-		Scope:  nuke.Account,
-		Lister: &EKSClusterLister{},
+		Name:     EKSClusterResource,
+		Scope:    nuke.Account,
+		Resource: &EKSCluster{},
+		Lister:   &EKSClusterLister{},
 	})
 }
 

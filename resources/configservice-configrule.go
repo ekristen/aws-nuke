@@ -21,9 +21,10 @@ const ConfigServiceConfigRuleResource = "ConfigServiceConfigRule"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ConfigServiceConfigRuleResource,
-		Scope:  nuke.Account,
-		Lister: &ConfigServiceConfigRuleLister{},
+		Name:     ConfigServiceConfigRuleResource,
+		Scope:    nuke.Account,
+		Resource: &ConfigServiceConfigRule{},
+		Lister:   &ConfigServiceConfigRuleLister{},
 	})
 }
 

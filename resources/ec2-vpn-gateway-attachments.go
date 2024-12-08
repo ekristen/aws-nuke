@@ -19,9 +19,10 @@ const EC2VPNGatewayAttachmentResource = "EC2VPNGatewayAttachment"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   EC2VPNGatewayAttachmentResource,
-		Scope:  nuke.Account,
-		Lister: &EC2VPNGatewayAttachmentLister{},
+		Name:     EC2VPNGatewayAttachmentResource,
+		Scope:    nuke.Account,
+		Resource: &EC2VPNGatewayAttachment{},
+		Lister:   &EC2VPNGatewayAttachmentLister{},
 		DeprecatedAliases: []string{
 			"EC2VpnGatewayAttachement",
 		},

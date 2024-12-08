@@ -16,9 +16,10 @@ const XRayGroupResource = "XRayGroup"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   XRayGroupResource,
-		Scope:  nuke.Account,
-		Lister: &XRayGroupLister{},
+		Name:     XRayGroupResource,
+		Scope:    nuke.Account,
+		Resource: &XRayGroup{},
+		Lister:   &XRayGroupLister{},
 	})
 }
 

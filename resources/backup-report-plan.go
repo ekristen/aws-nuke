@@ -12,10 +12,15 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-type BackupReportPlan struct {
-	svc  *backup.Backup
-	arn  *string
-	Name *string
+const BackupReportPlanResource = "BackupReportPlan"
+
+func init() {
+	registry.Register(&registry.Registration{
+		Name:     BackupReportPlanResource,
+		Scope:    nuke.Account,
+		Resource: &BackupReportPlan{},
+		Lister:   &BackupReportPlanLister{},
+	})
 }
 
 type BackupReportPlanLister struct{}
@@ -54,14 +59,10 @@ func (BackupReportPlanLister) List(_ context.Context, o interface{}) ([]resource
 	return resources, nil
 }
 
-const BackupReportPlanResource = "BackupReportPlan"
-
-func init() {
-	registry.Register(&registry.Registration{
-		Name:   BackupReportPlanResource,
-		Scope:  nuke.Account,
-		Lister: &BackupReportPlanLister{},
-	})
+type BackupReportPlan struct {
+	svc  *backup.Backup
+	arn  *string
+	Name *string
 }
 
 func (r *BackupReportPlan) Properties() types.Properties {

@@ -15,9 +15,10 @@ const CloudSearchDomainResource = "CloudSearchDomain"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   CloudSearchDomainResource,
-		Scope:  nuke.Account,
-		Lister: &CloudSearchDomainLister{},
+		Name:     CloudSearchDomainResource,
+		Scope:    nuke.Account,
+		Resource: &CloudSearchDomain{},
+		Lister:   &CloudSearchDomainLister{},
 	})
 }
 

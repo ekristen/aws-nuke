@@ -20,9 +20,10 @@ const CognitoUserPoolClientResource = "CognitoUserPoolClient"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   CognitoUserPoolClientResource,
-		Scope:  nuke.Account,
-		Lister: &CognitoUserPoolClientLister{},
+		Name:     CognitoUserPoolClientResource,
+		Scope:    nuke.Account,
+		Resource: &CognitoUserPoolClient{},
+		Lister:   &CognitoUserPoolClientLister{},
 	})
 }
 

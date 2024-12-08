@@ -17,9 +17,10 @@ const SageMakerNotebookInstanceLifecycleConfigResource = "SageMakerNotebookInsta
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   SageMakerNotebookInstanceLifecycleConfigResource,
-		Scope:  nuke.Account,
-		Lister: &SageMakerNotebookInstanceLifecycleConfigLister{},
+		Name:     SageMakerNotebookInstanceLifecycleConfigResource,
+		Scope:    nuke.Account,
+		Resource: &SageMakerNotebookInstanceLifecycleConfig{},
+		Lister:   &SageMakerNotebookInstanceLifecycleConfigLister{},
 	})
 }
 

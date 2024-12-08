@@ -16,9 +16,10 @@ const ConfigServiceConformancePackResource = "ConfigServiceConformancePack"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ConfigServiceConformancePackResource,
-		Scope:  nuke.Account,
-		Lister: &ConfigServiceConformancePackLister{},
+		Name:     ConfigServiceConformancePackResource,
+		Scope:    nuke.Account,
+		Resource: &ConfigServiceConformancePack{},
+		Lister:   &ConfigServiceConformancePackLister{},
 	})
 }
 

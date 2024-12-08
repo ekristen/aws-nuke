@@ -16,9 +16,10 @@ const SageMakerEndpointResource = "SageMakerEndpoint"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   SageMakerEndpointResource,
-		Scope:  nuke.Account,
-		Lister: &SageMakerEndpointLister{},
+		Name:     SageMakerEndpointResource,
+		Scope:    nuke.Account,
+		Resource: &SageMakerEndpoint{},
+		Lister:   &SageMakerEndpointLister{},
 	})
 }
 

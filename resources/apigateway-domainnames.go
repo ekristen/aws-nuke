@@ -16,9 +16,10 @@ const APIGatewayDomainNameResource = "APIGatewayDomainName"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   APIGatewayDomainNameResource,
-		Scope:  nuke.Account,
-		Lister: &APIGatewayDomainNameLister{},
+		Name:     APIGatewayDomainNameResource,
+		Scope:    nuke.Account,
+		Resource: &APIGatewayDomainName{},
+		Lister:   &APIGatewayDomainNameLister{},
 	})
 }
 

@@ -26,9 +26,10 @@ var errAWSManaged = errors.New("cannot delete AWS managed secret")
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   SecretsManagerSecretResource,
-		Scope:  nuke.Account,
-		Lister: &SecretsManagerSecretLister{},
+		Name:     SecretsManagerSecretResource,
+		Scope:    nuke.Account,
+		Resource: &SecretsManagerSecret{},
+		Lister:   &SecretsManagerSecretLister{},
 	})
 }
 

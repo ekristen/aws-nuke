@@ -14,18 +14,14 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-type GlueMLTransform struct {
-	svc *glue.Glue
-	id  *string
-}
-
 const GlueMLTransformResource = "GlueMLTransform"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   GlueMLTransformResource,
-		Scope:  nuke.Account,
-		Lister: &GlueMLTransformLister{},
+		Name:     GlueMLTransformResource,
+		Scope:    nuke.Account,
+		Resource: &GlueMLTransform{},
+		Lister:   &GlueMLTransformLister{},
 	})
 }
 
@@ -62,6 +58,11 @@ func (l *GlueMLTransformLister) List(_ context.Context, o interface{}) ([]resour
 	}
 
 	return resources, nil
+}
+
+type GlueMLTransform struct {
+	svc *glue.Glue
+	id  *string
 }
 
 func (f *GlueMLTransform) Remove(_ context.Context) error {

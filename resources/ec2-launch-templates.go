@@ -18,9 +18,10 @@ const EC2LaunchTemplateResource = "EC2LaunchTemplate"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   EC2LaunchTemplateResource,
-		Scope:  nuke.Account,
-		Lister: &EC2LaunchTemplateLister{},
+		Name:     EC2LaunchTemplateResource,
+		Scope:    nuke.Account,
+		Resource: &EC2LaunchTemplate{},
+		Lister:   &EC2LaunchTemplateLister{},
 	})
 }
 

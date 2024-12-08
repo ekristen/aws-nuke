@@ -18,9 +18,10 @@ const CodePipelineCustomActionTypeResource = "CodePipelineCustomActionType"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   CodePipelineCustomActionTypeResource,
-		Scope:  nuke.Account,
-		Lister: &CodePipelineCustomActionTypeLister{},
+		Name:     CodePipelineCustomActionTypeResource,
+		Scope:    nuke.Account,
+		Resource: &CodePipelineCustomActionType{},
+		Lister:   &CodePipelineCustomActionTypeLister{},
 	})
 }
 

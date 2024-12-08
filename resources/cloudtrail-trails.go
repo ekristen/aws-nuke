@@ -16,9 +16,10 @@ const CloudTrailTrailResource = "CloudTrailTrail"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   CloudTrailTrailResource,
-		Scope:  nuke.Account,
-		Lister: &CloudTrailTrailLister{},
+		Name:     CloudTrailTrailResource,
+		Scope:    nuke.Account,
+		Resource: &CloudTrailTrail{},
+		Lister:   &CloudTrailTrailLister{},
 	})
 }
 

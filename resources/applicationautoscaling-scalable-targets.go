@@ -19,9 +19,10 @@ const ApplicationAutoScalingScalableTargetResource = "ApplicationAutoScalingScal
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ApplicationAutoScalingScalableTargetResource,
-		Scope:  nuke.Account,
-		Lister: &ApplicationAutoScalingScalableTargetLister{},
+		Name:     ApplicationAutoScalingScalableTargetResource,
+		Scope:    nuke.Account,
+		Resource: &AppAutoScaling{},
+		Lister:   &ApplicationAutoScalingScalableTargetLister{},
 	})
 }
 

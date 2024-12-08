@@ -20,9 +20,10 @@ const SchedulerScheduleResource = "SchedulerSchedule"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   SchedulerScheduleResource,
-		Scope:  nuke.Account,
-		Lister: &SchedulerScheduleLister{},
+		Name:     SchedulerScheduleResource,
+		Scope:    nuke.Account,
+		Resource: &SchedulerSchedule{},
+		Lister:   &SchedulerScheduleLister{},
 	})
 }
 

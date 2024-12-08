@@ -1,15 +1,9 @@
+---
+generated: true
+---
+
 # S3Object
 
-!!! warning
-    **You should exclude this resource by default.** Not doing so can lead to deadlocks and hung runs of the tool. In 
-    the next major version of aws-nuke, this resource will be excluded by default.
-
-!!! important
-    This resource is **NOT** required to remove a [S3Bucket](./s3-bucket.md). The `S3Bucket` resource will remove all
-    objects in the bucket as part of the deletion process using a batch removal process.
-
-This removes all objects from S3 buckets in an AWS account while retaining the S3 bucket itself. This resource is
-useful if you want to remove a single object from a bucket, or a subset of objects without removing the entire bucket.
 
 ## Resource
 
@@ -17,6 +11,17 @@ useful if you want to remove a single object from a bucket, or a subset of objec
 S3Object
 ```
 
-## Settings
 
-**No settings available.**
+
+!!! note - Using Properties
+    Properties are what [Filters](../config-filtering.md) are written against in your configuration. You use the property
+    names to write filters for what you want to **keep** and omit from the nuke process.
+
+### String Property
+
+The string representation of a resource is generally the value of the Name, ID or ARN field of the resource. Not all
+resources support properties. To write a filter against the string representation, simply omit the `property` field in
+the filter.
+
+The string value is always what is used in the output of the log format when a resource is identified.
+

@@ -17,9 +17,10 @@ const GlobalAcceleratorListenerResource = "GlobalAcceleratorListener"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   GlobalAcceleratorListenerResource,
-		Scope:  nuke.Account,
-		Lister: &GlobalAcceleratorListenerLister{},
+		Name:     GlobalAcceleratorListenerResource,
+		Scope:    nuke.Account,
+		Resource: &GlobalAcceleratorListener{},
+		Lister:   &GlobalAcceleratorListenerLister{},
 	})
 }
 

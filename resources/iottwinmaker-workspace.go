@@ -17,9 +17,10 @@ const IoTTwinMakerWorkspaceResource = "IoTTwinMakerWorkspace"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   IoTTwinMakerWorkspaceResource,
-		Scope:  nuke.Account,
-		Lister: &IoTTwinMakerWorkspaceLister{},
+		Name:     IoTTwinMakerWorkspaceResource,
+		Scope:    nuke.Account,
+		Resource: &IoTTwinMakerWorkspace{},
+		Lister:   &IoTTwinMakerWorkspaceLister{},
 		DependsOn: []string{
 			IoTTwinMakerComponentTypeResource,
 			IoTTwinMakerEntityResource,

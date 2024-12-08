@@ -20,9 +20,10 @@ const DynamoDBBackupResource = "DynamoDBBackup"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   DynamoDBBackupResource,
-		Scope:  nuke.Account,
-		Lister: &DynamoDBBackupLister{},
+		Name:     DynamoDBBackupResource,
+		Scope:    nuke.Account,
+		Resource: &DynamoDBBackup{},
+		Lister:   &DynamoDBBackupLister{},
 	})
 }
 

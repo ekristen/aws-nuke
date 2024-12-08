@@ -16,9 +16,10 @@ const CodeArtifactRepositoryResource = "CodeArtifactRepository"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   CodeArtifactRepositoryResource,
-		Scope:  nuke.Account,
-		Lister: &CodeArtifactRepositoryLister{},
+		Name:     CodeArtifactRepositoryResource,
+		Scope:    nuke.Account,
+		Resource: &CodeArtifactRepository{},
+		Lister:   &CodeArtifactRepositoryLister{},
 	})
 }
 

@@ -18,9 +18,10 @@ const EFSMountTargetResource = "EFSMountTarget"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   EFSMountTargetResource,
-		Scope:  nuke.Account,
-		Lister: &EFSMountTargetLister{},
+		Name:     EFSMountTargetResource,
+		Scope:    nuke.Account,
+		Resource: &EFSMountTarget{},
+		Lister:   &EFSMountTargetLister{},
 	})
 }
 

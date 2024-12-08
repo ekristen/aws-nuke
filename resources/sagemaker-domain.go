@@ -22,9 +22,10 @@ const SageMakerDomainResource = "SageMakerDomain"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   SageMakerDomainResource,
-		Scope:  nuke.Account,
-		Lister: &SageMakerDomainLister{},
+		Name:     SageMakerDomainResource,
+		Scope:    nuke.Account,
+		Resource: &SageMakerDomain{},
+		Lister:   &SageMakerDomainLister{},
 	})
 }
 

@@ -22,9 +22,10 @@ const ServiceCatalogTagOptionPortfolioAttachmentResource = "ServiceCatalogTagOpt
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   ServiceCatalogTagOptionPortfolioAttachmentResource,
-		Scope:  nuke.Account,
-		Lister: &ServiceCatalogTagOptionPortfolioAttachmentLister{},
+		Name:     ServiceCatalogTagOptionPortfolioAttachmentResource,
+		Scope:    nuke.Account,
+		Resource: &ServiceCatalogTagOptionPortfolioAttachment{},
+		Lister:   &ServiceCatalogTagOptionPortfolioAttachmentLister{},
 	})
 }
 

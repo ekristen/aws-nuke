@@ -19,9 +19,10 @@ const Route53HealthCheckResource = "Route53HealthCheck"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   Route53HealthCheckResource,
-		Scope:  nuke.Account,
-		Lister: &Route53HealthCheckLister{},
+		Name:     Route53HealthCheckResource,
+		Scope:    nuke.Account,
+		Resource: &Route53HealthCheck{},
+		Lister:   &Route53HealthCheckLister{},
 	})
 }
 

@@ -26,9 +26,10 @@ const DisableDeregistrationProtectionSetting = "DisableDeregistrationProtection"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   EC2ImageResource,
-		Scope:  nuke.Account,
-		Lister: &EC2ImageLister{},
+		Name:     EC2ImageResource,
+		Scope:    nuke.Account,
+		Resource: &EC2Image{},
+		Lister:   &EC2ImageLister{},
 		Settings: []string{
 			DisableDeregistrationProtectionSetting,
 			IncludeDeprecatedSetting,

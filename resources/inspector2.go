@@ -17,9 +17,10 @@ const Inspector2Resource = "Inspector2"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   Inspector2Resource,
-		Scope:  nuke.Account,
-		Lister: &Inspector2Lister{},
+		Name:     Inspector2Resource,
+		Scope:    nuke.Account,
+		Resource: &Inspector2{},
+		Lister:   &Inspector2Lister{},
 	})
 }
 

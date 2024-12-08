@@ -21,9 +21,10 @@ const CloudWatchLogsLogGroupResource = "CloudWatchLogsLogGroup"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   CloudWatchLogsLogGroupResource,
-		Scope:  nuke.Account,
-		Lister: &CloudWatchLogsLogGroupLister{},
+		Name:     CloudWatchLogsLogGroupResource,
+		Scope:    nuke.Account,
+		Resource: &CloudWatchLogsLogGroup{},
+		Lister:   &CloudWatchLogsLogGroupLister{},
 		DependsOn: []string{
 			EC2VPCResource, // Reason: flow logs, if log group is cleaned before vpc, vpc can write more flow logs
 		},

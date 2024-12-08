@@ -17,9 +17,10 @@ const BedrockProvisionedModelThroughputResource = "BedrockProvisionedModelThroug
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   BedrockProvisionedModelThroughputResource,
-		Scope:  nuke.Account,
-		Lister: &BedrockProvisionedModelThroughputLister{},
+		Name:     BedrockProvisionedModelThroughputResource,
+		Scope:    nuke.Account,
+		Resource: &BedrockProvisionedModelThroughput{},
+		Lister:   &BedrockProvisionedModelThroughputLister{},
 	})
 }
 

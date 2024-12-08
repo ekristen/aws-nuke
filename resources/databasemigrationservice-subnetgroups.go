@@ -16,9 +16,10 @@ const DatabaseMigrationServiceSubnetGroupResource = "DatabaseMigrationServiceSub
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   DatabaseMigrationServiceSubnetGroupResource,
-		Scope:  nuke.Account,
-		Lister: &DatabaseMigrationServiceSubnetGroupLister{},
+		Name:     DatabaseMigrationServiceSubnetGroupResource,
+		Scope:    nuke.Account,
+		Resource: &DatabaseMigrationServiceSubnetGroup{},
+		Lister:   &DatabaseMigrationServiceSubnetGroupLister{},
 	})
 }
 

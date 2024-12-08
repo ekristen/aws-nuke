@@ -15,9 +15,10 @@ const OpsWorksCMBackupResource = "OpsWorksCMBackup"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   OpsWorksCMBackupResource,
-		Scope:  nuke.Account,
-		Lister: &OpsWorksCMBackupLister{},
+		Name:     OpsWorksCMBackupResource,
+		Scope:    nuke.Account,
+		Resource: &OpsWorksCMBackup{},
+		Lister:   &OpsWorksCMBackupLister{},
 	})
 }
 

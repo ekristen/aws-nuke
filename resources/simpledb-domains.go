@@ -16,9 +16,10 @@ const SimpleDBDomainResource = "SimpleDBDomain"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   SimpleDBDomainResource,
-		Scope:  nuke.Account,
-		Lister: &SimpleDBDomainLister{},
+		Name:     SimpleDBDomainResource,
+		Scope:    nuke.Account,
+		Resource: &SimpleDBDomain{},
+		Lister:   &SimpleDBDomainLister{},
 	})
 }
 

@@ -30,6 +30,7 @@ var ResourceTemplates embed.FS
 
 var SkipCamelCase = []string{
 	"ELBv2",
+	"IoT",
 }
 
 type TemplateData struct {
@@ -91,14 +92,22 @@ func execute(c *cli.Context) error { //nolint:funlen,gocyclo
 		}
 
 		if c.Bool("write-to-disk") {
+			filename := KebabCase(strings.ToLower(SplitCamelCase(reg.Name)))
+			filename = strings.Replace(filename, "io-t", "iot-", 1)
+			filename = strings.Replace(filename, "iamsaml-", "iam-saml-", 1)
+			filename = strings.Replace(filename, "wa-fv2-", "wafv2-", 1)
+			filename = strings.Replace(filename, "f-sx", "fsx-", 1)
+			filename = strings.Replace(filename, "el-bv2-", "elbv2-", 1)
+			filename = strings.Replace(filename, "x-ray-", "xray-", 1)
+			filename = strings.Replace(filename, "x-ray-", "xray-", 1)
+
 			err := os.WriteFile(
-				fmt.Sprintf("docs/resources/%s.md",
-					KebabCase(strings.ToLower(SplitCamelCase(reg.Name)))), buf.Bytes(), 0600)
+				fmt.Sprintf("docs/resources/%s.md", filename), buf.Bytes(), 0600)
 			if err != nil {
 				return err
 			}
 
-			fmt.Printf("Wrote docs/resources/%s.md\n", reg.Name)
+			fmt.Printf("Wrote docs/resources/%s.md\n", filename)
 
 			continue
 		}
@@ -141,6 +150,10 @@ func execute(c *cli.Context) error { //nolint:funlen,gocyclo
 		title = strings.Replace(title, "Acm", "ACM", 1)
 		title = strings.Replace(title, "Sns", "SNS", 1)
 		title = strings.Replace(title, "Elb", "ELB", 1)
+		title = strings.Replace(title, "Eks", "EKS", 1)
+		title = strings.Replace(title, "Aws", "AWS", 1)
+		title = strings.Replace(title, "Waf", "WAF", 1)
+		title = strings.Replace(title, "Xray", "XRay", 1)
 
 		newResources = append(newResources, fmt.Sprintf("%s: %s", title, newResource))
 	}
@@ -238,7 +251,17 @@ func SplitCamelCase(input string) string {
 	// and between sequences of uppercase letters followed by lowercase letters.
 	re := regexp.MustCompile(`([a-z])([A-Z0-9])|([A-Z]+)([A-Z][a-z])|(\d)([A-Z])`)
 	// Replace boundaries with a space followed by the uppercase letter.
-	return re.ReplaceAllString(input, "${1}${3}${5} ${2}${4}${6}")
+
+	boundaries := re.ReplaceAllString(input, "${1}${3}${5} ${2}${4}${6}")
+	boundaries = strings.Replace(boundaries, "io-t", "iot-", 1)
+	boundaries = strings.Replace(boundaries, "iamsaml-", "iam-saml-", 1)
+	boundaries = strings.Replace(boundaries, "wa-fv2-", "wafv2-", 1)
+	boundaries = strings.Replace(boundaries, "f-sx", "fsx-", 1)
+	boundaries = strings.Replace(boundaries, "el-bv2-", "elbv2-", 1)
+	boundaries = strings.Replace(boundaries, "x-ray-", "xray-", 1)
+	boundaries = strings.Replace(boundaries, "x-ray-", "xray-", 1)
+
+	return boundaries
 }
 
 // Function to update the 'Resources' section with new list values

@@ -21,9 +21,10 @@ const EKSFargateProfileResource = "EKSFargateProfile"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   EKSFargateProfileResource,
-		Scope:  nuke.Account,
-		Lister: &EKSFargateProfileLister{},
+		Name:     EKSFargateProfileResource,
+		Scope:    nuke.Account,
+		Resource: &EKSFargateProfile{},
+		Lister:   &EKSFargateProfileLister{},
 		DeprecatedAliases: []string{
 			"EKSFargateProfiles",
 		},

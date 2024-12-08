@@ -16,9 +16,10 @@ const KinesisVideoProjectResource = "KinesisVideoProject"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   KinesisVideoProjectResource,
-		Scope:  nuke.Account,
-		Lister: &KinesisVideoProjectLister{},
+		Name:     KinesisVideoProjectResource,
+		Scope:    nuke.Account,
+		Resource: &KinesisVideoProject{},
+		Lister:   &KinesisVideoProjectLister{},
 	})
 }
 

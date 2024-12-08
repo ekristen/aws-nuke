@@ -16,9 +16,10 @@ const AMPWorkspaceResource = "AMPWorkspace"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   AMPWorkspaceResource,
-		Scope:  nuke.Account,
-		Lister: &AMPWorkspaceLister{},
+		Name:     AMPWorkspaceResource,
+		Scope:    nuke.Account,
+		Resource: &AMPWorkspace{},
+		Lister:   &AMPWorkspaceLister{},
 	})
 }
 

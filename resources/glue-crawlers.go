@@ -16,9 +16,10 @@ const GlueCrawlerResource = "GlueCrawler"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   GlueCrawlerResource,
-		Scope:  nuke.Account,
-		Lister: &GlueCrawlerLister{},
+		Name:     GlueCrawlerResource,
+		Scope:    nuke.Account,
+		Resource: &GlueCrawler{},
+		Lister:   &GlueCrawlerLister{},
 	})
 }
 

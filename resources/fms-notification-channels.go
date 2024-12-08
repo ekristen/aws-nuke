@@ -18,9 +18,10 @@ const FMSNotificationChannelResource = "FMSNotificationChannel"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   FMSNotificationChannelResource,
-		Scope:  nuke.Account,
-		Lister: &FMSNotificationChannelLister{},
+		Name:     FMSNotificationChannelResource,
+		Scope:    nuke.Account,
+		Resource: &FMSNotificationChannel{},
+		Lister:   &FMSNotificationChannelLister{},
 	})
 }
 

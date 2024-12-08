@@ -18,9 +18,10 @@ const FirehoseDeliveryStreamResource = "FirehoseDeliveryStream"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   FirehoseDeliveryStreamResource,
-		Scope:  nuke.Account,
-		Lister: &FirehoseDeliveryStreamLister{},
+		Name:     FirehoseDeliveryStreamResource,
+		Scope:    nuke.Account,
+		Resource: &FirehoseDeliveryStream{},
+		Lister:   &FirehoseDeliveryStreamLister{},
 	})
 }
 

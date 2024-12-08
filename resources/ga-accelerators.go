@@ -12,19 +12,14 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-// GlobalAccelerator model
-type GlobalAccelerator struct {
-	svc *globalaccelerator.GlobalAccelerator
-	ARN *string
-}
-
 const GlobalAcceleratorResource = "GlobalAccelerator"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   GlobalAcceleratorResource,
-		Scope:  nuke.Account,
-		Lister: &GlobalAcceleratorLister{},
+		Name:     GlobalAcceleratorResource,
+		Scope:    nuke.Account,
+		Resource: &GlobalAccelerator{},
+		Lister:   &GlobalAcceleratorLister{},
 	})
 }
 
@@ -62,6 +57,12 @@ func (l *GlobalAcceleratorLister) List(_ context.Context, o interface{}) ([]reso
 	}
 
 	return resources, nil
+}
+
+// GlobalAccelerator model
+type GlobalAccelerator struct {
+	svc *globalaccelerator.GlobalAccelerator
+	ARN *string
 }
 
 // Remove resource

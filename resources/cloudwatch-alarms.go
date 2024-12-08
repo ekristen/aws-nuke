@@ -17,9 +17,10 @@ const CloudWatchAlarmResource = "CloudWatchAlarm"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   CloudWatchAlarmResource,
-		Scope:  nuke.Account,
-		Lister: &CloudWatchAlarmLister{},
+		Name:     CloudWatchAlarmResource,
+		Scope:    nuke.Account,
+		Resource: &CloudWatchAlarm{},
+		Lister:   &CloudWatchAlarmLister{},
 	})
 }
 

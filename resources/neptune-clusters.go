@@ -16,9 +16,10 @@ const NeptuneClusterResource = "NeptuneCluster"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   NeptuneClusterResource,
-		Scope:  nuke.Account,
-		Lister: &NeptuneClusterLister{},
+		Name:     NeptuneClusterResource,
+		Scope:    nuke.Account,
+		Resource: &NeptuneCluster{},
+		Lister:   &NeptuneClusterLister{},
 	})
 }
 

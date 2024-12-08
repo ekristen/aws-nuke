@@ -17,9 +17,10 @@ const AutoScalingLifecycleHookResource = "AutoScalingLifecycleHook"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   AutoScalingLifecycleHookResource,
-		Scope:  nuke.Account,
-		Lister: &AutoScalingLifecycleHookLister{},
+		Name:     AutoScalingLifecycleHookResource,
+		Scope:    nuke.Account,
+		Resource: &AutoScalingLifecycleHook{},
+		Lister:   &AutoScalingLifecycleHookLister{},
 		DeprecatedAliases: []string{
 			"LifecycleHook",
 		},
