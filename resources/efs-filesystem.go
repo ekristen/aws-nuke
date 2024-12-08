@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"go.uber.org/ratelimit"
+
 	"github.com/aws/aws-sdk-go/service/efs"
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -27,26 +29,40 @@ type EFSFileSystemLister struct{}
 
 func (l *EFSFileSystemLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
-
 	svc := efs.New(opts.Session)
-
-	resp, err := svc.DescribeFileSystems(nil)
-	if err != nil {
-		return nil, err
-	}
-
 	resources := make([]resource.Resource, 0)
-	for _, fs := range resp.FileSystems {
-		lto, err := svc.ListTagsForResource(&efs.ListTagsForResourceInput{ResourceId: fs.FileSystemId})
+
+	// Note: AWS does not publish what the RPS is for the DescribeFileSystems API call
+	// after a bit of trial and error it seems to be around 10 RPS
+	describeRL := ratelimit.New(10)
+
+	params := &efs.DescribeFileSystemsInput{}
+	for {
+		describeRL.Take()
+
+		resp, err := svc.DescribeFileSystems(params)
 		if err != nil {
 			return nil, err
 		}
-		resources = append(resources, &EFSFileSystem{
-			svc:     svc,
-			id:      *fs.FileSystemId,
-			name:    *fs.CreationToken,
-			tagList: lto.Tags,
-		})
+
+		for _, fs := range resp.FileSystems {
+			lto, err := svc.ListTagsForResource(&efs.ListTagsForResourceInput{ResourceId: fs.FileSystemId})
+			if err != nil {
+				return nil, err
+			}
+			resources = append(resources, &EFSFileSystem{
+				svc:     svc,
+				id:      *fs.FileSystemId,
+				name:    *fs.CreationToken,
+				tagList: lto.Tags,
+			})
+		}
+
+		if resp.NextMarker == nil {
+			break
+		}
+
+		params.Marker = resp.NextMarker
 	}
 
 	return resources, nil
