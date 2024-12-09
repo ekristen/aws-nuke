@@ -24,13 +24,19 @@ func init() {
 	})
 }
 
-type IoTTwinMakerEntityLister struct{}
+type IoTTwinMakerEntityLister struct {
+	IoTTwinMaker
+}
 
 func (l *IoTTwinMakerEntityLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
+	resources := make([]resource.Resource, 0)
+
+	if !l.IsSupportedRegion(opts.Region.Name) {
+		return resources, nil
+	}
 
 	svc := iottwinmaker.New(opts.Session)
-	resources := make([]resource.Resource, 0)
 
 	// Require to have workspaces identifiers to query entities
 	workspaceListResponse, err := ListWorkspacesEntities(svc)
