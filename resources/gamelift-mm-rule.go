@@ -24,11 +24,21 @@ func init() {
 	})
 }
 
-type GameLiftMatchmakingRuleSetLister struct{}
+type GameLiftMatchmakingRuleSetLister struct {
+	GameLift
+}
 
 func (l *GameLiftMatchmakingRuleSetLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 	var resources []resource.Resource
+
+	if !l.IsSupportedRegion(opts.Region.Name) {
+		opts.Logger.
+			WithField("resource", GameLiftMatchmakingRuleSetResource).
+			WithField("region", opts.Region.Name).
+			Debug("region not supported")
+		return resources, nil
+	}
 
 	svc := gamelift.New(opts.Session)
 
