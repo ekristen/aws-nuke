@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go/service/ec2"
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -45,8 +47,11 @@ func (l *EC2TGWLister) List(_ context.Context, o interface{}) ([]resource.Resour
 
 		for _, tgw := range resp.TransitGateways {
 			resources = append(resources, &EC2TGW{
-				svc: svc,
-				tgw: tgw,
+				svc:       svc,
+				ID:        tgw.TransitGatewayId,
+				OwnerID:   tgw.OwnerId,
+				Tags:      tgw.Tags,
+				accountID: opts.AccountID,
 			})
 		}
 
@@ -63,16 +68,21 @@ func (l *EC2TGWLister) List(_ context.Context, o interface{}) ([]resource.Resour
 }
 
 type EC2TGW struct {
-	svc *ec2.EC2
-	tgw *ec2.TransitGateway
+	svc     *ec2.EC2
+	ID      *string    `description:"The ID of the transit gateway."`
+	OwnerID *string    `property:"name=OwnerId" description:"The ID of the AWS account that owns the transit gateway."`
+	State   *string    `description:"The state of the transit gateway."`
+	Tags    []*ec2.Tag `description:"The tags associated with the transit gateway."`
+
+	accountID *string
 }
 
-func (e *EC2TGW) Remove(_ context.Context) error {
+func (r *EC2TGW) Remove(_ context.Context) error {
 	params := &ec2.DeleteTransitGatewayInput{
-		TransitGatewayId: e.tgw.TransitGatewayId,
+		TransitGatewayId: r.ID,
 	}
 
-	_, err := e.svc.DeleteTransitGateway(params)
+	_, err := r.svc.DeleteTransitGateway(params)
 	if err != nil {
 		return err
 	}
@@ -80,26 +90,21 @@ func (e *EC2TGW) Remove(_ context.Context) error {
 	return nil
 }
 
-func (e *EC2TGW) Filter() error {
-	if *e.tgw.State == awsutil.StateDeleted {
+func (r *EC2TGW) Filter() error {
+	if ptr.ToString(r.State) == awsutil.StateDeleted {
 		return fmt.Errorf("already deleted")
+	}
+	if ptr.ToString(r.OwnerID) != ptr.ToString(r.accountID) {
+		return fmt.Errorf("not owned by account")
 	}
 
 	return nil
 }
 
-func (e *EC2TGW) Properties() types.Properties {
-	properties := types.NewProperties()
-	for _, tagValue := range e.tgw.Tags {
-		properties.SetTag(tagValue.Key, tagValue.Value)
-	}
-	properties.
-		Set("ID", e.tgw.TransitGatewayId).
-		Set("OwnerId", e.tgw.OwnerId)
-
-	return properties
+func (r *EC2TGW) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
 
-func (e *EC2TGW) String() string {
-	return *e.tgw.TransitGatewayId
+func (r *EC2TGW) String() string {
+	return *r.ID
 }
