@@ -23,11 +23,21 @@ func init() {
 	})
 }
 
-type GameLiftQueueLister struct{}
+type GameLiftQueueLister struct {
+	GameLift
+}
 
 func (l *GameLiftQueueLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 	var resources []resource.Resource
+
+	if !l.IsSupportedRegion(opts.Region.Name) {
+		opts.Logger.
+			WithField("resource", GameLiftQueueResource).
+			WithField("region", opts.Region.Name).
+			Debug("region not supported")
+		return resources, nil
+	}
 
 	svc := gamelift.New(opts.Session)
 
