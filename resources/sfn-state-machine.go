@@ -2,6 +2,8 @@ package resources
 
 import (
 	"context"
+	"github.com/ekristen/libnuke/pkg/types"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sfn"
@@ -42,9 +44,23 @@ func (l *SFNStateMachineLister) List(_ context.Context, o interface{}) ([]resour
 		}
 
 		for _, stateMachine := range output.StateMachines {
+			var resourceTags []*sfn.Tag
+			tags, err := svc.ListTagsForResource(&sfn.ListTagsForResourceInput{
+				ResourceArn: stateMachine.StateMachineArn,
+			})
+			if err != nil {
+				opts.Logger.WithError(err).Error("unable to list state machine tags")
+			} else {
+				resourceTags = tags.Tags
+			}
+
 			resources = append(resources, &SFNStateMachine{
-				svc: svc,
-				ARN: stateMachine.StateMachineArn,
+				svc:          svc,
+				ARN:          stateMachine.StateMachineArn,
+				Name:         stateMachine.Name,
+				Type:         stateMachine.Type,
+				CreationDate: stateMachine.CreationDate,
+				Tags:         resourceTags,
 			})
 		}
 
@@ -59,8 +75,12 @@ func (l *SFNStateMachineLister) List(_ context.Context, o interface{}) ([]resour
 }
 
 type SFNStateMachine struct {
-	svc *sfn.SFN
-	ARN *string
+	svc          *sfn.SFN
+	ARN          *string    `description:"The Amazon Resource Name (ARN) that identifies the state machine."`
+	Name         *string    `description:"The name of the state machine."`
+	Type         *string    `description:"The type of the state machine."`
+	CreationDate *time.Time `description:"The date the state machine was created."`
+	Tags         []*sfn.Tag `description:"The tags associated with the state machine."`
 }
 
 func (r *SFNStateMachine) Remove(_ context.Context) error {
@@ -69,6 +89,10 @@ func (r *SFNStateMachine) Remove(_ context.Context) error {
 	})
 
 	return err
+}
+
+func (r *SFNStateMachine) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
 
 func (r *SFNStateMachine) String() string {
