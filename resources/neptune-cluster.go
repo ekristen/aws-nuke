@@ -76,19 +76,19 @@ type NeptuneCluster struct {
 	Tags []*neptune.Tag
 }
 
-func (f *NeptuneCluster) Remove(_ context.Context) error {
-	_, err := f.svc.DeleteDBCluster(&neptune.DeleteDBClusterInput{
-		DBClusterIdentifier: f.ID,
+func (r *NeptuneCluster) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteDBCluster(&neptune.DeleteDBClusterInput{
+		DBClusterIdentifier: r.ID,
 		SkipFinalSnapshot:   aws.Bool(true),
 	})
 
 	return err
 }
 
-func (f *NeptuneCluster) Properties() types.Properties {
-	return types.NewPropertiesFromStruct(f)
+func (r *NeptuneCluster) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
 
-func (f *NeptuneCluster) String() string {
-	return *f.ID
+func (r *NeptuneCluster) String() string {
+	return *r.ID
 }
