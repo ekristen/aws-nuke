@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 
@@ -33,6 +35,10 @@ func (l *CloudWatchAlarmLister) List(_ context.Context, o interface{}) ([]resour
 	resources := make([]resource.Resource, 0)
 
 	params := &cloudwatch.DescribeAlarmsInput{
+		AlarmTypes: []*string{
+			ptr.String(cloudwatch.AlarmTypeCompositeAlarm),
+			ptr.String(cloudwatch.AlarmTypeMetricAlarm),
+		},
 		MaxRecords: aws.Int64(100),
 	}
 
