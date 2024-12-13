@@ -8,6 +8,7 @@ import (
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
@@ -42,9 +43,20 @@ func (l *NeptuneClusterLister) List(_ context.Context, o interface{}) ([]resourc
 		}
 
 		for _, dbCluster := range output.DBClusters {
+			var dbTags []*neptune.Tag
+			tags, err := svc.ListTagsForResource(&neptune.ListTagsForResourceInput{
+				ResourceName: dbCluster.DBClusterArn,
+			})
+			if err != nil {
+				opts.Logger.WithError(err).Warn("failed to list tags for resource")
+			} else {
+				dbTags = tags.TagList
+			}
+
 			resources = append(resources, &NeptuneCluster{
-				svc: svc,
-				ID:  dbCluster.DBClusterIdentifier,
+				svc:  svc,
+				ID:   dbCluster.DBClusterIdentifier,
+				Tags: dbTags,
 			})
 		}
 
@@ -59,8 +71,9 @@ func (l *NeptuneClusterLister) List(_ context.Context, o interface{}) ([]resourc
 }
 
 type NeptuneCluster struct {
-	svc *neptune.Neptune
-	ID  *string
+	svc  *neptune.Neptune
+	ID   *string
+	Tags []*neptune.Tag
 }
 
 func (f *NeptuneCluster) Remove(_ context.Context) error {
@@ -70,6 +83,10 @@ func (f *NeptuneCluster) Remove(_ context.Context) error {
 	})
 
 	return err
+}
+
+func (f *NeptuneCluster) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(f)
 }
 
 func (f *NeptuneCluster) String() string {
