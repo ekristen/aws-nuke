@@ -63,14 +63,14 @@ type SFNStateMachine struct {
 	ARN *string
 }
 
-func (f *SFNStateMachine) Remove(_ context.Context) error {
-	_, err := f.svc.DeleteStateMachine(&sfn.DeleteStateMachineInput{
-		StateMachineArn: f.ARN,
+func (r *SFNStateMachine) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteStateMachine(&sfn.DeleteStateMachineInput{
+		StateMachineArn: r.ARN,
 	})
 
 	return err
 }
 
-func (f *SFNStateMachine) String() string {
-	return *f.ARN
+func (r *SFNStateMachine) String() string {
+	return *r.ARN
 }
