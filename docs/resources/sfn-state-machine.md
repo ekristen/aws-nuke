@@ -14,7 +14,12 @@ SFNStateMachine
 ## Properties
 
 
-- `ARN`: No Description
+- `ARN`: The Amazon Resource Name (ARN) that identifies the state machine.
+- `CreationDate`: The date the state machine was created.
+- `Name`: The name of the state machine.
+- `Type`: The type of the state machine.
+- `tag:<key>:`: This resource has tags with property `Tags`. These are key/value pairs that are
+	added as their own property with the prefix of `tag:` (e.g. [tag:example: "value"]) 
 
 !!! note - Using Properties
     Properties are what [Filters](../config-filtering.md) are written against in your configuration. You use the property
