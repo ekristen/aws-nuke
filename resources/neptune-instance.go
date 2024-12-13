@@ -2,7 +2,8 @@ package resources
 
 import (
 	"context"
-
+	"fmt"
+	"github.com/gotidy/ptr"
 	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	libsettings "github.com/ekristen/libnuke/pkg/settings"
 	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
@@ -23,6 +25,10 @@ func init() {
 		Scope:    nuke.Account,
 		Resource: &NeptuneInstance{},
 		Lister:   &NeptuneInstanceLister{},
+		Settings: []string{
+			"DisableClusterDeletionProtection",
+			"DisableDeletionProtection",
+		},
 	})
 }
 
@@ -63,10 +69,12 @@ func (l *NeptuneInstanceLister) List(_ context.Context, o interface{}) ([]resour
 			}
 
 			resources = append(resources, &NeptuneInstance{
-				svc:  svc,
-				ID:   dbInstance.DBInstanceIdentifier,
-				Name: dbInstance.DBName,
-				Tags: dbTags,
+				svc:       svc,
+				ID:        dbInstance.DBInstanceIdentifier,
+				ClusterID: dbInstance.DBClusterIdentifier,
+				Name:      dbInstance.DBName,
+				Status:    dbInstance.DBInstanceStatus,
+				Tags:      dbTags,
 			})
 		}
 
@@ -81,16 +89,50 @@ func (l *NeptuneInstanceLister) List(_ context.Context, o interface{}) ([]resour
 }
 
 type NeptuneInstance struct {
-	svc  *neptune.Neptune
-	ID   *string
-	Name *string
-	Tags []*neptune.Tag
+	svc       *neptune.Neptune
+	settings  *libsettings.Setting
+	ID        *string
+	ClusterID *string
+	Name      *string
+	Status    *string
+	Tags      []*neptune.Tag
+}
+
+func (r *NeptuneInstance) Settings(settings *libsettings.Setting) {
+	r.settings = settings
+}
+
+func (r *NeptuneInstance) Filter() error {
+	if ptr.ToString(r.Status) == "deleting" {
+		return fmt.Errorf("already deleting")
+	}
+	return nil
 }
 
 func (r *NeptuneInstance) Remove(_ context.Context) error {
+	if r.settings.GetBool("DisableClusterDeletionProtection") {
+		_, err := r.svc.ModifyDBCluster(&neptune.ModifyDBClusterInput{
+			DBClusterIdentifier: r.ClusterID,
+			DeletionProtection:  ptr.Bool(false),
+		})
+		if err != nil {
+			return err
+		}
+	}
+
+	if r.settings.GetBool("DisableDeletionProtection") {
+		_, err := r.svc.ModifyDBInstance(&neptune.ModifyDBInstanceInput{
+			DBInstanceIdentifier: r.ID,
+			DeletionProtection:   ptr.Bool(false),
+		})
+		if err != nil {
+			return err
+		}
+	}
+
 	_, err := r.svc.DeleteDBInstance(&neptune.DeleteDBInstanceInput{
 		DBInstanceIdentifier: r.ID,
-		SkipFinalSnapshot:    aws.Bool(true),
+		SkipFinalSnapshot:    ptr.Bool(true),
 	})
 
 	return err

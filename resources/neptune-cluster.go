@@ -2,12 +2,16 @@ package resources
 
 import (
 	"context"
+	"fmt"
+
+	"github.com/gotidy/ptr"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/neptune"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	libsettings "github.com/ekristen/libnuke/pkg/settings"
 	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
@@ -21,6 +25,12 @@ func init() {
 		Scope:    nuke.Account,
 		Resource: &NeptuneCluster{},
 		Lister:   &NeptuneClusterLister{},
+		DependsOn: []string{
+			NeptuneInstanceResource,
+		},
+		Settings: []string{
+			"DisableDeletionProtection",
+		},
 	})
 }
 
@@ -54,9 +64,10 @@ func (l *NeptuneClusterLister) List(_ context.Context, o interface{}) ([]resourc
 			}
 
 			resources = append(resources, &NeptuneCluster{
-				svc:  svc,
-				ID:   dbCluster.DBClusterIdentifier,
-				Tags: dbTags,
+				svc:    svc,
+				ID:     dbCluster.DBClusterIdentifier,
+				Status: dbCluster.Status,
+				Tags:   dbTags,
 			})
 		}
 
@@ -71,15 +82,39 @@ func (l *NeptuneClusterLister) List(_ context.Context, o interface{}) ([]resourc
 }
 
 type NeptuneCluster struct {
-	svc  *neptune.Neptune
-	ID   *string
-	Tags []*neptune.Tag
+	svc      *neptune.Neptune
+	settings *libsettings.Setting
+
+	ID     *string
+	Status *string
+	Tags   []*neptune.Tag
+}
+
+func (r *NeptuneCluster) Settings(settings *libsettings.Setting) {
+	r.settings = settings
+}
+
+func (r *NeptuneCluster) Filter() error {
+	if ptr.ToString(r.Status) == "deleting" {
+		return fmt.Errorf("already deleting")
+	}
+	return nil
 }
 
 func (r *NeptuneCluster) Remove(_ context.Context) error {
+	if r.settings.GetBool("DisableDeletionProtection") {
+		_, err := r.svc.ModifyDBCluster(&neptune.ModifyDBClusterInput{
+			DBClusterIdentifier: r.ID,
+			DeletionProtection:  ptr.Bool(false),
+		})
+		if err != nil {
+			return err
+		}
+	}
+
 	_, err := r.svc.DeleteDBCluster(&neptune.DeleteDBClusterInput{
 		DBClusterIdentifier: r.ID,
-		SkipFinalSnapshot:   aws.Bool(true),
+		SkipFinalSnapshot:   ptr.Bool(true),
 	})
 
 	return err
