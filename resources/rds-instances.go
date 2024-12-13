@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/rds"
 
@@ -52,6 +54,12 @@ func (l *RDSInstanceLister) List(_ context.Context, o interface{}) ([]resource.R
 
 	resources := make([]resource.Resource, 0)
 	for _, instance := range resp.DBInstances {
+		// Note: NeptuneInstance handles Neptune instances
+		if ptr.ToString(instance.Engine) == "neptune" {
+			opts.Logger.Debug("skipping neptune instance, it is handled by NeptuneInstance")
+			continue
+		}
+
 		tags, err := svc.ListTagsForResource(&rds.ListTagsForResourceInput{
 			ResourceName: instance.DBInstanceArn,
 		})
