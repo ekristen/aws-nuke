@@ -51,6 +51,7 @@ func (l *EC2TGWLister) List(_ context.Context, o interface{}) ([]resource.Resour
 				ID:        tgw.TransitGatewayId,
 				OwnerID:   tgw.OwnerId,
 				Tags:      tgw.Tags,
+				State:     tgw.State,
 				accountID: opts.AccountID,
 			})
 		}
