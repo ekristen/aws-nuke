@@ -44,7 +44,7 @@ func (l *Route53ResourceRecordSetLister) List(ctx context.Context, o interface{}
 
 	for _, r := range sub {
 		zone := r.(*Route53HostedZone)
-		rrs, err := ListResourceRecordsForZone(svc, zone.id, zone.name)
+		rrs, err := ListResourceRecordsForZone(svc, zone.id, zone.name, zone.tags)
 		if err != nil {
 			return nil, err
 		}
@@ -55,12 +55,12 @@ func (l *Route53ResourceRecordSetLister) List(ctx context.Context, o interface{}
 	return resources, nil
 }
 
-func ListResourceRecordsForZone(svc *route53.Route53, zoneID, zoneName *string) ([]resource.Resource, error) {
+func ListResourceRecordsForZone(svc *route53.Route53, zoneID, zoneName *string, zoneTags []*route53.Tag) ([]resource.Resource, error) {
+	resources := make([]resource.Resource, 0)
+
 	params := &route53.ListResourceRecordSetsInput{
 		HostedZoneId: zoneID,
 	}
-
-	resources := make([]resource.Resource, 0)
 
 	for {
 		resp, err := svc.ListResourceRecordSets(params)
@@ -70,10 +70,13 @@ func ListResourceRecordsForZone(svc *route53.Route53, zoneID, zoneName *string) 
 
 		for _, rrs := range resp.ResourceRecordSets {
 			resources = append(resources, &Route53ResourceRecordSet{
-				svc:            svc,
-				hostedZoneID:   zoneID,
-				hostedZoneName: zoneName,
-				data:           rrs,
+				svc:               svc,
+				hostedZoneID:      zoneID,
+				HostedZoneName:    zoneName,
+				resourceRecordSet: rrs,
+				Name:              rrs.Name,
+				Type:              rrs.Type,
+				Tags:              zoneTags,
 			})
 		}
 
@@ -90,19 +93,22 @@ func ListResourceRecordsForZone(svc *route53.Route53, zoneID, zoneName *string) 
 }
 
 type Route53ResourceRecordSet struct {
-	svc            *route53.Route53
-	hostedZoneID   *string
-	hostedZoneName *string
-	data           *route53.ResourceRecordSet
-	changeID       *string
+	svc               *route53.Route53
+	resourceRecordSet *route53.ResourceRecordSet // Note: this is required for the deletion
+	changeID          *string
+	hostedZoneID      *string
+	HostedZoneName    *string        `description:"The name of the zone to which the record belongs"`
+	Name              *string        `description:"The name of the record"`
+	Type              *string        `description:"The type of the record"`
+	Tags              []*route53.Tag `property:"tagPrefix=zone:tag"`
 }
 
 func (r *Route53ResourceRecordSet) Filter() error {
-	if *r.data.Type == "NS" && *r.hostedZoneName == *r.data.Name {
+	if *r.Type == "NS" && *r.HostedZoneName == *r.Name {
 		return fmt.Errorf("cannot delete NS record")
 	}
 
-	if *r.data.Type == "SOA" {
+	if *r.Type == "SOA" {
 		return fmt.Errorf("cannot delete SOA record")
 	}
 
@@ -116,7 +122,7 @@ func (r *Route53ResourceRecordSet) Remove(_ context.Context) error {
 			Changes: []*route53.Change{
 				{
 					Action:            aws.String("DELETE"),
-					ResourceRecordSet: r.data,
+					ResourceRecordSet: r.resourceRecordSet,
 				},
 			},
 		},
@@ -133,11 +139,9 @@ func (r *Route53ResourceRecordSet) Remove(_ context.Context) error {
 }
 
 func (r *Route53ResourceRecordSet) Properties() types.Properties {
-	return types.NewProperties().
-		Set("Name", r.data.Name).
-		Set("Type", r.data.Type)
+	return types.NewPropertiesFromStruct(r)
 }
 
 func (r *Route53ResourceRecordSet) String() string {
-	return ptr.ToString(r.data.Name)
+	return ptr.ToString(r.Name)
 }
