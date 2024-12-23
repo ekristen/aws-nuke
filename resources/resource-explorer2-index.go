@@ -5,9 +5,12 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/resourceexplorer2"
-	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
+
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
 const ResourceExplorer2IndexResource = "ResourceExplorer2Index"
@@ -23,17 +26,15 @@ func init() {
 
 type ResourceExplorer2IndexLister struct{}
 
-type ResourceExplorer2Index struct {
-	svc      *resourceexplorer2.ResourceExplorer2
-	indexArn *string
-}
-
 func (l *ResourceExplorer2IndexLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 	svc := resourceexplorer2.New(opts.Session)
 	var resources []resource.Resource
 
-	params := &resourceexplorer2.ListIndexesInput{}
+	params := &resourceexplorer2.ListIndexesInput{
+		Regions:    aws.StringSlice([]string{opts.Region.Name}),
+		MaxResults: aws.Int64(100),
+	}
 
 	for {
 		output, err := svc.ListIndexes(params)
@@ -43,8 +44,9 @@ func (l *ResourceExplorer2IndexLister) List(_ context.Context, o interface{}) ([
 
 		for _, index := range output.Indexes {
 			resources = append(resources, &ResourceExplorer2Index{
-				svc:      svc,
-				indexArn: index.Arn,
+				svc:  svc,
+				ARN:  index.Arn,
+				Type: index.Type,
 			})
 		}
 
@@ -58,14 +60,24 @@ func (l *ResourceExplorer2IndexLister) List(_ context.Context, o interface{}) ([
 	return resources, nil
 }
 
-func (f *ResourceExplorer2Index) Remove(_ context.Context) error {
-	_, err := f.svc.DeleteIndex(&resourceexplorer2.DeleteIndexInput{
-		Arn: f.indexArn,
+type ResourceExplorer2Index struct {
+	svc  *resourceexplorer2.ResourceExplorer2
+	ARN  *string
+	Type *string
+}
+
+func (r *ResourceExplorer2Index) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteIndex(&resourceexplorer2.DeleteIndexInput{
+		Arn: r.ARN,
 	})
 
 	return err
 }
 
-func (f *ResourceExplorer2Index) String() string {
-	return *f.indexArn
+func (r *ResourceExplorer2Index) String() string {
+	return *r.ARN
+}
+
+func (r *ResourceExplorer2Index) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
