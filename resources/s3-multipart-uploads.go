@@ -2,7 +2,6 @@ package resources
 
 import (
 	"context"
-
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -34,7 +33,7 @@ func (l *S3MultipartUploadLister) List(ctx context.Context, o interface{}) ([]re
 
 	resources := make([]resource.Resource, 0)
 
-	buckets, err := DescribeS3Buckets(ctx, svc)
+	buckets, err := DescribeS3Buckets(ctx, svc, opts)
 	if err != nil {
 		return nil, err
 	}

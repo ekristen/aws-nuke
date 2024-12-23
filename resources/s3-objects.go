@@ -2,7 +2,6 @@ package resources
 
 import (
 	"context"
-
 	"fmt"
 	"time"
 
@@ -37,7 +36,7 @@ func (l *S3ObjectLister) List(ctx context.Context, o interface{}) ([]resource.Re
 
 	resources := make([]resource.Resource, 0)
 
-	buckets, err := DescribeS3Buckets(ctx, svc)
+	buckets, err := DescribeS3Buckets(ctx, svc, opts)
 	if err != nil {
 		return nil, err
 	}
