@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+
 	"github.com/gotidy/ptr"
 
 	"github.com/aws/aws-sdk-go/aws"
