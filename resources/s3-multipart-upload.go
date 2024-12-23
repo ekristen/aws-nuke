@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -56,9 +55,9 @@ func (l *S3MultipartUploadLister) List(ctx context.Context, o interface{}) ([]re
 
 				resources = append(resources, &S3MultipartUpload{
 					svc:      svc,
-					bucket:   aws.ToString(bucket.Name),
-					key:      *upload.Key,
-					uploadID: *upload.UploadId,
+					Bucket:   bucket.Name,
+					Key:      upload.Key,
+					UploadID: upload.UploadId,
 				})
 			}
 
@@ -76,19 +75,19 @@ func (l *S3MultipartUploadLister) List(ctx context.Context, o interface{}) ([]re
 
 type S3MultipartUpload struct {
 	svc      *s3.Client
-	bucket   string
-	key      string
-	uploadID string
+	Bucket   *string
+	Key      *string
+	UploadID *string
 }
 
-func (e *S3MultipartUpload) Remove(ctx context.Context) error {
+func (r *S3MultipartUpload) Remove(ctx context.Context) error {
 	params := &s3.AbortMultipartUploadInput{
-		Bucket:   &e.bucket,
-		Key:      &e.key,
-		UploadId: &e.uploadID,
+		Bucket:   r.Bucket,
+		Key:      r.Key,
+		UploadId: r.UploadID,
 	}
 
-	_, err := e.svc.AbortMultipartUpload(ctx, params)
+	_, err := r.svc.AbortMultipartUpload(ctx, params)
 	if err != nil {
 		return err
 	}
@@ -96,13 +95,10 @@ func (e *S3MultipartUpload) Remove(ctx context.Context) error {
 	return nil
 }
 
-func (e *S3MultipartUpload) Properties() types.Properties {
-	return types.NewProperties().
-		Set("Bucket", e.bucket).
-		Set("Key", e.key).
-		Set("UploadID", e.uploadID)
+func (r *S3MultipartUpload) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
 
-func (e *S3MultipartUpload) String() string {
-	return fmt.Sprintf("s3://%s/%s#%s", e.bucket, e.key, e.uploadID)
+func (r *S3MultipartUpload) String() string {
+	return fmt.Sprintf("s3://%s/%s#%s", *r.Bucket, *r.Key, *r.UploadID)
 }
