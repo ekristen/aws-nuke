@@ -2,7 +2,6 @@ package resources
 
 import (
 	"context"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/resourceexplorer2"
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
@@ -61,14 +60,14 @@ func (l *ResourceExplorer2IndexLister) List(_ context.Context, o interface{}) ([
 	return resources, nil
 }
 
-func (f *ResourceExplorer2Index) Remove(_ context.Context) error {
-	_, err := f.svc.DeleteIndex(&resourceexplorer2.DeleteIndexInput{
-		Arn: f.indexArn,
+func (r *ResourceExplorer2Index) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteIndex(&resourceexplorer2.DeleteIndexInput{
+		Arn: r.indexArn,
 	})
 
 	return err
 }
 
-func (f *ResourceExplorer2Index) String() string {
-	return *f.indexArn
+func (r *ResourceExplorer2Index) String() string {
+	return *r.indexArn
 }
