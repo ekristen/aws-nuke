@@ -33,7 +33,10 @@ func (l *ResourceExplorer2IndexLister) List(_ context.Context, o interface{}) ([
 	svc := resourceexplorer2.New(opts.Session)
 	var resources []resource.Resource
 
-	params := &resourceexplorer2.ListIndexesInput{}
+	params := &resourceexplorer2.ListIndexesInput{
+		Regions:    aws.StringSlice([]string{opts.Region.Name}),
+		MaxResults: aws.Int64(100),
+	}
 
 	for {
 		output, err := svc.ListIndexes(params)
