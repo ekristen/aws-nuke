@@ -7,7 +7,6 @@ import (
 
 	"github.com/gotidy/ptr"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -59,11 +58,11 @@ func (l *S3ObjectLister) List(ctx context.Context, o interface{}) ([]resource.Re
 
 				resources = append(resources, &S3Object{
 					svc:          svc,
-					bucket:       aws.ToString(bucket.Name),
-					creationDate: aws.ToTime(bucket.CreationDate),
-					key:          *out.Key,
-					versionID:    out.VersionId,
-					latest:       ptr.ToBool(out.IsLatest),
+					Bucket:       bucket.Name,
+					CreationDate: bucket.CreationDate,
+					Key:          out.Key,
+					VersionID:    out.VersionId,
+					IsLatest:     out.IsLatest,
 				})
 			}
 
@@ -74,11 +73,11 @@ func (l *S3ObjectLister) List(ctx context.Context, o interface{}) ([]resource.Re
 
 				resources = append(resources, &S3Object{
 					svc:          svc,
-					bucket:       aws.ToString(bucket.Name),
-					creationDate: aws.ToTime(bucket.CreationDate),
-					key:          *out.Key,
-					versionID:    out.VersionId,
-					latest:       ptr.ToBool(out.IsLatest),
+					Bucket:       bucket.Name,
+					CreationDate: bucket.CreationDate,
+					Key:          out.Key,
+					VersionID:    out.VersionId,
+					IsLatest:     out.IsLatest,
 				})
 			}
 
@@ -97,21 +96,21 @@ func (l *S3ObjectLister) List(ctx context.Context, o interface{}) ([]resource.Re
 
 type S3Object struct {
 	svc          *s3.Client
-	bucket       string
-	creationDate time.Time
-	key          string
-	versionID    *string
-	latest       bool
+	Bucket       *string
+	CreationDate *time.Time
+	Key          *string
+	VersionID    *string
+	IsLatest     *bool
 }
 
-func (e *S3Object) Remove(ctx context.Context) error {
+func (r *S3Object) Remove(ctx context.Context) error {
 	params := &s3.DeleteObjectInput{
-		Bucket:    &e.bucket,
-		Key:       &e.key,
-		VersionId: e.versionID,
+		Bucket:    r.Bucket,
+		Key:       r.Key,
+		VersionId: r.VersionID,
 	}
 
-	_, err := e.svc.DeleteObject(ctx, params)
+	_, err := r.svc.DeleteObject(ctx, params)
 	if err != nil {
 		return err
 	}
@@ -119,18 +118,13 @@ func (e *S3Object) Remove(ctx context.Context) error {
 	return nil
 }
 
-func (e *S3Object) Properties() types.Properties {
-	return types.NewProperties().
-		Set("Bucket", e.bucket).
-		Set("Key", e.key).
-		Set("VersionID", e.versionID).
-		Set("IsLatest", e.latest).
-		Set("CreationDate", e.creationDate)
+func (r *S3Object) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
 
-func (e *S3Object) String() string {
-	if e.versionID != nil && *e.versionID != "null" && !e.latest {
-		return fmt.Sprintf("s3://%s/%s#%s", e.bucket, e.key, *e.versionID)
+func (r *S3Object) String() string {
+	if r.VersionID != nil && *r.VersionID != "null" && !ptr.ToBool(r.IsLatest) {
+		return fmt.Sprintf("s3://%s/%s#%s", *r.Bucket, *r.Key, *r.VersionID)
 	}
-	return fmt.Sprintf("s3://%s/%s", e.bucket, e.key)
+	return fmt.Sprintf("s3://%s/%s", *r.Bucket, *r.Key)
 }
