@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 
@@ -33,6 +35,10 @@ func (l *CloudWatchAlarmLister) List(_ context.Context, o interface{}) ([]resour
 	resources := make([]resource.Resource, 0)
 
 	params := &cloudwatch.DescribeAlarmsInput{
+		AlarmTypes: []*string{
+			ptr.String(cloudwatch.AlarmTypeCompositeAlarm),
+			ptr.String(cloudwatch.AlarmTypeMetricAlarm),
+		},
 		MaxRecords: aws.Int64(100),
 	}
 
@@ -48,9 +54,23 @@ func (l *CloudWatchAlarmLister) List(_ context.Context, o interface{}) ([]resour
 				return nil, err
 			}
 			resources = append(resources, &CloudWatchAlarm{
-				svc:       svc,
-				alarmName: metricAlarm.AlarmName,
-				tags:      tags,
+				svc:  svc,
+				Name: metricAlarm.AlarmName,
+				Type: ptr.String(cloudwatch.AlarmTypeMetricAlarm),
+				Tags: tags,
+			})
+		}
+
+		for _, compositeAlarm := range output.CompositeAlarms {
+			tags, err := GetAlarmTags(svc, compositeAlarm.AlarmArn)
+			if err != nil {
+				return nil, err
+			}
+			resources = append(resources, &CloudWatchAlarm{
+				svc:  svc,
+				Name: compositeAlarm.AlarmName,
+				Type: ptr.String(cloudwatch.AlarmTypeCompositeAlarm),
+				Tags: tags,
 			})
 		}
 
@@ -74,29 +94,24 @@ func GetAlarmTags(svc *cloudwatch.CloudWatch, arn *string) ([]*cloudwatch.Tag, e
 }
 
 type CloudWatchAlarm struct {
-	svc       *cloudwatch.CloudWatch
-	alarmName *string
-	tags      []*cloudwatch.Tag
+	svc  *cloudwatch.CloudWatch
+	Name *string
+	Type *string
+	Tags []*cloudwatch.Tag
 }
 
-func (f *CloudWatchAlarm) Remove(_ context.Context) error {
-	_, err := f.svc.DeleteAlarms(&cloudwatch.DeleteAlarmsInput{
-		AlarmNames: []*string{f.alarmName},
+func (r *CloudWatchAlarm) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteAlarms(&cloudwatch.DeleteAlarmsInput{
+		AlarmNames: []*string{r.Name},
 	})
 
 	return err
 }
 
-func (f *CloudWatchAlarm) Properties() types.Properties {
-	properties := types.NewProperties()
-	properties.Set("Name", f.alarmName)
-
-	for _, tag := range f.tags {
-		properties.SetTag(tag.Key, tag.Value)
-	}
-	return properties
+func (r *CloudWatchAlarm) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
 
-func (f *CloudWatchAlarm) String() string {
-	return *f.alarmName
+func (r *CloudWatchAlarm) String() string {
+	return *r.Name
 }
