@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go/service/kms"
 	"github.com/aws/aws-sdk-go/service/kms/kmsiface"
@@ -43,9 +44,21 @@ func (l *KMSAliasLister) List(_ context.Context, o interface{}) ([]resource.Reso
 
 	err := svc.ListAliasesPages(nil, func(page *kms.ListAliasesOutput, lastPage bool) bool {
 		for _, alias := range page.Aliases {
+			var tags []*kms.Tag
+			if alias.TargetKeyId != nil {
+				keyTags, err := svc.ListResourceTags(&kms.ListResourceTagsInput{
+					KeyId: alias.TargetKeyId,
+				})
+				if err != nil {
+					opts.Logger.WithError(err).Error("failed to list tags for key")
+				}
+				tags = keyTags.Tags
+			}
+
 			resources = append(resources, &KMSAlias{
 				svc:  svc,
 				Name: alias.AliasName,
+				Tags: tags,
 			})
 		}
 		return true
@@ -58,8 +71,11 @@ func (l *KMSAliasLister) List(_ context.Context, o interface{}) ([]resource.Reso
 }
 
 type KMSAlias struct {
-	svc  kmsiface.KMSAPI
-	Name *string
+	svc          kmsiface.KMSAPI
+	Name         *string    `description:"The name of the KMS alias"`
+	CreationDate *time.Time `description:"The creation date of the KMS alias"`
+	TargetKeyID  *string    `description:"The KMS Key ID that the alias points to"`
+	Tags         []*kms.Tag `property:"tagPrefix=key:tag"`
 }
 
 func (r *KMSAlias) Filter() error {
