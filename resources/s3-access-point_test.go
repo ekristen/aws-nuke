@@ -2,9 +2,10 @@ package resources
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestS3AccessPointProperties(t *testing.T) {
