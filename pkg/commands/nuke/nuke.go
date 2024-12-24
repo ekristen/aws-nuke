@@ -122,7 +122,7 @@ func execute(c *cli.Context) error { //nolint:funlen,gocyclo
 
 	n.SetRunSleep(c.Duration("run-sleep-delay"))
 	n.SetLogger(logger.WithField("component", "libnuke"))
-	n.RegisterVersion(fmt.Sprintf("> %s", common.AppVersion.String()))
+	n.RegisterVersion(common.AppVersion.String())
 
 	// Register our custom validate handler that validates the account and AWS nuke unique alias checks
 	n.RegisterValidateHandler(func() error {
@@ -130,7 +130,7 @@ func execute(c *cli.Context) error { //nolint:funlen,gocyclo
 	})
 
 	// Register our custom prompt handler that shows the account information
-	p := &nuke.Prompt{Parameters: params, Account: account}
+	p := &nuke.Prompt{Parameters: params, Account: account, Logger: logger}
 	n.RegisterPrompt(p.Prompt)
 
 	// Get any specific account level configuration
