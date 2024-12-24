@@ -15,6 +15,13 @@ Docker images are also available via the GitHub Container Registry.
 
 You can download pre-compiled binaries from the [releases](https://github.com/ekristen/aws-nuke/releases) page.
 
+You can use this method to retrieve the latest available version (example for the Linux-amd64 release):
+
+```console
+wget -q -O aws-nuke-latest-linux-amd64.tar.gz $(wget -q -O - 'https://api.github.com/repos/ekristen/aws-nuke/releases/latest' | jq -r '.assets[] | select(.name | match ("linux-amd64.tar.gz$")) | .browser_download_url')
+```
+
+
 ## ekristen's Homebrew Tap (MacOS/Linux)
 
 !!! info
