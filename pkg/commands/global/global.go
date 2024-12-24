@@ -7,6 +7,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
+
+	"github.com/ekristen/libnuke/pkg/log"
 )
 
 func Flags() []cli.Flag {
@@ -15,12 +17,13 @@ func Flags() []cli.Flag {
 			Name:    "log-level",
 			Usage:   "Log Level",
 			Aliases: []string{"l"},
-			EnvVars: []string{"LOGLEVEL"},
+			EnvVars: []string{"LOGLEVEL", "AWS_NUKE_LOG_LEVEL"},
 			Value:   "info",
 		},
 		&cli.BoolFlag{
-			Name:  "log-caller",
-			Usage: "log the caller (aka line number and file)",
+			Name:    "log-caller",
+			Usage:   "log the caller (aka line number and file)",
+			EnvVars: []string{"AWS_NUKE_LOG_CALLER"},
 		},
 		&cli.BoolFlag{
 			Name:  "log-disable-color",
@@ -29,6 +32,17 @@ func Flags() []cli.Flag {
 		&cli.BoolFlag{
 			Name:  "log-full-timestamp",
 			Usage: "force log output to always show full timestamp",
+		},
+		&cli.StringFlag{
+			Name:    "log-format",
+			Usage:   "log format",
+			Value:   "standard",
+			EnvVars: []string{"AWS_NUKE_LOG_FORMAT"},
+		},
+		&cli.BoolFlag{
+			Name:    "json",
+			Usage:   "output as json, shorthand for --log-format=json",
+			EnvVars: []string{"AWS_NUKE_LOG_FORMAT_JSON"},
 		},
 	}
 
@@ -48,7 +62,29 @@ func Before(c *cli.Context) error {
 		}
 	}
 
-	logrus.SetFormatter(formatter)
+	logFormatter := &log.CustomFormatter{
+		FallbackFormatter: formatter,
+	}
+
+	if c.Bool("json") {
+		_ = c.Set("log-format", "json")
+	}
+
+	switch c.String("log-format") {
+	case "json":
+		logrus.SetFormatter(&logrus.JSONFormatter{
+			DisableHTMLEscape: true,
+		})
+		// note: this is a hack to remove the _handler key from the log output
+		logrus.AddHook(&StructuredHook{})
+	case "kv":
+		logrus.SetFormatter(&logrus.TextFormatter{
+			DisableColors: true,
+			FullTimestamp: true,
+		})
+	default:
+		logrus.SetFormatter(logFormatter)
+	}
 
 	switch c.String("log-level") {
 	case "trace":
@@ -62,6 +98,23 @@ func Before(c *cli.Context) error {
 	case "error":
 		logrus.SetLevel(logrus.ErrorLevel)
 	}
+
+	return nil
+}
+
+type StructuredHook struct {
+}
+
+func (h *StructuredHook) Levels() []logrus.Level {
+	return logrus.AllLevels
+}
+
+func (h *StructuredHook) Fire(e *logrus.Entry) error {
+	if e.Data == nil {
+		return nil
+	}
+
+	delete(e.Data, "_handler")
 
 	return nil
 }

@@ -74,14 +74,16 @@ func execute(c *cli.Context) error { //nolint:funlen,gocyclo
 		}
 	}
 
+	logger := logrus.StandardLogger()
+
 	// Parse the user supplied configuration file to pass in part to configure the nuke process.
 	parsedConfig, err := config.New(libconfig.Options{
 		Path:         c.Path("config"),
 		Deprecations: registry.GetDeprecatedResourceTypeMapping(),
-		Log:          logrus.WithField("component", "config"),
+		Log:          logger.WithField("component", "config"),
 	})
 	if err != nil {
-		logrus.Errorf("Failed to parse config file %s", c.Path("config"))
+		logger.Errorf("Failed to parse config file %s", c.Path("config"))
 		return err
 	}
 
@@ -95,7 +97,7 @@ func execute(c *cli.Context) error { //nolint:funlen,gocyclo
 				err = fmt.Errorf(
 					"the custom region '%s' must be specified in the configuration 'endpoints'"+
 						" to determine its partition", defaultRegion)
-				logrus.WithError(err).Errorf("unable to resolve partition for region: %s", defaultRegion)
+				logger.WithError(err).Errorf("unable to resolve partition for region: %s", defaultRegion)
 				return err
 			}
 		}
@@ -119,8 +121,8 @@ func execute(c *cli.Context) error { //nolint:funlen,gocyclo
 	n := libnuke.New(params, filters, parsedConfig.Settings)
 
 	n.SetRunSleep(c.Duration("run-sleep-delay"))
-	n.SetLogger(logrus.WithField("component", "libnuke"))
-	n.RegisterVersion(fmt.Sprintf("> %s", common.AppVersion.String()))
+	n.SetLogger(logger.WithField("component", "libnuke"))
+	n.RegisterVersion(common.AppVersion.String())
 
 	// Register our custom validate handler that validates the account and AWS nuke unique alias checks
 	n.RegisterValidateHandler(func() error {
@@ -128,7 +130,7 @@ func execute(c *cli.Context) error { //nolint:funlen,gocyclo
 	})
 
 	// Register our custom prompt handler that shows the account information
-	p := &nuke.Prompt{Parameters: params, Account: account}
+	p := &nuke.Prompt{Parameters: params, Account: account, Logger: logger}
 	n.RegisterPrompt(p.Prompt)
 
 	// Get any specific account level configuration
@@ -161,23 +163,23 @@ func execute(c *cli.Context) error { //nolint:funlen,gocyclo
 	if slices.Contains(parsedConfig.Regions, "all") {
 		parsedConfig.Regions = account.Regions()
 
-		logrus.Info(
+		logger.Info(
 			`"all" detected in region list, only enabled regions and "global" will be used, all others ignored`)
 
 		if len(parsedConfig.Regions) > 1 {
-			logrus.Warnf(`additional regions defined along with "all", these will be ignored!`)
+			logger.Warnf(`additional regions defined along with "all", these will be ignored!`)
 		}
 
-		logrus.Infof("The following regions are enabled for the account (%d total):", len(parsedConfig.Regions))
+		logger.Infof("The following regions are enabled for the account (%d total):", len(parsedConfig.Regions))
 
 		printableRegions := make([]string, 0)
 		for i, region := range parsedConfig.Regions {
 			printableRegions = append(printableRegions, region)
 			if i%6 == 0 { // print 5 regions per line
-				logrus.Infof("> %s", strings.Join(printableRegions, ", "))
+				logger.Infof("> %s", strings.Join(printableRegions, ", "))
 				printableRegions = make([]string, 0)
 			} else if i == len(parsedConfig.Regions)-1 {
-				logrus.Infof("> %s", strings.Join(printableRegions, ", "))
+				logger.Infof("> %s", strings.Join(printableRegions, ", "))
 			}
 		}
 	}
@@ -191,11 +193,12 @@ func execute(c *cli.Context) error { //nolint:funlen,gocyclo
 		scannerActual := scanner.New(regionName, resourceTypes, &nuke.ListerOpts{
 			Region:    region,
 			AccountID: ptr.String(account.ID()),
-			Logger: logrus.WithFields(logrus.Fields{
+			Logger: logger.WithFields(logrus.Fields{
 				"component": "scanner",
 				"region":    regionName,
 			}),
 		})
+		scannerActual.SetLogger(logger)
 
 		// Step 3 - Register a mutate function that will be called to modify the lister options for each resource type
 		// see pkg/nuke/resource.go for the MutateOpts function. Its purpose is to create the proper session for the
