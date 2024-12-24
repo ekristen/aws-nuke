@@ -114,9 +114,7 @@ func (h *StructuredHook) Fire(e *logrus.Entry) error {
 		return nil
 	}
 
-	if _, ok := e.Data["_handler"]; ok {
-		delete(e.Data, "_handler")
-	}
+	delete(e.Data, "_handler")
 
 	return nil
 }
