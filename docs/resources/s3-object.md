@@ -11,7 +11,14 @@ generated: true
 S3Object
 ```
 
+## Properties
 
+
+- `Bucket`: No Description
+- `CreationDate`: No Description
+- `IsLatest`: No Description
+- `Key`: No Description
+- `VersionID`: No Description
 
 !!! note - Using Properties
     Properties are what [Filters](../config-filtering.md) are written against in your configuration. You use the property

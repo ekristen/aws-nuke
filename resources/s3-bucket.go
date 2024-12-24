@@ -9,7 +9,6 @@ import (
 	"github.com/gotidy/ptr"
 	"github.com/sirupsen/logrus"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go"
@@ -48,7 +47,7 @@ func (l *S3BucketLister) List(ctx context.Context, o interface{}) ([]resource.Re
 	opts := o.(*nuke.ListerOpts)
 	svc := s3.NewFromConfig(*opts.Config)
 
-	buckets, err := DescribeS3Buckets(ctx, svc)
+	buckets, err := DescribeS3Buckets(ctx, svc, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -57,13 +56,13 @@ func (l *S3BucketLister) List(ctx context.Context, o interface{}) ([]resource.Re
 	for _, bucket := range buckets {
 		newBucket := &S3Bucket{
 			svc:          svc,
-			name:         aws.ToString(bucket.Name),
-			creationDate: aws.ToTime(bucket.CreationDate),
-			tags:         make([]s3types.Tag, 0),
+			Name:         bucket.Name,
+			CreationDate: bucket.CreationDate,
+			Tags:         make([]s3types.Tag, 0),
 		}
 
 		lockCfg, err := svc.GetObjectLockConfiguration(ctx, &s3.GetObjectLockConfigurationInput{
-			Bucket: &newBucket.name,
+			Bucket: newBucket.Name,
 		})
 		if err != nil {
 			// check if aws error is NoSuchObjectLockConfiguration
@@ -92,7 +91,7 @@ func (l *S3BucketLister) List(ctx context.Context, o interface{}) ([]resource.Re
 			continue
 		}
 
-		newBucket.tags = tags.TagSet
+		newBucket.Tags = tags.TagSet
 		resources = append(resources, newBucket)
 	}
 
@@ -105,32 +104,27 @@ type DescribeS3BucketsAPIClient interface {
 	GetBucketLocation(context.Context, *s3.GetBucketLocationInput, ...func(*s3.Options)) (*s3.GetBucketLocationOutput, error)
 }
 
-func DescribeS3Buckets(ctx context.Context, svc DescribeS3BucketsAPIClient) ([]s3types.Bucket, error) {
-	resp, err := svc.ListBuckets(ctx, nil)
-	if err != nil {
-		return nil, err
+func DescribeS3Buckets(ctx context.Context, svc DescribeS3BucketsAPIClient, opts *nuke.ListerOpts) ([]s3types.Bucket, error) {
+	buckets := make([]s3types.Bucket, 0)
+
+	params := &s3.ListBucketsInput{
+		BucketRegion: ptr.String(opts.Region.Name),
+		MaxBuckets:   ptr.Int32(100),
 	}
 
-	buckets := make([]s3types.Bucket, 0)
-	for _, out := range resp.Buckets {
-		bucketLocationResponse, err := svc.GetBucketLocation(ctx, &s3.GetBucketLocationInput{Bucket: out.Name})
+	for {
+		resp, err := svc.ListBuckets(ctx, params)
 		if err != nil {
-			continue
+			return nil, err
 		}
 
-		location := string(bucketLocationResponse.LocationConstraint)
-		if location == "" {
-			location = "us-east-1"
+		buckets = append(buckets, resp.Buckets...)
+
+		if resp.ContinuationToken == nil {
+			break
 		}
 
-		region := svc.Options().Region
-		if region == "" {
-			region = "us-east-1"
-		}
-
-		if location == region {
-			buckets = append(buckets, out)
-		}
+		params.ContinuationToken = resp.ContinuationToken
 	}
 
 	return buckets, nil
@@ -139,22 +133,22 @@ func DescribeS3Buckets(ctx context.Context, svc DescribeS3BucketsAPIClient) ([]s
 type S3Bucket struct {
 	svc          *s3.Client
 	settings     *libsettings.Setting
-	name         string
-	creationDate time.Time
-	tags         []s3types.Tag
+	Name         *string
+	CreationDate *time.Time
+	Tags         []s3types.Tag
 	ObjectLock   s3types.ObjectLockEnabled
 }
 
 func (r *S3Bucket) Remove(ctx context.Context) error {
 	_, err := r.svc.DeleteBucketPolicy(ctx, &s3.DeleteBucketPolicyInput{
-		Bucket: &r.name,
+		Bucket: r.Name,
 	})
 	if err != nil {
 		return err
 	}
 
 	_, err = r.svc.PutBucketLogging(ctx, &s3.PutBucketLoggingInput{
-		Bucket:              &r.name,
+		Bucket:              r.Name,
 		BucketLoggingStatus: &s3types.BucketLoggingStatus{},
 	})
 	if err != nil {
@@ -177,7 +171,7 @@ func (r *S3Bucket) Remove(ctx context.Context) error {
 	}
 
 	_, err = r.svc.DeleteBucket(ctx, &s3.DeleteBucketInput{
-		Bucket: &r.name,
+		Bucket: r.Name,
 	})
 
 	return err
@@ -188,12 +182,12 @@ func (r *S3Bucket) RemoveAllLegalHolds(ctx context.Context) error {
 		return nil
 	}
 
-	if r.ObjectLock == "" || r.ObjectLock != s3types.ObjectLockEnabledEnabled {
+	if r.ObjectLock != s3types.ObjectLockEnabledEnabled {
 		return nil
 	}
 
 	params := &s3.ListObjectsV2Input{
-		Bucket: &r.name,
+		Bucket: r.Name,
 	}
 
 	for {
@@ -206,7 +200,7 @@ func (r *S3Bucket) RemoveAllLegalHolds(ctx context.Context) error {
 
 		for _, obj := range res.Contents {
 			_, err := r.svc.PutObjectLegalHold(ctx, &s3.PutObjectLegalHoldInput{
-				Bucket:    &r.name,
+				Bucket:    r.Name,
 				Key:       obj.Key,
 				LegalHold: &s3types.ObjectLockLegalHold{Status: s3types.ObjectLockLegalHoldStatusOff},
 			})
@@ -225,7 +219,7 @@ func (r *S3Bucket) RemoveAllLegalHolds(ctx context.Context) error {
 
 func (r *S3Bucket) RemoveAllVersions(ctx context.Context) error {
 	params := &s3.ListObjectVersionsInput{
-		Bucket: &r.name,
+		Bucket: r.Name,
 	}
 
 	var setBypass bool
@@ -242,7 +236,7 @@ func (r *S3Bucket) RemoveAllVersions(ctx context.Context) error {
 
 func (r *S3Bucket) RemoveAllObjects(ctx context.Context) error {
 	params := &s3.ListObjectsV2Input{
-		Bucket: &r.name,
+		Bucket: r.Name,
 	}
 
 	var setBypass bool
@@ -262,176 +256,9 @@ func (r *S3Bucket) Settings(settings *libsettings.Setting) {
 }
 
 func (r *S3Bucket) Properties() types.Properties {
-	properties := types.NewProperties().
-		Set("Name", r.name).
-		Set("CreationDate", r.creationDate.Format(time.RFC3339)).
-		Set("ObjectLock", r.ObjectLock)
-
-	for _, tag := range r.tags {
-		properties.SetTag(tag.Key, tag.Value)
-	}
-
-	return properties
+	return types.NewPropertiesFromStruct(r)
 }
 
 func (r *S3Bucket) String() string {
-	return fmt.Sprintf("s3://%s", r.name)
-}
-
-func bypassGovernanceRetention(input *s3.DeleteObjectsInput) {
-	input.BypassGovernanceRetention = ptr.Bool(true)
-}
-
-type s3DeleteVersionListIterator struct {
-	Bucket                    *string
-	Paginator                 *s3.ListObjectVersionsPaginator
-	objects                   []s3types.ObjectVersion
-	lastNotify                time.Time
-	BypassGovernanceRetention *bool
-	err                       error
-}
-
-func newS3DeleteVersionListIterator(
-	svc *s3.Client,
-	input *s3.ListObjectVersionsInput,
-	bypass bool,
-	opts ...func(*s3DeleteVersionListIterator)) awsmod.BatchDeleteIterator {
-	iter := &s3DeleteVersionListIterator{
-		Bucket:                    input.Bucket,
-		Paginator:                 s3.NewListObjectVersionsPaginator(svc, input),
-		BypassGovernanceRetention: ptr.Bool(bypass),
-	}
-
-	for _, opt := range opts {
-		opt(iter)
-	}
-
-	return iter
-}
-
-// Next will use the S3API client to iterate through a list of objects.
-func (iter *s3DeleteVersionListIterator) Next() bool {
-	if len(iter.objects) > 0 {
-		iter.objects = iter.objects[1:]
-		if len(iter.objects) > 0 {
-			return true
-		}
-	}
-
-	if !iter.Paginator.HasMorePages() {
-		return false
-	}
-
-	page, err := iter.Paginator.NextPage(context.TODO())
-	if err != nil {
-		iter.err = err
-		return false
-	}
-
-	iter.objects = page.Versions
-	for _, entry := range page.DeleteMarkers {
-		iter.objects = append(iter.objects, s3types.ObjectVersion{
-			Key:       entry.Key,
-			VersionId: entry.VersionId,
-		})
-	}
-
-	if len(iter.objects) > 500 && (iter.lastNotify.IsZero() || time.Since(iter.lastNotify) > 120*time.Second) {
-		logrus.Infof(
-			"S3Bucket: %s - empty bucket operation in progress, this could take a while, please be patient",
-			*iter.Bucket)
-		iter.lastNotify = time.Now().UTC()
-	}
-
-	return len(iter.objects) > 0
-}
-
-// Err will return the last known error from Next.
-func (iter *s3DeleteVersionListIterator) Err() error {
-	return iter.err
-}
-
-// DeleteObject will return the current object to be deleted.
-func (iter *s3DeleteVersionListIterator) DeleteObject() awsmod.BatchDeleteObject {
-	return awsmod.BatchDeleteObject{
-		Object: &s3.DeleteObjectInput{
-			Bucket:                    iter.Bucket,
-			Key:                       iter.objects[0].Key,
-			VersionId:                 iter.objects[0].VersionId,
-			BypassGovernanceRetention: iter.BypassGovernanceRetention,
-		},
-	}
-}
-
-type s3ObjectDeleteListIterator struct {
-	Bucket                    *string
-	Paginator                 *s3.ListObjectsV2Paginator
-	objects                   []s3types.Object
-	lastNotify                time.Time
-	BypassGovernanceRetention bool
-	err                       error
-}
-
-func newS3ObjectDeleteListIterator(
-	svc *s3.Client,
-	input *s3.ListObjectsV2Input,
-	bypass bool,
-	opts ...func(*s3ObjectDeleteListIterator)) awsmod.BatchDeleteIterator {
-	iter := &s3ObjectDeleteListIterator{
-		Bucket:                    input.Bucket,
-		Paginator:                 s3.NewListObjectsV2Paginator(svc, input),
-		BypassGovernanceRetention: bypass,
-	}
-
-	for _, opt := range opts {
-		opt(iter)
-	}
-	return iter
-}
-
-// Next will use the S3API client to iterate through a list of objects.
-func (iter *s3ObjectDeleteListIterator) Next() bool {
-	if len(iter.objects) > 0 {
-		iter.objects = iter.objects[1:]
-		if len(iter.objects) > 0 {
-			return true
-		}
-	}
-
-	if !iter.Paginator.HasMorePages() {
-		return false
-	}
-
-	page, err := iter.Paginator.NextPage(context.TODO())
-	if err != nil {
-		iter.err = err
-		return false
-	}
-
-	iter.objects = page.Contents
-
-	if len(iter.objects) > 500 && (iter.lastNotify.IsZero() || time.Since(iter.lastNotify) > 120*time.Second) {
-		logrus.Infof(
-			"S3Bucket: %s - empty bucket operation in progress, this could take a while, please be patient",
-			*iter.Bucket)
-		iter.lastNotify = time.Now().UTC()
-	}
-
-	return len(iter.objects) > 0
-}
-
-// Err will return the last known error from Next.
-func (iter *s3ObjectDeleteListIterator) Err() error {
-	return iter.err
-}
-
-// DeleteObject will return the current object to be deleted.
-func (iter *s3ObjectDeleteListIterator) DeleteObject() awsmod.BatchDeleteObject {
-	return awsmod.BatchDeleteObject{
-		Object: &s3.DeleteObjectInput{
-			Bucket:                    iter.Bucket,
-			Key:                       iter.objects[0].Key,
-			BypassGovernanceRetention: ptr.Bool(iter.BypassGovernanceRetention),
-		},
-	}
+	return fmt.Sprintf("s3://%s", *r.Name)
 }

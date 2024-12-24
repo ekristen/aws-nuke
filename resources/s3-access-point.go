@@ -5,7 +5,6 @@ import (
 
 	"github.com/gotidy/ptr"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3control"
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -46,15 +45,20 @@ func (l *S3AccessPointLister) List(_ context.Context, o interface{}) ([]resource
 
 		for _, accessPoint := range resp.AccessPointList {
 			resources = append(resources, &S3AccessPoint{
-				svc:         svc,
-				accountID:   opts.AccountID,
-				accessPoint: accessPoint,
+				svc:           svc,
+				accountID:     opts.AccountID,
+				Name:          accessPoint.Name,
+				ARN:           accessPoint.AccessPointArn,
+				Alias:         accessPoint.Alias,
+				Bucket:        accessPoint.Bucket,
+				NetworkOrigin: accessPoint.NetworkOrigin,
 			})
 		}
 
 		if resp.NextToken == nil {
 			break
 		}
+
 		params.NextToken = resp.NextToken
 	}
 
@@ -62,30 +66,28 @@ func (l *S3AccessPointLister) List(_ context.Context, o interface{}) ([]resource
 }
 
 type S3AccessPoint struct {
-	svc         *s3control.S3Control
-	accountID   *string
-	accessPoint *s3control.AccessPoint
+	svc           *s3control.S3Control
+	accountID     *string
+	Name          *string
+	ARN           *string
+	Alias         *string
+	Bucket        *string
+	NetworkOrigin *string
 }
 
-func (e *S3AccessPoint) Remove(_ context.Context) error {
-	_, err := e.svc.DeleteAccessPoint(&s3control.DeleteAccessPointInput{
-		AccountId: e.accountID,
-		Name:      aws.String(*e.accessPoint.Name),
+func (r *S3AccessPoint) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteAccessPoint(&s3control.DeleteAccessPointInput{
+		AccountId: r.accountID,
+		Name:      r.Name,
 	})
 	return err
 }
 
-func (e *S3AccessPoint) Properties() types.Properties {
-	properties := types.NewProperties()
-	properties.Set("AccessPointArn", e.accessPoint.AccessPointArn).
-		Set("Alias", e.accessPoint.Alias).
-		Set("Bucket", e.accessPoint.Bucket).
-		Set("Name", e.accessPoint.Name).
-		Set("NetworkOrigin", e.accessPoint.NetworkOrigin)
-
-	return properties
+func (r *S3AccessPoint) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r).
+		Set("AccessPointArn", r.ARN) // TODO(ek): this is an alias, should be deprecated for ARN
 }
 
-func (e *S3AccessPoint) String() string {
-	return ptr.ToString(e.accessPoint.AccessPointArn)
+func (r *S3AccessPoint) String() string {
+	return ptr.ToString(r.ARN) // TODO(ek): this should be the Name not the ARN
 }

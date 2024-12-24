@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 
@@ -29,14 +30,14 @@ func (readSeekCloser) Close() error { return nil }
 
 type TestS3BucketSuite struct {
 	suite.Suite
-	bucket string
+	bucket *string
 	svc    *s3.Client
 }
 
 func (suite *TestS3BucketSuite) SetupSuite() {
 	var err error
 
-	suite.bucket = fmt.Sprintf("aws-nuke-testing-bucket-%d", time.Now().UnixNano())
+	suite.bucket = ptr.String(fmt.Sprintf("aws-nuke-testing-bucket-%d", time.Now().UnixNano()))
 
 	ctx := context.TODO()
 
@@ -50,7 +51,7 @@ func (suite *TestS3BucketSuite) SetupSuite() {
 
 	// Create the bucket
 	_, err = suite.svc.CreateBucket(ctx, &s3.CreateBucketInput{
-		Bucket: aws.String(suite.bucket),
+		Bucket: suite.bucket,
 		CreateBucketConfiguration: &s3types.CreateBucketConfiguration{
 			LocationConstraint: s3types.BucketLocationConstraint("us-west-2"),
 		},
@@ -61,7 +62,7 @@ func (suite *TestS3BucketSuite) SetupSuite() {
 
 	// enable versioning
 	_, err = suite.svc.PutBucketVersioning(ctx, &s3.PutBucketVersioningInput{
-		Bucket: aws.String(suite.bucket),
+		Bucket: suite.bucket,
 		VersioningConfiguration: &s3types.VersioningConfiguration{
 			Status: s3types.BucketVersioningStatusEnabled,
 		},
@@ -72,7 +73,7 @@ func (suite *TestS3BucketSuite) SetupSuite() {
 
 	// Set the object lock configuration to governance mode
 	_, err = suite.svc.PutObjectLockConfiguration(ctx, &s3.PutObjectLockConfigurationInput{
-		Bucket: aws.String(suite.bucket),
+		Bucket: suite.bucket,
 		ObjectLockConfiguration: &s3types.ObjectLockConfiguration{
 			ObjectLockEnabled: s3types.ObjectLockEnabledEnabled,
 			Rule: &s3types.ObjectLockRule{
@@ -89,7 +90,7 @@ func (suite *TestS3BucketSuite) SetupSuite() {
 
 	// Create an object in the bucket
 	_, err = suite.svc.PutObject(ctx, &s3.PutObjectInput{
-		Bucket:            aws.String(suite.bucket),
+		Bucket:            suite.bucket,
 		Key:               aws.String("test-object"),
 		Body:              readSeekCloser{strings.NewReader("test content")},
 		ChecksumAlgorithm: s3types.ChecksumAlgorithmCrc32,
@@ -101,7 +102,7 @@ func (suite *TestS3BucketSuite) SetupSuite() {
 
 func (suite *TestS3BucketSuite) TearDownSuite() {
 	iterator := newS3DeleteVersionListIterator(suite.svc, &s3.ListObjectVersionsInput{
-		Bucket: &suite.bucket,
+		Bucket: suite.bucket,
 	}, true)
 	if err := awsmod.NewBatchDeleteWithClient(suite.svc).Delete(context.TODO(), iterator, bypassGovernanceRetention); err != nil {
 		if !strings.Contains(err.Error(), "NoSuchBucket") {
@@ -110,7 +111,7 @@ func (suite *TestS3BucketSuite) TearDownSuite() {
 	}
 
 	iterator2 := newS3ObjectDeleteListIterator(suite.svc, &s3.ListObjectsV2Input{
-		Bucket: &suite.bucket,
+		Bucket: suite.bucket,
 	}, true)
 	if err := awsmod.NewBatchDeleteWithClient(suite.svc).Delete(context.TODO(), iterator2, bypassGovernanceRetention); err != nil {
 		if !strings.Contains(err.Error(), "NoSuchBucket") {
@@ -119,7 +120,7 @@ func (suite *TestS3BucketSuite) TearDownSuite() {
 	}
 
 	_, err := suite.svc.DeleteBucket(context.TODO(), &s3.DeleteBucketInput{
-		Bucket: aws.String(suite.bucket),
+		Bucket: suite.bucket,
 	})
 	if err != nil {
 		if !strings.Contains(err.Error(), "NoSuchBucket") {
@@ -135,7 +136,7 @@ type TestS3BucketObjectLockSuite struct {
 func (suite *TestS3BucketObjectLockSuite) TestS3BucketObjectLock() {
 	// Verify the object lock configuration
 	result, err := suite.svc.GetObjectLockConfiguration(context.TODO(), &s3.GetObjectLockConfigurationInput{
-		Bucket: aws.String(suite.bucket),
+		Bucket: suite.bucket,
 	})
 	if err != nil {
 		suite.T().Fatalf("failed to get object lock configuration, %v", err)
@@ -150,7 +151,7 @@ func (suite *TestS3BucketObjectLockSuite) TestS3BucketRemove() {
 	// Create the S3Bucket object
 	bucket := &S3Bucket{
 		svc:      suite.svc,
-		name:     suite.bucket,
+		Name:     suite.bucket,
 		settings: &libsettings.Setting{},
 	}
 
@@ -165,12 +166,12 @@ type TestS3BucketBypassGovernanceSuite struct {
 func (suite *TestS3BucketBypassGovernanceSuite) TestS3BucketRemoveWithBypass() {
 	// Create the S3Bucket object
 	bucket := &S3Bucket{
-		svc:        suite.svc,
-		name:       suite.bucket,
-		ObjectLock: s3types.ObjectLockEnabledEnabled,
+		svc: suite.svc,
 		settings: &libsettings.Setting{
 			"BypassGovernanceRetention": true,
 		},
+		Name:       suite.bucket,
+		ObjectLock: s3types.ObjectLockEnabledEnabled,
 	}
 
 	err := bucket.Remove(context.TODO())
