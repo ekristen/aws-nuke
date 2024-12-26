@@ -10,7 +10,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.71.1
 	github.com/aws/aws-sdk-go-v2/service/sts v1.33.3
 	github.com/aws/smithy-go v1.22.1
-	github.com/ekristen/libnuke v0.22.1-0.20241224030010-41dfb426634b
+	github.com/ekristen/libnuke v0.24.0
 	github.com/fatih/color v1.18.0
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.6.0
