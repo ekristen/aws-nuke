@@ -79,6 +79,7 @@ nav:
     - Global Filters: features/global-filters.md
     - Filter Groups: features/filter-groups.md
     - Enabled Regions: features/enabled-regions.md
+    - Name Expansion: features/name-expansion.md
     - Signed Binaries: features/signed-binaries.md
   - CLI:
     - Usage: cli-usage.md

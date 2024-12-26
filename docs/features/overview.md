@@ -6,6 +6,8 @@ Some of the new features include:
 - [Run Against All Enabled Regions](enabled-regions.md)
 - [Bypass Alias Check - Allow the skip of an alias on an account](bypass-alias-check.md)
 - [Signed Binaries](signed-binaries.md)
+- [Filter Groups (Experimental)](filter-groups.md)
+- [Name Expansion](name-expansion.md)
 
 Additionally, there are a few new sub commands to the tool to help with setup and debugging purposes:
 

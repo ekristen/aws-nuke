@@ -18,6 +18,7 @@ This is not a comprehensive list, but here are some of the highlights:
 * New Feature: [Run Against All Enabled Regions](features/enabled-regions.md)
 * New Feature: [Bypass Alias Check - Allow the skip of an alias on an account](features/bypass-alias-check.md)
 * New Feature: [Filter Groups (Experimental)](features/filter-groups.md)
+* New Feature: [Name Expansion](features/name-expansion.md)
 * Breaking Change: `root` command no longer triggers the run, must use subcommand `run` (alias: `nuke`)
 * Completely rewrote the core of the tool as a dedicated library [libnuke](https://github.com/ekristen/libnuke)
   * This library has over 95% test coverage which makes iteration and new features easier to implement.
