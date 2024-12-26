@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -85,9 +86,24 @@ func Test_Mock_CognitoUserPool_Remove_DeletionProtection(t *testing.T) {
 
 	mockSvc := mock_cognitoidentityprovideriface.NewMockCognitoIdentityProviderAPI(ctrl)
 
+	mockSvc.EXPECT().DescribeUserPool(&cognitoidentityprovider.DescribeUserPoolInput{
+		UserPoolId: aws.String("test-pool-id"),
+	}).Return(&cognitoidentityprovider.DescribeUserPoolOutput{
+		UserPool: &cognitoidentityprovider.UserPoolType{
+			UserAttributeUpdateSettings: &cognitoidentityprovider.UserAttributeUpdateSettingsType{
+				AttributesRequireVerificationBeforeUpdate: []*string{ptr.String("email")},
+			},
+			AutoVerifiedAttributes: []*string{ptr.String("email")},
+		},
+	}, nil)
+
 	mockSvc.EXPECT().UpdateUserPool(&cognitoidentityprovider.UpdateUserPoolInput{
 		UserPoolId:         aws.String("test-pool-id"),
 		DeletionProtection: aws.String("INACTIVE"),
+		UserAttributeUpdateSettings: &cognitoidentityprovider.UserAttributeUpdateSettingsType{
+			AttributesRequireVerificationBeforeUpdate: []*string{ptr.String("email")},
+		},
+		AutoVerifiedAttributes: []*string{ptr.String("email")},
 	}).Return(&cognitoidentityprovider.UpdateUserPoolOutput{}, nil)
 
 	mockSvc.EXPECT().DeleteUserPool(&cognitoidentityprovider.DeleteUserPoolInput{

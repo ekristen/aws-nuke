@@ -99,12 +99,21 @@ type CognitoUserPool struct {
 
 func (r *CognitoUserPool) Remove(_ context.Context) error {
 	if r.settings.GetBool("DisableDeletionProtection") {
-		_, err := r.svc.UpdateUserPool(&cognitoidentityprovider.UpdateUserPoolInput{
-			UserPoolId:         r.ID,
-			DeletionProtection: ptr.String("INACTIVE"),
+		userPool, err := r.svc.DescribeUserPool(&cognitoidentityprovider.DescribeUserPoolInput{
+			UserPoolId: r.ID,
 		})
 		if err != nil {
 			return err
+		}
+
+		_, updateErr := r.svc.UpdateUserPool(&cognitoidentityprovider.UpdateUserPoolInput{
+			UserPoolId:                  r.ID,
+			DeletionProtection:          ptr.String("INACTIVE"),
+			UserAttributeUpdateSettings: userPool.UserPool.UserAttributeUpdateSettings,
+			AutoVerifiedAttributes:      userPool.UserPool.AutoVerifiedAttributes,
+		})
+		if updateErr != nil {
+			return updateErr
 		}
 	}
 
