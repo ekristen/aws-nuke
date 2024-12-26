@@ -1,7 +1,6 @@
 package list
 
 import (
-	"sort"
 	"strings"
 
 	"github.com/fatih/color"
@@ -15,9 +14,12 @@ import (
 )
 
 func execute(c *cli.Context) error {
-	ls := registry.GetNames()
-
-	sort.Strings(ls)
+	var ls []string
+	if c.Args().Len() > 0 {
+		ls = registry.ExpandNames(c.Args().Slice())
+	} else {
+		ls = registry.GetNames()
+	}
 
 	for _, name := range ls {
 		if strings.HasPrefix(name, "AWS::") {
