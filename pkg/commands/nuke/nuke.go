@@ -141,17 +141,17 @@ func execute(c *cli.Context) error { //nolint:funlen,gocyclo
 	resourceTypes := types.ResolveResourceTypes(
 		registry.GetNames(),
 		[]types.Collection{
-			n.Parameters.Includes,
+			registry.ExpandNames(n.Parameters.Includes),
 			parsedConfig.ResourceTypes.GetIncludes(),
 			accountConfig.ResourceTypes.GetIncludes(),
 		},
 		[]types.Collection{
-			n.Parameters.Excludes,
+			registry.ExpandNames(n.Parameters.Excludes),
 			parsedConfig.ResourceTypes.Excludes,
 			accountConfig.ResourceTypes.Excludes,
 		},
 		[]types.Collection{
-			n.Parameters.Alternatives,
+			registry.ExpandNames(n.Parameters.Alternatives),
 			parsedConfig.ResourceTypes.GetAlternatives(),
 			accountConfig.ResourceTypes.GetAlternatives(),
 		},
