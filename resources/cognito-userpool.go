@@ -110,6 +110,7 @@ func (r *CognitoUserPool) Remove(_ context.Context) error {
 			UserPoolId:                  r.ID,
 			DeletionProtection:          ptr.String("INACTIVE"),
 			UserAttributeUpdateSettings: userPool.UserPool.UserAttributeUpdateSettings,
+			AutoVerifiedAttributes:      userPool.UserPool.AutoVerifiedAttributes,
 		})
 		if updateErr != nil {
 			return updateErr
