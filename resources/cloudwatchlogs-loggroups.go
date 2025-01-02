@@ -87,6 +87,11 @@ func (l *CloudWatchLogsLogGroupLister) List(_ context.Context, o interface{}) ([
 				lastEvent = time.Unix(*logGroup.CreationTime/1000, 0)
 			}
 
+			// Ensure RetentionInDays is handled
+			if logGroup.RetentionInDays == nil {
+				logGroup.RetentionInDays = aws.Int64(0) // Default to 0 if not set
+			}
+
 			resources = append(resources, &CloudWatchLogsLogGroup{
 				svc:       svc,
 				logGroup:  logGroup,
@@ -130,8 +135,13 @@ func (f *CloudWatchLogsLogGroup) Properties() types.Properties {
 		Set("CreatedTime", f.logGroup.CreationTime).
 		Set("LastEvent", f.lastEvent)
 
+	if f.logGroup.RetentionInDays != nil {
+		properties.Set("RetentionInDays", *f.logGroup.RetentionInDays)
+	}
+
 	for k, v := range f.tags {
 		properties.SetTag(&k, v)
 	}
 	return properties
 }
+
