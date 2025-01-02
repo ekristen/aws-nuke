@@ -3,7 +3,7 @@
 Preferred installation order is the following:
 
 1. [GitHub Release](#github-releases-preferred)
-2. [ekristen's homebrew tap](#ekristens-homebrew-tap-macoslinux)
+2. [Homebrew Tap](#ekristens-homebrew-tap-macoslinux)
 3. [Homebrew Core](#homebrew-core-macoslinux)
 
 Docker images are also available via the GitHub Container Registry.
@@ -13,18 +13,24 @@ Docker images are also available via the GitHub Container Registry.
 !!! success - "Recommended"
     This supports all operating systems and most architectures.
 
-You can download pre-compiled binaries from the [releases](https://github.com/ekristen/aws-nuke/releases) page.
+You can download pre-compiled binaries from the [releases](https://github.com/ekristen/aws-nuke/releases) page, or you can use my tool
+[distillery](https://github.com/ekristen/distillery) to download and install the latest version.
 
-## ekristen's Homebrew Tap (MacOS/Linux)
+```console
+dist install ekristen/aws-nuke
+```
+
+## Homebrew Tap (macOS)
 
 !!! info
-    I control this tap, and it sources the binaries directly from the GitHub releases. However, it only supports MacOS.
+    I control this tap, and it sources the binaries directly from the GitHub releases. However, it only supports MacOS
+    and it tends to lag a bit behind.
 
 ```console
 brew install ekristen/tap/aws-nuke
 ```
 
-## Homebrew Core (MacOS/Linux)
+## Homebrew Core (macOS/Linux)
 
 !!! note
     I do not control the Homebrew Core formula, so it may not be up to date. Additionally, it is not compiled with
@@ -50,3 +56,18 @@ To compile **aws-nuke** from source you need a working [Golang](https://golang.o
 goreleaser build --clean --snapshot --single-target
 ```
 
+## Verifying Binaries
+
+All the binaries are signed with [cosign](https://github.com/sigstore/cosign) and are signed with keyless signatures.
+You can verify the build using the public transparency log and the cosign binary.
+
+**Note:** swap out `VERSION` with `vX.Y.Z`.
+
+```console
+cosign verify-blob \
+  --signature https://github.com/ekristen/aws-nuke/releases/download/VERSION/checksums.txt.sig \
+  --certificate https://github.com/ekristen/aws-nuke/releases/download/VERSION/checksums.txt.pem \
+  --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+  --certificate-identity "https://github.com/ekristen/aws-nuke/.github/workflows/goreleaser.yml@refs/tags/VERSION" \
+  https://github.com/ekristen/aws-nuke/releases/download/VERSION/checksums.txt
+```
