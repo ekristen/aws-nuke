@@ -2,9 +2,9 @@ package resources
 
 import (
 	"context"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/neptune"
+	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
@@ -66,14 +66,18 @@ type NeptuneSnapshot struct {
 	ID  *string
 }
 
-func (f *NeptuneSnapshot) Remove(_ context.Context) error {
-	_, err := f.svc.DeleteDBClusterSnapshot(&neptune.DeleteDBClusterSnapshotInput{
-		DBClusterSnapshotIdentifier: f.ID,
+func (r *NeptuneSnapshot) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteDBClusterSnapshot(&neptune.DeleteDBClusterSnapshotInput{
+		DBClusterSnapshotIdentifier: r.ID,
 	})
 
 	return err
 }
 
-func (f *NeptuneSnapshot) String() string {
-	return *f.ID
+func (r *NeptuneSnapshot) String() string {
+	return *r.ID
+}
+
+func (r *NeptuneSnapshot) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
