@@ -38,6 +38,12 @@ func (l *NeptuneSnapshotLister) List(_ context.Context, o interface{}) ([]resour
 
 	params := &neptune.DescribeDBClusterSnapshotsInput{
 		MaxRecords: aws.Int64(100),
+		Filters: []*neptune.Filter{
+			{
+				Name:   aws.String("engine"),
+				Values: []*string{aws.String("neptune")},
+			},
+		},
 	}
 
 	for {
