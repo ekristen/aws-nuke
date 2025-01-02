@@ -50,7 +50,7 @@ func (l *KMSAliasLister) List(_ context.Context, o interface{}) ([]resource.Reso
 					KeyId: alias.TargetKeyId,
 				})
 				if err != nil {
-					opts.Logger.WithError(err).Error("failed to list tags for key")
+					opts.Logger.WithError(err).Debug("failed to list tags for key for the alias")
 				}
 				tags = keyTags.Tags
 			}

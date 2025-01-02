@@ -5,9 +5,12 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/resourceexplorer2"
-	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
+
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
 const ResourceExplorer2ViewResource = "ResourceExplorer2View"
@@ -22,11 +25,6 @@ func init() {
 }
 
 type ResourceExplorer2ViewLister struct{}
-
-type ResourceExplorer2View struct {
-	svc     *resourceexplorer2.ResourceExplorer2
-	viewArn *string
-}
 
 func (l *ResourceExplorer2ViewLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
@@ -43,8 +41,8 @@ func (l *ResourceExplorer2ViewLister) List(_ context.Context, o interface{}) ([]
 
 		for _, view := range output.Views {
 			resources = append(resources, &ResourceExplorer2View{
-				svc:     svc,
-				viewArn: view,
+				svc: svc,
+				ARN: view,
 			})
 		}
 
@@ -58,14 +56,23 @@ func (l *ResourceExplorer2ViewLister) List(_ context.Context, o interface{}) ([]
 	return resources, nil
 }
 
-func (f *ResourceExplorer2View) Remove(_ context.Context) error {
-	_, err := f.svc.DeleteView(&resourceexplorer2.DeleteViewInput{
-		ViewArn: f.viewArn,
+type ResourceExplorer2View struct {
+	svc *resourceexplorer2.ResourceExplorer2
+	ARN *string `description:"The ARN of the Resource Explorer View"`
+}
+
+func (r *ResourceExplorer2View) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteView(&resourceexplorer2.DeleteViewInput{
+		ViewArn: r.ARN,
 	})
 
 	return err
 }
 
-func (f *ResourceExplorer2View) String() string {
-	return *f.viewArn
+func (r *ResourceExplorer2View) String() string {
+	return *r.ARN
+}
+
+func (r *ResourceExplorer2View) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
