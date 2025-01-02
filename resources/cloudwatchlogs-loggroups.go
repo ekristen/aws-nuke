@@ -87,14 +87,14 @@ func (l *CloudWatchLogsLogGroupLister) List(_ context.Context, o interface{}) ([
 				lastEvent = time.Unix(*logGroup.CreationTime/1000, 0)
 			}
 
+
 			resources = append(resources, &CloudWatchLogsLogGroup{
 				svc:       svc,
 				logGroup:  logGroup,
 				lastEvent: lastEvent.Format(time.RFC3339),
 				tags:      tagResp.Tags,
 			})
-		}
-
+			}
 		if output.NextToken == nil {
 			break
 		}
@@ -128,10 +128,13 @@ func (f *CloudWatchLogsLogGroup) Properties() types.Properties {
 	properties := types.NewProperties().
 		Set("logGroupName", f.logGroup.LogGroupName).
 		Set("CreatedTime", f.logGroup.CreationTime).
-		Set("LastEvent", f.lastEvent)
+		Set("LastEvent", f.lastEvent).
+		Set("RetentionInDays", f.logGroup.RetentionInDays)
+
 
 	for k, v := range f.tags {
 		properties.SetTag(&k, v)
 	}
 	return properties
 }
+
