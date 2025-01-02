@@ -88,7 +88,7 @@ func (l *KMSKeyLister) List(_ context.Context, o interface{}) ([]resource.Resour
 					if errors.As(err, &awsError) {
 						if awsError.Code() == "AccessDeniedException" {
 							inaccessibleKeys = true
-							logrus.WithError(err).Debug("unable to list tags")
+							logrus.WithError(err).Debug("unable to list tags - inaccessible key")
 							continue
 						} else {
 							logrus.WithError(err).Error("unable to list tags")
