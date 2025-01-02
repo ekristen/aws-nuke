@@ -134,10 +134,8 @@ func (f *CloudWatchLogsLogGroup) Properties() types.Properties {
 		Set("logGroupName", f.logGroup.LogGroupName).
 		Set("CreatedTime", f.logGroup.CreationTime).
 		Set("LastEvent", f.lastEvent)
+		Set("RetentionInDays", f.logGroup.RetentionInDays)
 
-	if f.logGroup.RetentionInDays != nil {
-		properties.Set("RetentionInDays", *f.logGroup.RetentionInDays)
-	}
 
 	for k, v := range f.tags {
 		properties.SetTag(&k, v)
