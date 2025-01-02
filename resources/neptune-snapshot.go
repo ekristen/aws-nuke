@@ -2,12 +2,14 @@ package resources
 
 import (
 	"context"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/neptune"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
@@ -36,6 +38,12 @@ func (l *NeptuneSnapshotLister) List(_ context.Context, o interface{}) ([]resour
 
 	params := &neptune.DescribeDBClusterSnapshotsInput{
 		MaxRecords: aws.Int64(100),
+		Filters: []*neptune.Filter{
+			{
+				Name:   aws.String("engine"),
+				Values: []*string{aws.String("neptune")},
+			},
+		},
 	}
 
 	for {
@@ -46,8 +54,10 @@ func (l *NeptuneSnapshotLister) List(_ context.Context, o interface{}) ([]resour
 
 		for _, dbClusterSnapshot := range output.DBClusterSnapshots {
 			resources = append(resources, &NeptuneSnapshot{
-				svc: svc,
-				ID:  dbClusterSnapshot.DBClusterSnapshotIdentifier,
+				svc:        svc,
+				ID:         dbClusterSnapshot.DBClusterSnapshotIdentifier,
+				Status:     dbClusterSnapshot.Status,
+				CreateTime: dbClusterSnapshot.SnapshotCreateTime,
 			})
 		}
 
@@ -62,18 +72,24 @@ func (l *NeptuneSnapshotLister) List(_ context.Context, o interface{}) ([]resour
 }
 
 type NeptuneSnapshot struct {
-	svc *neptune.Neptune
-	ID  *string
+	svc        *neptune.Neptune
+	ID         *string
+	Status     *string
+	CreateTime *time.Time
 }
 
-func (f *NeptuneSnapshot) Remove(_ context.Context) error {
-	_, err := f.svc.DeleteDBClusterSnapshot(&neptune.DeleteDBClusterSnapshotInput{
-		DBClusterSnapshotIdentifier: f.ID,
+func (r *NeptuneSnapshot) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteDBClusterSnapshot(&neptune.DeleteDBClusterSnapshotInput{
+		DBClusterSnapshotIdentifier: r.ID,
 	})
 
 	return err
 }
 
-func (f *NeptuneSnapshot) String() string {
-	return *f.ID
+func (r *NeptuneSnapshot) String() string {
+	return *r.ID
+}
+
+func (r *NeptuneSnapshot) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }

@@ -43,6 +43,12 @@ func (l *NeptuneClusterLister) List(_ context.Context, o interface{}) ([]resourc
 	resources := make([]resource.Resource, 0)
 
 	params := &neptune.DescribeDBClustersInput{
+		Filters: []*neptune.Filter{
+			{
+				Name:   aws.String("engine"),
+				Values: []*string{aws.String("neptune")},
+			},
+		},
 		MaxRecords: aws.Int64(100),
 	}
 
