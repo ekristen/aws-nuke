@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"github.com/gotidy/ptr"
 	"strings"
 	"time"
 
@@ -87,14 +88,19 @@ func (l *CloudWatchLogsLogGroupLister) List(_ context.Context, o interface{}) ([
 				lastEvent = time.Unix(*logGroup.CreationTime/1000, 0)
 			}
 
+			var retentionInDays int64
+			if logGroup.RetentionInDays != nil {
+				retentionInDays = ptr.ToInt64(logGroup.RetentionInDays)
+			}
 
 			resources = append(resources, &CloudWatchLogsLogGroup{
-				svc:       svc,
-				logGroup:  logGroup,
-				lastEvent: lastEvent.Format(time.RFC3339),
-				tags:      tagResp.Tags,
+				svc:             svc,
+				logGroup:        logGroup,
+				lastEvent:       lastEvent.Format(time.RFC3339),
+				retentionInDays: retentionInDays,
+				tags:            tagResp.Tags,
 			})
-			}
+		}
 		if output.NextToken == nil {
 			break
 		}
@@ -106,10 +112,11 @@ func (l *CloudWatchLogsLogGroupLister) List(_ context.Context, o interface{}) ([
 }
 
 type CloudWatchLogsLogGroup struct {
-	svc       *cloudwatchlogs.CloudWatchLogs
-	logGroup  *cloudwatchlogs.LogGroup
-	lastEvent string
-	tags      map[string]*string
+	svc             *cloudwatchlogs.CloudWatchLogs
+	logGroup        *cloudwatchlogs.LogGroup
+	lastEvent       string
+	retentionInDays int64
+	tags            map[string]*string
 }
 
 func (f *CloudWatchLogsLogGroup) Remove(_ context.Context) error {
@@ -129,12 +136,10 @@ func (f *CloudWatchLogsLogGroup) Properties() types.Properties {
 		Set("logGroupName", f.logGroup.LogGroupName).
 		Set("CreatedTime", f.logGroup.CreationTime).
 		Set("LastEvent", f.lastEvent).
-		Set("RetentionInDays", f.logGroup.RetentionInDays)
-
+		Set("RetentionInDays", f.retentionInDays)
 
 	for k, v := range f.tags {
 		properties.SetTag(&k, v)
 	}
 	return properties
 }
-
