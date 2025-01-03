@@ -87,9 +87,6 @@ func (l *CloudWatchLogsLogGroupLister) List(_ context.Context, o interface{}) ([
 				lastEvent = time.Unix(*logGroup.CreationTime/1000, 0)
 			}
 
-			// Ensure RetentionInDays is handled
-			if logGroup.RetentionInDays == nil {
-				logGroup.RetentionInDays = aws.Int64(0) // Default to 0 if not set
 			}
 
 			resources = append(resources, &CloudWatchLogsLogGroup{
