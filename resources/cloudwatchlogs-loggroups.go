@@ -87,7 +87,6 @@ func (l *CloudWatchLogsLogGroupLister) List(_ context.Context, o interface{}) ([
 				lastEvent = time.Unix(*logGroup.CreationTime/1000, 0)
 			}
 
-			}
 
 			resources = append(resources, &CloudWatchLogsLogGroup{
 				svc:       svc,
@@ -95,7 +94,7 @@ func (l *CloudWatchLogsLogGroupLister) List(_ context.Context, o interface{}) ([
 				lastEvent: lastEvent.Format(time.RFC3339),
 				tags:      tagResp.Tags,
 			})
-
+			}
 		if output.NextToken == nil {
 			break
 		}
