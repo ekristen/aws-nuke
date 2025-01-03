@@ -558,6 +558,7 @@ nav:
     - SSM Maintenance Window: resources/ssm-maintenance-window.md
     - SSM Parameter: resources/ssm-parameter.md
     - SSM Patch Baseline: resources/ssm-patch-baseline.md
+    - SSM Quick Setup Configuration Manager: resources/ssm-quick-setup-configuration-manager.md
     - SSM Resource Data Sync: resources/ssm-resource-data-sync.md
     - Sage Maker App: resources/sage-maker-app.md
     - Sage Maker Domain: resources/sage-maker-domain.md
