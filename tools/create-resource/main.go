@@ -16,8 +16,7 @@ const resourceTemplate = `package resources
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/{{.Service}}"
+	"github.com/aws/aws-sdk-go-v2/service/{{.Service}}"
 
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -41,12 +40,12 @@ type {{.Combined}}Lister struct{}
 
 func (l *{{.Combined}}Lister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
-	svc := {{.Service}}.New(opts.Session)
+	svc := {{.Service}}.NewFromConfig(*opts.Config)
 	var resources []resource.Resource
 
 	// NOTE: you might have to modify the code below to actually work, this currently does not 
 	// inspect the aws sdk instead is a jumping off point
-	res, err := svc.List{{.ResourceTypeTitle}}s(&{{.Service}}.List{{.ResourceTypeTitle}}sInput{})
+	res, err := svc.List{{.ResourceTypeTitle}}s(ctx, &{{.Service}}.List{{.ResourceTypeTitle}}sInput{})
 	if err != nil {
 		return nil, err
 	}
@@ -63,13 +62,13 @@ func (l *{{.Combined}}Lister) List(_ context.Context, o interface{}) ([]resource
 }
 
 type {{.Combined}} struct {
-	svc  *{{.Service}}.{{.ServiceTitle}}
+	svc  *{{.Service}}.Client
 	ID   *string
 	Tags []*{{.Service}}.Tag
 }
 
-func (r *{{.Combined}}) Remove(_ context.Context) error {
-	_, err := r.svc.Delete{{.ResourceTypeTitle}}(&{{.Service}}.Delete{{.ResourceTypeTitle}}Input{
+func (r *{{.Combined}}) Remove(ctx context.Context) error {
+	_, err := r.svc.Delete{{.ResourceTypeTitle}}(ctx, &{{.Service}}.Delete{{.ResourceTypeTitle}}Input{
 		{{.ResourceTypeTitle}}Id: r.id, 
 	})
 	return err
