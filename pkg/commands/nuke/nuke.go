@@ -3,6 +3,7 @@ package nuke
 import (
 	"context"
 	"fmt"
+	"os"
 	"slices"
 	"strings"
 	"time"
@@ -75,6 +76,7 @@ func execute(c *cli.Context) error { //nolint:funlen,gocyclo
 	}
 
 	logger := logrus.StandardLogger()
+	logger.SetOutput(os.Stdout)
 
 	// Parse the user supplied configuration file to pass in part to configure the nuke process.
 	parsedConfig, err := config.New(libconfig.Options{
