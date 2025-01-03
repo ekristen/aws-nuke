@@ -95,7 +95,6 @@ func (l *CloudWatchLogsLogGroupLister) List(_ context.Context, o interface{}) ([
 				lastEvent: lastEvent.Format(time.RFC3339),
 				tags:      tagResp.Tags,
 			})
-		}
 
 		if output.NextToken == nil {
 			break
