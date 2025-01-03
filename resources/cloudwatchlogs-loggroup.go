@@ -119,26 +119,26 @@ type CloudWatchLogsLogGroup struct {
 	tags            map[string]*string
 }
 
-func (f *CloudWatchLogsLogGroup) Remove(_ context.Context) error {
-	_, err := f.svc.DeleteLogGroup(&cloudwatchlogs.DeleteLogGroupInput{
-		LogGroupName: f.logGroup.LogGroupName,
+func (r *CloudWatchLogsLogGroup) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteLogGroup(&cloudwatchlogs.DeleteLogGroupInput{
+		LogGroupName: r.logGroup.LogGroupName,
 	})
 
 	return err
 }
 
-func (f *CloudWatchLogsLogGroup) String() string {
-	return *f.logGroup.LogGroupName
+func (r *CloudWatchLogsLogGroup) String() string {
+	return *r.logGroup.LogGroupName
 }
 
-func (f *CloudWatchLogsLogGroup) Properties() types.Properties {
+func (r *CloudWatchLogsLogGroup) Properties() types.Properties {
 	properties := types.NewProperties().
-		Set("logGroupName", f.logGroup.LogGroupName).
-		Set("CreatedTime", f.logGroup.CreationTime).
-		Set("LastEvent", f.lastEvent).
-		Set("RetentionInDays", f.retentionInDays)
+		Set("logGroupName", r.logGroup.LogGroupName).
+		Set("CreatedTime", r.logGroup.CreationTime).
+		Set("LastEvent", r.lastEvent).
+		Set("RetentionInDays", r.retentionInDays)
 
-	for k, v := range f.tags {
+	for k, v := range r.tags {
 		properties.SetTag(&k, v)
 	}
 	return properties
