@@ -2,13 +2,12 @@ package resources
 
 import (
 	"context"
-	"github.com/gotidy/ptr"
 	"strings"
 	"time"
 
+	"github.com/gotidy/ptr"
 	"go.uber.org/ratelimit"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -47,7 +46,7 @@ func (l *CloudWatchLogsLogGroupLister) List(_ context.Context, o interface{}) ([
 	streamRl := ratelimit.New(15)
 
 	params := &cloudwatchlogs.DescribeLogGroupsInput{
-		Limit: aws.Int64(50),
+		Limit: ptr.Int64(50),
 	}
 
 	for {
@@ -73,9 +72,9 @@ func (l *CloudWatchLogsLogGroupLister) List(_ context.Context, o interface{}) ([
 			// get last event ingestion time
 			lsResp, err := svc.DescribeLogStreams(&cloudwatchlogs.DescribeLogStreamsInput{
 				LogGroupName: logGroup.LogGroupName,
-				OrderBy:      aws.String("LastEventTime"),
-				Limit:        aws.Int64(1),
-				Descending:   aws.Bool(true),
+				OrderBy:      ptr.String("LastEventTime"),
+				Limit:        ptr.Int64(1),
+				Descending:   ptr.Bool(true),
 			})
 			if err != nil {
 				return nil, err
@@ -95,10 +94,12 @@ func (l *CloudWatchLogsLogGroupLister) List(_ context.Context, o interface{}) ([
 
 			resources = append(resources, &CloudWatchLogsLogGroup{
 				svc:             svc,
-				logGroup:        logGroup,
-				lastEvent:       lastEvent.Format(time.RFC3339),
-				retentionInDays: retentionInDays,
-				tags:            tagResp.Tags,
+				Name:            logGroup.LogGroupName,
+				CreatedTime:     logGroup.CreationTime,
+				CreationTime:    ptr.Time(time.Unix(*logGroup.CreationTime/1000, 0).UTC()),
+				LastEvent:       ptr.Time(lastEvent), // TODO(v4): convert to UTC
+				RetentionInDays: retentionInDays,
+				Tags:            tagResp.Tags,
 			})
 		}
 		if output.NextToken == nil {
@@ -113,33 +114,27 @@ func (l *CloudWatchLogsLogGroupLister) List(_ context.Context, o interface{}) ([
 
 type CloudWatchLogsLogGroup struct {
 	svc             *cloudwatchlogs.CloudWatchLogs
-	logGroup        *cloudwatchlogs.LogGroup
-	lastEvent       string
-	retentionInDays int64
-	tags            map[string]*string
+	Name            *string    `description:"The name of the log group"`
+	CreatedTime     *int64     `description:"The creation time of the log group in unix timestamp format"`
+	CreationTime    *time.Time `description:"The creation time of the log group in RFC3339 format"`
+	LastEvent       *time.Time `description:"The last event time of the log group in RFC3339 format"`
+	RetentionInDays int64      `description:"The number of days to retain log events in the log group"`
+	Tags            map[string]*string
 }
 
 func (r *CloudWatchLogsLogGroup) Remove(_ context.Context) error {
 	_, err := r.svc.DeleteLogGroup(&cloudwatchlogs.DeleteLogGroupInput{
-		LogGroupName: r.logGroup.LogGroupName,
+		LogGroupName: r.Name,
 	})
 
 	return err
 }
 
 func (r *CloudWatchLogsLogGroup) String() string {
-	return *r.logGroup.LogGroupName
+	return *r.Name
 }
 
 func (r *CloudWatchLogsLogGroup) Properties() types.Properties {
-	properties := types.NewProperties().
-		Set("logGroupName", r.logGroup.LogGroupName).
-		Set("CreatedTime", r.logGroup.CreationTime).
-		Set("LastEvent", r.lastEvent).
-		Set("RetentionInDays", r.retentionInDays)
-
-	for k, v := range r.tags {
-		properties.SetTag(&k, v)
-	}
-	return properties
+	return types.NewPropertiesFromStruct(r).
+		Set("logGroupName", r.Name) // TODO(v4): remove this property
 }
