@@ -2,8 +2,6 @@ package resources
 
 import (
 	"context"
-	"github.com/ekristen/libnuke/pkg/types"
-
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -11,6 +9,7 @@ import (
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
@@ -75,25 +74,25 @@ type CloudWatchEventsTarget struct {
 	busName  *string
 }
 
-func (target *CloudWatchEventsTarget) Remove(_ context.Context) error {
-	ids := []*string{target.targetID}
-	_, err := target.svc.RemoveTargets(&cloudwatchevents.RemoveTargetsInput{
+func (r *CloudWatchEventsTarget) Remove(_ context.Context) error {
+	ids := []*string{r.targetID}
+	_, err := r.svc.RemoveTargets(&cloudwatchevents.RemoveTargetsInput{
 		Ids:          ids,
-		Rule:         target.ruleName,
-		EventBusName: target.busName,
+		Rule:         r.ruleName,
+		EventBusName: r.busName,
 		Force:        aws.Bool(true),
 	})
 	return err
 }
 
-func (target *CloudWatchEventsTarget) String() string {
+func (r *CloudWatchEventsTarget) String() string {
 	// TODO: change this to IAM format rule -> target and mark as breaking change for filters
-	return fmt.Sprintf("Rule: %s Target ID: %s", *target.ruleName, *target.targetID)
+	return fmt.Sprintf("Rule: %s Target ID: %s", *r.ruleName, *r.targetID)
 }
 
-func (target *CloudWatchEventsTarget) Properties() types.Properties {
+func (r *CloudWatchEventsTarget) Properties() types.Properties {
 	return types.NewProperties().
-		Set("Name", target.ruleName).
-		Set("TargetID", target.targetID).
-		Set("BusName", target.busName)
+		Set("Name", r.ruleName).
+		Set("TargetID", r.targetID).
+		Set("BusName", r.busName)
 }
