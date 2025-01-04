@@ -2,13 +2,14 @@ package resources
 
 import (
 	"context"
-
 	"testing"
+	"time"
 
 	"github.com/golang/mock/gomock"
+	"github.com/gotidy/ptr"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 
@@ -16,6 +17,35 @@ import (
 
 	"github.com/ekristen/aws-nuke/v3/mocks/mock_cloudformationiface"
 )
+
+func TestCloudformationStack_Properties(t *testing.T) {
+	a := assert.New(t)
+
+	now := time.Now()
+
+	stack := CloudFormationStack{
+		Name:            ptr.String("foobar"),
+		Status:          ptr.String(cloudformation.StackStatusCreateComplete),
+		CreationTime:    ptr.Time(now),
+		LastUpdatedTime: ptr.Time(now),
+		Tags: []*cloudformation.Tag{
+			{
+				Key:   ptr.String("Name"),
+				Value: ptr.String("foobar"),
+			},
+		},
+	}
+
+	props := stack.Properties()
+
+	a.Equal("foobar", props.Get("Name"))
+	a.Equal(cloudformation.StackStatusCreateComplete, props.Get("Status"))
+	a.Equal(now.Format(time.RFC3339), props.Get("CreationTime"))
+	a.Equal(now.Format(time.RFC3339), props.Get("LastUpdatedTime"))
+	a.Equal("foobar", props.Get("tag:Name"))
+
+	a.Equal("foobar", stack.String())
+}
 
 func TestCloudformationStack_Remove_StackAlreadyDeleted(t *testing.T) {
 	a := assert.New(t)
@@ -25,21 +55,20 @@ func TestCloudformationStack_Remove_StackAlreadyDeleted(t *testing.T) {
 	mockCloudformation := mock_cloudformationiface.NewMockCloudFormationAPI(ctrl)
 
 	stack := CloudFormationStack{
-		svc: mockCloudformation,
-		stack: &cloudformation.Stack{
-			StackName: aws.String("foobar"),
-		},
+		svc:    mockCloudformation,
+		logger: logrus.NewEntry(logrus.StandardLogger()),
+		Name:   ptr.String("foobar"),
 		settings: &libsettings.Setting{
 			"DisableDeletionProtection": true,
 		},
 	}
 
 	mockCloudformation.EXPECT().DescribeStacks(gomock.Eq(&cloudformation.DescribeStacksInput{
-		StackName: aws.String("foobar"),
+		StackName: ptr.String("foobar"),
 	})).Return(&cloudformation.DescribeStacksOutput{
 		Stacks: []*cloudformation.Stack{
 			{
-				StackStatus: aws.String(cloudformation.StackStatusDeleteComplete),
+				StackStatus: ptr.String(cloudformation.StackStatusDeleteComplete),
 			},
 		},
 	}, nil)
@@ -56,17 +85,16 @@ func TestCloudformationStack_Remove_StackDoesNotExist(t *testing.T) {
 	mockCloudformation := mock_cloudformationiface.NewMockCloudFormationAPI(ctrl)
 
 	stack := CloudFormationStack{
-		svc: mockCloudformation,
-		stack: &cloudformation.Stack{
-			StackName: aws.String("foobar"),
-		},
+		svc:    mockCloudformation,
+		logger: logrus.NewEntry(logrus.StandardLogger()),
+		Name:   ptr.String("foobar"),
 		settings: &libsettings.Setting{
 			"DisableDeletionProtection": true,
 		},
 	}
 
 	mockCloudformation.EXPECT().DescribeStacks(gomock.Eq(&cloudformation.DescribeStacksInput{
-		StackName: aws.String("foobar"),
+		StackName: ptr.String("foobar"),
 	})).Return(nil, awserr.New("ValidationFailed", "Stack with id foobar does not exist", nil))
 
 	err := stack.Remove(context.TODO())
@@ -81,10 +109,9 @@ func TestCloudformationStack_Remove_DeleteFailed(t *testing.T) {
 	mockCloudformation := mock_cloudformationiface.NewMockCloudFormationAPI(ctrl)
 
 	stack := CloudFormationStack{
-		svc: mockCloudformation,
-		stack: &cloudformation.Stack{
-			StackName: aws.String("foobar"),
-		},
+		svc:    mockCloudformation,
+		logger: logrus.NewEntry(logrus.StandardLogger()),
+		Name:   ptr.String("foobar"),
 		settings: &libsettings.Setting{
 			"DisableDeletionProtection": true,
 		},
@@ -92,36 +119,36 @@ func TestCloudformationStack_Remove_DeleteFailed(t *testing.T) {
 
 	gomock.InOrder(
 		mockCloudformation.EXPECT().DescribeStacks(gomock.Eq(&cloudformation.DescribeStacksInput{
-			StackName: aws.String("foobar"),
+			StackName: ptr.String("foobar"),
 		})).Return(&cloudformation.DescribeStacksOutput{
 			Stacks: []*cloudformation.Stack{
 				{
-					StackStatus: aws.String(cloudformation.StackStatusDeleteFailed),
+					StackStatus: ptr.String(cloudformation.StackStatusDeleteFailed),
 				},
 			},
 		}, nil),
 		mockCloudformation.EXPECT().ListStackResources(gomock.Eq(&cloudformation.ListStackResourcesInput{
-			StackName: aws.String("foobar"),
+			StackName: ptr.String("foobar"),
 		})).Return(&cloudformation.ListStackResourcesOutput{
 			StackResourceSummaries: []*cloudformation.StackResourceSummary{
 				{
-					ResourceStatus:    aws.String(cloudformation.ResourceStatusDeleteComplete),
-					LogicalResourceId: aws.String("fooDeleteComplete"),
+					ResourceStatus:    ptr.String(cloudformation.ResourceStatusDeleteComplete),
+					LogicalResourceId: ptr.String("fooDeleteComplete"),
 				},
 				{
-					ResourceStatus:    aws.String(cloudformation.ResourceStatusDeleteFailed),
-					LogicalResourceId: aws.String("fooDeleteFailed"),
+					ResourceStatus:    ptr.String(cloudformation.ResourceStatusDeleteFailed),
+					LogicalResourceId: ptr.String("fooDeleteFailed"),
 				},
 			},
 		}, nil),
 		mockCloudformation.EXPECT().DeleteStack(gomock.Eq(&cloudformation.DeleteStackInput{
-			StackName: aws.String("foobar"),
+			StackName: ptr.String("foobar"),
 			RetainResources: []*string{
-				aws.String("fooDeleteFailed"),
+				ptr.String("fooDeleteFailed"),
 			},
 		})).Return(nil, nil),
 		mockCloudformation.EXPECT().WaitUntilStackDeleteComplete(gomock.Eq(&cloudformation.DescribeStacksInput{
-			StackName: aws.String("foobar"),
+			StackName: ptr.String("foobar"),
 		})).Return(nil),
 	)
 
@@ -138,10 +165,9 @@ func TestCloudformationStack_Remove_DeleteInProgress(t *testing.T) {
 	mockCloudformation := mock_cloudformationiface.NewMockCloudFormationAPI(ctrl)
 
 	stack := CloudFormationStack{
-		svc: mockCloudformation,
-		stack: &cloudformation.Stack{
-			StackName: aws.String("foobar"),
-		},
+		svc:    mockCloudformation,
+		logger: logrus.NewEntry(logrus.StandardLogger()),
+		Name:   ptr.String("foobar"),
 		settings: &libsettings.Setting{
 			"DisableDeletionProtection": true,
 		},
@@ -149,17 +175,17 @@ func TestCloudformationStack_Remove_DeleteInProgress(t *testing.T) {
 
 	gomock.InOrder(
 		mockCloudformation.EXPECT().DescribeStacks(gomock.Eq(&cloudformation.DescribeStacksInput{
-			StackName: aws.String("foobar"),
+			StackName: ptr.String("foobar"),
 		})).Return(&cloudformation.DescribeStacksOutput{
 			Stacks: []*cloudformation.Stack{
 				{
-					StackStatus: aws.String(cloudformation.StackStatusDeleteInProgress),
+					StackStatus: ptr.String(cloudformation.StackStatusDeleteInProgress),
 				},
 			},
 		}, nil),
 
 		mockCloudformation.EXPECT().WaitUntilStackDeleteComplete(gomock.Eq(&cloudformation.DescribeStacksInput{
-			StackName: aws.String("foobar"),
+			StackName: ptr.String("foobar"),
 		})).Return(nil),
 	)
 
@@ -188,10 +214,9 @@ func TestCloudformationStack_Remove_Stack_InCompletedStatus(t *testing.T) {
 			mockCloudformation := mock_cloudformationiface.NewMockCloudFormationAPI(ctrl)
 
 			stack := CloudFormationStack{
-				svc: mockCloudformation,
-				stack: &cloudformation.Stack{
-					StackName: aws.String("foobar"),
-				},
+				svc:    mockCloudformation,
+				logger: logrus.NewEntry(logrus.StandardLogger()),
+				Name:   ptr.String("foobar"),
 				settings: &libsettings.Setting{
 					"DisableDeletionProtection": true,
 				},
@@ -199,21 +224,21 @@ func TestCloudformationStack_Remove_Stack_InCompletedStatus(t *testing.T) {
 
 			gomock.InOrder(
 				mockCloudformation.EXPECT().DescribeStacks(gomock.Eq(&cloudformation.DescribeStacksInput{
-					StackName: aws.String("foobar"),
+					StackName: ptr.String("foobar"),
 				})).Return(&cloudformation.DescribeStacksOutput{
 					Stacks: []*cloudformation.Stack{
 						{
-							StackStatus: aws.String(stackStatus),
+							StackStatus: ptr.String(stackStatus),
 						},
 					},
 				}, nil),
 
 				mockCloudformation.EXPECT().DeleteStack(gomock.Eq(&cloudformation.DeleteStackInput{
-					StackName: aws.String("foobar"),
+					StackName: ptr.String("foobar"),
 				})).Return(nil, nil),
 
 				mockCloudformation.EXPECT().WaitUntilStackDeleteComplete(gomock.Eq(&cloudformation.DescribeStacksInput{
-					StackName: aws.String("foobar"),
+					StackName: ptr.String("foobar"),
 				})).Return(nil),
 			)
 
@@ -238,10 +263,9 @@ func TestCloudformationStack_Remove_Stack_CreateInProgress(t *testing.T) {
 			mockCloudformation := mock_cloudformationiface.NewMockCloudFormationAPI(ctrl)
 
 			stack := CloudFormationStack{
-				svc: mockCloudformation,
-				stack: &cloudformation.Stack{
-					StackName: aws.String("foobar"),
-				},
+				svc:    mockCloudformation,
+				logger: logrus.NewEntry(logrus.StandardLogger()),
+				Name:   ptr.String("foobar"),
 				settings: &libsettings.Setting{
 					"DisableDeletionProtection": true,
 				},
@@ -249,25 +273,25 @@ func TestCloudformationStack_Remove_Stack_CreateInProgress(t *testing.T) {
 
 			gomock.InOrder(
 				mockCloudformation.EXPECT().DescribeStacks(gomock.Eq(&cloudformation.DescribeStacksInput{
-					StackName: aws.String("foobar"),
+					StackName: ptr.String("foobar"),
 				})).Return(&cloudformation.DescribeStacksOutput{
 					Stacks: []*cloudformation.Stack{
 						{
-							StackStatus: aws.String(stackStatus),
+							StackStatus: ptr.String(stackStatus),
 						},
 					},
 				}, nil),
 
 				mockCloudformation.EXPECT().WaitUntilStackCreateComplete(gomock.Eq(&cloudformation.DescribeStacksInput{
-					StackName: aws.String("foobar"),
+					StackName: ptr.String("foobar"),
 				})).Return(nil),
 
 				mockCloudformation.EXPECT().DeleteStack(gomock.Eq(&cloudformation.DeleteStackInput{
-					StackName: aws.String("foobar"),
+					StackName: ptr.String("foobar"),
 				})).Return(nil, nil),
 
 				mockCloudformation.EXPECT().WaitUntilStackDeleteComplete(gomock.Eq(&cloudformation.DescribeStacksInput{
-					StackName: aws.String("foobar"),
+					StackName: ptr.String("foobar"),
 				})).Return(nil),
 			)
 
@@ -293,10 +317,9 @@ func TestCloudformationStack_Remove_Stack_UpdateInProgress(t *testing.T) {
 			mockCloudformation := mock_cloudformationiface.NewMockCloudFormationAPI(ctrl)
 
 			stack := CloudFormationStack{
-				svc: mockCloudformation,
-				stack: &cloudformation.Stack{
-					StackName: aws.String("foobar"),
-				},
+				svc:    mockCloudformation,
+				logger: logrus.NewEntry(logrus.StandardLogger()),
+				Name:   ptr.String("foobar"),
 				settings: &libsettings.Setting{
 					"DisableDeletionProtection": true,
 				},
@@ -304,25 +327,25 @@ func TestCloudformationStack_Remove_Stack_UpdateInProgress(t *testing.T) {
 
 			gomock.InOrder(
 				mockCloudformation.EXPECT().DescribeStacks(gomock.Eq(&cloudformation.DescribeStacksInput{
-					StackName: aws.String("foobar"),
+					StackName: ptr.String("foobar"),
 				})).Return(&cloudformation.DescribeStacksOutput{
 					Stacks: []*cloudformation.Stack{
 						{
-							StackStatus: aws.String(stackStatus),
+							StackStatus: ptr.String(stackStatus),
 						},
 					},
 				}, nil),
 
 				mockCloudformation.EXPECT().WaitUntilStackUpdateComplete(gomock.Eq(&cloudformation.DescribeStacksInput{
-					StackName: aws.String("foobar"),
+					StackName: ptr.String("foobar"),
 				})).Return(nil),
 
 				mockCloudformation.EXPECT().DeleteStack(gomock.Eq(&cloudformation.DeleteStackInput{
-					StackName: aws.String("foobar"),
+					StackName: ptr.String("foobar"),
 				})).Return(nil, nil),
 
 				mockCloudformation.EXPECT().WaitUntilStackDeleteComplete(gomock.Eq(&cloudformation.DescribeStacksInput{
-					StackName: aws.String("foobar"),
+					StackName: ptr.String("foobar"),
 				})).Return(nil),
 			)
 
