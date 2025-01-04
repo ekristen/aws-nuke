@@ -38,7 +38,7 @@ func init() {
 
 type {{.Combined}}Lister struct{}
 
-func (l *{{.Combined}}Lister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *{{.Combined}}Lister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 	svc := {{.Service}}.NewFromConfig(*opts.Config)
 	var resources []resource.Resource
@@ -50,10 +50,10 @@ func (l *{{.Combined}}Lister) List(_ context.Context, o interface{}) ([]resource
 		return nil, err
 	}
 
-	for _, p := range res.{{.ResourceTypeTitle}}s {
+	for _, p := range res.{{.ResourceTypeTitle}}sList {
 		resources = append(resources, &{{.Combined}}{
 			svc:  svc,
-			ID:   p.Id,
+			ID:   p.{{.ResourceTypeTitle}}Id,
 			Tags: p.Tags,
 		})
 	}
