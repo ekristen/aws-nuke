@@ -11,7 +11,14 @@ generated: true
 EC2TGW
 ```
 
+## Properties
 
+
+- `ID`: The ID of the transit gateway.
+- `OwnerId`: The ID of the AWS account that owns the transit gateway.
+- `State`: The state of the transit gateway.
+- `tag:<key>:`: This resource has tags with property `Tags`. These are key/value pairs that are
+	added as their own property with the prefix of `tag:` (e.g. [tag:example: "value"]) 
 
 !!! note - Using Properties
     Properties are what [Filters](../config-filtering.md) are written against in your configuration. You use the property

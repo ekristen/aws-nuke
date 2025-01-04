@@ -11,7 +11,14 @@ generated: true
 Route53ResourceRecordSet
 ```
 
+## Properties
 
+
+- `HostedZoneName`: The name of the zone to which the record belongs
+- `Name`: The name of the record
+- `Type`: The type of the record
+- `tag:<key>:`: This resource has tags with property `Tags`. These are key/value pairs that are
+	added as their own property with the prefix of `tag:` (e.g. [tag:example: "value"]) 
 
 !!! note - Using Properties
     Properties are what [Filters](../config-filtering.md) are written against in your configuration. You use the property
