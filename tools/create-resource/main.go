@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"github.com/iancoleman/strcase"
 	"os"
 	"strings"
 	"text/template"
@@ -69,7 +70,7 @@ type {{.Combined}} struct {
 
 func (r *{{.Combined}}) Remove(ctx context.Context) error {
 	_, err := r.svc.Delete{{.ResourceTypeTitle}}(ctx, &{{.Service}}.Delete{{.ResourceTypeTitle}}Input{
-		{{.ResourceTypeTitle}}Id: r.id, 
+		{{.ResourceTypeTitle}}Id: r.ID, 
 	})
 	return err
 }
@@ -106,8 +107,8 @@ func main() {
 		Service:           strings.ToLower(service),
 		ServiceTitle:      caser.String(service),
 		ResourceType:      resourceType,
-		ResourceTypeTitle: caser.String(resourceType),
-		Combined:          fmt.Sprintf("%s%s", caser.String(service), caser.String(resourceType)),
+		ResourceTypeTitle: strcase.ToCamel(resourceType),
+		Combined:          fmt.Sprintf("%s%s", caser.String(service), strcase.ToCamel(resourceType)),
 	}
 
 	tmpl, err := template.New("resource").Parse(resourceTemplate)
