@@ -48,6 +48,7 @@ func (l *S3AccessGrantsGrantLister) List(ctx context.Context, o interface{}) ([]
 	for _, p := range res.AccessGrantsList {
 		resources = append(resources, &S3AccessGrantsGrant{
 			svc:         svc,
+			accountID:   opts.AccountID,
 			ID:          p.AccessGrantId,
 			GrantScope:  p.GrantScope,
 			GranteeType: ptr.String(string(p.Grantee.GranteeType)),
@@ -61,6 +62,7 @@ func (l *S3AccessGrantsGrantLister) List(ctx context.Context, o interface{}) ([]
 
 type S3AccessGrantsGrant struct {
 	svc         *s3control.Client
+	accountID   *string
 	ID          *string    `description:"The ID of the access grant."`
 	GrantScope  *string    `description:"The scope of the access grant."`
 	GranteeType *string    `description:"The type of the grantee, (e.g. IAM)."`
@@ -70,6 +72,7 @@ type S3AccessGrantsGrant struct {
 
 func (r *S3AccessGrantsGrant) Remove(ctx context.Context) error {
 	_, err := r.svc.DeleteAccessGrant(ctx, &s3control.DeleteAccessGrantInput{
+		AccountId:     r.accountID,
 		AccessGrantId: r.ID,
 	})
 	return err
