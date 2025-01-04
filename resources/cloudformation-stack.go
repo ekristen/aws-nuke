@@ -107,6 +107,8 @@ type CloudFormationStack struct {
 	parentID          *string
 	roleARN           *string
 	maxDeleteAttempts int
+	roleCreated       bool
+	roleName          string
 }
 
 func (r *CloudFormationStack) Filter() error {
@@ -148,6 +150,20 @@ func (r *CloudFormationStack) createRole(ctx context.Context) error {
 		},
 	})
 
+	r.roleCreated = true
+	r.roleName = roleParts[len(roleParts)-1]
+
+	return err
+}
+
+func (r *CloudFormationStack) removeRole(ctx context.Context) error {
+	if !r.roleCreated {
+		return nil
+	}
+
+	_, err := r.iamSvc.DeleteRole(ctx, &iam.DeleteRoleInput{
+		RoleName: ptr.String(r.roleName),
+	})
 	return err
 }
 
@@ -196,9 +212,9 @@ func (r *CloudFormationStack) removeWithAttempts(ctx context.Context, attempt in
 		} else {
 			return r.removeWithAttempts(ctx, attempt+1)
 		}
-	} else {
-		return nil
 	}
+
+	return r.removeRole(ctx)
 }
 
 func GetParentStack(svc cloudformationiface.CloudFormationAPI, stackID string) (*cloudformation.Stack, error) {
