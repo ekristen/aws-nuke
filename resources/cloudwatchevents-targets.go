@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"github.com/ekristen/libnuke/pkg/types"
 
 	"fmt"
 
@@ -87,6 +88,12 @@ func (target *CloudWatchEventsTarget) Remove(_ context.Context) error {
 
 func (target *CloudWatchEventsTarget) String() string {
 	// TODO: change this to IAM format rule -> target and mark as breaking change for filters
-	// TODO: add properties for rule and target separately
 	return fmt.Sprintf("Rule: %s Target ID: %s", *target.ruleName, *target.targetID)
+}
+
+func (target *CloudWatchEventsTarget) Properties() types.Properties {
+	return types.NewProperties().
+		Set("Name", target.ruleName).
+		Set("TargetID", target.targetID).
+		Set("BusName", target.busName)
 }
