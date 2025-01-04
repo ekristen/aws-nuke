@@ -4,7 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go/service/cloudwatchevents"
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -56,9 +57,9 @@ func (l *CloudWatchEventsTargetLister) List(_ context.Context, o interface{}) ([
 			for _, target := range targetResp.Targets {
 				resources = append(resources, &CloudWatchEventsTarget{
 					svc:      svc,
-					ruleName: rule.Name,
-					targetID: target.Id,
-					busName:  bus.Name,
+					Name:     rule.Name,
+					TargetID: target.Id,
+					BusName:  bus.Name,
 				})
 			}
 		}
@@ -69,30 +70,27 @@ func (l *CloudWatchEventsTargetLister) List(_ context.Context, o interface{}) ([
 
 type CloudWatchEventsTarget struct {
 	svc      *cloudwatchevents.CloudWatchEvents
-	targetID *string
-	ruleName *string
-	busName  *string
+	TargetID *string
+	Name     *string
+	BusName  *string
 }
 
 func (r *CloudWatchEventsTarget) Remove(_ context.Context) error {
-	ids := []*string{r.targetID}
+	ids := []*string{r.TargetID}
 	_, err := r.svc.RemoveTargets(&cloudwatchevents.RemoveTargetsInput{
 		Ids:          ids,
-		Rule:         r.ruleName,
-		EventBusName: r.busName,
-		Force:        aws.Bool(true),
+		Rule:         r.Name,
+		EventBusName: r.BusName,
+		Force:        ptr.Bool(true),
 	})
 	return err
 }
 
 func (r *CloudWatchEventsTarget) String() string {
 	// TODO: change this to IAM format rule -> target and mark as breaking change for filters
-	return fmt.Sprintf("Rule: %s Target ID: %s", *r.ruleName, *r.targetID)
+	return fmt.Sprintf("Rule: %s Target ID: %s", *r.Name, *r.TargetID)
 }
 
 func (r *CloudWatchEventsTarget) Properties() types.Properties {
-	return types.NewProperties().
-		Set("Name", r.ruleName).
-		Set("TargetID", r.targetID).
-		Set("BusName", r.busName)
+	return types.NewPropertiesFromStruct(r)
 }
