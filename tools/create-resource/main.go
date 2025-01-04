@@ -3,13 +3,14 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"github.com/iancoleman/strcase"
 	"os"
 	"strings"
 	"text/template"
 
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
+
+	"github.com/iancoleman/strcase"
 )
 
 const resourceTemplate = `package resources
