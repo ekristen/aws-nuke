@@ -2,7 +2,6 @@ package resources
 
 import (
 	"context"
-
 	"errors"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -11,6 +10,7 @@ import (
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
@@ -64,8 +64,8 @@ type IAMAccountSettingPasswordPolicy struct {
 	policy *iam.PasswordPolicy
 }
 
-func (e *IAMAccountSettingPasswordPolicy) Remove(_ context.Context) error {
-	_, err := e.svc.DeleteAccountPasswordPolicy(&iam.DeleteAccountPasswordPolicyInput{})
+func (r *IAMAccountSettingPasswordPolicy) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteAccountPasswordPolicy(&iam.DeleteAccountPasswordPolicyInput{})
 	if err != nil {
 		return err
 	}
@@ -73,6 +73,10 @@ func (e *IAMAccountSettingPasswordPolicy) Remove(_ context.Context) error {
 	return nil
 }
 
-func (e *IAMAccountSettingPasswordPolicy) String() string {
+func (r *IAMAccountSettingPasswordPolicy) String() string {
 	return "custom"
+}
+
+func (r *IAMAccountSettingPasswordPolicy) Properties() types.Properties {
+	return types.NewProperties().Set("type", "custom")
 }

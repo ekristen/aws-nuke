@@ -2,20 +2,23 @@
 generated: true
 ---
 
-# ResourceExplorer2Index
+# S3AccessGrantsGrant
 
 
 ## Resource
 
 ```text
-ResourceExplorer2Index
+S3AccessGrantsGrant
 ```
 
 ## Properties
 
 
-- `ARN`: No Description
-- `Type`: No Description
+- `CreatedAt`: The date and time the access grant was created.
+- `GrantScope`: The scope of the access grant.
+- `GranteeID`: The ARN of the grantee.
+- `GranteeType`: The type of the grantee, (e.g. IAM).
+- `ID`: The ID of the access grant.
 
 !!! note - Using Properties
     Properties are what [Filters](../config-filtering.md) are written against in your configuration. You use the property

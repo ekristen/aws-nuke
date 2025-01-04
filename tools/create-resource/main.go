@@ -9,6 +9,8 @@ import (
 
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
+
+	"github.com/iancoleman/strcase"
 )
 
 const resourceTemplate = `package resources
@@ -38,7 +40,7 @@ func init() {
 
 type {{.Combined}}Lister struct{}
 
-func (l *{{.Combined}}Lister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *{{.Combined}}Lister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 	svc := {{.Service}}.NewFromConfig(*opts.Config)
 	var resources []resource.Resource
@@ -50,10 +52,10 @@ func (l *{{.Combined}}Lister) List(_ context.Context, o interface{}) ([]resource
 		return nil, err
 	}
 
-	for _, p := range res.{{.ResourceTypeTitle}}s {
+	for _, p := range res.{{.ResourceTypeTitle}}sList {
 		resources = append(resources, &{{.Combined}}{
 			svc:  svc,
-			ID:   p.Id,
+			ID:   p.{{.ResourceTypeTitle}}Id,
 			Tags: p.Tags,
 		})
 	}
@@ -69,7 +71,7 @@ type {{.Combined}} struct {
 
 func (r *{{.Combined}}) Remove(ctx context.Context) error {
 	_, err := r.svc.Delete{{.ResourceTypeTitle}}(ctx, &{{.Service}}.Delete{{.ResourceTypeTitle}}Input{
-		{{.ResourceTypeTitle}}Id: r.id, 
+		{{.ResourceTypeTitle}}Id: r.ID, 
 	})
 	return err
 }
@@ -106,8 +108,8 @@ func main() {
 		Service:           strings.ToLower(service),
 		ServiceTitle:      caser.String(service),
 		ResourceType:      resourceType,
-		ResourceTypeTitle: caser.String(resourceType),
-		Combined:          fmt.Sprintf("%s%s", caser.String(service), caser.String(resourceType)),
+		ResourceTypeTitle: strcase.ToCamel(resourceType),
+		Combined:          fmt.Sprintf("%s%s", caser.String(service), strcase.ToCamel(resourceType)),
 	}
 
 	tmpl, err := template.New("resource").Parse(resourceTemplate)

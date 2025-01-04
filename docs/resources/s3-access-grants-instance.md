@@ -2,20 +2,20 @@
 generated: true
 ---
 
-# ResourceExplorer2Index
+# S3AccessGrantsInstance
 
 
 ## Resource
 
 ```text
-ResourceExplorer2Index
+S3AccessGrantsInstance
 ```
 
 ## Properties
 
 
-- `ARN`: No Description
-- `Type`: No Description
+- `CreatedAt`: The time the access grants instance was created.
+- `ID`: The ID of the access grants instance.
 
 !!! note - Using Properties
     Properties are what [Filters](../config-filtering.md) are written against in your configuration. You use the property

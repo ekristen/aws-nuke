@@ -11,7 +11,10 @@ generated: true
 ResourceExplorer2View
 ```
 
+## Properties
 
+
+- `ARN`: The ARN of the Resource Explorer View
 
 !!! note - Using Properties
     Properties are what [Filters](../config-filtering.md) are written against in your configuration. You use the property

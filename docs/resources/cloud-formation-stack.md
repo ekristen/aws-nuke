@@ -11,7 +11,15 @@ generated: true
 CloudFormationStack
 ```
 
+## Properties
 
+
+- `CreationTime`: No Description
+- `LastUpdatedTime`: No Description
+- `Name`: No Description
+- `Status`: No Description
+- `tag:<key>:`: This resource has tags with property `Tags`. These are key/value pairs that are
+	added as their own property with the prefix of `tag:` (e.g. [tag:example: "value"]) 
 
 !!! note - Using Properties
     Properties are what [Filters](../config-filtering.md) are written against in your configuration. You use the property
@@ -28,6 +36,7 @@ The string value is always what is used in the output of the log format when a r
 ## Settings
 
 - `DisableDeletionProtection`
+- `CreateRoleToDeleteStack`
 
 
 ### DisableDeletionProtection
@@ -38,5 +47,16 @@ The string value is always what is used in the output of the log format when a r
 
 ```text
 DisableDeletionProtection
+```
+
+
+### CreateRoleToDeleteStack
+
+!!! note
+    There is currently no description for this setting. Often times settings are fairly self-explanatory. However, we
+    are working on adding descriptions for all settings.
+
+```text
+CreateRoleToDeleteStack
 ```
 

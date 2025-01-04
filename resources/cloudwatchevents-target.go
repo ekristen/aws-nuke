@@ -2,14 +2,15 @@ package resources
 
 import (
 	"context"
-
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go/service/cloudwatchevents"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
@@ -56,9 +57,9 @@ func (l *CloudWatchEventsTargetLister) List(_ context.Context, o interface{}) ([
 			for _, target := range targetResp.Targets {
 				resources = append(resources, &CloudWatchEventsTarget{
 					svc:      svc,
-					ruleName: rule.Name,
-					targetID: target.Id,
-					busName:  bus.Name,
+					Name:     rule.Name,
+					TargetID: target.Id,
+					BusName:  bus.Name,
 				})
 			}
 		}
@@ -69,24 +70,27 @@ func (l *CloudWatchEventsTargetLister) List(_ context.Context, o interface{}) ([
 
 type CloudWatchEventsTarget struct {
 	svc      *cloudwatchevents.CloudWatchEvents
-	targetID *string
-	ruleName *string
-	busName  *string
+	TargetID *string `description:"The ID of the target for the rule"`
+	Name     *string `description:"The name of the rule"`
+	BusName  *string `description:"The name of the event bus the rule applies to"`
 }
 
-func (target *CloudWatchEventsTarget) Remove(_ context.Context) error {
-	ids := []*string{target.targetID}
-	_, err := target.svc.RemoveTargets(&cloudwatchevents.RemoveTargetsInput{
+func (r *CloudWatchEventsTarget) Remove(_ context.Context) error {
+	ids := []*string{r.TargetID}
+	_, err := r.svc.RemoveTargets(&cloudwatchevents.RemoveTargetsInput{
 		Ids:          ids,
-		Rule:         target.ruleName,
-		EventBusName: target.busName,
-		Force:        aws.Bool(true),
+		Rule:         r.Name,
+		EventBusName: r.BusName,
+		Force:        ptr.Bool(true),
 	})
 	return err
 }
 
-func (target *CloudWatchEventsTarget) String() string {
+func (r *CloudWatchEventsTarget) String() string {
 	// TODO: change this to IAM format rule -> target and mark as breaking change for filters
-	// TODO: add properties for rule and target separately
-	return fmt.Sprintf("Rule: %s Target ID: %s", *target.ruleName, *target.targetID)
+	return fmt.Sprintf("Rule: %s Target ID: %s", *r.Name, *r.TargetID)
+}
+
+func (r *CloudWatchEventsTarget) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }

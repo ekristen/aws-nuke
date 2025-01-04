@@ -543,6 +543,9 @@ nav:
     - Route 53 Resolver Rule: resources/route-53-resolver-rule.md
     - Route 53 Resource Record Set: resources/route-53-resource-record-set.md
     - Route 53 Traffic Policy: resources/route-53-traffic-policy.md
+    - S3 Access Grants Grant: resources/s3-access-grants-grant.md
+    - S3 Access Grants Instance: resources/s3-access-grants-instance.md
+    - S3 Access Grants Location: resources/s3-access-grants-location.md
     - S3 Access Point: resources/s3-access-point.md
     - S3 Bucket: resources/s3-bucket.md
     - S3 Multipart Upload: resources/s3-multipart-upload.md
@@ -607,6 +610,7 @@ nav:
     - Transcribe Vocabulary: resources/transcribe-vocabulary.md
     - Transfer Server User: resources/transfer-server-user.md
     - Transfer Server: resources/transfer-server.md
+    - Transfer Web App: resources/transfer-web-app.md
     - WAF Regional Byte Match Set Ip: resources/waf-regional-byte-match-set-ip.md
     - WAF Regional Byte Match Set: resources/waf-regional-byte-match-set.md
     - WAF Regional Ip Set Ip: resources/waf-regional-ip-set-ip.md
