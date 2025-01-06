@@ -68,18 +68,18 @@ jobs:
         if: startsWith(github.ref, 'refs/heads/renovate') == true
         run: |
           echo "GORELEASER_ARGS=--snapshot --skip-publish" >> $GITHUB_ENV
-      - name: setup quill
-        uses: 1password/load-secrets-action@v2
-        if: startsWith(github.ref, 'refs/tags/') == true && github.actor == github.repository_owner
-        with:
-          export-env: true
-        env:
-          OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
-          QUILL_NOTARY_KEY: ${{ secrets.OP_QUILL_NOTARY_KEY }}
-          QUILL_NOTARY_KEY_ID: ${{ secrets.OP_QUILL_NOTARY_KEY_ID }}
-          QUILL_NOTARY_ISSUER: ${{ secrets.OP_QUILL_NOTARY_ISSUER }}
-          QUILL_SIGN_PASSWORD: ${{ secrets.OP_QUILL_SIGN_PASSWORD }}
-          QUILL_SIGN_P12: ${{ secrets.OP_QUILL_SIGN_P12 }}
+      # - name: setup quill
+      #   uses: 1password/load-secrets-action@v2
+      #   if: startsWith(github.ref, 'refs/tags/') == true && github.actor == github.repository_owner
+      #   with:
+      #     export-env: true
+      #   env:
+      #     OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+      #     QUILL_NOTARY_KEY: ${{ secrets.OP_QUILL_NOTARY_KEY }}
+      #     QUILL_NOTARY_KEY_ID: ${{ secrets.OP_QUILL_NOTARY_KEY_ID }}
+      #     QUILL_NOTARY_ISSUER: ${{ secrets.OP_QUILL_NOTARY_ISSUER }}
+      #     QUILL_SIGN_PASSWORD: ${{ secrets.OP_QUILL_SIGN_PASSWORD }}
+      #     QUILL_SIGN_P12: ${{ secrets.OP_QUILL_SIGN_P12 }}
       - name: run goreleaser
         uses: goreleaser/goreleaser-action@v6
         with:
