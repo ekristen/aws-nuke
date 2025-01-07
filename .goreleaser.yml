@@ -1,7 +1,9 @@
 version: 2
 dist: releases
 release:
-  disable: true
+  github:
+    owner: oreillymedia
+    name: aws-nuke-v2
 builds:
   - id: default
     env:
