@@ -35,16 +35,16 @@ builds:
       - -X '{{ .ModulePath }}/pkg/common.BRANCH={{ .Branch }}'
       - -X '{{ .ModulePath }}/pkg/common.VERSION={{ .Tag }}'
       - -X '{{ .ModulePath }}/pkg/common.COMMIT={{ .Commit }}'
-    hooks:
-      post:
-        - cmd: |
-            {{- if eq .Os "darwin" -}} 
-            quill sign-and-notarize "{{ .Path }}" --dry-run={{ .IsSnapshot }} --ad-hoc={{ .IsSnapshot }} -vv
-            {{- else -}}
-            true
-            {{- end -}}
-          env:
-            - QUILL_LOG_FILE=/tmp/quill-{{ .Target }}.log
+    # hooks:
+    #   post:
+    #     - cmd: |
+    #         {{- if eq .Os "darwin" -}} 
+    #         quill sign-and-notarize "{{ .Path }}" --dry-run={{ .IsSnapshot }} --ad-hoc={{ .IsSnapshot }} -vv
+    #         {{- else -}}
+    #         true
+    #         {{- end -}}
+    #       env:
+    #         - QUILL_LOG_FILE=/tmp/quill-{{ .Target }}.log
 archives:
   - id: default
     builds:
