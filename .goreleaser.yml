@@ -1,9 +1,7 @@
 version: 2
 dist: releases
-# release:
-#   github:
-#     owner: ekristen
-#     name: aws-nuke
+release:
+  disable: true
 builds:
   - id: default
     env:
