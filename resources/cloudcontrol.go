@@ -31,28 +31,29 @@ func init() {
 	//     go run ./tools/list-cloudcontrol
 	//
 	// If there's a resource definition for the resource type, then there's no
-	// need to define it here as well, you should use the MapCloudControl func
-	// see ecr-public-repository.go for an example.
-	registerCloudControl("AWS::AppFlow::ConnectorProfile")
-	registerCloudControl("AWS::AppFlow::Flow")
-	registerCloudControl("AWS::AppRunner::Service")
-	registerCloudControl("AWS::ApplicationInsights::Application")
-	registerCloudControl("AWS::Backup::Framework")
-	registerCloudControl("AWS::ECR::PullThroughCacheRule")
-	registerCloudControl("AWS::ECR::RegistryPolicy")
-	registerCloudControl("AWS::ECR::ReplicationConfiguration")
-	registerCloudControl("AWS::MWAA::Environment")
-	registerCloudControl("AWS::Synthetics::Canary")
-	registerCloudControl("AWS::Timestream::Database")
-	registerCloudControl("AWS::Timestream::ScheduledQuery")
-	registerCloudControl("AWS::Timestream::Table")
-	registerCloudControl("AWS::Transfer::Workflow")
-	registerCloudControl("AWS::NetworkFirewall::Firewall")
-	registerCloudControl("AWS::NetworkFirewall::FirewallPolicy")
-	registerCloudControl("AWS::NetworkFirewall::RuleGroup")
+	// need to define it here as well, you should use the AlternativeResource
+	// property of the resource registration, see ecr-public-repository.go
+	// for an example.
+	RegisterCloudControl("AWS::AppFlow::ConnectorProfile")
+	RegisterCloudControl("AWS::AppFlow::Flow")
+	RegisterCloudControl("AWS::AppRunner::Service")
+	RegisterCloudControl("AWS::ApplicationInsights::Application")
+	RegisterCloudControl("AWS::Backup::Framework")
+	RegisterCloudControl("AWS::ECR::PullThroughCacheRule")
+	RegisterCloudControl("AWS::ECR::RegistryPolicy")
+	RegisterCloudControl("AWS::ECR::ReplicationConfiguration")
+	RegisterCloudControl("AWS::MWAA::Environment")
+	RegisterCloudControl("AWS::Synthetics::Canary")
+	RegisterCloudControl("AWS::Timestream::Database")
+	RegisterCloudControl("AWS::Timestream::ScheduledQuery")
+	RegisterCloudControl("AWS::Timestream::Table")
+	RegisterCloudControl("AWS::Transfer::Workflow")
+	RegisterCloudControl("AWS::NetworkFirewall::Firewall")
+	RegisterCloudControl("AWS::NetworkFirewall::FirewallPolicy")
+	RegisterCloudControl("AWS::NetworkFirewall::RuleGroup")
 }
 
-func registerCloudControl(typeName string) {
+func RegisterCloudControl(typeName string) {
 	registry.Register(&registry.Registration{
 		Name:     typeName,
 		Scope:    nuke.Account,
@@ -60,7 +61,6 @@ func registerCloudControl(typeName string) {
 		Lister: &CloudControlResourceLister{
 			TypeName: typeName,
 		},
-		AlternativeResource: typeName,
 	})
 }
 
