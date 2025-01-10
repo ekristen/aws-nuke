@@ -91,6 +91,7 @@ nav:
     - Overview: config.md
     - Filtering: config-filtering.md
     - Presets: config-presets.md
+    - Cloud Control: config-cloud-control.md
     - Custom Endpoints: config-custom-endpoints.md
     - Migration Guide: config-migration.md
     - Examples & Presets: config-contrib.md
