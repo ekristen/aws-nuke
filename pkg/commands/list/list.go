@@ -1,10 +1,11 @@
 package list
 
 import (
-	"github.com/fatih/color"
-	"github.com/urfave/cli/v2"
 	"slices"
 	"strings"
+
+	"github.com/fatih/color"
+	"github.com/urfave/cli/v2"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/commands/global"
 	"github.com/ekristen/aws-nuke/v3/pkg/common"
