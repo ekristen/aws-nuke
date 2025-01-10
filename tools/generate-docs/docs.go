@@ -59,8 +59,17 @@ func execute(c *cli.Context) error { //nolint:funlen,gocyclo
 			continue
 		}
 
+		name := reg.Name
+		description := ""
+		if strings.HasPrefix(name, "AWS::") {
+			description = `This is a resource that is access and controlled via the Cloud Control API, as such it's name
+and properties do not match the standard format for aws-nuke resources. Furthermore, the resource properties are
+dynamically populated and therefore cannot be documented here.`
+		}
+
 		data := TemplateData{
-			Name:                reg.Name,
+			Name:                name,
+			Description:         description,
 			Properties:          docs.GeneratePropertiesMap(reg.Resource),
 			Settings:            reg.Settings,
 			DependsOn:           reg.DependsOn,
@@ -92,7 +101,7 @@ func execute(c *cli.Context) error { //nolint:funlen,gocyclo
 		}
 
 		if c.Bool("write-to-disk") {
-			filename := KebabCase(strings.ToLower(SplitCamelCase(reg.Name)))
+			filename := KebabCase(strings.ToLower(SplitCamelCase(name)))
 			filename = strings.Replace(filename, "io-t", "iot-", 1)
 			filename = strings.Replace(filename, "iamsaml-", "iam-saml-", 1)
 			filename = strings.Replace(filename, "wa-fv2-", "wafv2-", 1)
