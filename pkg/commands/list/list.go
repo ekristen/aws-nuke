@@ -1,6 +1,7 @@
 package list
 
 import (
+	"slices"
 	"strings"
 
 	"github.com/fatih/color"
@@ -9,8 +10,9 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/commands/global"
 	"github.com/ekristen/aws-nuke/v3/pkg/common"
 
-	_ "github.com/ekristen/aws-nuke/v3/resources"
 	"github.com/ekristen/libnuke/pkg/registry"
+
+	_ "github.com/ekristen/aws-nuke/v3/resources"
 )
 
 func execute(c *cli.Context) error {
@@ -21,19 +23,26 @@ func execute(c *cli.Context) error {
 		ls = registry.GetNames()
 	}
 
+	slices.Sort(ls)
+
 	for _, name := range ls {
-		if strings.HasPrefix(name, "AWS::") {
+		reg := registry.GetRegistration(name)
+
+		if reg == nil {
 			continue
 		}
 
-		reg := registry.GetRegistration(name)
-
 		if reg.AlternativeResource != "" {
-			color.New(color.Bold).Printf("%-55s\n", name)
+			color.New(color.Bold).Printf("%-59s", name)
+			color.New(color.FgCyan).Printf("native resource\n")
 			color.New(color.Bold, color.FgYellow).Printf("  > %-55s", reg.AlternativeResource)
-			color.New(color.FgCyan).Printf("alternative cloud-control resource\n")
+			color.New(color.FgHiBlue).Printf("alternative cloud-control resource\n")
+		} else if strings.HasPrefix(reg.Name, "AWS::") {
+			color.New(color.Bold).Printf("%-59s", name)
+			color.New(color.FgHiMagenta).Printf("cloud-control resource\n")
 		} else {
-			color.New(color.Bold).Printf("%-55s\n", name)
+			color.New(color.Bold).Printf("%-59s", name)
+			color.New(color.FgCyan).Printf("native resource\n")
 		}
 	}
 

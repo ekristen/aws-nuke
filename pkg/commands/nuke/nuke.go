@@ -25,6 +25,8 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/common"
 	"github.com/ekristen/aws-nuke/v3/pkg/config"
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
+
+	"github.com/ekristen/aws-nuke/v3/resources"
 )
 
 // ConfigureCreds is a helper function to configure the awsutil.Credentials object from the cli.Context
@@ -138,10 +140,26 @@ func execute(c *cli.Context) error { //nolint:funlen,gocyclo
 	// Get any specific account level configuration
 	accountConfig := parsedConfig.Accounts[account.ID()]
 
+	// Get current registered resource names
+	resourceNames := registry.GetNames()
+
+	// Combine all the places where alternative resource types can be defined and then dynamically
+	// register them as a Cloud Control resource type.
+	altResourceTypes := types.Collection(registry.ExpandNames(n.Parameters.Alternatives))
+	altResourceTypes = altResourceTypes.Union(parsedConfig.ResourceTypes.GetAlternatives())
+	altResourceTypes = altResourceTypes.Union(accountConfig.ResourceTypes.GetAlternatives())
+	for _, rt := range altResourceTypes {
+		if slices.Contains(resourceNames, rt) {
+			continue
+		}
+
+		resources.RegisterCloudControl(rt)
+	}
+
 	// Resolve the resource types to be used for the nuke process based on the parameters, global configuration, and
 	// account level configuration.
 	resourceTypes := types.ResolveResourceTypes(
-		registry.GetNames(),
+		registry.GetNames(), // note: we want to re-pull the registry here due to the dynamic registration above
 		[]types.Collection{
 			registry.ExpandNames(n.Parameters.Includes),
 			parsedConfig.ResourceTypes.GetIncludes(),
