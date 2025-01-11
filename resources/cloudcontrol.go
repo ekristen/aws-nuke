@@ -4,12 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
+	"github.com/gotidy/ptr"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	"go.uber.org/ratelimit"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/cloudcontrolapi"
 
@@ -53,6 +55,15 @@ func init() {
 	RegisterCloudControl("AWS::NetworkFirewall::RuleGroup")
 }
 
+// describeRateLimit is a rate limiter to avoid throttling when describing resources via the cloud control api.
+// AWS does not publish the rate limits for the cloud control api. Testing shows it fails around 30-35 requests per
+// second, therefore we set the rate limit to 25 requests per second to try and stay under the limit at all times.
+var describeRateLimit = ratelimit.New(25, ratelimit.Per(time.Second))
+
+// RegisterCloudControl registers a resource type for the Cloud Control API. This is a unique function that is used
+// in two different places. The first place is in the init() function of this file, where it is used to register
+// a select subset of Cloud Control API resource types. The second place is in nuke command file, where it is used
+// to dynamically register any resource type provided via the `--cloud-control` flag.
 func RegisterCloudControl(typeName string) {
 	registry.Register(&registry.Registration{
 		Name:     typeName,
@@ -66,26 +77,31 @@ func RegisterCloudControl(typeName string) {
 
 type CloudControlResourceLister struct {
 	TypeName string
+
+	logger *logrus.Entry
 }
 
 func (l *CloudControlResourceLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
+	l.logger = opts.Logger.WithField("type-name", l.TypeName)
 
 	svc := cloudcontrolapi.New(opts.Session)
+	resources := make([]resource.Resource, 0)
 
 	params := &cloudcontrolapi.ListResourcesInput{
-		TypeName: aws.String(l.TypeName),
+		TypeName:   ptr.String(l.TypeName),
+		MaxResults: ptr.Int64(1),
 	}
-	resources := make([]resource.Resource, 0)
-	if err := svc.ListResourcesPages(params, func(page *cloudcontrolapi.ListResourcesOutput, lastPage bool) bool {
-		for _, desc := range page.ResourceDescriptions {
-			identifier := aws.StringValue(desc.Identifier)
 
-			properties, err := cloudControlParseProperties(aws.StringValue(desc.Properties))
+	if err := svc.ListResourcesPages(params, func(page *cloudcontrolapi.ListResourcesOutput, lastPage bool) bool {
+		describeRateLimit.Take()
+
+		for _, desc := range page.ResourceDescriptions {
+			identifier := ptr.ToString(desc.Identifier)
+			properties, err := l.cloudControlParseProperties(ptr.ToString(desc.Properties))
 			if err != nil {
-				logrus.
+				l.logger.
 					WithError(errors.WithStack(err)).
-					WithField("type-name", l.TypeName).
 					WithField("identifier", identifier).
 					Error("failed to parse cloud control properties")
 				continue
@@ -117,17 +133,19 @@ func (l *CloudControlResourceLister) List(_ context.Context, o interface{}) ([]r
 	return resources, nil
 }
 
-func cloudControlParseProperties(payload string) (types.Properties, error) {
+func (l *CloudControlResourceLister) cloudControlParseProperties(payload string) (types.Properties, error) {
 	// Warning: The implementation of this function is not very straightforward,
 	// because the aws-nuke filter functions expect a very rigid structure and
 	// the properties from the Cloud Control API are very dynamic.
 
+	properties := types.NewProperties()
 	propMap := map[string]interface{}{}
+
 	err := json.Unmarshal([]byte(payload), &propMap)
 	if err != nil {
-		return nil, err
+		return properties, err
 	}
-	properties := types.NewProperties()
+
 	for name, value := range propMap {
 		switch v := value.(type) {
 		case string:
@@ -147,12 +165,12 @@ func cloudControlParseProperties(payload string) (types.Properties, error) {
 							v2["Value"],
 						)
 					} else {
-						logrus.
+						l.logger.
 							WithField("value", fmt.Sprintf("%q", v)).
 							Debugf("nested cloud control property type []%T is not supported", value)
 					}
 				default:
-					logrus.
+					l.logger.
 						WithField("value", fmt.Sprintf("%q", v)).
 						Debugf("nested cloud control property type []%T is not supported", value)
 				}
@@ -163,9 +181,9 @@ func cloudControlParseProperties(payload string) (types.Properties, error) {
 			// properties.Set, because it would fall back to
 			// fmt.Sprintf. Since the cloud control properties are
 			// nested it would create properties that are not
-			// suitable for filtering. Therefore we have to
+			// suitable for filtering. Therefore, we have to
 			// implemented more sophisticated parsing.
-			logrus.
+			l.logger.
 				WithField("value", fmt.Sprintf("%q", v)).
 				Debugf("cloud control property type %T is not supported", v)
 		}
