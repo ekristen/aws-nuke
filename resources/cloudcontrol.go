@@ -90,7 +90,7 @@ func (l *CloudControlResourceLister) List(_ context.Context, o interface{}) ([]r
 
 	params := &cloudcontrolapi.ListResourcesInput{
 		TypeName:   ptr.String(l.TypeName),
-		MaxResults: ptr.Int64(1),
+		MaxResults: ptr.Int64(100),
 	}
 
 	if err := svc.ListResourcesPages(params, func(page *cloudcontrolapi.ListResourcesOutput, lastPage bool) bool {
