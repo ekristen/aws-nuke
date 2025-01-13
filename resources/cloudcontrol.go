@@ -56,9 +56,9 @@ func init() {
 }
 
 // describeRateLimit is a rate limiter to avoid throttling when describing resources via the cloud control api.
-// AWS does not publish the rate limits for the cloud control api. Testing shows it fails around 30-35 requests per
-// second, therefore we set the rate limit to 25 requests per second to try and stay under the limit at all times.
-var describeRateLimit = ratelimit.New(25, ratelimit.Per(time.Second))
+// AWS does not publish the rate limits for the cloud control api, the rate seems to be 60 reqs/minute, setting to
+// 55 and setting no slack to avoid throttling.
+var describeRateLimit = ratelimit.New(55, ratelimit.Per(time.Minute), ratelimit.WithoutSlack)
 
 // RegisterCloudControl registers a resource type for the Cloud Control API. This is a unique function that is used
 // in two different places. The first place is in the init() function of this file, where it is used to register
@@ -94,7 +94,8 @@ func (l *CloudControlResourceLister) List(_ context.Context, o interface{}) ([]r
 	}
 
 	if err := svc.ListResourcesPages(params, func(page *cloudcontrolapi.ListResourcesOutput, lastPage bool) bool {
-		describeRateLimit.Take()
+		dt := describeRateLimit.Take()
+		l.logger.Debugf("rate limit time: %s", dt)
 
 		for _, desc := range page.ResourceDescriptions {
 			identifier := ptr.ToString(desc.Identifier)
