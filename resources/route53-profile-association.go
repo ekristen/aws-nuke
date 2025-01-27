@@ -3,7 +3,6 @@ package resources
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/gotidy/ptr"
@@ -55,7 +54,7 @@ func (l *Route53ProfileAssociationLister) List(ctx context.Context, o interface{
 				OwnerID:          p.OwnerId,
 				ProfileID:        p.ProfileId,
 				ResourceID:       p.ResourceId,
-				Status:           ptr.String(fmt.Sprintf("%s", p.Status)),
+				Status:           ptr.String(string(p.Status)),
 				CreationTime:     p.CreationTime,
 				ModificationTime: p.ModificationTime,
 			})
@@ -128,7 +127,7 @@ func (r *Route53ProfileAssociation) HandleWait(ctx context.Context) error {
 		return err
 	}
 
-	currentStatus := fmt.Sprintf("%s", p.ProfileAssociation.Status)
+	currentStatus := string(p.ProfileAssociation.Status)
 
 	r.Status = ptr.String(currentStatus)
 
