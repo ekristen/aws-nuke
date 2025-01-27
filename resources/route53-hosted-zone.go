@@ -2,7 +2,6 @@ package resources
 
 import (
 	"context"
-
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -78,12 +77,12 @@ type Route53HostedZone struct {
 	tags []*route53.Tag
 }
 
-func (hz *Route53HostedZone) Remove(_ context.Context) error {
+func (r *Route53HostedZone) Remove(_ context.Context) error {
 	params := &route53.DeleteHostedZoneInput{
-		Id: hz.id,
+		Id: r.id,
 	}
 
-	_, err := hz.svc.DeleteHostedZone(params)
+	_, err := r.svc.DeleteHostedZone(params)
 	if err != nil {
 		return err
 	}
@@ -91,16 +90,16 @@ func (hz *Route53HostedZone) Remove(_ context.Context) error {
 	return nil
 }
 
-func (hz *Route53HostedZone) Properties() types.Properties {
+func (r *Route53HostedZone) Properties() types.Properties {
 	properties := types.NewProperties()
-	for _, tag := range hz.tags {
+	for _, tag := range r.tags {
 		properties.SetTag(tag.Key, tag.Value)
 	}
-	properties.Set("Name", hz.name)
-	properties.Set("ID", hz.id)
+	properties.Set("Name", r.name)
+	properties.Set("ID", r.id)
 	return properties
 }
 
-func (hz *Route53HostedZone) String() string {
-	return fmt.Sprintf("%s (%s)", *hz.id, *hz.name)
+func (r *Route53HostedZone) String() string {
+	return fmt.Sprintf("%s (%s)", *r.id, *r.name)
 }
