@@ -44,7 +44,7 @@ func (l *Route53ResourceRecordSetLister) List(ctx context.Context, o interface{}
 
 	for _, r := range sub {
 		zone := r.(*Route53HostedZone)
-		rrs, err := ListResourceRecordsForZone(svc, zone.id, zone.name, zone.tags)
+		rrs, err := ListResourceRecordsForZone(svc, zone.ID, zone.Name, zone.Tags)
 		if err != nil {
 			return nil, err
 		}
