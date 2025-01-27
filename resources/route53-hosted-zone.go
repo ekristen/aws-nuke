@@ -4,7 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go/service/route53"
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -44,7 +45,7 @@ func (l *Route53HostedZoneLister) List(_ context.Context, o interface{}) ([]reso
 		hostedZones = append(hostedZones, resp.HostedZones...)
 
 		params.Marker = resp.NextMarker
-		if aws.StringValue(params.Marker) == "" {
+		if ptr.ToString(params.Marker) == "" {
 			break
 		}
 	}
@@ -53,7 +54,7 @@ func (l *Route53HostedZoneLister) List(_ context.Context, o interface{}) ([]reso
 	for _, hz := range hostedZones {
 		tags, err := svc.ListTagsForResource(&route53.ListTagsForResourceInput{
 			ResourceId:   hz.Id,
-			ResourceType: aws.String("hostedzone"),
+			ResourceType: ptr.String("hostedzone"),
 		})
 
 		if err != nil {
@@ -62,9 +63,9 @@ func (l *Route53HostedZoneLister) List(_ context.Context, o interface{}) ([]reso
 
 		resources = append(resources, &Route53HostedZone{
 			svc:  svc,
-			id:   hz.Id,
-			name: hz.Name,
-			tags: tags.ResourceTagSet.Tags,
+			ID:   hz.Id,
+			Name: hz.Name,
+			Tags: tags.ResourceTagSet.Tags,
 		})
 	}
 	return resources, nil
@@ -72,14 +73,14 @@ func (l *Route53HostedZoneLister) List(_ context.Context, o interface{}) ([]reso
 
 type Route53HostedZone struct {
 	svc  *route53.Route53
-	id   *string
-	name *string
-	tags []*route53.Tag
+	ID   *string
+	Name *string
+	Tags []*route53.Tag
 }
 
 func (r *Route53HostedZone) Remove(_ context.Context) error {
 	params := &route53.DeleteHostedZoneInput{
-		Id: r.id,
+		Id: r.ID,
 	}
 
 	_, err := r.svc.DeleteHostedZone(params)
@@ -91,15 +92,10 @@ func (r *Route53HostedZone) Remove(_ context.Context) error {
 }
 
 func (r *Route53HostedZone) Properties() types.Properties {
-	properties := types.NewProperties()
-	for _, tag := range r.tags {
-		properties.SetTag(tag.Key, tag.Value)
-	}
-	properties.Set("Name", r.name)
-	properties.Set("ID", r.id)
-	return properties
+	return types.NewPropertiesFromStruct(r)
 }
 
 func (r *Route53HostedZone) String() string {
-	return fmt.Sprintf("%s (%s)", *r.id, *r.name)
+	// TODO(v4): change the stringer format
+	return fmt.Sprintf("%s (%s)", *r.ID, *r.Name)
 }
