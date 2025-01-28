@@ -59,6 +59,7 @@ func (l *EC2NetworkInterfaceLister) List(_ context.Context, o interface{}) ([]re
 				SubnetID:         out.SubnetId,
 				Status:           out.Status,
 				OwnerID:          out.OwnerId,
+				Description:      out.Description,
 			}
 
 			if out.Attachment != nil {
