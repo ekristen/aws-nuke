@@ -94,7 +94,8 @@ func (e *EC2NetworkInterface) Properties() types.Properties {
 		Set("AvailabilityZone", e.eni.AvailabilityZone).
 		Set("PrivateIPAddress", e.eni.PrivateIpAddress).
 		Set("SubnetID", e.eni.SubnetId).
-		Set("Status", e.eni.Status)
+		Set("Status", e.eni.Status).
+		Set("Description", e.eni.Description)
 	return properties
 }
 
