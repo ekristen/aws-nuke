@@ -2,7 +2,6 @@ package resources
 
 import (
 	"context"
-
 	"fmt"
 
 	"github.com/gotidy/ptr"
@@ -71,38 +70,38 @@ func (l *EC2SecurityGroupLister) List(_ context.Context, o interface{}) ([]resou
 	return resources, nil
 }
 
-func (sg *EC2SecurityGroup) Filter() error {
-	if ptr.ToString(sg.name) == "default" {
+func (r *EC2SecurityGroup) Filter() error {
+	if ptr.ToString(r.name) == "default" {
 		return fmt.Errorf("cannot delete group 'default'")
 	}
 
 	return nil
 }
 
-func (sg *EC2SecurityGroup) Remove(_ context.Context) error {
-	if len(sg.egress) > 0 {
+func (r *EC2SecurityGroup) Remove(_ context.Context) error {
+	if len(r.egress) > 0 {
 		egressParams := &ec2.RevokeSecurityGroupEgressInput{
-			GroupId:       sg.id,
-			IpPermissions: sg.egress,
+			GroupId:       r.id,
+			IpPermissions: r.egress,
 		}
 
-		_, _ = sg.svc.RevokeSecurityGroupEgress(egressParams)
+		_, _ = r.svc.RevokeSecurityGroupEgress(egressParams)
 	}
 
-	if len(sg.ingress) > 0 {
+	if len(r.ingress) > 0 {
 		ingressParams := &ec2.RevokeSecurityGroupIngressInput{
-			GroupId:       sg.id,
-			IpPermissions: sg.ingress,
+			GroupId:       r.id,
+			IpPermissions: r.ingress,
 		}
 
-		_, _ = sg.svc.RevokeSecurityGroupIngress(ingressParams)
+		_, _ = r.svc.RevokeSecurityGroupIngress(ingressParams)
 	}
 
 	params := &ec2.DeleteSecurityGroupInput{
-		GroupId: sg.id,
+		GroupId: r.id,
 	}
 
-	_, err := sg.svc.DeleteSecurityGroup(params)
+	_, err := r.svc.DeleteSecurityGroup(params)
 	if err != nil {
 		return err
 	}
@@ -110,16 +109,16 @@ func (sg *EC2SecurityGroup) Remove(_ context.Context) error {
 	return nil
 }
 
-func (sg *EC2SecurityGroup) Properties() types.Properties {
+func (r *EC2SecurityGroup) Properties() types.Properties {
 	properties := types.NewProperties()
-	for _, tagValue := range sg.group.Tags {
+	for _, tagValue := range r.group.Tags {
 		properties.SetTag(tagValue.Key, tagValue.Value)
 	}
-	properties.Set("Name", sg.name)
-	properties.Set("OwnerID", sg.ownerID)
+	properties.Set("Name", r.name)
+	properties.Set("OwnerID", r.ownerID)
 	return properties
 }
 
-func (sg *EC2SecurityGroup) String() string {
-	return ptr.ToString(sg.id)
+func (r *EC2SecurityGroup) String() string {
+	return ptr.ToString(r.id)
 }
