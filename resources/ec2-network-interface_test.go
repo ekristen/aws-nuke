@@ -29,8 +29,16 @@ var testEC2NetworkInterface = &ec2.NetworkInterface{
 
 func Test_EC2NetworkInterface_Properties(t *testing.T) {
 	r := EC2NetworkInterface{
-		svc: nil,
-		eni: testEC2NetworkInterface,
+		svc:              nil,
+		ID:               testEC2NetworkInterface.NetworkInterfaceId,
+		VPC:              testEC2NetworkInterface.VpcId,
+		AvailabilityZone: testEC2NetworkInterface.AvailabilityZone,
+		PrivateIPAddress: testEC2NetworkInterface.PrivateIpAddress,
+		SubnetID:         testEC2NetworkInterface.SubnetId,
+		Status:           testEC2NetworkInterface.Status,
+		OwnerID:          testEC2NetworkInterface.OwnerId,
+		Tags:             testEC2NetworkInterface.TagSet,
+		AttachmentID:     testEC2NetworkInterface.Attachment.AttachmentId,
 	}
 
 	props := r.Properties()
@@ -41,5 +49,6 @@ func Test_EC2NetworkInterface_Properties(t *testing.T) {
 	assert.Equal(t, ptr.ToString(testEC2NetworkInterface.PrivateIpAddress), props.Get("PrivateIPAddress"))
 	assert.Equal(t, ptr.ToString(testEC2NetworkInterface.SubnetId), props.Get("SubnetID"))
 	assert.Equal(t, ptr.ToString(testEC2NetworkInterface.Status), props.Get("Status"))
+	assert.Equal(t, ptr.ToString(testEC2NetworkInterface.OwnerId), props.Get("OwnerID"))
 	assert.Equal(t, "test", props.Get("tag:Name"))
 }

@@ -33,36 +33,72 @@ func (l *EC2NetworkInterfaceLister) List(_ context.Context, o interface{}) ([]re
 
 	svc := ec2.New(opts.Session)
 
-	resp, err := svc.DescribeNetworkInterfaces(nil)
-	if err != nil {
-		return nil, err
+	resources := make([]resource.Resource, 0)
+
+	params := &ec2.DescribeNetworkInterfacesInput{
+		MaxResults: aws.Int64(1000),
 	}
 
-	resources := make([]resource.Resource, 0)
-	for _, out := range resp.NetworkInterfaces {
-		resources = append(resources, &EC2NetworkInterface{
-			svc: svc,
-			eni: out,
-		})
+	for {
+		resp, err := svc.DescribeNetworkInterfaces(params)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, out := range resp.NetworkInterfaces {
+			newResource := &EC2NetworkInterface{
+				svc:              svc,
+				accountID:        opts.AccountID,
+				ID:               out.NetworkInterfaceId,
+				VPC:              out.VpcId,
+				AvailabilityZone: out.AvailabilityZone,
+				PrivateIPAddress: out.PrivateIpAddress,
+				SubnetID:         out.SubnetId,
+				Status:           out.Status,
+				OwnerID:          out.OwnerId,
+			}
+
+			if out.Attachment != nil {
+				newResource.AttachmentID = out.Attachment.AttachmentId
+			}
+
+			resources = append(resources, newResource)
+		}
+
+		if resp.NextToken == nil {
+			break
+		}
+
+		params.NextToken = resp.NextToken
 	}
 
 	return resources, nil
 }
 
 type EC2NetworkInterface struct {
-	svc *ec2.EC2
-	eni *ec2.NetworkInterface
+	svc       *ec2.EC2
+	accountID *string
+
+	ID               *string
+	VPC              *string
+	AttachmentID     *string
+	AvailabilityZone *string
+	PrivateIPAddress *string
+	SubnetID         *string
+	Status           *string
+	OwnerID          *string
+	Tags             []*ec2.Tag
 }
 
 func (r *EC2NetworkInterface) Remove(_ context.Context) error {
-	if r.eni.Attachment != nil {
+	if r.AttachmentID != nil {
 		_, err := r.svc.DetachNetworkInterface(&ec2.DetachNetworkInterfaceInput{
-			AttachmentId: r.eni.Attachment.AttachmentId,
+			AttachmentId: r.AttachmentID,
 			Force:        aws.Bool(true),
 		})
 		if err != nil {
-			if r.eni.Attachment.AttachmentId != nil {
-				expected := fmt.Sprintf("The interface attachment '%s' does not exist.", *r.eni.Attachment.AttachmentId)
+			if r.AttachmentID != nil {
+				expected := fmt.Sprintf("The interface attachment '%s' does not exist.", *r.AttachmentID)
 				if !strings.Contains(err.Error(), expected) {
 					return err
 				}
@@ -71,7 +107,7 @@ func (r *EC2NetworkInterface) Remove(_ context.Context) error {
 	}
 
 	params := &ec2.DeleteNetworkInterfaceInput{
-		NetworkInterfaceId: r.eni.NetworkInterfaceId,
+		NetworkInterfaceId: r.ID,
 	}
 
 	_, err := r.svc.DeleteNetworkInterface(params)
@@ -83,20 +119,9 @@ func (r *EC2NetworkInterface) Remove(_ context.Context) error {
 }
 
 func (r *EC2NetworkInterface) Properties() types.Properties {
-	properties := types.NewProperties()
-	for _, tag := range r.eni.TagSet {
-		properties.SetTag(tag.Key, tag.Value)
-	}
-	properties.
-		Set("ID", r.eni.NetworkInterfaceId).
-		Set("VPC", r.eni.VpcId).
-		Set("AvailabilityZone", r.eni.AvailabilityZone).
-		Set("PrivateIPAddress", r.eni.PrivateIpAddress).
-		Set("SubnetID", r.eni.SubnetId).
-		Set("Status", r.eni.Status)
-	return properties
+	return types.NewPropertiesFromStruct(r)
 }
 
 func (r *EC2NetworkInterface) String() string {
-	return *r.eni.NetworkInterfaceId
+	return *r.ID
 }
