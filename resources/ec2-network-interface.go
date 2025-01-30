@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -88,6 +89,14 @@ type EC2NetworkInterface struct {
 	Status           *string
 	OwnerID          *string
 	Tags             []*ec2.Tag
+}
+
+func (r *EC2NetworkInterface) Filter() error {
+	if *r.OwnerID != *r.accountID {
+		return errors.New("not owned by account, likely RAM shared")
+	}
+
+	return nil
 }
 
 func (r *EC2NetworkInterface) Remove(_ context.Context) error {
