@@ -33,11 +33,11 @@ func init() {
 type EC2SecurityGroup struct {
 	svc     *ec2.EC2
 	group   *ec2.SecurityGroup
-	id      *string
-	name    *string
+	ID      *string
+	Name    *string
+	OwnerID *string
 	ingress []*ec2.IpPermission
 	egress  []*ec2.IpPermission
-	ownerID *string
 }
 
 type EC2SecurityGroupLister struct{}
@@ -55,11 +55,11 @@ func (l *EC2SecurityGroupLister) List(_ context.Context, o interface{}) ([]resou
 				resources = append(resources, &EC2SecurityGroup{
 					svc:     svc,
 					group:   group,
-					id:      group.GroupId,
-					name:    group.GroupName,
+					ID:      group.GroupId,
+					Name:    group.GroupName,
+					OwnerID: group.OwnerId,
 					ingress: group.IpPermissions,
 					egress:  group.IpPermissionsEgress,
-					ownerID: group.OwnerId,
 				})
 			}
 			return !lastPage
@@ -71,7 +71,7 @@ func (l *EC2SecurityGroupLister) List(_ context.Context, o interface{}) ([]resou
 }
 
 func (r *EC2SecurityGroup) Filter() error {
-	if ptr.ToString(r.name) == "default" {
+	if ptr.ToString(r.Name) == "default" {
 		return fmt.Errorf("cannot delete group 'default'")
 	}
 
@@ -81,7 +81,7 @@ func (r *EC2SecurityGroup) Filter() error {
 func (r *EC2SecurityGroup) Remove(_ context.Context) error {
 	if len(r.egress) > 0 {
 		egressParams := &ec2.RevokeSecurityGroupEgressInput{
-			GroupId:       r.id,
+			GroupId:       r.ID,
 			IpPermissions: r.egress,
 		}
 
@@ -90,7 +90,7 @@ func (r *EC2SecurityGroup) Remove(_ context.Context) error {
 
 	if len(r.ingress) > 0 {
 		ingressParams := &ec2.RevokeSecurityGroupIngressInput{
-			GroupId:       r.id,
+			GroupId:       r.ID,
 			IpPermissions: r.ingress,
 		}
 
@@ -98,7 +98,7 @@ func (r *EC2SecurityGroup) Remove(_ context.Context) error {
 	}
 
 	params := &ec2.DeleteSecurityGroupInput{
-		GroupId: r.id,
+		GroupId: r.ID,
 	}
 
 	_, err := r.svc.DeleteSecurityGroup(params)
@@ -114,11 +114,11 @@ func (r *EC2SecurityGroup) Properties() types.Properties {
 	for _, tagValue := range r.group.Tags {
 		properties.SetTag(tagValue.Key, tagValue.Value)
 	}
-	properties.Set("Name", r.name)
-	properties.Set("OwnerID", r.ownerID)
+	properties.Set("Name", r.Name)
+	properties.Set("OwnerID", r.OwnerID)
 	return properties
 }
 
 func (r *EC2SecurityGroup) String() string {
-	return ptr.ToString(r.id)
+	return ptr.ToString(r.ID)
 }
