@@ -2,7 +2,6 @@ package resources
 
 import (
 	"context"
-
 	"fmt"
 	"strings"
 
@@ -55,15 +54,15 @@ type EC2NetworkInterface struct {
 	eni *ec2.NetworkInterface
 }
 
-func (e *EC2NetworkInterface) Remove(_ context.Context) error {
-	if e.eni.Attachment != nil {
-		_, err := e.svc.DetachNetworkInterface(&ec2.DetachNetworkInterfaceInput{
-			AttachmentId: e.eni.Attachment.AttachmentId,
+func (r *EC2NetworkInterface) Remove(_ context.Context) error {
+	if r.eni.Attachment != nil {
+		_, err := r.svc.DetachNetworkInterface(&ec2.DetachNetworkInterfaceInput{
+			AttachmentId: r.eni.Attachment.AttachmentId,
 			Force:        aws.Bool(true),
 		})
 		if err != nil {
-			if e.eni.Attachment.AttachmentId != nil {
-				expected := fmt.Sprintf("The interface attachment '%s' does not exist.", *e.eni.Attachment.AttachmentId)
+			if r.eni.Attachment.AttachmentId != nil {
+				expected := fmt.Sprintf("The interface attachment '%s' does not exist.", *r.eni.Attachment.AttachmentId)
 				if !strings.Contains(err.Error(), expected) {
 					return err
 				}
@@ -72,10 +71,10 @@ func (e *EC2NetworkInterface) Remove(_ context.Context) error {
 	}
 
 	params := &ec2.DeleteNetworkInterfaceInput{
-		NetworkInterfaceId: e.eni.NetworkInterfaceId,
+		NetworkInterfaceId: r.eni.NetworkInterfaceId,
 	}
 
-	_, err := e.svc.DeleteNetworkInterface(params)
+	_, err := r.svc.DeleteNetworkInterface(params)
 	if err != nil {
 		return err
 	}
@@ -83,21 +82,21 @@ func (e *EC2NetworkInterface) Remove(_ context.Context) error {
 	return nil
 }
 
-func (e *EC2NetworkInterface) Properties() types.Properties {
+func (r *EC2NetworkInterface) Properties() types.Properties {
 	properties := types.NewProperties()
-	for _, tag := range e.eni.TagSet {
+	for _, tag := range r.eni.TagSet {
 		properties.SetTag(tag.Key, tag.Value)
 	}
 	properties.
-		Set("ID", e.eni.NetworkInterfaceId).
-		Set("VPC", e.eni.VpcId).
-		Set("AvailabilityZone", e.eni.AvailabilityZone).
-		Set("PrivateIPAddress", e.eni.PrivateIpAddress).
-		Set("SubnetID", e.eni.SubnetId).
-		Set("Status", e.eni.Status)
+		Set("ID", r.eni.NetworkInterfaceId).
+		Set("VPC", r.eni.VpcId).
+		Set("AvailabilityZone", r.eni.AvailabilityZone).
+		Set("PrivateIPAddress", r.eni.PrivateIpAddress).
+		Set("SubnetID", r.eni.SubnetId).
+		Set("Status", r.eni.Status)
 	return properties
 }
 
-func (e *EC2NetworkInterface) String() string {
-	return *e.eni.NetworkInterfaceId
+func (r *EC2NetworkInterface) String() string {
+	return *r.eni.NetworkInterfaceId
 }
