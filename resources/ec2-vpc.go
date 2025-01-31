@@ -67,12 +67,12 @@ func (l *EC2VPCLister) List(_ context.Context, o interface{}) ([]resource.Resour
 	return resources, nil
 }
 
-func (e *EC2VPC) Remove(_ context.Context) error {
+func (r *EC2VPC) Remove(_ context.Context) error {
 	params := &ec2.DeleteVpcInput{
-		VpcId: e.vpc.VpcId,
+		VpcId: r.vpc.VpcId,
 	}
 
-	_, err := e.svc.DeleteVpc(params)
+	_, err := r.svc.DeleteVpc(params)
 	if err != nil {
 		return err
 	}
@@ -80,19 +80,19 @@ func (e *EC2VPC) Remove(_ context.Context) error {
 	return nil
 }
 
-func (e *EC2VPC) Properties() types.Properties {
+func (r *EC2VPC) Properties() types.Properties {
 	properties := types.NewProperties()
-	for _, tagValue := range e.vpc.Tags {
+	for _, tagValue := range r.vpc.Tags {
 		properties.SetTag(tagValue.Key, tagValue.Value)
 	}
-	properties.Set("ID", e.vpc.VpcId)
-	properties.Set("IsDefault", e.vpc.IsDefault)
-	properties.Set("OwnerID", e.vpc.OwnerId)
+	properties.Set("ID", r.vpc.VpcId)
+	properties.Set("IsDefault", r.vpc.IsDefault)
+	properties.Set("OwnerID", r.vpc.OwnerId)
 	return properties
 }
 
-func (e *EC2VPC) String() string {
-	return *e.vpc.VpcId
+func (r *EC2VPC) String() string {
+	return *r.vpc.VpcId
 }
 
 func DefaultVpc(svc *ec2.EC2) *ec2.Vpc {
