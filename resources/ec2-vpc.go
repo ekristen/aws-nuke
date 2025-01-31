@@ -2,8 +2,10 @@ package resources
 
 import (
 	"context"
+	"errors"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go/service/ec2"
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -40,11 +42,6 @@ func init() {
 	})
 }
 
-type EC2VPC struct {
-	svc *ec2.EC2
-	vpc *ec2.Vpc
-}
-
 type EC2VPCLister struct{}
 
 func (l *EC2VPCLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
@@ -59,12 +56,27 @@ func (l *EC2VPCLister) List(_ context.Context, o interface{}) ([]resource.Resour
 	resources := make([]resource.Resource, 0)
 	for _, vpc := range resp.Vpcs {
 		resources = append(resources, &EC2VPC{
-			svc: svc,
-			vpc: vpc,
+			svc:       svc,
+			vpc:       vpc,
+			accountID: opts.AccountID,
 		})
 	}
 
 	return resources, nil
+}
+
+type EC2VPC struct {
+	svc       *ec2.EC2
+	vpc       *ec2.Vpc
+	accountID *string
+}
+
+func (r *EC2VPC) Filter() error {
+	if ptr.ToString(r.vpc.OwnerId) != ptr.ToString(r.accountID) {
+		return errors.New("not owned by account, likely shared")
+	}
+
+	return nil
 }
 
 func (r *EC2VPC) Remove(_ context.Context) error {
@@ -93,39 +105,4 @@ func (r *EC2VPC) Properties() types.Properties {
 
 func (r *EC2VPC) String() string {
 	return *r.vpc.VpcId
-}
-
-func DefaultVpc(svc *ec2.EC2) *ec2.Vpc {
-	resp, err := svc.DescribeVpcs(&ec2.DescribeVpcsInput{
-		Filters: []*ec2.Filter{
-			{
-				Name:   aws.String("is-default"),
-				Values: aws.StringSlice([]string{"true"}),
-			},
-		},
-	})
-	if err != nil {
-		return nil
-	}
-
-	if len(resp.Vpcs) == 0 {
-		return nil
-	}
-
-	return resp.Vpcs[0]
-}
-
-func GetVPC(svc *ec2.EC2, vpcID *string) (*ec2.Vpc, error) {
-	resp, err := svc.DescribeVpcs(&ec2.DescribeVpcsInput{
-		VpcIds: []*string{vpcID},
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	if len(resp.Vpcs) == 0 {
-		return nil, nil //nolint:nilnil
-	}
-
-	return resp.Vpcs[0], nil
 }
