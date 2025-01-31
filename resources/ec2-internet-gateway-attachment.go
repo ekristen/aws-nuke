@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/gotidy/ptr"
@@ -77,6 +78,7 @@ func (l *EC2InternetGatewayAttachmentLister) List(_ context.Context, o interface
 
 type EC2InternetGatewayAttachment struct {
 	svc        *ec2.EC2
+	accountID  *string
 	vpcID      *string
 	vpcOwnerID *string
 	vpcTags    []*ec2.Tag
@@ -84,6 +86,14 @@ type EC2InternetGatewayAttachment struct {
 	igwOwnerID *string
 	igwTags    []*ec2.Tag
 	defaultVPC bool
+}
+
+func (r *EC2InternetGatewayAttachment) Filter() error {
+	if ptr.ToString(r.igwOwnerID) != ptr.ToString(r.accountID) {
+		return errors.New("not owned by account, likely shared")
+	}
+
+	return nil
 }
 
 func (r *EC2InternetGatewayAttachment) Remove(_ context.Context) error {
