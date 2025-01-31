@@ -73,8 +73,8 @@ type EC2RouteTable struct {
 	ownerID    *string
 }
 
-func (e *EC2RouteTable) Filter() error {
-	for _, association := range e.routeTable.Associations {
+func (r *EC2RouteTable) Filter() error {
+	for _, association := range r.routeTable.Associations {
 		if *association.Main {
 			return fmt.Errorf("main route tables cannot be deleted")
 		}
@@ -83,12 +83,12 @@ func (e *EC2RouteTable) Filter() error {
 	return nil
 }
 
-func (e *EC2RouteTable) Remove(_ context.Context) error {
+func (r *EC2RouteTable) Remove(_ context.Context) error {
 	params := &ec2.DeleteRouteTableInput{
-		RouteTableId: e.routeTable.RouteTableId,
+		RouteTableId: r.routeTable.RouteTableId,
 	}
 
-	_, err := e.svc.DeleteRouteTable(params)
+	_, err := r.svc.DeleteRouteTable(params)
 	if err != nil {
 		return err
 	}
@@ -96,25 +96,25 @@ func (e *EC2RouteTable) Remove(_ context.Context) error {
 	return nil
 }
 
-func (e *EC2RouteTable) Properties() types.Properties {
+func (r *EC2RouteTable) Properties() types.Properties {
 	properties := types.NewProperties()
 
-	properties.Set("DefaultVPC", e.defaultVPC)
-	properties.Set("OwnerID", e.ownerID)
-	properties.Set("vpcID", e.vpc.VpcId) // TODO: deprecate and remove this
-	properties.SetWithPrefix("vpc", "ID", e.vpc.VpcId)
+	properties.Set("DefaultVPC", r.defaultVPC)
+	properties.Set("OwnerID", r.ownerID)
+	properties.Set("vpcID", r.vpc.VpcId) // TODO: deprecate and remove this
+	properties.SetWithPrefix("vpc", "ID", r.vpc.VpcId)
 
-	for _, tagValue := range e.routeTable.Tags {
+	for _, tagValue := range r.routeTable.Tags {
 		properties.SetTag(tagValue.Key, tagValue.Value)
 	}
 
-	for _, tagValue := range e.vpc.Tags {
+	for _, tagValue := range r.vpc.Tags {
 		properties.SetTagWithPrefix("vpc", tagValue.Key, tagValue.Value)
 	}
 
 	return properties
 }
 
-func (e *EC2RouteTable) String() string {
-	return ptr.ToString(e.routeTable.RouteTableId)
+func (r *EC2RouteTable) String() string {
+	return ptr.ToString(r.routeTable.RouteTableId)
 }
