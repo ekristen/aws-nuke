@@ -62,12 +62,12 @@ func (l *EC2SubnetLister) List(_ context.Context, o interface{}) ([]resource.Res
 	return resources, nil
 }
 
-func (e *EC2Subnet) Remove(_ context.Context) error {
+func (r *EC2Subnet) Remove(_ context.Context) error {
 	params := &ec2.DeleteSubnetInput{
-		SubnetId: e.subnet.SubnetId,
+		SubnetId: r.subnet.SubnetId,
 	}
 
-	_, err := e.svc.DeleteSubnet(params)
+	_, err := r.svc.DeleteSubnet(params)
 	if err != nil {
 		return err
 	}
@@ -75,21 +75,21 @@ func (e *EC2Subnet) Remove(_ context.Context) error {
 	return nil
 }
 
-func (e *EC2Subnet) Properties() types.Properties {
+func (r *EC2Subnet) Properties() types.Properties {
 	properties := types.NewProperties()
 
-	properties.Set("DefaultForAz", e.subnet.DefaultForAz)
-	properties.Set("DefaultVPC", e.defaultVPC)
-	properties.Set("OwnerID", e.subnet.OwnerId)
-	properties.Set("VpcID", e.subnet.VpcId)
+	properties.Set("DefaultForAz", r.subnet.DefaultForAz)
+	properties.Set("DefaultVPC", r.defaultVPC)
+	properties.Set("OwnerID", r.subnet.OwnerId)
+	properties.Set("VpcID", r.subnet.VpcId)
 
-	for _, tagValue := range e.subnet.Tags {
+	for _, tagValue := range r.subnet.Tags {
 		properties.SetTag(tagValue.Key, tagValue.Value)
 	}
 
 	return properties
 }
 
-func (e *EC2Subnet) String() string {
-	return *e.subnet.SubnetId
+func (r *EC2Subnet) String() string {
+	return *r.subnet.SubnetId
 }
