@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/gotidy/ptr"
@@ -55,6 +56,7 @@ func (l *EC2RouteTableLister) List(_ context.Context, o interface{}) ([]resource
 
 		resources = append(resources, &EC2RouteTable{
 			svc:        svc,
+			accountID:  opts.AccountID,
 			routeTable: out,
 			defaultVPC: defVpcID == ptr.ToString(out.VpcId),
 			vpc:        vpc,
@@ -67,6 +69,7 @@ func (l *EC2RouteTableLister) List(_ context.Context, o interface{}) ([]resource
 
 type EC2RouteTable struct {
 	svc        *ec2.EC2
+	accountID  *string
 	routeTable *ec2.RouteTable
 	defaultVPC bool
 	vpc        *ec2.Vpc
@@ -78,6 +81,10 @@ func (r *EC2RouteTable) Filter() error {
 		if *association.Main {
 			return fmt.Errorf("main route tables cannot be deleted")
 		}
+	}
+
+	if ptr.ToString(r.vpc.OwnerId) != ptr.ToString(r.accountID) {
+		return errors.New("not owned by account, likely shared")
 	}
 
 	return nil
