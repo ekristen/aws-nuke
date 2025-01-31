@@ -2,6 +2,9 @@ package resources
 
 import (
 	"context"
+	"errors"
+
+	"github.com/gotidy/ptr"
 
 	"github.com/aws/aws-sdk-go/service/ec2"
 
@@ -28,6 +31,7 @@ func init() {
 
 type EC2Subnet struct {
 	svc        *ec2.EC2
+	accountID  *string
 	subnet     *ec2.Subnet
 	defaultVPC bool
 }
@@ -54,12 +58,21 @@ func (l *EC2SubnetLister) List(_ context.Context, o interface{}) ([]resource.Res
 	for _, out := range resp.Subnets {
 		resources = append(resources, &EC2Subnet{
 			svc:        svc,
+			accountID:  opts.AccountID,
 			subnet:     out,
 			defaultVPC: defVpcID == *out.VpcId,
 		})
 	}
 
 	return resources, nil
+}
+
+func (r *EC2Subnet) Filter() error {
+	if ptr.ToString(r.subnet.OwnerId) != ptr.ToString(r.accountID) {
+		return errors.New("not owned by account, likely shared")
+	}
+
+	return nil
 }
 
 func (r *EC2Subnet) Remove(_ context.Context) error {
