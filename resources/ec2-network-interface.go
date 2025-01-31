@@ -90,6 +90,7 @@ type EC2NetworkInterface struct {
 	SubnetID         *string
 	Status           *string
 	OwnerID          *string
+	Description      *string
 	Tags             []*ec2.Tag
 }
 
