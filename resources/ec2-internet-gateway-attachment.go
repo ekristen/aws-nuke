@@ -86,13 +86,13 @@ type EC2InternetGatewayAttachment struct {
 	defaultVPC bool
 }
 
-func (e *EC2InternetGatewayAttachment) Remove(_ context.Context) error {
+func (r *EC2InternetGatewayAttachment) Remove(_ context.Context) error {
 	params := &ec2.DetachInternetGatewayInput{
-		VpcId:             e.vpcID,
-		InternetGatewayId: e.igwID,
+		VpcId:             r.vpcID,
+		InternetGatewayId: r.igwID,
 	}
 
-	_, err := e.svc.DetachInternetGateway(params)
+	_, err := r.svc.DetachInternetGateway(params)
 	if err != nil {
 		return err
 	}
@@ -100,23 +100,23 @@ func (e *EC2InternetGatewayAttachment) Remove(_ context.Context) error {
 	return nil
 }
 
-func (e *EC2InternetGatewayAttachment) Properties() types.Properties {
+func (r *EC2InternetGatewayAttachment) Properties() types.Properties {
 	properties := types.NewProperties()
 
-	properties.Set("DefaultVPC", e.defaultVPC)
-	properties.SetWithPrefix("vpc", "OwnerID", e.vpcOwnerID)
-	properties.SetWithPrefix("igw", "OwnerID", e.igwOwnerID)
+	properties.Set("DefaultVPC", r.defaultVPC)
+	properties.SetWithPrefix("vpc", "OwnerID", r.vpcOwnerID)
+	properties.SetWithPrefix("igw", "OwnerID", r.igwOwnerID)
 
-	for _, tagValue := range e.igwTags {
+	for _, tagValue := range r.igwTags {
 		properties.SetTagWithPrefix("igw", tagValue.Key, tagValue.Value)
 	}
-	for _, tagValue := range e.vpcTags {
+	for _, tagValue := range r.vpcTags {
 		properties.SetTagWithPrefix("vpc", tagValue.Key, tagValue.Value)
 	}
 
 	return properties
 }
 
-func (e *EC2InternetGatewayAttachment) String() string {
-	return fmt.Sprintf("%s -> %s", ptr.ToString(e.igwID), ptr.ToString(e.vpcID))
+func (r *EC2InternetGatewayAttachment) String() string {
+	return fmt.Sprintf("%s -> %s", ptr.ToString(r.igwID), ptr.ToString(r.vpcID))
 }
