@@ -52,3 +52,45 @@ func Test_EC2NetworkInterface_Properties(t *testing.T) {
 	assert.Equal(t, ptr.ToString(testEC2NetworkInterface.OwnerId), props.Get("OwnerID"))
 	assert.Equal(t, "test", props.Get("tag:Name"))
 }
+
+func Test_EC2NetworkInterface_Filter(t *testing.T) {
+	cases := []struct {
+		ownerID   *string
+		accountID *string
+		filtered  bool
+	}{
+		{
+			ownerID:   ptr.String("123456789012"),
+			accountID: ptr.String("123456789012"),
+			filtered:  false,
+		},
+		{
+			ownerID:   ptr.String("123456789012"),
+			accountID: ptr.String("123456789013"),
+			filtered:  true,
+		},
+	}
+
+	for _, c := range cases {
+		r := EC2NetworkInterface{
+			svc:              nil,
+			accountID:        c.accountID,
+			ID:               testEC2NetworkInterface.NetworkInterfaceId,
+			VPC:              testEC2NetworkInterface.VpcId,
+			AvailabilityZone: testEC2NetworkInterface.AvailabilityZone,
+			PrivateIPAddress: testEC2NetworkInterface.PrivateIpAddress,
+			SubnetID:         testEC2NetworkInterface.SubnetId,
+			Status:           testEC2NetworkInterface.Status,
+			OwnerID:          c.ownerID,
+			Tags:             testEC2NetworkInterface.TagSet,
+			AttachmentID:     testEC2NetworkInterface.Attachment.AttachmentId,
+		}
+
+		err := r.Filter()
+		if c.filtered {
+			assert.Error(t, err)
+		} else {
+			assert.NoError(t, err)
+		}
+	}
+}

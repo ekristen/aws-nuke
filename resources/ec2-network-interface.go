@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 
@@ -92,8 +94,8 @@ type EC2NetworkInterface struct {
 }
 
 func (r *EC2NetworkInterface) Filter() error {
-	if *r.OwnerID != *r.accountID {
-		return errors.New("not owned by account, likely RAM shared")
+	if ptr.ToString(r.OwnerID) != ptr.ToString(r.accountID) {
+		return errors.New("not owned by account, likely shared")
 	}
 
 	return nil
