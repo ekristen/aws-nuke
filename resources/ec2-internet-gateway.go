@@ -72,12 +72,12 @@ type EC2InternetGateway struct {
 	defaultVPC bool
 }
 
-func (e *EC2InternetGateway) Remove(_ context.Context) error {
+func (r *EC2InternetGateway) Remove(_ context.Context) error {
 	params := &ec2.DeleteInternetGatewayInput{
-		InternetGatewayId: e.igw.InternetGatewayId,
+		InternetGatewayId: r.igw.InternetGatewayId,
 	}
 
-	_, err := e.svc.DeleteInternetGateway(params)
+	_, err := r.svc.DeleteInternetGateway(params)
 	if err != nil {
 		return err
 	}
@@ -85,16 +85,16 @@ func (e *EC2InternetGateway) Remove(_ context.Context) error {
 	return nil
 }
 
-func (e *EC2InternetGateway) Properties() types.Properties {
+func (r *EC2InternetGateway) Properties() types.Properties {
 	properties := types.NewProperties()
-	for _, tagValue := range e.igw.Tags {
+	for _, tagValue := range r.igw.Tags {
 		properties.SetTag(tagValue.Key, tagValue.Value)
 	}
-	properties.Set("DefaultVPC", e.defaultVPC)
-	properties.Set("OwnerID", e.igw.OwnerId)
+	properties.Set("DefaultVPC", r.defaultVPC)
+	properties.Set("OwnerID", r.igw.OwnerId)
 	return properties
 }
 
-func (e *EC2InternetGateway) String() string {
-	return ptr.ToString(e.igw.InternetGatewayId)
+func (r *EC2InternetGateway) String() string {
+	return ptr.ToString(r.igw.InternetGatewayId)
 }
