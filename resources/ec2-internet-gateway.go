@@ -2,9 +2,11 @@ package resources
 
 import (
 	"context"
+	"errors"
+
+	"github.com/gotidy/ptr"
 
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/gotidy/ptr"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
@@ -45,6 +47,7 @@ func (l *EC2InternetGatewayLister) List(_ context.Context, o interface{}) ([]res
 	for _, igw := range resp.InternetGateways {
 		resources = append(resources, &EC2InternetGateway{
 			svc:        svc,
+			accountID:  opts.AccountID,
 			igw:        igw,
 			defaultVPC: HasVpcAttachment(&defVpcID, igw.Attachments),
 		})
@@ -68,16 +71,25 @@ func HasVpcAttachment(vpcID *string, attachments []*ec2.InternetGatewayAttachmen
 
 type EC2InternetGateway struct {
 	svc        *ec2.EC2
+	accountID  *string
 	igw        *ec2.InternetGateway
 	defaultVPC bool
 }
 
-func (e *EC2InternetGateway) Remove(_ context.Context) error {
-	params := &ec2.DeleteInternetGatewayInput{
-		InternetGatewayId: e.igw.InternetGatewayId,
+func (r *EC2InternetGateway) Filter() error {
+	if ptr.ToString(r.igw.OwnerId) != ptr.ToString(r.accountID) {
+		return errors.New("not owned by account, likely shared")
 	}
 
-	_, err := e.svc.DeleteInternetGateway(params)
+	return nil
+}
+
+func (r *EC2InternetGateway) Remove(_ context.Context) error {
+	params := &ec2.DeleteInternetGatewayInput{
+		InternetGatewayId: r.igw.InternetGatewayId,
+	}
+
+	_, err := r.svc.DeleteInternetGateway(params)
 	if err != nil {
 		return err
 	}
@@ -85,16 +97,16 @@ func (e *EC2InternetGateway) Remove(_ context.Context) error {
 	return nil
 }
 
-func (e *EC2InternetGateway) Properties() types.Properties {
+func (r *EC2InternetGateway) Properties() types.Properties {
 	properties := types.NewProperties()
-	for _, tagValue := range e.igw.Tags {
+	for _, tagValue := range r.igw.Tags {
 		properties.SetTag(tagValue.Key, tagValue.Value)
 	}
-	properties.Set("DefaultVPC", e.defaultVPC)
-	properties.Set("OwnerID", e.igw.OwnerId)
+	properties.Set("DefaultVPC", r.defaultVPC)
+	properties.Set("OwnerID", r.igw.OwnerId)
 	return properties
 }
 
-func (e *EC2InternetGateway) String() string {
-	return ptr.ToString(e.igw.InternetGatewayId)
+func (r *EC2InternetGateway) String() string {
+	return ptr.ToString(r.igw.InternetGatewayId)
 }

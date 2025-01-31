@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"errors"
 
 	"github.com/gotidy/ptr"
 
@@ -50,6 +51,7 @@ func (l *EC2DHCPOptionLister) List(_ context.Context, o interface{}) ([]resource
 	for _, out := range resp.DhcpOptions {
 		resources = append(resources, &EC2DHCPOption{
 			svc:        svc,
+			accountID:  opts.AccountID,
 			id:         out.DhcpOptionsId,
 			tags:       out.Tags,
 			defaultVPC: defVpcDhcpOptsID == ptr.ToString(out.DhcpOptionsId),
@@ -62,18 +64,27 @@ func (l *EC2DHCPOptionLister) List(_ context.Context, o interface{}) ([]resource
 
 type EC2DHCPOption struct {
 	svc        *ec2.EC2
+	accountID  *string
 	id         *string
 	tags       []*ec2.Tag
 	defaultVPC bool
 	ownerID    *string
 }
 
-func (e *EC2DHCPOption) Remove(_ context.Context) error {
-	params := &ec2.DeleteDhcpOptionsInput{
-		DhcpOptionsId: e.id,
+func (r *EC2DHCPOption) Filter() error {
+	if ptr.ToString(r.ownerID) != ptr.ToString(r.accountID) {
+		return errors.New("not owned by account, likely shared")
 	}
 
-	_, err := e.svc.DeleteDhcpOptions(params)
+	return nil
+}
+
+func (r *EC2DHCPOption) Remove(_ context.Context) error {
+	params := &ec2.DeleteDhcpOptionsInput{
+		DhcpOptionsId: r.id,
+	}
+
+	_, err := r.svc.DeleteDhcpOptions(params)
 	if err != nil {
 		return err
 	}
@@ -81,19 +92,19 @@ func (e *EC2DHCPOption) Remove(_ context.Context) error {
 	return nil
 }
 
-func (e *EC2DHCPOption) Properties() types.Properties {
+func (r *EC2DHCPOption) Properties() types.Properties {
 	properties := types.NewProperties()
 
-	properties.Set("DefaultVPC", e.defaultVPC)
-	properties.Set("OwnerID", e.ownerID)
+	properties.Set("DefaultVPC", r.defaultVPC)
+	properties.Set("OwnerID", r.ownerID)
 
-	for _, tagValue := range e.tags {
+	for _, tagValue := range r.tags {
 		properties.SetTag(tagValue.Key, tagValue.Value)
 	}
 
 	return properties
 }
 
-func (e *EC2DHCPOption) String() string {
-	return ptr.ToString(e.id)
+func (r *EC2DHCPOption) String() string {
+	return ptr.ToString(r.id)
 }

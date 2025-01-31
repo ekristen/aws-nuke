@@ -2,8 +2,10 @@ package resources
 
 import (
 	"context"
+	"errors"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go/service/ec2"
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -40,11 +42,6 @@ func init() {
 	})
 }
 
-type EC2VPC struct {
-	svc *ec2.EC2
-	vpc *ec2.Vpc
-}
-
 type EC2VPCLister struct{}
 
 func (l *EC2VPCLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
@@ -59,20 +56,35 @@ func (l *EC2VPCLister) List(_ context.Context, o interface{}) ([]resource.Resour
 	resources := make([]resource.Resource, 0)
 	for _, vpc := range resp.Vpcs {
 		resources = append(resources, &EC2VPC{
-			svc: svc,
-			vpc: vpc,
+			svc:       svc,
+			vpc:       vpc,
+			accountID: opts.AccountID,
 		})
 	}
 
 	return resources, nil
 }
 
-func (e *EC2VPC) Remove(_ context.Context) error {
-	params := &ec2.DeleteVpcInput{
-		VpcId: e.vpc.VpcId,
+type EC2VPC struct {
+	svc       *ec2.EC2
+	vpc       *ec2.Vpc
+	accountID *string
+}
+
+func (r *EC2VPC) Filter() error {
+	if ptr.ToString(r.vpc.OwnerId) != ptr.ToString(r.accountID) {
+		return errors.New("not owned by account, likely shared")
 	}
 
-	_, err := e.svc.DeleteVpc(params)
+	return nil
+}
+
+func (r *EC2VPC) Remove(_ context.Context) error {
+	params := &ec2.DeleteVpcInput{
+		VpcId: r.vpc.VpcId,
+	}
+
+	_, err := r.svc.DeleteVpc(params)
 	if err != nil {
 		return err
 	}
@@ -80,52 +92,17 @@ func (e *EC2VPC) Remove(_ context.Context) error {
 	return nil
 }
 
-func (e *EC2VPC) Properties() types.Properties {
+func (r *EC2VPC) Properties() types.Properties {
 	properties := types.NewProperties()
-	for _, tagValue := range e.vpc.Tags {
+	for _, tagValue := range r.vpc.Tags {
 		properties.SetTag(tagValue.Key, tagValue.Value)
 	}
-	properties.Set("ID", e.vpc.VpcId)
-	properties.Set("IsDefault", e.vpc.IsDefault)
-	properties.Set("OwnerID", e.vpc.OwnerId)
+	properties.Set("ID", r.vpc.VpcId)
+	properties.Set("IsDefault", r.vpc.IsDefault)
+	properties.Set("OwnerID", r.vpc.OwnerId)
 	return properties
 }
 
-func (e *EC2VPC) String() string {
-	return *e.vpc.VpcId
-}
-
-func DefaultVpc(svc *ec2.EC2) *ec2.Vpc {
-	resp, err := svc.DescribeVpcs(&ec2.DescribeVpcsInput{
-		Filters: []*ec2.Filter{
-			{
-				Name:   aws.String("is-default"),
-				Values: aws.StringSlice([]string{"true"}),
-			},
-		},
-	})
-	if err != nil {
-		return nil
-	}
-
-	if len(resp.Vpcs) == 0 {
-		return nil
-	}
-
-	return resp.Vpcs[0]
-}
-
-func GetVPC(svc *ec2.EC2, vpcID *string) (*ec2.Vpc, error) {
-	resp, err := svc.DescribeVpcs(&ec2.DescribeVpcsInput{
-		VpcIds: []*string{vpcID},
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	if len(resp.Vpcs) == 0 {
-		return nil, nil //nolint:nilnil
-	}
-
-	return resp.Vpcs[0], nil
+func (r *EC2VPC) String() string {
+	return *r.vpc.VpcId
 }
