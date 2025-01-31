@@ -2,21 +2,20 @@
 generated: true
 ---
 
-# EC2SecurityGroup
+# Route53Profile
 
 
 ## Resource
 
 ```text
-EC2SecurityGroup
+Route53Profile
 ```
 
 ## Properties
 
 
-- `ID`: The ID of the security group.
-- `Name`: The name of the security group.
-- `OwnerID`: The ID of the AWS account that owns the security group.
+- `ID`: No Description
+- `Name`: No Description
 - `tag:<key>:`: This resource has tags with property `Tags`. These are key/value pairs that are
 	added as their own property with the prefix of `tag:` (e.g. [tag:example: "value"]) 
 
@@ -31,13 +30,4 @@ resources support properties. To write a filter against the string representatio
 the filter.
 
 The string value is always what is used in the output of the log format when a resource is identified.
-
-### DependsOn
-
-!!! important - Experimental Feature
-    This resource depends on a resource using the experimental feature. This means that the resource will
-    only be deleted if all the resources of a particular type are deleted first or reach a terminal state.
-
-- [ELBv2](./elbv2.md)
-- [EC2DefaultSecurityGroupRule](./ec2-default-security-group-rule.md)
 

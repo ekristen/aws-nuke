@@ -540,6 +540,8 @@ nav:
     - Robo Maker Simulation Job: resources/robo-maker-simulation-job.md
     - Route 53 Health Check: resources/route-53-health-check.md
     - Route 53 Hosted Zone: resources/route-53-hosted-zone.md
+    - Route 53 Profile Association: resources/route-53-profile-association.md
+    - Route 53 Profile: resources/route-53-profile.md
     - Route 53 Resolver Endpoint: resources/route-53-resolver-endpoint.md
     - Route 53 Resolver Rule: resources/route-53-resolver-rule.md
     - Route 53 Resource Record Set: resources/route-53-resource-record-set.md

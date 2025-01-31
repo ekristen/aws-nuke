@@ -2,29 +2,26 @@
 generated: true
 ---
 
-# EC2NetworkInterface
+# Route53ProfileAssociation
 
 
 ## Resource
 
 ```text
-EC2NetworkInterface
+Route53ProfileAssociation
 ```
 
 ## Properties
 
 
-- `AttachmentID`: No Description
-- `AvailabilityZone`: No Description
-- `Description`: No Description
+- `CreationTime`: No Description
 - `ID`: No Description
+- `ModificationTime`: No Description
+- `Name`: No Description
 - `OwnerID`: No Description
-- `PrivateIPAddress`: No Description
+- `ProfileID`: No Description
+- `ResourceID`: No Description
 - `Status`: No Description
-- `SubnetID`: No Description
-- `VPC`: No Description
-- `tag:<key>:`: This resource has tags with property `Tags`. These are key/value pairs that are
-	added as their own property with the prefix of `tag:` (e.g. [tag:example: "value"]) 
 
 !!! note - Using Properties
     Properties are what [Filters](../config-filtering.md) are written against in your configuration. You use the property
