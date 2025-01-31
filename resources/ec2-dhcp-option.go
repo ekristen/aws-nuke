@@ -68,12 +68,12 @@ type EC2DHCPOption struct {
 	ownerID    *string
 }
 
-func (e *EC2DHCPOption) Remove(_ context.Context) error {
+func (r *EC2DHCPOption) Remove(_ context.Context) error {
 	params := &ec2.DeleteDhcpOptionsInput{
-		DhcpOptionsId: e.id,
+		DhcpOptionsId: r.id,
 	}
 
-	_, err := e.svc.DeleteDhcpOptions(params)
+	_, err := r.svc.DeleteDhcpOptions(params)
 	if err != nil {
 		return err
 	}
@@ -81,19 +81,19 @@ func (e *EC2DHCPOption) Remove(_ context.Context) error {
 	return nil
 }
 
-func (e *EC2DHCPOption) Properties() types.Properties {
+func (r *EC2DHCPOption) Properties() types.Properties {
 	properties := types.NewProperties()
 
-	properties.Set("DefaultVPC", e.defaultVPC)
-	properties.Set("OwnerID", e.ownerID)
+	properties.Set("DefaultVPC", r.defaultVPC)
+	properties.Set("OwnerID", r.ownerID)
 
-	for _, tagValue := range e.tags {
+	for _, tagValue := range r.tags {
 		properties.SetTag(tagValue.Key, tagValue.Value)
 	}
 
 	return properties
 }
 
-func (e *EC2DHCPOption) String() string {
-	return ptr.ToString(e.id)
+func (r *EC2DHCPOption) String() string {
+	return ptr.ToString(r.id)
 }
