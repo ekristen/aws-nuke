@@ -1,11 +1,12 @@
 package list
 
 import (
+	"context"
 	"slices"
 	"strings"
 
 	"github.com/fatih/color"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/commands/global"
 	"github.com/ekristen/aws-nuke/v3/pkg/common"
@@ -15,7 +16,7 @@ import (
 	_ "github.com/ekristen/aws-nuke/v3/resources"
 )
 
-func execute(c *cli.Context) error {
+func execute(_ context.Context, c *cli.Command) error {
 	var ls []string
 	if c.Args().Len() > 0 {
 		ls = registry.ExpandNames(c.Args().Slice())

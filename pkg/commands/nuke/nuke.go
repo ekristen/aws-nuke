@@ -10,7 +10,7 @@ import (
 
 	"github.com/gotidy/ptr"
 	"github.com/sirupsen/logrus"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 
 	"github.com/aws/aws-sdk-go/aws/endpoints"
 
@@ -30,7 +30,7 @@ import (
 )
 
 // ConfigureCreds is a helper function to configure the awsutil.Credentials object from the cli.Context
-func ConfigureCreds(c *cli.Context) (creds *awsutil.Credentials) {
+func ConfigureCreds(c *cli.Command) (creds *awsutil.Credentials) {
 	creds = &awsutil.Credentials{}
 
 	creds.Profile = c.String("profile")
@@ -44,8 +44,8 @@ func ConfigureCreds(c *cli.Context) (creds *awsutil.Credentials) {
 	return creds
 }
 
-func execute(c *cli.Context) error { //nolint:funlen,gocyclo
-	ctx, cancel := context.WithCancel(c.Context)
+func execute(baseCtx context.Context, c *cli.Command) error { //nolint:funlen,gocyclo
+	ctx, cancel := context.WithCancel(baseCtx)
 	defer cancel()
 
 	defaultRegion := c.String("default-region")
@@ -58,13 +58,13 @@ func execute(c *cli.Context) error { //nolint:funlen,gocyclo
 	// Create the parameters object that will be used to configure the nuke process.
 	params := &libnuke.Parameters{
 		Force:          c.Bool("force"),
-		ForceSleep:     c.Int("force-sleep"),
+		ForceSleep:     int(c.Int("force-sleep")),
 		Quiet:          c.Bool("quiet"),
 		NoDryRun:       c.Bool("no-dry-run"),
 		Includes:       c.StringSlice("include"),
 		Excludes:       c.StringSlice("exclude"),
 		Alternatives:   c.StringSlice("cloud-control"),
-		MaxWaitRetries: c.Int("max-wait-retries"),
+		MaxWaitRetries: int(c.Int("max-wait-retries")),
 	}
 
 	if len(c.StringSlice("feature-flag")) > 0 {
@@ -82,12 +82,12 @@ func execute(c *cli.Context) error { //nolint:funlen,gocyclo
 
 	// Parse the user supplied configuration file to pass in part to configure the nuke process.
 	parsedConfig, err := config.New(libconfig.Options{
-		Path:         c.Path("config"),
+		Path:         c.String("config"),
 		Deprecations: registry.GetDeprecatedResourceTypeMapping(),
 		Log:          logger.WithField("component", "config"),
 	})
 	if err != nil {
-		logger.Errorf("Failed to parse config file %s", c.Path("config"))
+		logger.Errorf("Failed to parse config file %s", c.String("config"))
 		return err
 	}
 
@@ -249,11 +249,12 @@ func execute(c *cli.Context) error { //nolint:funlen,gocyclo
 
 func init() { //nolint:funlen
 	flags := []cli.Flag{
-		&cli.PathFlag{
+		&cli.StringFlag{
 			Name:    "config",
 			Aliases: []string{"c"},
 			Usage:   "path to config file",
 			Value:   "config.yaml",
+			Action:  common.CheckFilePath,
 		},
 		&cli.StringSliceFlag{
 			Name:    "include",
@@ -288,14 +289,16 @@ func init() { //nolint:funlen
 			Usage:   "seconds to delay after prompt before running (minimum: 3 seconds)",
 			Value:   10,
 			Aliases: []string{"force-sleep"},
+			Action:  common.CheckRealInt,
 		},
 		&cli.IntFlag{
-			Name:  "max-wait-retries",
-			Usage: "maximum number of retries to wait for dependencies to be removed",
+			Name:   "max-wait-retries",
+			Usage:  "maximum number of retries to wait for dependencies to be removed",
+			Action: common.CheckRealInt,
 		},
 		&cli.DurationFlag{
 			Name:    "run-sleep-delay",
-			EnvVars: []string{"AWS_NUKE_RUN_SLEEP_DELAY"},
+			Sources: cli.EnvVars("AWS_NUKE_RUN_SLEEP_DELAY"),
 			Usage:   "time to sleep between run/loops of resource deletions, default is 5 seconds",
 			Value:   5 * time.Second,
 		},
@@ -309,42 +312,42 @@ func init() { //nolint:funlen
 		},
 		&cli.StringFlag{
 			Name:    "default-region",
-			EnvVars: []string{"AWS_DEFAULT_REGION"},
+			Sources: cli.EnvVars("AWS_DEFAULT_REGION"),
 			Usage:   "the default aws region to use when setting up the aws auth session",
 		},
 		&cli.StringFlag{
 			Name:    "access-key-id",
-			EnvVars: []string{"AWS_ACCESS_KEY_ID"},
+			Sources: cli.EnvVars("AWS_ACCESS_KEY_ID"),
 			Usage:   "the aws access key id to use when setting up the aws auth session",
 		},
 		&cli.StringFlag{
 			Name:    "secret-access-key",
-			EnvVars: []string{"AWS_SECRET_ACCESS_KEY"},
+			Sources: cli.EnvVars("AWS_SECRET_ACCESS_KEY"),
 			Usage:   "the aws secret access key to use when setting up the aws auth session",
 		},
 		&cli.StringFlag{
 			Name:    "session-token",
-			EnvVars: []string{"AWS_SESSION_TOKEN"},
+			Sources: cli.EnvVars("AWS_SESSION_TOKEN"),
 			Usage:   "the aws session token to use when setting up the aws auth session, typically used for temporary credentials",
 		},
 		&cli.StringFlag{
 			Name:    "profile",
-			EnvVars: []string{"AWS_PROFILE"},
+			Sources: cli.EnvVars("AWS_PROFILE"),
 			Usage:   "the aws profile to use when setting up the aws auth session, typically used for shared credentials files",
 		},
 		&cli.StringFlag{
 			Name:    "assume-role-arn",
-			EnvVars: []string{"AWS_ASSUME_ROLE_ARN"},
+			Sources: cli.EnvVars("AWS_ASSUME_ROLE_ARN"),
 			Usage:   "the role arn to assume using the credentials provided in the profile or statically set",
 		},
 		&cli.StringFlag{
 			Name:    "assume-role-session-name",
-			EnvVars: []string{"AWS_ASSUME_ROLE_SESSION_NAME"},
+			Sources: cli.EnvVars("AWS_ASSUME_ROLE_SESSION_NAME"),
 			Usage:   "the session name to provide for the assumed role",
 		},
 		&cli.StringFlag{
 			Name:    "assume-role-external-id",
-			EnvVars: []string{"AWS_ASSUME_ROLE_EXTERNAL_ID"},
+			Sources: cli.EnvVars("AWS_ASSUME_ROLE_EXTERNAL_ID"),
 			Usage:   "the external id to provide for the assumed role",
 		},
 		&cli.IntFlag{
