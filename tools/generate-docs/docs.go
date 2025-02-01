@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"embed"
 	"fmt"
 	"os"
@@ -12,7 +13,7 @@ import (
 	"text/template"
 
 	"github.com/sirupsen/logrus"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -43,7 +44,7 @@ type TemplateData struct {
 	AlternativeResource string
 }
 
-func execute(c *cli.Context) error { //nolint:funlen,gocyclo
+func execute(_ context.Context, c *cli.Command) error { //nolint:funlen,gocyclo
 	var regs registry.Registrations
 
 	if c.String("resource") == "all" {
@@ -188,17 +189,6 @@ dynamically populated and therefore cannot be documented here.`
 }
 
 func main() {
-	flags := []cli.Flag{
-		&cli.StringFlag{
-			Name:  "resource",
-			Value: "all",
-		},
-		&cli.BoolFlag{
-			Name:    "write-to-disk",
-			Aliases: []string{"write"},
-		},
-	}
-
 	defer func() {
 		if r := recover(); r != nil {
 			// log panics forces exit
@@ -209,20 +199,27 @@ func main() {
 		}
 	}()
 
-	app := cli.NewApp()
-	app.Name = "generate-docs"
-	app.Usage = "generate resource docs from code"
-	app.Version = common.AppVersion.Summary
-	app.Authors = []*cli.Author{
-		{
-			Name:  "Erik Kristensen",
-			Email: "erik@erikkristensen.com",
+	app := &cli.Command{
+		Name:    "generate-docs",
+		Usage:   "generate resource docs from code",
+		Version: common.AppVersion.Summary,
+		Authors: []any{
+			"Erik Kristensen <erik@erikkristensen.com>",
 		},
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:  "resource",
+				Value: "all",
+			},
+			&cli.BoolFlag{
+				Name:    "write-to-disk",
+				Aliases: []string{"write"},
+			},
+		},
+		Action: execute,
 	}
-	app.Flags = flags
-	app.Action = execute
 
-	if err := app.Run(os.Args); err != nil {
+	if err := app.Run(context.Background(), os.Args); err != nil {
 		logrus.Fatal(err)
 	}
 }
