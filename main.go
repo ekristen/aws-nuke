@@ -1,10 +1,11 @@
 package main
 
 import (
+	"context"
 	"os"
 
 	"github.com/sirupsen/logrus"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/common"
 
@@ -29,25 +30,21 @@ func main() {
 		}
 	}()
 
-	app := cli.NewApp()
-	app.Name = common.AppVersion.Name
-	app.Usage = "remove everything from an aws account"
-	app.Version = common.AppVersion.Summary
-	app.Authors = []*cli.Author{
-		{
-			Name:  "Erik Kristensen",
-			Email: "erik@erikkristensen.com",
+	app := &cli.Command{
+		Name:    common.AppVersion.Name,
+		Usage:   "remove everything from an aws account",
+		Version: common.AppVersion.Summary,
+		Authors: []any{
+			"Erik Kristensen <erik@erikkristensen.com>",
 		},
+		Commands: common.GetCommands(),
+		CommandNotFound: func(ctx context.Context, command *cli.Command, s string) {
+			logrus.Fatalf("Command %s not found.", s)
+		},
+		EnableShellCompletion: true,
 	}
 
-	app.Commands = common.GetCommands()
-	app.CommandNotFound = func(context *cli.Context, command string) {
-		logrus.Fatalf("Command %s not found.", command)
-	}
-
-	app.EnableBashCompletion = true
-
-	if err := app.Run(os.Args); err != nil {
+	if err := app.Run(context.Background(), os.Args); err != nil {
 		logrus.Fatal(err)
 	}
 }
