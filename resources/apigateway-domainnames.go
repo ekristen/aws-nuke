@@ -3,11 +3,12 @@ package resources
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/apigateway"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/apigateway"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
@@ -25,25 +26,27 @@ func init() {
 
 type APIGatewayDomainNameLister struct{}
 
-func (l *APIGatewayDomainNameLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *APIGatewayDomainNameLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
-	svc := apigateway.New(opts.Session)
+	svc := apigateway.NewFromConfig(*opts.Config)
 	var resources []resource.Resource
 
 	params := &apigateway.GetDomainNamesInput{
-		Limit: aws.Int64(100),
+		Limit: aws.Int32(100),
 	}
 
 	for {
-		output, err := svc.GetDomainNames(params)
+		output, err := svc.GetDomainNames(ctx, params)
 		if err != nil {
 			return nil, err
 		}
 
-		for _, item := range output.Items {
+		for i := range output.Items {
+			item := &output.Items[i]
 			resources = append(resources, &APIGatewayDomainName{
-				svc:        svc,
-				domainName: item.DomainName,
+				svc:          svc,
+				DomainName:   item.DomainName,
+				DomainNameID: item.DomainNameId,
 			})
 		}
 
@@ -58,18 +61,24 @@ func (l *APIGatewayDomainNameLister) List(_ context.Context, o interface{}) ([]r
 }
 
 type APIGatewayDomainName struct {
-	svc        *apigateway.APIGateway
-	domainName *string
+	svc          *apigateway.Client
+	DomainName   *string
+	DomainNameID *string
 }
 
-func (f *APIGatewayDomainName) Remove(_ context.Context) error {
-	_, err := f.svc.DeleteDomainName(&apigateway.DeleteDomainNameInput{
-		DomainName: f.domainName,
+func (f *APIGatewayDomainName) Remove(ctx context.Context) error {
+	_, err := f.svc.DeleteDomainName(ctx, &apigateway.DeleteDomainNameInput{
+		DomainName:   f.DomainName,
+		DomainNameId: f.DomainNameID,
 	})
 
 	return err
 }
 
+func (f *APIGatewayDomainName) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(f)
+}
+
 func (f *APIGatewayDomainName) String() string {
-	return *f.domainName
+	return *f.DomainName
 }
