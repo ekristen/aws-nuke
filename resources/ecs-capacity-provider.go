@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -34,9 +35,15 @@ type ECSCapacityProvider struct {
 }
 
 func (r *ECSCapacityProvider) Remove(_ context.Context) error {
-	_, err := r.svc.DeleteCapacityProvider(&ecs.DeleteCapacityProviderInput{
+	resp, err := r.svc.DeleteCapacityProvider(&ecs.DeleteCapacityProviderInput{
 		CapacityProvider: r.ARN,
 	})
+
+	if resp != nil &&
+		resp.CapacityProvider != nil &&
+		*resp.CapacityProvider.UpdateStatus == "DELETE_FAILED" {
+		return errors.New(*resp.CapacityProvider.UpdateStatusReason)
+	}
 
 	return err
 }
