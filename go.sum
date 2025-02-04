@@ -42,6 +42,8 @@ github.com/aws/aws-sdk-go-v2/internal/v4a v1.3.26 h1:GeNJsIFHB+WW5ap2Tec4K6dzcVT
 github.com/aws/aws-sdk-go-v2/internal/v4a v1.3.26/go.mod h1:zfgMpwHDXX2WGoG84xG2H+ZlPTkJUU4YUvx2svLQYWo=
 github.com/aws/aws-sdk-go-v2/internal/v4a v1.3.27 h1:AmB5QxnD+fBFrg9LcqzkgF/CaYvMyU/BTlejG4t1S7Q=
 github.com/aws/aws-sdk-go-v2/internal/v4a v1.3.27/go.mod h1:Sai7P3xTiyv9ZUYO3IFxMnmiIP759/67iQbU4kdmkyU=
+github.com/aws/aws-sdk-go-v2/service/appsync v1.42.1 h1:LHvnj7gkCWDa2j+USYtC5pLLIZfuBCfJRUjk0S1cA30=
+github.com/aws/aws-sdk-go-v2/service/appsync v1.42.1/go.mod h1:cILlhPBarV3U76C3W2jR2FOF4uh24kWCAQXEGT31r6s=
 github.com/aws/aws-sdk-go-v2/service/iam v1.38.3 h1:2sFIoFzU1IEL9epJWubJm9Dhrn45aTNEJuwsesaCGnk=
 github.com/aws/aws-sdk-go-v2/service/iam v1.38.3/go.mod h1:KzlNINwfr/47tKkEhgk0r10/OZq3rjtyWy0txL3lM+I=
 github.com/aws/aws-sdk-go-v2/service/iam v1.38.9 h1:gUDcDI6ZY/3GNAglarZFuRIrmYCGPMhWV1o+S+6zVQs=
