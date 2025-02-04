@@ -31,7 +31,7 @@ func init() {
 		Lister:   &RDSInstanceLister{},
 		Settings: []string{
 			"DisableDeletionProtection",
-			"StartClusterToDeleteInstance",
+			"StartClusterToDelete",
 		},
 	})
 }
@@ -98,7 +98,7 @@ func (i *RDSInstance) Remove(_ context.Context) error {
 
 	// You can't delete an instance that is part of a cluster in the stopped state.
 	// If the setting is enabled, start the cluster before deleting the instance.
-	if i.settings.GetBool("StartClusterToDeleteInstance") {
+	if i.settings.GetBool("StartClusterToDelete") {
 		status, err = i.getDBClusterStatus()
 		if err != nil {
 			return err
@@ -215,7 +215,7 @@ func (i *RDSInstance) HandleWait(ctx context.Context) error {
 		return liberror.ErrWaitResource("waiting for instance to delete")
 	}
 
-	if i.settings.GetBool("StartClusterToDeleteInstance") {
+	if i.settings.GetBool("StartClusterToDelete") {
 		status, err = i.getDBClusterStatus()
 		if err != nil {
 			return err
