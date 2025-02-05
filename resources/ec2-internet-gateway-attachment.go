@@ -62,6 +62,7 @@ func (l *EC2InternetGatewayAttachmentLister) List(_ context.Context, o interface
 		for _, igw := range resp.InternetGateways {
 			resources = append(resources, &EC2InternetGatewayAttachment{
 				svc:        svc,
+				accountID:  opts.AccountID,
 				vpcID:      vpc.VpcId,
 				vpcOwnerID: vpc.OwnerId,
 				vpcTags:    vpc.Tags,
