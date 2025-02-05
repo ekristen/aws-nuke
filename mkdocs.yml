@@ -165,6 +165,8 @@ nav:
     - App Stream Image: resources/app-stream-image.md
     - App Stream Stack Fleet Attachment: resources/app-stream-stack-fleet-attachment.md
     - App Stream Stack: resources/app-stream-stack.md
+    - App Sync Api Association: resources/app-sync-api-association.md
+    - App Sync Domain Name: resources/app-sync-domain-name.md
     - App Sync Graphql Api: resources/app-sync-graphql-api.md
     - Application Auto Scaling Scalable Target: resources/application-auto-scaling-scalable-target.md
     - Athena Data Catalog: resources/athena-data-catalog.md
