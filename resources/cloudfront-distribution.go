@@ -2,7 +2,6 @@ package resources
 
 import (
 	"context"
-
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -82,20 +81,20 @@ type CloudFrontDistribution struct {
 	tags             []*cloudfront.Tag
 }
 
-func (f *CloudFrontDistribution) Properties() types.Properties {
+func (r *CloudFrontDistribution) Properties() types.Properties {
 	properties := types.NewProperties().
-		Set("LastModifiedTime", f.lastModifiedTime.Format(time.RFC3339))
+		Set("LastModifiedTime", r.lastModifiedTime.Format(time.RFC3339))
 
-	for _, t := range f.tags {
+	for _, t := range r.tags {
 		properties.SetTag(t.Key, t.Value)
 	}
 	return properties
 }
 
-func (f *CloudFrontDistribution) Remove(_ context.Context) error {
+func (r *CloudFrontDistribution) Remove(_ context.Context) error {
 	// Get Existing eTag
-	resp, err := f.svc.GetDistributionConfig(&cloudfront.GetDistributionConfigInput{
-		Id: f.ID,
+	resp, err := r.svc.GetDistributionConfig(&cloudfront.GetDistributionConfigInput{
+		Id: r.ID,
 	})
 	if err != nil {
 		return err
@@ -103,8 +102,8 @@ func (f *CloudFrontDistribution) Remove(_ context.Context) error {
 
 	if *resp.DistributionConfig.Enabled {
 		*resp.DistributionConfig.Enabled = false
-		_, err := f.svc.UpdateDistribution(&cloudfront.UpdateDistributionInput{
-			Id:                 f.ID,
+		_, err := r.svc.UpdateDistribution(&cloudfront.UpdateDistributionInput{
+			Id:                 r.ID,
 			DistributionConfig: resp.DistributionConfig,
 			IfMatch:            resp.ETag,
 		})
@@ -113,14 +112,14 @@ func (f *CloudFrontDistribution) Remove(_ context.Context) error {
 		}
 	}
 
-	_, err = f.svc.DeleteDistribution(&cloudfront.DeleteDistributionInput{
-		Id:      f.ID,
+	_, err = r.svc.DeleteDistribution(&cloudfront.DeleteDistributionInput{
+		Id:      r.ID,
 		IfMatch: resp.ETag,
 	})
 
 	return err
 }
 
-func (f *CloudFrontDistribution) String() string {
-	return *f.ID
+func (r *CloudFrontDistribution) String() string {
+	return *r.ID
 }
