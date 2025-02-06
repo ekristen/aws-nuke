@@ -14,7 +14,7 @@ func Test_CloudFrontDistribution_Properties(t *testing.T) {
 	now := time.Now().UTC()
 	r := &CloudFrontDistribution{
 		ID:               ptr.String("test-id"),
-		status:           ptr.String("test-status"),
+		Status:           ptr.String("test-status"),
 		LastModifiedTime: ptr.Time(now),
 		Tags: []*cloudfront.Tag{
 			{

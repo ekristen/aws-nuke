@@ -57,7 +57,7 @@ func (l *CloudFrontDistributionLister) List(_ context.Context, o interface{}) ([
 			resources = append(resources, &CloudFrontDistribution{
 				svc:              svc,
 				ID:               item.Id,
-				status:           item.Status,
+				Status:           item.Status,
 				LastModifiedTime: item.LastModifiedTime,
 				Tags:             tagResp.Tags.Items,
 			})
@@ -76,7 +76,7 @@ func (l *CloudFrontDistributionLister) List(_ context.Context, o interface{}) ([
 type CloudFrontDistribution struct {
 	svc              *cloudfront.CloudFront
 	ID               *string
-	status           *string
+	Status           *string
 	LastModifiedTime *time.Time
 	Tags             []*cloudfront.Tag
 }
