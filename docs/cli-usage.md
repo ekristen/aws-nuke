@@ -18,7 +18,7 @@ AUTHOR:
 COMMANDS:
    run, nuke                       run nuke against an aws account and remove everything from it
    account-details, account        list details about the AWS account that the tool is authenticated to
-   config-details                  explain the configuration file and the resources that will be nuked
+   explain-config                  explain the configuration file and the resources that will be nuked
    resource-types, list-resources  list available resources to nuke
    help, h                         Shows a list of commands or help for one command
 
