@@ -58,8 +58,8 @@ func (l *CloudFrontDistributionLister) List(_ context.Context, o interface{}) ([
 				svc:              svc,
 				ID:               item.Id,
 				status:           item.Status,
-				lastModifiedTime: item.LastModifiedTime,
-				tags:             tagResp.Tags.Items,
+				LastModifiedTime: item.LastModifiedTime,
+				Tags:             tagResp.Tags.Items,
 			})
 		}
 
@@ -77,18 +77,12 @@ type CloudFrontDistribution struct {
 	svc              *cloudfront.CloudFront
 	ID               *string
 	status           *string
-	lastModifiedTime *time.Time
-	tags             []*cloudfront.Tag
+	LastModifiedTime *time.Time
+	Tags             []*cloudfront.Tag
 }
 
 func (r *CloudFrontDistribution) Properties() types.Properties {
-	properties := types.NewProperties().
-		Set("LastModifiedTime", r.lastModifiedTime.Format(time.RFC3339))
-
-	for _, t := range r.tags {
-		properties.SetTag(t.Key, t.Value)
-	}
-	return properties
+	return types.NewPropertiesFromStruct(r)
 }
 
 func (r *CloudFrontDistribution) Remove(_ context.Context) error {
