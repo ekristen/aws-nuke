@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/cloudfront"
 	rtypes "github.com/aws/aws-sdk-go-v2/service/cloudfront/types"
@@ -94,17 +96,18 @@ func (r *CloudFrontDistribution) Properties() types.Properties {
 }
 
 func (r *CloudFrontDistribution) Remove(ctx context.Context) error {
-	// Get Existing eTag
+	var etag *string
 	resp, err := r.svc.GetDistributionConfig(ctx, &cloudfront.GetDistributionConfigInput{
 		Id: r.ID,
 	})
 	if err != nil {
 		return err
 	}
+	etag = resp.ETag
 
-	if *resp.DistributionConfig.Enabled {
-		*resp.DistributionConfig.Enabled = false
-		_, err := r.svc.UpdateDistribution(ctx, &cloudfront.UpdateDistributionInput{
+	if ptr.ToBool(resp.DistributionConfig.Enabled) {
+		resp.DistributionConfig.Enabled = ptr.Bool(false)
+		upResp, err := r.svc.UpdateDistribution(ctx, &cloudfront.UpdateDistributionInput{
 			Id:                 r.ID,
 			DistributionConfig: resp.DistributionConfig,
 			IfMatch:            resp.ETag,
@@ -112,11 +115,12 @@ func (r *CloudFrontDistribution) Remove(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
+		etag = upResp.ETag
 	}
 
 	_, err = r.svc.DeleteDistribution(ctx, &cloudfront.DeleteDistributionInput{
 		Id:      r.ID,
-		IfMatch: resp.ETag,
+		IfMatch: etag,
 	})
 
 	return err

@@ -98,7 +98,7 @@ func Test_CloudFrontDistribution_RemoveGone(t *testing.T) {
 	mockSvc.AssertExpectations(t)
 }
 
-func Test_CloudFrontDistribution_RemoveWrongETag(t *testing.T) {
+func Test_CloudFrontDistribution_RemoveUpdateETag(t *testing.T) {
 	mockSvc := new(mockCloudFrontClient)
 	mockSvc.On("GetDistributionConfig", mock.Anything, mock.Anything).Return(&cloudfront.GetDistributionConfigOutput{
 		DistributionConfig: &types.DistributionConfig{Enabled: ptr.Bool(true)},
@@ -109,7 +109,7 @@ func Test_CloudFrontDistribution_RemoveWrongETag(t *testing.T) {
 	}, nil)
 	mockSvc.On("DeleteDistribution", mock.Anything, &cloudfront.DeleteDistributionInput{
 		Id:      ptr.String("test-id"),
-		IfMatch: ptr.String("test-etag1"),
+		IfMatch: ptr.String("test-etag2"),
 	}).Return(&cloudfront.DeleteDistributionOutput{}, nil)
 
 	// Bug where etag was wrong so nothing was deleted
