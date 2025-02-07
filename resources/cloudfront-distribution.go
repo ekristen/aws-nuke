@@ -56,7 +56,8 @@ func (l *CloudFrontDistributionLister) List(ctx context.Context, o interface{}) 
 		if err != nil {
 			return nil, err
 		}
-		for _, item := range resp.DistributionList.Items {
+		for i := range resp.DistributionList.Items {
+			item := resp.DistributionList.Items[i]
 			tagResp, err := svc.ListTagsForResource(ctx, &cloudfront.ListTagsForResourceInput{
 				Resource: item.ARN,
 			})
