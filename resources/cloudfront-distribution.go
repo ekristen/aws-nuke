@@ -4,8 +4,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/cloudfront"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/cloudfront"
+	rtypes "github.com/aws/aws-sdk-go-v2/service/cloudfront/types"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
@@ -28,28 +29,35 @@ func init() {
 	})
 }
 
-type CloudFrontDistributionLister struct{}
+type CloudFrontDistributionLister struct {
+	mockSvc CloudFrontClient
+}
 
-func (l *CloudFrontDistributionLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *CloudFrontDistributionLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 
-	svc := cloudfront.New(opts.Session)
+	var svc CloudFrontClient
+	if l.mockSvc != nil {
+		svc = l.mockSvc
+	} else {
+		svc = cloudfront.NewFromConfig(*opts.Config)
+	}
+
 	resources := make([]resource.Resource, 0)
 
 	params := &cloudfront.ListDistributionsInput{
-		MaxItems: aws.Int64(25),
+		MaxItems: aws.Int32(25),
 	}
 
 	for {
-		resp, err := svc.ListDistributions(params)
+		resp, err := svc.ListDistributions(ctx, params)
 		if err != nil {
 			return nil, err
 		}
 		for _, item := range resp.DistributionList.Items {
-			tagResp, err := svc.ListTagsForResource(
-				&cloudfront.ListTagsForResourceInput{
-					Resource: item.ARN,
-				})
+			tagResp, err := svc.ListTagsForResource(ctx, &cloudfront.ListTagsForResourceInput{
+				Resource: item.ARN,
+			})
 			if err != nil {
 				return nil, err
 			}
@@ -74,20 +82,20 @@ func (l *CloudFrontDistributionLister) List(_ context.Context, o interface{}) ([
 }
 
 type CloudFrontDistribution struct {
-	svc              *cloudfront.CloudFront
+	svc              CloudFrontClient
 	ID               *string
 	Status           *string
 	LastModifiedTime *time.Time
-	Tags             []*cloudfront.Tag
+	Tags             []rtypes.Tag
 }
 
 func (r *CloudFrontDistribution) Properties() types.Properties {
 	return types.NewPropertiesFromStruct(r)
 }
 
-func (r *CloudFrontDistribution) Remove(_ context.Context) error {
+func (r *CloudFrontDistribution) Remove(ctx context.Context) error {
 	// Get Existing eTag
-	resp, err := r.svc.GetDistributionConfig(&cloudfront.GetDistributionConfigInput{
+	resp, err := r.svc.GetDistributionConfig(ctx, &cloudfront.GetDistributionConfigInput{
 		Id: r.ID,
 	})
 	if err != nil {
@@ -96,7 +104,7 @@ func (r *CloudFrontDistribution) Remove(_ context.Context) error {
 
 	if *resp.DistributionConfig.Enabled {
 		*resp.DistributionConfig.Enabled = false
-		_, err := r.svc.UpdateDistribution(&cloudfront.UpdateDistributionInput{
+		_, err := r.svc.UpdateDistribution(ctx, &cloudfront.UpdateDistributionInput{
 			Id:                 r.ID,
 			DistributionConfig: resp.DistributionConfig,
 			IfMatch:            resp.ETag,
@@ -106,7 +114,7 @@ func (r *CloudFrontDistribution) Remove(_ context.Context) error {
 		}
 	}
 
-	_, err = r.svc.DeleteDistribution(&cloudfront.DeleteDistributionInput{
+	_, err = r.svc.DeleteDistribution(ctx, &cloudfront.DeleteDistributionInput{
 		Id:      r.ID,
 		IfMatch: resp.ETag,
 	})

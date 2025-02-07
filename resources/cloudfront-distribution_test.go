@@ -7,7 +7,7 @@ import (
 	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/aws/aws-sdk-go/service/cloudfront"
+	rtypes "github.com/aws/aws-sdk-go-v2/service/cloudfront/types"
 )
 
 func Test_CloudFrontDistribution_Properties(t *testing.T) {
@@ -16,7 +16,7 @@ func Test_CloudFrontDistribution_Properties(t *testing.T) {
 		ID:               ptr.String("test-id"),
 		Status:           ptr.String("test-status"),
 		LastModifiedTime: ptr.Time(now),
-		Tags: []*cloudfront.Tag{
+		Tags: []rtypes.Tag{
 			{
 				Key:   ptr.String("test-key"),
 				Value: ptr.String("test-value"),
