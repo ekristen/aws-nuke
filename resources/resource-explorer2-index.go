@@ -5,6 +5,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/resourceexplorer2"
+	"github.com/sirupsen/logrus"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
@@ -43,10 +44,23 @@ func (l *ResourceExplorer2IndexLister) List(_ context.Context, o interface{}) ([
 		}
 
 		for _, index := range output.Indexes {
+			var tags map[string]*string
+			tagResp, err := svc.ListTagsForResource(
+				&resourceexplorer2.ListTagsForResourceInput{
+					ResourceArn: index.Arn,
+				})
+			if err != nil {
+				logrus.WithError(err).Error("unable to list tags for resource")
+			}
+			if tagResp != nil {
+				tags = tagResp.Tags
+			}
+
 			resources = append(resources, &ResourceExplorer2Index{
 				svc:  svc,
 				ARN:  index.Arn,
 				Type: index.Type,
+				Tags: tags,
 			})
 		}
 
@@ -64,6 +78,7 @@ type ResourceExplorer2Index struct {
 	svc  *resourceexplorer2.ResourceExplorer2
 	ARN  *string
 	Type *string
+	Tags map[string]*string
 }
 
 func (r *ResourceExplorer2Index) Remove(_ context.Context) error {
