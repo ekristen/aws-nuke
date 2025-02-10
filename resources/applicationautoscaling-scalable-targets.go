@@ -5,6 +5,7 @@ import (
 	"slices"
 
 	"github.com/gotidy/ptr"
+	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go/service/applicationautoscaling"
 
@@ -52,6 +53,18 @@ func (l *ApplicationAutoScalingScalableTargetLister) List(_ context.Context, o i
 			}
 
 			for _, out := range resp.ScalableTargets {
+				var tags map[string]*string
+				tagResp, err := svc.ListTagsForResource(
+					&applicationautoscaling.ListTagsForResourceInput{
+						ResourceARN: out.ScalableTargetARN,
+					})
+				if err != nil {
+					logrus.WithError(err).Error("unable to list tags for resource")
+				}
+				if tagResp != nil {
+					tags = tagResp.Tags
+				}
+
 				resources = append(resources, &AppAutoScaling{
 					svc:       svc,
 					target:    out,
@@ -59,6 +72,7 @@ func (l *ApplicationAutoScalingScalableTargetLister) List(_ context.Context, o i
 					roleARN:   *out.RoleARN,
 					dimension: *out.ScalableDimension,
 					namespace: *out.ServiceNamespace,
+					tags:      tags,
 				})
 			}
 
@@ -79,6 +93,7 @@ type AppAutoScaling struct {
 	roleARN   string
 	dimension string
 	namespace string
+	tags      map[string]*string
 }
 
 func (a *AppAutoScaling) Remove(_ context.Context) error {
@@ -97,6 +112,9 @@ func (a *AppAutoScaling) Remove(_ context.Context) error {
 
 func (a *AppAutoScaling) Properties() types.Properties {
 	properties := types.NewProperties()
+	for key, tag := range a.tags {
+		properties.SetTag(&key, tag)
+	}
 	properties.Set("ResourceID", a.id)
 	properties.Set("ScalableDimension", a.dimension)
 	properties.Set("ServiceNamespace", a.namespace)

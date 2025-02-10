@@ -8,6 +8,7 @@ import (
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
@@ -53,6 +54,7 @@ func (l *SSMDocumentLister) List(_ context.Context, o interface{}) ([]resource.R
 			resources = append(resources, &SSMDocument{
 				svc:  svc,
 				name: documentIdentifier.Name,
+				tags: documentIdentifier.Tags,
 			})
 		}
 
@@ -69,6 +71,7 @@ func (l *SSMDocumentLister) List(_ context.Context, o interface{}) ([]resource.R
 type SSMDocument struct {
 	svc  *ssm.SSM
 	name *string
+	tags []*ssm.Tag
 }
 
 func (f *SSMDocument) Remove(_ context.Context) error {
@@ -77,6 +80,15 @@ func (f *SSMDocument) Remove(_ context.Context) error {
 	})
 
 	return err
+}
+
+func (f *SSMDocument) Properties() types.Properties {
+	properties := types.NewProperties()
+	for _, tagValue := range f.tags {
+		properties.SetTag(tagValue.Key, tagValue.Value)
+	}
+	properties.Set("Name", f.name)
+	return properties
 }
 
 func (f *SSMDocument) String() string {

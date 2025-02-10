@@ -4,12 +4,14 @@ import (
 	"context"
 
 	"github.com/gotidy/ptr"
+	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/firehose"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
@@ -45,9 +47,22 @@ func (l *FirehoseDeliveryStreamLister) List(_ context.Context, o interface{}) ([
 		}
 
 		for _, deliveryStreamName := range output.DeliveryStreamNames {
+			var tags []*firehose.Tag
+			tagResp, err := svc.ListTagsForDeliveryStream(
+				&firehose.ListTagsForDeliveryStreamInput{
+					DeliveryStreamName: deliveryStreamName,
+				})
+			if err != nil {
+				logrus.WithError(err).Error("unable to list tags for delivery stream")
+			}
+			if tagResp != nil {
+				tags = tagResp.Tags
+			}
+
 			resources = append(resources, &FirehoseDeliveryStream{
 				svc:                svc,
 				deliveryStreamName: deliveryStreamName,
+				tags:               tags,
 			})
 			lastDeliveryStreamName = deliveryStreamName
 		}
@@ -65,6 +80,7 @@ func (l *FirehoseDeliveryStreamLister) List(_ context.Context, o interface{}) ([
 type FirehoseDeliveryStream struct {
 	svc                *firehose.Firehose
 	deliveryStreamName *string
+	tags               []*firehose.Tag
 }
 
 func (f *FirehoseDeliveryStream) Remove(_ context.Context) error {
@@ -73,6 +89,15 @@ func (f *FirehoseDeliveryStream) Remove(_ context.Context) error {
 	})
 
 	return err
+}
+
+func (f *FirehoseDeliveryStream) Properties() types.Properties {
+	properties := types.NewProperties()
+	for _, tagValue := range f.tags {
+		properties.SetTag(tagValue.Key, tagValue.Value)
+	}
+	properties.Set("Name", f.deliveryStreamName)
+	return properties
 }
 
 func (f *FirehoseDeliveryStream) String() string {
