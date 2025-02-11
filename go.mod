@@ -9,7 +9,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.59
 	github.com/aws/aws-sdk-go-v2/service/apigateway v1.28.11
 	github.com/aws/aws-sdk-go-v2/service/appsync v1.42.3
-	github.com/aws/aws-sdk-go-v2/service/cloudfront v1.44.9
+	github.com/aws/aws-sdk-go-v2/service/cloudfront v1.44.10
 	github.com/aws/aws-sdk-go-v2/service/iam v1.38.10
 	github.com/aws/aws-sdk-go-v2/service/route53profiles v1.4.15
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.72.3
