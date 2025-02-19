@@ -1,6 +1,8 @@
 module github.com/ekristen/aws-nuke/v3
 
-go 1.21.6
+go 1.22
+
+toolchain go1.24.0
 
 require (
 	github.com/aws/aws-sdk-go v1.55.6
@@ -17,7 +19,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssmquicksetup v1.3.9
 	github.com/aws/aws-sdk-go-v2/service/sts v1.33.14
 	github.com/aws/aws-sdk-go-v2/service/transfer v1.55.5
-	github.com/aws/smithy-go v1.22.2
+	github.com/aws/smithy-go v1.22.3
 	github.com/ekristen/libnuke v0.24.2
 	github.com/fatih/color v1.18.0
 	github.com/golang/mock v1.6.0
