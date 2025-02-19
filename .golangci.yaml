@@ -1,3 +1,6 @@
+run:
+  timeout: 10m
+
 linters-settings:
   dupl:
     threshold: 100
@@ -21,12 +24,8 @@ linters-settings:
       - whyNoLint
   gocyclo:
     min-complexity: 15
-  golint:
-    min-confidence: 0
   lll:
     line-length: 140
-  maligned:
-    suggest-new: true
   misspell:
     locale: US
 
@@ -38,7 +37,6 @@ linters:
     - bodyclose
     - dogsled
     - errcheck
-    - exportloopref
     - funlen
     - goconst
     - gocritic
@@ -69,6 +67,3 @@ issues:
     - path: _test\.go
       linters:
         - funlen
-
-run:
-  timeout: 2m
