@@ -1,6 +1,7 @@
 {
     "extends": [
-        "config:recommended"
+        "config:recommended",
+        "config:best-practices"
     ],
     "packageRules": [
         {
