@@ -1,9 +1,9 @@
-# syntax=docker/dockerfile:1.13-labs@sha256:d4250176a22a73cb8cdeb0cdcd3ea65d39baad1245f2f1dcb5eceadedd0518b8
-FROM alpine:3.21.3@sha256:a8560b36e8b8210634f77d9f7f9efd7ffa463e380b75e2e74aff4511df3ef88c as base
+# syntax=docker/dockerfile:1.13-labs
+FROM alpine:3.21.2 AS base
 RUN apk add --no-cache ca-certificates
 RUN adduser -D aws-nuke
 
-FROM ghcr.io/acorn-io/images-mirror/golang:1.21@sha256:856073656d1a517517792e6cdd2f7a5ef080d3ca2dff33e518c8412f140fdd2d AS build
+FROM ghcr.io/acorn-io/images-mirror/golang:1.21 AS build
 COPY / /src
 WORKDIR /src
 ENV CGO_ENABLED=0
@@ -18,7 +18,16 @@ COPY aws-nuke /usr/local/bin/aws-nuke
 USER aws-nuke
 
 FROM base
-ENTRYPOINT ["/usr/local/bin/aws-nuke"]
+WORKDIR /app
 COPY --from=build --chmod=755 /src/bin/aws-nuke /usr/local/bin/aws-nuke
-RUN chmod +x /usr/local/bin/aws-nuke
+COPY --chmod=755 ./app/* /app/
+RUN chmod 755 /usr/local/bin/aws-nuke /app/entrypoint.sh
+
+# Install AWS CLI and jq using a virtual environment
+USER root
+RUN chown -R aws-nuke:aws-nuke /app
+RUN apk add --no-cache curl jq aws-cli
 USER aws-nuke
+
+# Use the entry script as the command to run
+CMD ["/app/entrypoint.sh"]

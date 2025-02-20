@@ -1,0 +1,4 @@
+fileignoreconfig:
+- filename: app/entrypoint.sh
+  checksum: dfa15871338b86c62bcf0a96fd16c454975c2d0e17c229a8c23f57d568f0ccf1
+version: ""
