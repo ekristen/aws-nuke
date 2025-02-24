@@ -61,24 +61,27 @@ func (l *ECSServiceLister) List(_ context.Context, o interface{}) ([]resource.Re
 			Cluster:    clusterArn,
 			MaxResults: aws.Int64(10),
 		}
-		output, err := svc.ListServices(serviceParams)
-		if err != nil {
-			return nil, err
-		}
 
-		for _, serviceArn := range output.ServiceArns {
-			resources = append(resources, &ECSService{
-				svc:        svc,
-				serviceARN: serviceArn,
-				clusterARN: clusterArn,
-			})
-		}
+		for {
+			output, err := svc.ListServices(serviceParams)
+			if err != nil {
+				return nil, err
+			}
 
-		if output.NextToken == nil {
-			continue
-		}
+			for _, serviceArn := range output.ServiceArns {
+				resources = append(resources, &ECSService{
+					svc:        svc,
+					serviceARN: serviceArn,
+					clusterARN: clusterArn,
+				})
+			}
 
-		serviceParams.NextToken = output.NextToken
+			if output.NextToken == nil {
+				break
+			}
+
+			serviceParams.NextToken = output.NextToken
+		}
 	}
 
 	return resources, nil
