@@ -2,9 +2,12 @@ package resources
 
 import (
 	"context"
+	"errors"
 
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
+	"github.com/sirupsen/logrus"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
@@ -39,6 +42,8 @@ func (l *IAMOpenIDConnectProviderLister) List(_ context.Context, o interface{}) 
 		return nil, err
 	}
 
+	var inaccessibleOpenIDConnectProvider bool
+
 	for _, out := range resp.OpenIDConnectProviderList {
 		params := &iam.GetOpenIDConnectProviderInput{
 			OpenIDConnectProviderArn: out.Arn,
@@ -46,7 +51,16 @@ func (l *IAMOpenIDConnectProviderLister) List(_ context.Context, o interface{}) 
 		resp, err := svc.GetOpenIDConnectProvider(params)
 
 		if err != nil {
-			return nil, err
+			var awsError awserr.Error
+			if errors.As(err, &awsError) {
+				if awsError.Code() == "AccessDenied" {
+					inaccessibleOpenIDConnectProvider = true
+					logrus.WithError(err).WithField("arn", out.Arn).Debug("inaccessible openIDConnectProvider")
+					continue
+				} else {
+					logrus.WithError(err).WithField("arn", out.Arn).Error("unable to list openIDConnectProvider")
+				}
+			}
 		}
 
 		resources = append(resources, &IAMOpenIDConnectProvider{
@@ -54,6 +68,10 @@ func (l *IAMOpenIDConnectProviderLister) List(_ context.Context, o interface{}) 
 			arn:  *out.Arn,
 			tags: resp.Tags,
 		})
+	}
+
+	if inaccessibleOpenIDConnectProvider {
+		logrus.Warn("one or more OpenIDConnectProviders were inaccessible, debug logging will contain more information")
 	}
 
 	return resources, nil
