@@ -48,6 +48,8 @@ github.com/aws/aws-sdk-go-v2/service/cloudfront v1.44.10 h1:fdLh7eMf5mxtggx2nG0+
 github.com/aws/aws-sdk-go-v2/service/cloudfront v1.44.10/go.mod h1:uBca+/1aH5v/RYWXqyymLrsbmx1vU9bBxeurlC627Gc=
 github.com/aws/aws-sdk-go-v2/service/cloudfront v1.44.11 h1:azwNdO35Sp6EtX1RTi+gjrdng88tb2LUA7arvoWO3TI=
 github.com/aws/aws-sdk-go-v2/service/cloudfront v1.44.11/go.mod h1:nr2/4ch+huedh56oGZClTeCVENvMBqeEkzkObAFCDQM=
+github.com/aws/aws-sdk-go-v2/service/cloudfront v1.44.12 h1:GEdQ1mVjgYH/c7vKrt+rrPS8Ax3wgqOHOBudPE7UIJs=
+github.com/aws/aws-sdk-go-v2/service/cloudfront v1.44.12/go.mod h1:nr2/4ch+huedh56oGZClTeCVENvMBqeEkzkObAFCDQM=
 github.com/aws/aws-sdk-go-v2/service/iam v1.38.10 h1:u/MwkFwRkKRDvy7D76/khJTk8HMp4mC5sZKErU53jos=
 github.com/aws/aws-sdk-go-v2/service/iam v1.38.10/go.mod h1:Gid0WEVky3EWbkeXiS67kHhbiK+q3/wO/hvPh7plR0c=
 github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.12.2 h1:D4oz8/CzT9bAEYtVhSBmFj2dNOtaHOtMKc2vHBwYizA=
@@ -70,6 +72,8 @@ github.com/aws/aws-sdk-go-v2/service/route53profiles v1.4.15 h1:jv3t6w/TEZB4hmEQ
 github.com/aws/aws-sdk-go-v2/service/route53profiles v1.4.15/go.mod h1:lbeAAmPK3SjBmiYymuA9HOQShO3sTiXQkUfq8eojYVs=
 github.com/aws/aws-sdk-go-v2/service/route53profiles v1.4.16 h1:YeRgAb4WEh6xte1h6Tg9wtVTZ+xwZKdIMfHExnLwGJ8=
 github.com/aws/aws-sdk-go-v2/service/route53profiles v1.4.16/go.mod h1:Fw3q+gxXdlWm/chYEtIbeILj3bqObPLm7fbn/bPUXaE=
+github.com/aws/aws-sdk-go-v2/service/route53profiles v1.4.17 h1:x19QmT0wHVz5v48OqvGY1B18Pdw3Z1XHsc/+eLWRUQ8=
+github.com/aws/aws-sdk-go-v2/service/route53profiles v1.4.17/go.mod h1:Fw3q+gxXdlWm/chYEtIbeILj3bqObPLm7fbn/bPUXaE=
 github.com/aws/aws-sdk-go-v2/service/s3 v1.72.3 h1:WZOmJfCDV+4tYacLxpiojoAdT5sxTfB3nTqQNtZu+J4=
 github.com/aws/aws-sdk-go-v2/service/s3 v1.72.3/go.mod h1:xMekrnhmJ5aqmyxtmALs7mlvXw5xRh+eYjOjvrIIFJ4=
 github.com/aws/aws-sdk-go-v2/service/s3control v1.52.7 h1:cewH1fJ35N26pujUo8pXtqngf0QZio0ko62rT1x2Uak=
