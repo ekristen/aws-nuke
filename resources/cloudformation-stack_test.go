@@ -354,3 +354,59 @@ func TestCloudformationStack_Remove_Stack_UpdateInProgress(t *testing.T) {
 		})
 	}
 }
+
+func TestCloudformationStack_Remove_RoleARNIsNil(t *testing.T) {
+    a := assert.New(t)
+    ctrl := gomock.NewController(t)
+    defer ctrl.Finish()
+
+    mockCloudformation := mock_cloudformationiface.NewMockCloudFormationAPI(ctrl)
+
+    stack := CloudFormationStack{
+        svc:    mockCloudformation,
+        logger: logrus.NewEntry(logrus.StandardLogger()),
+        Name:   ptr.String("foobar"),
+        settings: &libsettings.Setting{
+            "DisableDeletionProtection": true,
+        },
+        roleARN: nil, // roleARN is nil
+    }
+
+    gomock.InOrder(
+        mockCloudformation.EXPECT().DescribeStacks(gomock.Eq(&cloudformation.DescribeStacksInput{
+            StackName: ptr.String("foobar"),
+        })).Return(&cloudformation.DescribeStacksOutput{
+            Stacks: []*cloudformation.Stack{
+                {
+                    StackStatus: ptr.String(cloudformation.StackStatusDeleteFailed),
+                },
+            },
+        }, nil),
+        mockCloudformation.EXPECT().ListStackResources(gomock.Eq(&cloudformation.ListStackResourcesInput{
+            StackName: ptr.String("foobar"),
+        })).Return(&cloudformation.ListStackResourcesOutput{
+            StackResourceSummaries: []*cloudformation.StackResourceSummary{
+                {
+                    ResourceStatus:    ptr.String(cloudformation.ResourceStatusDeleteComplete),
+                    LogicalResourceId: ptr.String("fooDeleteComplete"),
+                },
+                {
+                    ResourceStatus:    ptr.String(cloudformation.ResourceStatusDeleteFailed),
+                    LogicalResourceId: ptr.String("fooDeleteFailed"),
+                },
+            },
+        }, nil),
+        mockCloudformation.EXPECT().DeleteStack(gomock.Eq(&cloudformation.DeleteStackInput{
+            StackName: ptr.String("foobar"),
+            RetainResources: []*string{
+                ptr.String("fooDeleteFailed"),
+            },
+        })).Return(nil, nil),
+        mockCloudformation.EXPECT().WaitUntilStackDeleteComplete(gomock.Eq(&cloudformation.DescribeStacksInput{
+            StackName: ptr.String("foobar"),
+        })).Return(nil),
+    )
+
+    err := stack.Remove(context.TODO())
+    a.Nil(err)
+}
