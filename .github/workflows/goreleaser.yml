@@ -33,7 +33,7 @@ jobs:
       - name: setup-go
         uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v5
         with:
-          go-version: 1.21.x
+          go-version: 1.24.x
       - name: setup qemu
         id: qemu
         uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392 # v3
