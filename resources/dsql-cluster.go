@@ -3,6 +3,7 @@ package resources
 import (
 	"context"
 	"errors"
+	"slices"
 	"time"
 
 	"github.com/gotidy/ptr"
@@ -38,6 +39,10 @@ func (l *DSQLClusterLister) List(ctx context.Context, o interface{}) ([]resource
 	opts := o.(*nuke.ListerOpts)
 	svc := dsql.NewFromConfig(*opts.Config)
 	var resources []resource.Resource
+
+	if !l.IsSupportedRegion(opts.Region.Name) {
+		return resources, nil
+	}
 
 	params := &dsql.ListClustersInput{
 		MaxResults: ptr.Int32(100),
@@ -87,6 +92,17 @@ func (l *DSQLClusterLister) List(ctx context.Context, o interface{}) ([]resource
 	}
 
 	return resources, nil
+}
+
+func (l *DSQLClusterLister) IsSupportedRegion(region string) bool {
+	// https://aws.amazon.com/rds/aurora/dsql/faqs/#:~:text=available%20in%20all-,AWS%20Regions,-%3F
+	// NOTE: us-west-2 (Oregon) is available as a witness region, but clusters cannot be created in this region
+	supportedRegions := []string{
+		"us-east-1",
+		"us-east-2",
+	}
+
+	return slices.Contains(supportedRegions, region)
 }
 
 type DSQLCluster struct {
