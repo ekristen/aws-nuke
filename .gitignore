@@ -7,3 +7,4 @@ cosign.key
 /config.*.yaml
 *.p12
 *.p8
+**/public

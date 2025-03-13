@@ -489,6 +489,7 @@ nav:
     - Msk Cluster: resources/msk-cluster.md
     - Msk Configuration: resources/msk-configuration.md
     - Neptune Cluster: resources/neptune-cluster.md
+    - Neptune Graph: resources/neptune-graph.md
     - Neptune Instance: resources/neptune-instance.md
     - Neptune Snapshot: resources/neptune-snapshot.md
     - Network Manager Connect Peer: resources/network-manager-connect-peer.md
