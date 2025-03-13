@@ -108,11 +108,11 @@ func (l *DSQLClusterLister) IsSupportedRegion(region string) bool {
 type DSQLCluster struct {
 	svc                       *dsql.Client
 	settings                  *libsettings.Setting
-	Arn                       *string
-	CreationTime              *time.Time
-	DeletionProtectionEnabled *bool
-	Identifier                *string
-	Status                    dsqltypes.ClusterStatus
+	Arn                       *string                 `description:"The ARN of the cluster"`
+	CreationTime              *time.Time              `description:"The creation timestamp of the cluster"`
+	DeletionProtectionEnabled *bool                   `description:"Boolean indicating cluster deletion prevention"`
+	Identifier                *string                 `description:"The identifier of the cluster (eg. iiabt5az32iwdnj4xpxwl5mz3e)"`
+	Status                    dsqltypes.ClusterStatus `description:"The status of the cluster at list time"`
 	Tags                      map[string]string
 }
 

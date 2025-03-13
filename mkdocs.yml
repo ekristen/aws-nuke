@@ -276,6 +276,7 @@ nav:
     - Dax Subnet Group: resources/dax-subnet-group.md
     - Device Farm Project: resources/device-farm-project.md
     - Directory Service Directory: resources/directory-service-directory.md
+    - Dsql Cluster: resources/dsql-cluster.md
     - Dynamo Db Backup: resources/dynamo-db-backup.md
     - Dynamo Db Table Item: resources/dynamo-db-table-item.md
     - Dynamo Db Table: resources/dynamo-db-table.md
