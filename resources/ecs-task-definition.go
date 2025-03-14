@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ecs"
 	ecstypes "github.com/aws/aws-sdk-go-v2/service/ecs/types"
 
+	liberrors "github.com/ekristen/libnuke/pkg/errors"
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
@@ -50,8 +51,13 @@ func (l *ECSTaskDefinitionLister) List(ctx context.Context, o interface{}) ([]re
 		for {
 			output, err := svc.ListTaskDefinitions(ctx, params)
 			if err != nil {
+				var errSkipRequest = liberrors.ErrSkipRequest("skip global")
+				if errors.As(err, &errSkipRequest) {
+					break
+				}
+
 				opts.Logger.Error("unable to list task definitions", "error", err)
-				continue
+				break
 			}
 
 			for _, taskDefinitionARN := range output.TaskDefinitionArns {
