@@ -175,7 +175,8 @@ func (r *CloudFormationStack) removeWithAttempts(ctx context.Context, attempt in
 		var awsErr awserr.Error
 		ok := errors.As(err, &awsErr)
 		if ok && awsErr.Code() == "ValidationError" {
-			if awsErr.Message() == fmt.Sprintf("Role %s is invalid or cannot be assumed", *r.roleARN) {
+			// roleARN could be nil. It is not mandatory to have a roleARN for a stack.
+			if r.roleARN != nil && awsErr.Message() == fmt.Sprintf("Role %s is invalid or cannot be assumed", *r.roleARN) {
 				if r.settings.GetBool("CreateRoleToDeleteStack") {
 					r.logger.Infof("CloudFormationStack stackName=%s attempt=%d maxAttempts=%d creating role to delete stack",
 						*r.Name, attempt, r.maxDeleteAttempts)
