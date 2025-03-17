@@ -43,10 +43,25 @@ func (l *APIGatewayDomainNameLister) List(ctx context.Context, o interface{}) ([
 
 		for i := range output.Items {
 			item := &output.Items[i]
+			
+			// Get tags for the domain
+			tagsOutput, err := svc.GetTags(ctx, &apigateway.GetTagsInput{
+				ResourceArn: aws.String("arn:aws:apigateway:" + opts.Config.Region + "::/domainnames/" + *item.DomainName),
+			})
+			if err != nil {
+				return nil, err
+			}
+
+			tags := make(map[string]string)
+			for key, value := range tagsOutput.Tags {
+				tags[key] = value
+			}
+
 			resources = append(resources, &APIGatewayDomainName{
 				svc:          svc,
 				DomainName:   item.DomainName,
 				DomainNameID: item.DomainNameId,
+				Tags:         tags,
 			})
 		}
 
@@ -64,6 +79,7 @@ type APIGatewayDomainName struct {
 	svc          *apigateway.Client
 	DomainName   *string
 	DomainNameID *string
+	Tags         map[string]string
 }
 
 func (f *APIGatewayDomainName) Remove(ctx context.Context) error {
@@ -76,7 +92,18 @@ func (f *APIGatewayDomainName) Remove(ctx context.Context) error {
 }
 
 func (f *APIGatewayDomainName) Properties() types.Properties {
-	return types.NewPropertiesFromStruct(f)
+	properties := types.NewProperties()
+	
+	// Add all tags with "tag:" prefix
+	for key, value := range f.Tags {
+		properties.Set("tag:"+key, value)
+	}
+	
+	// Add other properties
+	properties.Set("DomainName", f.DomainName)
+	properties.Set("DomainNameID", f.DomainNameID)
+	
+	return properties
 }
 
 func (f *APIGatewayDomainName) String() string {
