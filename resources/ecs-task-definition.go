@@ -104,8 +104,17 @@ func (r *ECSTaskDefinition) Filter() error {
 }
 
 func (r *ECSTaskDefinition) Remove(ctx context.Context) error {
-	_, err := r.svc.DeregisterTaskDefinition(ctx, &ecs.DeregisterTaskDefinitionInput{
-		TaskDefinition: r.arn,
+	if *r.Status != string(ecstypes.TaskDefinitionStatusInactive) {
+		_, err := r.svc.DeregisterTaskDefinition(ctx, &ecs.DeregisterTaskDefinitionInput{
+			TaskDefinition: r.arn,
+		})
+		if err != nil {
+			return err
+		}
+	}
+
+	_, err := r.svc.DeleteTaskDefinitions(ctx, &ecs.DeleteTaskDefinitionsInput{
+		TaskDefinitions: []string{*r.arn},
 	})
 
 	return err
@@ -115,6 +124,7 @@ func (r *ECSTaskDefinition) Properties() types.Properties {
 	return types.NewPropertiesFromStruct(r)
 }
 
+// TODO(v4): switch to using name property
 func (r *ECSTaskDefinition) String() string {
 	return *r.arn
 }
