@@ -2,8 +2,10 @@ package resources
 
 import (
 	"context"
+	"fmt"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go-v2/service/apigateway"
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -32,7 +34,7 @@ func (l *APIGatewayDomainNameLister) List(ctx context.Context, o interface{}) ([
 	var resources []resource.Resource
 
 	params := &apigateway.GetDomainNamesInput{
-		Limit: aws.Int32(100),
+		Limit: ptr.Int32(100),
 	}
 
 	for {
@@ -43,18 +45,18 @@ func (l *APIGatewayDomainNameLister) List(ctx context.Context, o interface{}) ([
 
 		for i := range output.Items {
 			item := &output.Items[i]
-			
+
+			var tags map[string]string
+
 			// Get tags for the domain
 			tagsOutput, err := svc.GetTags(ctx, &apigateway.GetTagsInput{
-				ResourceArn: aws.String("arn:aws:apigateway:" + opts.Config.Region + "::/domainnames/" + *item.DomainName),
+				ResourceArn: ptr.String(fmt.Sprintf("arn:aws:apigateway:%s::/domainnames/%s", opts.Config.Region, *item.DomainName)),
 			})
 			if err != nil {
-				return nil, err
+				opts.Logger.WithError(err).Error("failed to get tags for domain")
 			}
-
-			tags := make(map[string]string)
-			for key, value := range tagsOutput.Tags {
-				tags[key] = value
+			if tagsOutput.Tags != nil {
+				tags = tagsOutput.Tags
 			}
 
 			resources = append(resources, &APIGatewayDomainName{
@@ -82,30 +84,19 @@ type APIGatewayDomainName struct {
 	Tags         map[string]string
 }
 
-func (f *APIGatewayDomainName) Remove(ctx context.Context) error {
-	_, err := f.svc.DeleteDomainName(ctx, &apigateway.DeleteDomainNameInput{
-		DomainName:   f.DomainName,
-		DomainNameId: f.DomainNameID,
+func (r *APIGatewayDomainName) Remove(ctx context.Context) error {
+	_, err := r.svc.DeleteDomainName(ctx, &apigateway.DeleteDomainNameInput{
+		DomainName:   r.DomainName,
+		DomainNameId: r.DomainNameID,
 	})
 
 	return err
 }
 
-func (f *APIGatewayDomainName) Properties() types.Properties {
-	properties := types.NewProperties()
-	
-	// Add all tags with "tag:" prefix
-	for key, value := range f.Tags {
-		properties.Set("tag:"+key, value)
-	}
-	
-	// Add other properties
-	properties.Set("DomainName", f.DomainName)
-	properties.Set("DomainNameID", f.DomainNameID)
-	
-	return properties
+func (r *APIGatewayDomainName) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
 
-func (f *APIGatewayDomainName) String() string {
-	return *f.DomainName
+func (r *APIGatewayDomainName) String() string {
+	return *r.DomainName
 }
