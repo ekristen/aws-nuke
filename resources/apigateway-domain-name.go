@@ -2,8 +2,10 @@ package resources
 
 import (
 	"context"
+	"fmt"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/gotidy/ptr"
+
 	"github.com/aws/aws-sdk-go-v2/service/apigateway"
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -32,7 +34,7 @@ func (l *APIGatewayDomainNameLister) List(ctx context.Context, o interface{}) ([
 	var resources []resource.Resource
 
 	params := &apigateway.GetDomainNamesInput{
-		Limit: aws.Int32(100),
+		Limit: ptr.Int32(100),
 	}
 
 	for {
@@ -43,10 +45,25 @@ func (l *APIGatewayDomainNameLister) List(ctx context.Context, o interface{}) ([
 
 		for i := range output.Items {
 			item := &output.Items[i]
+
+			var tags map[string]string
+
+			// Get tags for the domain
+			tagsOutput, err := svc.GetTags(ctx, &apigateway.GetTagsInput{
+				ResourceArn: ptr.String(fmt.Sprintf("arn:aws:apigateway:%s::/domainnames/%s", opts.Config.Region, *item.DomainName)),
+			})
+			if err != nil {
+				opts.Logger.WithError(err).Error("failed to get tags for domain")
+			}
+			if tagsOutput.Tags != nil {
+				tags = tagsOutput.Tags
+			}
+
 			resources = append(resources, &APIGatewayDomainName{
 				svc:          svc,
 				DomainName:   item.DomainName,
 				DomainNameID: item.DomainNameId,
+				Tags:         tags,
 			})
 		}
 
@@ -64,21 +81,22 @@ type APIGatewayDomainName struct {
 	svc          *apigateway.Client
 	DomainName   *string
 	DomainNameID *string
+	Tags         map[string]string
 }
 
-func (f *APIGatewayDomainName) Remove(ctx context.Context) error {
-	_, err := f.svc.DeleteDomainName(ctx, &apigateway.DeleteDomainNameInput{
-		DomainName:   f.DomainName,
-		DomainNameId: f.DomainNameID,
+func (r *APIGatewayDomainName) Remove(ctx context.Context) error {
+	_, err := r.svc.DeleteDomainName(ctx, &apigateway.DeleteDomainNameInput{
+		DomainName:   r.DomainName,
+		DomainNameId: r.DomainNameID,
 	})
 
 	return err
 }
 
-func (f *APIGatewayDomainName) Properties() types.Properties {
-	return types.NewPropertiesFromStruct(f)
+func (r *APIGatewayDomainName) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
 
-func (f *APIGatewayDomainName) String() string {
-	return *f.DomainName
+func (r *APIGatewayDomainName) String() string {
+	return *r.DomainName
 }
