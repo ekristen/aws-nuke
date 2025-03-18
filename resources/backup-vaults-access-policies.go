@@ -60,6 +60,7 @@ func (l *AWSBackupVaultAccessPolicyLister) List(_ context.Context, o interface{}
 		if resp.Policy != nil {
 			resources = append(resources, &BackupVaultAccessPolicy{
 				svc:             svc,
+				accountID:       opts.AccountID,
 				backupVaultName: *out.BackupVaultName,
 			})
 		}
@@ -70,6 +71,7 @@ func (l *AWSBackupVaultAccessPolicyLister) List(_ context.Context, o interface{}
 
 type BackupVaultAccessPolicy struct {
 	svc             *backup.Backup
+	accountID       *string
 	backupVaultName string
 }
 
@@ -111,7 +113,7 @@ func (b *BackupVaultAccessPolicy) Remove(_ context.Context) error {
         {
             "Effect": "Allow",
             "Principal": {
-                "AWS": "*"
+				"AWS": "arn:aws:iam::` + *b.accountID + `:root"
             },
             "Action": "backup:DeleteBackupVaultAccessPolicy",
             "Resource": "*"
