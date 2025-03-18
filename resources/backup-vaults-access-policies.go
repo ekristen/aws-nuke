@@ -7,6 +7,8 @@ import (
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 
+	"fmt"
+
 	"github.com/aws/aws-sdk-go/service/backup"
 )
 
@@ -107,19 +109,19 @@ func (b *BackupVaultAccessPolicy) Remove(_ context.Context) error {
 	//
 	// While deletion is Denied, you can update the policy with one that
 	// doesn't deny and then delete at will.
-	allowDeletionPolicy := `{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Principal": {
-				"AWS": "arn:aws:iam::` + *b.accountID + `:root"
-            },
-            "Action": "backup:DeleteBackupVaultAccessPolicy",
-            "Resource": "*"
-        }
-    ]
-}`
+	allowDeletionPolicy := fmt.Sprintf(`{
+	"Version": "2012-10-17",
+	"Statement": [
+		{
+			"Effect": "Allow",
+			"Principal": {
+				"AWS": "arn:aws:iam::%s:root"
+			},
+			"Action": "backup:DeleteBackupVaultAccessPolicy",
+			"Resource": "*"
+		}
+	]
+}`, *b.accountID)
 	// Ignore error from if we can't put permissive backup vault policy in for some reason, that's OK.
 	_, _ = b.svc.PutBackupVaultAccessPolicy(&backup.PutBackupVaultAccessPolicyInput{
 		BackupVaultName: &b.backupVaultName,
