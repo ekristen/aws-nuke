@@ -3,8 +3,10 @@ package resources
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/gotidy/ptr"
+	"go.uber.org/ratelimit"
 
 	"github.com/aws/aws-sdk-go-v2/service/ecs"
 	ecstypes "github.com/aws/aws-sdk-go-v2/service/ecs/types"
@@ -16,6 +18,14 @@ import (
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
+
+// Note: these are global, they really should be per-region
+var ecsTaskDefinitionModifyActionsRateLimit = ratelimit.New(1,
+	ratelimit.Per(1*time.Second), ratelimit.WithSlack(15))
+var ecsTaskDefinitionDeleteActionsRateLimit = ratelimit.New(1,
+	ratelimit.Per(1*time.Second), ratelimit.WithSlack(5))
+var ecsTaskDefinitionReadActionsRateLimit = ratelimit.New(20,
+	ratelimit.Per(1*time.Second), ratelimit.WithSlack(50))
 
 const ECSTaskDefinitionResource = "ECSTaskDefinition"
 
@@ -49,6 +59,8 @@ func (l *ECSTaskDefinitionLister) List(ctx context.Context, o interface{}) ([]re
 		}
 
 		for {
+			ecsTaskDefinitionReadActionsRateLimit.Take()
+
 			output, err := svc.ListTaskDefinitions(ctx, params)
 			if err != nil {
 				var errSkipRequest = liberrors.ErrSkipRequest("skip global")
@@ -61,6 +73,8 @@ func (l *ECSTaskDefinitionLister) List(ctx context.Context, o interface{}) ([]re
 			}
 
 			for _, taskDefinitionARN := range output.TaskDefinitionArns {
+				ecsTaskDefinitionReadActionsRateLimit.Take()
+
 				details, err := svc.DescribeTaskDefinition(ctx, &ecs.DescribeTaskDefinitionInput{
 					TaskDefinition: ptr.String(taskDefinitionARN),
 				})
@@ -105,6 +119,8 @@ func (r *ECSTaskDefinition) Filter() error {
 
 func (r *ECSTaskDefinition) Remove(ctx context.Context) error {
 	if *r.Status != string(ecstypes.TaskDefinitionStatusInactive) {
+		ecsTaskDefinitionModifyActionsRateLimit.Take()
+
 		_, err := r.svc.DeregisterTaskDefinition(ctx, &ecs.DeregisterTaskDefinitionInput{
 			TaskDefinition: r.arn,
 		})
@@ -112,6 +128,8 @@ func (r *ECSTaskDefinition) Remove(ctx context.Context) error {
 			return err
 		}
 	}
+
+	ecsTaskDefinitionDeleteActionsRateLimit.Take()
 
 	_, err := r.svc.DeleteTaskDefinitions(ctx, &ecs.DeleteTaskDefinitionsInput{
 		TaskDefinitions: []string{*r.arn},
