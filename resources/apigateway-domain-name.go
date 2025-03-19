@@ -2,7 +2,6 @@ package resources
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/gotidy/ptr"
 
@@ -50,12 +49,11 @@ func (l *APIGatewayDomainNameLister) List(ctx context.Context, o interface{}) ([
 
 			// Get tags for the domain
 			tagsOutput, err := svc.GetTags(ctx, &apigateway.GetTagsInput{
-				ResourceArn: ptr.String(fmt.Sprintf("arn:aws:apigateway:%s::/domainnames/%s", opts.Config.Region, *item.DomainName)),
+				ResourceArn: item.DomainNameArn,
 			})
 			if err != nil {
 				opts.Logger.WithError(err).Error("failed to get tags for domain")
-			}
-			if tagsOutput.Tags != nil {
+			} else if tagsOutput.Tags != nil {
 				tags = tagsOutput.Tags
 			}
 
