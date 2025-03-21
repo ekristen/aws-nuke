@@ -23,7 +23,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sts v1.33.17
 	github.com/aws/aws-sdk-go-v2/service/transfer v1.55.5
 	github.com/aws/smithy-go v1.22.3
-	github.com/ekristen/libnuke v0.24.5
+	github.com/ekristen/libnuke v0.24.6-0.20250320233452-430158344073
 	github.com/fatih/color v1.18.0
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.6.0

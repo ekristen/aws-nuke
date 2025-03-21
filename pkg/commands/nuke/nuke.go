@@ -210,15 +210,24 @@ func execute(c *cli.Context) error { //nolint:funlen,gocyclo
 		region := nuke.NewRegion(regionName, account.ResourceTypeToServiceType, account.NewSession, account.NewConfig)
 
 		// Step 2 - Create the scannerActual object
-		scannerActual := scanner.New(regionName, resourceTypes, &nuke.ListerOpts{
-			Region:    region,
-			AccountID: ptr.String(account.ID()),
-			Logger: logger.WithFields(logrus.Fields{
-				"component": "scanner",
-				"region":    regionName,
-			}),
+		scannerActual, scannerActualErr := scanner.New(&scanner.Config{
+			Owner:         regionName,
+			ResourceTypes: resourceTypes,
+			Opts: &nuke.ListerOpts{
+				Region:    region,
+				AccountID: ptr.String(account.ID()),
+				Logger: logger.WithFields(logrus.Fields{
+					"component": "scanner",
+					"region":    regionName,
+				}),
+			},
+			Logger:          logger,
+			ParallelQueries: c.Int64("parallel-queries"),
+			QueueSize:       c.Int("max-queue-size"),
 		})
-		scannerActual.SetLogger(logger)
+		if scannerActualErr != nil {
+			return scannerActualErr
+		}
 
 		// Step 3 - Register a mutate function that will be called to modify the lister options for each resource type
 		// see pkg/nuke/resource.go for the MutateOpts function. Its purpose is to create the proper session for the
@@ -337,6 +346,20 @@ func init() { //nolint:funlen
 			Name:    "assume-role-external-id",
 			EnvVars: []string{"AWS_ASSUME_ROLE_EXTERNAL_ID"},
 			Usage:   "the external id to provide for the assumed role",
+		},
+		&cli.IntFlag{
+			Name:    "parallel-queries",
+			Usage:   "CAUTION! ADVANCED USAGE! number of parallel resource queries to run at a time",
+			EnvVars: []string{"AWS_NUKE_PARALLEL_QUERIES"},
+			Value:   scanner.DefaultParallelQueries,
+			Hidden:  true,
+		},
+		&cli.IntFlag{
+			Name:    "max-queue-size",
+			Usage:   "CAUTION! ADVANCED USAGE! the max number of items to queue up before aws-nuke will error",
+			EnvVars: []string{"AWS_NUKE_MAX_QUEUE_SIZE"},
+			Value:   scanner.DefaultQueueSize,
+			Hidden:  true,
 		},
 	}
 
