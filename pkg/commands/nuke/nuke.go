@@ -221,7 +221,9 @@ func execute(c *cli.Context) error { //nolint:funlen,gocyclo
 					"region":    regionName,
 				}),
 			},
-			Logger: logger,
+			Logger:          logger,
+			ParallelQueries: c.Int64("parallel-queries"),
+			QueueSize:       c.Int("max-queue-size"),
 		})
 		if scannerActualErr != nil {
 			return scannerActualErr
