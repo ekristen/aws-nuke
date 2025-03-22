@@ -17,6 +17,9 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
+// Note: this is global, it really should be per-region
+var deleteRl = ratelimit.New(10)
+
 const CloudWatchLogsLogGroupResource = "CloudWatchLogsLogGroup"
 
 func init() {
@@ -43,14 +46,15 @@ func (l *CloudWatchLogsLogGroupLister) List(_ context.Context, o interface{}) ([
 	// them to the bottom, because really it's per-second, and we should be fine querying at this rate for clearing
 	// Ref: https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/cloudwatch_limits_cwl.html
 	groupRl := ratelimit.New(10)
-	streamRl := ratelimit.New(15)
+	tagRl := ratelimit.New(5)
+	streamRl := ratelimit.New(25)
 
 	params := &cloudwatchlogs.DescribeLogGroupsInput{
 		Limit: ptr.Int64(50),
 	}
 
 	for {
-		groupRl.Take() // Wait for DescribeLogGroup rate limiter
+		groupRl.Take() // Wait for DescribeLogGroups rate limiter
 
 		output, err := svc.DescribeLogGroups(params)
 		if err != nil {
@@ -58,7 +62,7 @@ func (l *CloudWatchLogsLogGroupLister) List(_ context.Context, o interface{}) ([
 		}
 
 		for _, logGroup := range output.LogGroups {
-			streamRl.Take() // Wait for DescribeLogStream rate limiter
+			tagRl.Take() // Wait for ListTagsForResource rate limiter
 
 			arn := strings.TrimSuffix(*logGroup.Arn, ":*")
 			tagResp, err := svc.ListTagsForResource(
@@ -68,6 +72,8 @@ func (l *CloudWatchLogsLogGroupLister) List(_ context.Context, o interface{}) ([
 			if err != nil {
 				return nil, err
 			}
+
+			streamRl.Take() // Wait for DescribeLogStreams rate limiter
 
 			// get last event ingestion time
 			lsResp, err := svc.DescribeLogStreams(&cloudwatchlogs.DescribeLogStreamsInput{
@@ -123,6 +129,8 @@ type CloudWatchLogsLogGroup struct {
 }
 
 func (r *CloudWatchLogsLogGroup) Remove(_ context.Context) error {
+	deleteRl.Take() // Wait for DeleteLogGroup rate limiter
+
 	_, err := r.svc.DeleteLogGroup(&cloudwatchlogs.DeleteLogGroupInput{
 		LogGroupName: r.Name,
 	})
