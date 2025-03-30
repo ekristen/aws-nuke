@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/waf"
 	"github.com/aws/aws-sdk-go/service/wafregional"
+	"go.uber.org/ratelimit"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
@@ -33,20 +34,31 @@ func (l *WAFRegionalRuleLister) List(_ context.Context, o interface{}) ([]resour
 	svc := wafregional.New(opts.Session)
 	resources := make([]resource.Resource, 0)
 
+	listRl := ratelimit.New(15)
+	getRl := ratelimit.New(10)
+
 	params := &waf.ListRulesInput{
 		Limit: aws.Int64(50),
 	}
 
 	for {
+		listRl.Take() // Wait for ListRules rate limiter
+
 		resp, err := svc.ListRules(params)
 		if err != nil {
 			return nil, err
 		}
 
 		for _, rule := range resp.Rules {
-			ruleResp, _ := svc.GetRule(&waf.GetRuleInput{
+			getRl.Take() // Wait for GetRule rate limiter
+
+			ruleResp, err := svc.GetRule(&waf.GetRuleInput{
 				RuleId: rule.RuleId,
 			})
+			if err != nil {
+				return nil, err
+			}
+
 			resources = append(resources, &WAFRegionalRule{
 				svc:  svc,
 				ID:   rule.RuleId,
