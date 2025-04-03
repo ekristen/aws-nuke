@@ -2,20 +2,27 @@
 generated: true
 ---
 
-# ECSTaskDefinition
+# DocDBEventSubscription
 
 
 ## Resource
 
 ```text
-ECSTaskDefinition
+DocDBEventSubscription
 ```
 
 ## Properties
 
 
+- `ARN`: No Description
+- `Enabled`: No Description
+- `EventCategories`: No Description
 - `Name`: No Description
+- `SnsTopicArn`: No Description
+- `SourceType`: No Description
 - `Status`: No Description
+- `tag:<key>:`: This resource has tags with property `Tags`. These are key/value pairs that are
+	added as their own property with the prefix of `tag:` (e.g. [tag:example: "value"]) 
 
 !!! note - Using Properties
     Properties are what [Filters](../config-filtering.md) are written against in your configuration. You use the property
