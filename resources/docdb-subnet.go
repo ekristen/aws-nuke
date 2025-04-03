@@ -3,7 +3,6 @@ package resources
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/docdb"
 	docdbtypes "github.com/aws/aws-sdk-go-v2/service/docdb/types"
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
@@ -47,7 +46,7 @@ func (l *DocDBSubnetGroupLister) List(ctx context.Context, o interface{}) ([]res
 			}
 			resources = append(resources, &DocDBSubnetGroup{
 				svc:  svc,
-				Name: aws.ToString(subnetGroup.DBSubnetGroupName),
+				Name: subnetGroup.DBSubnetGroupName,
 				Tags: tagList,
 			})
 		}
@@ -58,13 +57,13 @@ func (l *DocDBSubnetGroupLister) List(ctx context.Context, o interface{}) ([]res
 type DocDBSubnetGroup struct {
 	svc *docdb.Client
 
-	Name string
+	Name *string
 	Tags []docdbtypes.Tag
 }
 
 func (r *DocDBSubnetGroup) Remove(ctx context.Context) error {
 	_, err := r.svc.DeleteDBSubnetGroup(ctx, &docdb.DeleteDBSubnetGroupInput{
-		DBSubnetGroupName: aws.String(r.Name),
+		DBSubnetGroupName: r.Name,
 	})
 	return err
 }

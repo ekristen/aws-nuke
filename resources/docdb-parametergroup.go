@@ -3,7 +3,6 @@ package resources
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/docdb"
 	docdbtypes "github.com/aws/aws-sdk-go-v2/service/docdb/types"
 
@@ -49,7 +48,7 @@ func (l *DocDBParameterGroupLister) List(ctx context.Context, o interface{}) ([]
 			}
 			resources = append(resources, &DocDBParameterGroup{
 				svc:  svc,
-				Name: aws.ToString(paramGroup.DBClusterParameterGroupName),
+				Name: paramGroup.DBClusterParameterGroupName,
 				Tags: tagList,
 			})
 		}
@@ -60,13 +59,13 @@ func (l *DocDBParameterGroupLister) List(ctx context.Context, o interface{}) ([]
 type DocDBParameterGroup struct {
 	svc *docdb.Client
 
-	Name string
+	Name *string
 	Tags []docdbtypes.Tag
 }
 
 func (r *DocDBParameterGroup) Remove(ctx context.Context) error {
 	_, err := r.svc.DeleteDBClusterParameterGroup(ctx, &docdb.DeleteDBClusterParameterGroupInput{
-		DBClusterParameterGroupName: aws.String(r.Name),
+		DBClusterParameterGroupName: r.Name,
 	})
 	return err
 }

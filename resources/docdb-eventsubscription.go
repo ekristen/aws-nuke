@@ -3,7 +3,6 @@ package resources
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/docdb"
 	docdbtypes "github.com/aws/aws-sdk-go-v2/service/docdb/types"
 
@@ -48,13 +47,13 @@ func (l *DocDBEventSubscriptionLister) List(ctx context.Context, o interface{}) 
 			}
 			resources = append(resources, &DocDBEventSubscription{
 				svc:             svc,
-				ARN:             aws.ToString(subscription.EventSubscriptionArn),
-				Name:            aws.ToString(subscription.CustSubscriptionId),
-				SnsTopicArn:     aws.ToString(subscription.SnsTopicArn),
-				SourceType:      aws.ToString(subscription.SourceType),
-				Status:          aws.ToString(subscription.Status),
+				ARN:             subscription.EventSubscriptionArn,
+				Name:            subscription.CustSubscriptionId,
+				SnsTopicArn:     subscription.SnsTopicArn,
+				SourceType:      subscription.SourceType,
+				Status:          subscription.Status,
 				EventCategories: subscription.EventCategoriesList,
-				Enabled:         aws.ToBool(subscription.Enabled),
+				Enabled:         subscription.Enabled,
 				Tags:            tagList,
 			})
 		}
@@ -65,19 +64,19 @@ func (l *DocDBEventSubscriptionLister) List(ctx context.Context, o interface{}) 
 type DocDBEventSubscription struct {
 	svc *docdb.Client
 
-	ARN             string
-	Name            string
-	SnsTopicArn     string
-	SourceType      string
-	Status          string
+	ARN             *string
+	Name            *string
+	SnsTopicArn     *string
+	SourceType      *string
+	Status          *string
 	EventCategories []string
-	Enabled         bool
+	Enabled         *bool
 	Tags            []docdbtypes.Tag
 }
 
 func (r *DocDBEventSubscription) Remove(ctx context.Context) error {
 	_, err := r.svc.DeleteEventSubscription(ctx, &docdb.DeleteEventSubscriptionInput{
-		SubscriptionName: aws.String(r.Name),
+		SubscriptionName: r.Name,
 	})
 	return err
 }

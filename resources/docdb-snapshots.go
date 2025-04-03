@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/docdb"
 	docdbtypes "github.com/aws/aws-sdk-go-v2/service/docdb/types"
 
@@ -42,21 +41,22 @@ func (l *DocDBSnapshotLister) List(ctx context.Context, o interface{}) ([]resour
 		}
 
 		for i := 0; i < len(page.DBClusterSnapshots); i++ {
+			tagList := DocDBEmptyTags
 			tags, err := svc.ListTagsForResource(ctx, &docdb.ListTagsForResourceInput{
 				ResourceName: page.DBClusterSnapshots[i].DBClusterSnapshotArn,
 			})
-			if err != nil {
-				continue
+			if err == nil {
+				tagList = tags.TagList
 			}
 			resources = append(resources, &DocDBSnapshot{
 				svc:                svc,
-				ARN:                aws.ToString(page.DBClusterSnapshots[i].DBClusterSnapshotArn),
-				Identifier:         aws.ToString(page.DBClusterSnapshots[i].DBClusterIdentifier),
-				SnapshotType:       aws.ToString(page.DBClusterSnapshots[i].SnapshotType),
-				Status:             aws.ToString(page.DBClusterSnapshots[i].Status),
+				ARN:                page.DBClusterSnapshots[i].DBClusterSnapshotArn,
+				Identifier:         page.DBClusterSnapshots[i].DBClusterIdentifier,
+				SnapshotType:       page.DBClusterSnapshots[i].SnapshotType,
+				Status:             page.DBClusterSnapshots[i].Status,
 				AvailabilityZones:  page.DBClusterSnapshots[i].AvailabilityZones,
 				SnapshotCreateTime: page.DBClusterSnapshots[i].SnapshotCreateTime,
-				Tags:               tags.TagList,
+				Tags:               tagList,
 			})
 		}
 	}
@@ -66,10 +66,10 @@ func (l *DocDBSnapshotLister) List(ctx context.Context, o interface{}) ([]resour
 type DocDBSnapshot struct {
 	svc *docdb.Client
 
-	ARN                string
-	Identifier         string
-	SnapshotType       string
-	Status             string
+	ARN                *string
+	Identifier         *string
+	SnapshotType       *string
+	Status             *string
 	AvailabilityZones  []string
 	SnapshotCreateTime *time.Time
 	Tags               []docdbtypes.Tag
@@ -78,7 +78,7 @@ type DocDBSnapshot struct {
 const DocDBAutomatedSnapshot = "automated"
 
 func (r *DocDBSnapshot) Filter() error {
-	if r.SnapshotType == DocDBAutomatedSnapshot {
+	if *r.SnapshotType == DocDBAutomatedSnapshot {
 		return fmt.Errorf("cannot delete automated snapshots")
 	}
 	return nil
@@ -86,7 +86,7 @@ func (r *DocDBSnapshot) Filter() error {
 
 func (r *DocDBSnapshot) Remove(ctx context.Context) error {
 	_, err := r.svc.DeleteDBClusterSnapshot(ctx, &docdb.DeleteDBClusterSnapshotInput{
-		DBClusterSnapshotIdentifier: aws.String(r.Identifier),
+		DBClusterSnapshotIdentifier: r.Identifier,
 	})
 	return err
 }

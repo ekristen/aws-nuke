@@ -3,7 +3,6 @@ package resources
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/docdb"
 	docdbtypes "github.com/aws/aws-sdk-go-v2/service/docdb/types"
 
@@ -49,7 +48,7 @@ func (l *DocDBInstanceLister) List(ctx context.Context, o interface{}) ([]resour
 			}
 			resources = append(resources, &DocDBInstance{
 				svc:        svc,
-				Identifier: aws.ToString(page.DBInstances[i].DBInstanceIdentifier),
+				Identifier: page.DBInstances[i].DBInstanceIdentifier,
 				Tags:       tagList,
 			})
 		}
@@ -60,13 +59,13 @@ func (l *DocDBInstanceLister) List(ctx context.Context, o interface{}) ([]resour
 type DocDBInstance struct {
 	svc *docdb.Client
 
-	Identifier string
+	Identifier *string
 	Tags       []docdbtypes.Tag
 }
 
 func (r *DocDBInstance) Remove(ctx context.Context) error {
 	_, err := r.svc.DeleteDBInstance(ctx, &docdb.DeleteDBInstanceInput{
-		DBInstanceIdentifier: aws.String(r.Identifier),
+		DBInstanceIdentifier: r.Identifier,
 	})
 	return err
 }
