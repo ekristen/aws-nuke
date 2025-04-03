@@ -16,6 +16,8 @@ import (
 
 const DocDBClusterResource = "DocDBCluster"
 
+var DocDBEmptyTags = []docdbtypes.Tag{}
+
 func init() {
 	registry.Register(&registry.Registration{
 		Name:     DocDBClusterResource,
@@ -40,17 +42,18 @@ func (l *DocDBClusterLister) List(ctx context.Context, o interface{}) ([]resourc
 		}
 
 		for i := 0; i < len(page.DBClusters); i++ {
+			tagList := DocDBEmptyTags
 			tags, err := svc.ListTagsForResource(ctx, &docdb.ListTagsForResourceInput{
 				ResourceName: page.DBClusters[i].DBClusterArn,
 			})
-			if err != nil {
-				continue
+			if err == nil {
+				tagList = tags.TagList
 			}
 			resources = append(resources, &DocDBCluster{
 				svc:                svc,
 				ID:                 aws.ToString(page.DBClusters[i].DBClusterIdentifier),
-				deletionProtection: aws.ToBool(page.DBClusters[i].DeletionProtection),
-				tags:               tags.TagList,
+				DeletionProtection: aws.ToBool(page.DBClusters[i].DeletionProtection),
+				Tags:               tagList,
 			})
 		}
 	}
@@ -58,14 +61,15 @@ func (l *DocDBClusterLister) List(ctx context.Context, o interface{}) ([]resourc
 }
 
 type DocDBCluster struct {
-	svc                *docdb.Client
+	svc *docdb.Client
+
 	ID                 string
-	deletionProtection bool
-	tags               []docdbtypes.Tag
+	DeletionProtection bool
+	Tags               []docdbtypes.Tag
 }
 
 func (r *DocDBCluster) Remove(ctx context.Context) error {
-	if r.deletionProtection {
+	if r.DeletionProtection {
 		_, err := r.svc.ModifyDBCluster(ctx, &docdb.ModifyDBClusterInput{
 			DBClusterIdentifier: aws.String(r.ID),
 			DeletionProtection:  aws.Bool(false),
@@ -83,13 +87,5 @@ func (r *DocDBCluster) Remove(ctx context.Context) error {
 }
 
 func (r *DocDBCluster) Properties() types.Properties {
-	properties := types.NewProperties()
-	properties.Set("Identifier", r.ID)
-	properties.Set("DeletionProtection", r.deletionProtection)
-
-	for _, tag := range r.tags {
-		properties.SetTag(tag.Key, tag.Value)
-	}
-
-	return properties
+	return types.NewPropertiesFromStruct(r)
 }

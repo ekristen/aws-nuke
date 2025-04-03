@@ -3,6 +3,7 @@ package resources
 import (
 	"context"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/docdb"
 	docdbtypes "github.com/aws/aws-sdk-go-v2/service/docdb/types"
 
@@ -38,16 +39,23 @@ func (l *DocDBEventSubscriptionLister) List(ctx context.Context, o interface{}) 
 		}
 
 		for _, subscription := range page.EventSubscriptionsList {
+			tagList := DocDBEmptyTags
 			tags, err := svc.ListTagsForResource(ctx, &docdb.ListTagsForResourceInput{
 				ResourceName: subscription.CustSubscriptionId,
 			})
-			if err != nil {
-				continue
+			if err == nil {
+				tagList = tags.TagList
 			}
 			resources = append(resources, &DocDBEventSubscription{
-				svc:          svc,
-				subscription: subscription,
-				tags:         tags.TagList,
+				svc:             svc,
+				ARN:             aws.ToString(subscription.EventSubscriptionArn),
+				Name:            aws.ToString(subscription.CustSubscriptionId),
+				SnsTopicArn:     aws.ToString(subscription.SnsTopicArn),
+				SourceType:      aws.ToString(subscription.SourceType),
+				Status:          aws.ToString(subscription.Status),
+				EventCategories: subscription.EventCategoriesList,
+				Enabled:         aws.ToBool(subscription.Enabled),
+				Tags:            tagList,
 			})
 		}
 	}
@@ -55,31 +63,25 @@ func (l *DocDBEventSubscriptionLister) List(ctx context.Context, o interface{}) 
 }
 
 type DocDBEventSubscription struct {
-	svc          *docdb.Client
-	subscription docdbtypes.EventSubscription
-	tags         []docdbtypes.Tag
+	svc *docdb.Client
+
+	ARN             string
+	Name            string
+	SnsTopicArn     string
+	SourceType      string
+	Status          string
+	EventCategories []string
+	Enabled         bool
+	Tags            []docdbtypes.Tag
 }
 
 func (r *DocDBEventSubscription) Remove(ctx context.Context) error {
 	_, err := r.svc.DeleteEventSubscription(ctx, &docdb.DeleteEventSubscriptionInput{
-		SubscriptionName: r.subscription.CustSubscriptionId,
+		SubscriptionName: aws.String(r.Name),
 	})
 	return err
 }
 
 func (r *DocDBEventSubscription) Properties() types.Properties {
-	properties := types.NewProperties()
-	properties.Set("ARN", r.subscription.EventSubscriptionArn)
-	properties.Set("Name", r.subscription.CustSubscriptionId)
-	properties.Set("SnsTopicArn", r.subscription.SnsTopicArn)
-	properties.Set("SourceType", r.subscription.SourceType)
-	properties.Set("Status", r.subscription.Status)
-	properties.Set("EventCategories", r.subscription.EventCategoriesList)
-	properties.Set("Enabled", r.subscription.Enabled)
-
-	for _, tag := range r.tags {
-		properties.SetTag(tag.Key, tag.Value)
-	}
-
-	return properties
+	return types.NewPropertiesFromStruct(r)
 }

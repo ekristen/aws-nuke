@@ -40,16 +40,17 @@ func (l *DocDBInstanceLister) List(ctx context.Context, o interface{}) ([]resour
 		}
 
 		for i := 0; i < len(page.DBInstances); i++ {
+			tagList := DocDBEmptyTags
 			tags, err := svc.ListTagsForResource(ctx, &docdb.ListTagsForResourceInput{
 				ResourceName: page.DBInstances[i].DBInstanceArn,
 			})
-			if err != nil {
-				continue
+			if err == nil {
+				tagList = tags.TagList
 			}
 			resources = append(resources, &DocDBInstance{
-				svc:  svc,
-				ID:   aws.ToString(page.DBInstances[i].DBInstanceIdentifier),
-				tags: tags.TagList,
+				svc:        svc,
+				Identifier: aws.ToString(page.DBInstances[i].DBInstanceIdentifier),
+				Tags:       tagList,
 			})
 		}
 	}
@@ -57,25 +58,19 @@ func (l *DocDBInstanceLister) List(ctx context.Context, o interface{}) ([]resour
 }
 
 type DocDBInstance struct {
-	svc  *docdb.Client
-	ID   string
-	tags []docdbtypes.Tag
+	svc *docdb.Client
+
+	Identifier string
+	Tags       []docdbtypes.Tag
 }
 
 func (r *DocDBInstance) Remove(ctx context.Context) error {
 	_, err := r.svc.DeleteDBInstance(ctx, &docdb.DeleteDBInstanceInput{
-		DBInstanceIdentifier: aws.String(r.ID),
+		DBInstanceIdentifier: aws.String(r.Identifier),
 	})
 	return err
 }
 
 func (r *DocDBInstance) Properties() types.Properties {
-	properties := types.NewProperties()
-	properties.Set("Identifier", r.ID)
-
-	for _, tag := range r.tags {
-		properties.SetTag(tag.Key, tag.Value)
-	}
-
-	return properties
+	return types.NewPropertiesFromStruct(r)
 }

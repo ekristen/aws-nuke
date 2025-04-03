@@ -40,16 +40,17 @@ func (l *DocDBParameterGroupLister) List(ctx context.Context, o interface{}) ([]
 		}
 
 		for _, paramGroup := range page.DBClusterParameterGroups {
+			tagList := DocDBEmptyTags
 			tags, err := svc.ListTagsForResource(ctx, &docdb.ListTagsForResourceInput{
 				ResourceName: paramGroup.DBClusterParameterGroupName,
 			})
-			if err != nil {
-				continue
+			if err == nil {
+				tagList = tags.TagList
 			}
 			resources = append(resources, &DocDBParameterGroup{
 				svc:  svc,
 				Name: aws.ToString(paramGroup.DBClusterParameterGroupName),
-				tags: tags.TagList,
+				Tags: tagList,
 			})
 		}
 	}
@@ -57,9 +58,10 @@ func (l *DocDBParameterGroupLister) List(ctx context.Context, o interface{}) ([]
 }
 
 type DocDBParameterGroup struct {
-	svc  *docdb.Client
+	svc *docdb.Client
+
 	Name string
-	tags []docdbtypes.Tag
+	Tags []docdbtypes.Tag
 }
 
 func (r *DocDBParameterGroup) Remove(ctx context.Context) error {
@@ -70,12 +72,5 @@ func (r *DocDBParameterGroup) Remove(ctx context.Context) error {
 }
 
 func (r *DocDBParameterGroup) Properties() types.Properties {
-	properties := types.NewProperties()
-	properties.Set("Name", r.Name)
-
-	for _, tag := range r.tags {
-		properties.SetTag(tag.Key, tag.Value)
-	}
-
-	return properties
+	return types.NewPropertiesFromStruct(r)
 }

@@ -38,16 +38,17 @@ func (l *DocDBSubnetGroupLister) List(ctx context.Context, o interface{}) ([]res
 		}
 
 		for _, subnetGroup := range page.DBSubnetGroups {
+			tagList := DocDBEmptyTags
 			tags, err := svc.ListTagsForResource(ctx, &docdb.ListTagsForResourceInput{
 				ResourceName: subnetGroup.DBSubnetGroupArn,
 			})
-			if err != nil {
-				continue
+			if err == nil {
+				tagList = tags.TagList
 			}
 			resources = append(resources, &DocDBSubnetGroup{
 				svc:  svc,
 				Name: aws.ToString(subnetGroup.DBSubnetGroupName),
-				tags: tags.TagList,
+				Tags: tagList,
 			})
 		}
 	}
@@ -55,9 +56,10 @@ func (l *DocDBSubnetGroupLister) List(ctx context.Context, o interface{}) ([]res
 }
 
 type DocDBSubnetGroup struct {
-	svc  *docdb.Client
+	svc *docdb.Client
+
 	Name string
-	tags []docdbtypes.Tag
+	Tags []docdbtypes.Tag
 }
 
 func (r *DocDBSubnetGroup) Remove(ctx context.Context) error {
@@ -68,11 +70,5 @@ func (r *DocDBSubnetGroup) Remove(ctx context.Context) error {
 }
 
 func (r *DocDBSubnetGroup) Properties() types.Properties {
-	properties := types.NewProperties()
-	properties.Set("Name", r.Name)
-
-	for _, tag := range r.tags {
-		properties.SetTag(tag.Key, tag.Value)
-	}
-	return properties
+	return types.NewPropertiesFromStruct(r)
 }

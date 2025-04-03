@@ -49,9 +49,14 @@ func (l *DocDBSnapshotLister) List(ctx context.Context, o interface{}) ([]resour
 				continue
 			}
 			resources = append(resources, &DocDBSnapshot{
-				svc:      svc,
-				snapshot: page.DBClusterSnapshots[i],
-				tags:     tags.TagList,
+				svc:                svc,
+				ARN:                aws.ToString(page.DBClusterSnapshots[i].DBClusterSnapshotArn),
+				Identifier:         aws.ToString(page.DBClusterSnapshots[i].DBClusterIdentifier),
+				SnapshotType:       aws.ToString(page.DBClusterSnapshots[i].SnapshotType),
+				Status:             aws.ToString(page.DBClusterSnapshots[i].Status),
+				AvailabilityZones:  page.DBClusterSnapshots[i].AvailabilityZones,
+				SnapshotCreateTime: page.DBClusterSnapshots[i].SnapshotCreateTime,
+				Tags:               tags.TagList,
 			})
 		}
 	}
@@ -59,45 +64,33 @@ func (l *DocDBSnapshotLister) List(ctx context.Context, o interface{}) ([]resour
 }
 
 type DocDBSnapshot struct {
-	svc      *docdb.Client
-	snapshot docdbtypes.DBClusterSnapshot
-	tags     []docdbtypes.Tag
+	svc *docdb.Client
+
+	ARN                string
+	Identifier         string
+	SnapshotType       string
+	Status             string
+	AvailabilityZones  []string
+	SnapshotCreateTime *time.Time
+	Tags               []docdbtypes.Tag
 }
 
 const DocDBAutomatedSnapshot = "automated"
 
 func (r *DocDBSnapshot) Filter() error {
-	if *r.snapshot.SnapshotType == DocDBAutomatedSnapshot {
+	if r.SnapshotType == DocDBAutomatedSnapshot {
 		return fmt.Errorf("cannot delete automated snapshots")
 	}
 	return nil
 }
 
 func (r *DocDBSnapshot) Remove(ctx context.Context) error {
-	if r.snapshot.DBClusterIdentifier == nil {
-		return nil
-	}
 	_, err := r.svc.DeleteDBClusterSnapshot(ctx, &docdb.DeleteDBClusterSnapshotInput{
-		DBClusterSnapshotIdentifier: aws.String(*r.snapshot.DBClusterIdentifier),
+		DBClusterSnapshotIdentifier: aws.String(r.Identifier),
 	})
 	return err
 }
 
 func (r *DocDBSnapshot) Properties() types.Properties {
-	properties := types.NewProperties()
-	properties.Set("ARN", r.snapshot.DBClusterSnapshotArn)
-	properties.Set("Identifier", r.snapshot.DBClusterSnapshotIdentifier)
-	properties.Set("SnapshotType", r.snapshot.SnapshotType)
-	properties.Set("Status", r.snapshot.Status)
-	properties.Set("AvailabilityZones", r.snapshot.AvailabilityZones)
-
-	if r.snapshot.SnapshotCreateTime != nil {
-		properties.Set("SnapshotCreateTime", r.snapshot.SnapshotCreateTime.Format(time.RFC3339))
-	}
-
-	for _, tag := range r.tags {
-		properties.SetTag(tag.Key, tag.Value)
-	}
-
-	return properties
+	return types.NewPropertiesFromStruct(r)
 }
