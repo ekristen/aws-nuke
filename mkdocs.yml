@@ -277,6 +277,7 @@ nav:
     - Device Farm Project: resources/device-farm-project.md
     - Directory Service Directory: resources/directory-service-directory.md
     - Doc Db Cluster: resources/doc-db-cluster.md
+    - Doc Db Elastic Cluster: resources/doc-db-elastic-cluster.md
     - Doc Db Event Subscription: resources/doc-db-event-subscription.md
     - Doc Db Instance: resources/doc-db-instance.md
     - Doc Db Parameter Group: resources/doc-db-parameter-group.md
