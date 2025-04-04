@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/docdb"
 	docdbtypes "github.com/aws/aws-sdk-go-v2/service/docdb/types"
 
@@ -33,7 +34,16 @@ func (l *DocDBSnapshotLister) List(ctx context.Context, o interface{}) ([]resour
 	svc := docdb.NewFromConfig(*opts.Config)
 	var resources []resource.Resource
 
-	paginator := docdb.NewDescribeDBClusterSnapshotsPaginator(svc, &docdb.DescribeDBClusterSnapshotsInput{})
+	params := &docdb.DescribeDBClusterSnapshotsInput{
+		Filters: []docdbtypes.Filter{
+			{
+				Name:   aws.String("engine"),
+				Values: []string{"docdb"},
+			},
+		},
+	}
+
+	paginator := docdb.NewDescribeDBClusterSnapshotsPaginator(svc, params)
 	for paginator.HasMorePages() {
 		page, err := paginator.NextPage(ctx)
 		if err != nil {

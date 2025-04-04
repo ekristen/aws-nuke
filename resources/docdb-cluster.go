@@ -9,6 +9,7 @@ import (
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	libsettings "github.com/ekristen/libnuke/pkg/settings"
 	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
@@ -24,6 +25,12 @@ func init() {
 		Scope:    nuke.Account,
 		Resource: &DocDBCluster{},
 		Lister:   &DocDBClusterLister{},
+		DependsOn: []string{
+			DocDBInstanceResource,
+		},
+		Settings: []string{
+			"DisableDeletionProtection",
+		},
 	})
 }
 
@@ -34,7 +41,16 @@ func (l *DocDBClusterLister) List(ctx context.Context, o interface{}) ([]resourc
 	svc := docdb.NewFromConfig(*opts.Config)
 	var resources []resource.Resource
 
-	paginator := docdb.NewDescribeDBClustersPaginator(svc, &docdb.DescribeDBClustersInput{})
+	params := &docdb.DescribeDBClustersInput{
+		Filters: []docdbtypes.Filter{
+			{
+				Name:   aws.String("engine"),
+				Values: []string{"docdb"},
+			},
+		},
+	}
+
+	paginator := docdb.NewDescribeDBClustersPaginator(svc, params)
 	for paginator.HasMorePages() {
 		page, err := paginator.NextPage(ctx)
 		if err != nil {
@@ -61,15 +77,20 @@ func (l *DocDBClusterLister) List(ctx context.Context, o interface{}) ([]resourc
 }
 
 type DocDBCluster struct {
-	svc *docdb.Client
+	svc      *docdb.Client
+	settings *libsettings.Setting
 
 	ID                 *string
 	DeletionProtection *bool
 	Tags               []docdbtypes.Tag
 }
 
+func (r *DocDBCluster) Settings(settings *libsettings.Setting) {
+	r.settings = settings
+}
+
 func (r *DocDBCluster) Remove(ctx context.Context) error {
-	if *r.DeletionProtection {
+	if r.settings.GetBool("DisableDeletionProtection") {
 		_, err := r.svc.ModifyDBCluster(ctx, &docdb.ModifyDBClusterInput{
 			DBClusterIdentifier: r.ID,
 			DeletionProtection:  aws.Bool(false),

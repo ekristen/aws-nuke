@@ -3,6 +3,7 @@ package resources
 import (
 	"context"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/docdb"
 	docdbtypes "github.com/aws/aws-sdk-go-v2/service/docdb/types"
 
@@ -31,7 +32,16 @@ func (l *DocDBParameterGroupLister) List(ctx context.Context, o interface{}) ([]
 	svc := docdb.NewFromConfig(*opts.Config)
 	var resources []resource.Resource
 
-	paginator := docdb.NewDescribeDBClusterParameterGroupsPaginator(svc, &docdb.DescribeDBClusterParameterGroupsInput{})
+	params := &docdb.DescribeDBClusterParameterGroupsInput{
+		Filters: []docdbtypes.Filter{
+			{
+				Name:   aws.String("engine"),
+				Values: []string{"docdb"},
+			},
+		},
+	}
+
+	paginator := docdb.NewDescribeDBClusterParameterGroupsPaginator(svc, params)
 	for paginator.HasMorePages() {
 		page, err := paginator.NextPage(ctx)
 		if err != nil {
