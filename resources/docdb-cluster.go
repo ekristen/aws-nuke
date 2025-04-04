@@ -90,7 +90,7 @@ func (r *DocDBCluster) Settings(settings *libsettings.Setting) {
 }
 
 func (r *DocDBCluster) Remove(ctx context.Context) error {
-	if r.settings.GetBool("DisableDeletionProtection") {
+	if r.settings.GetBool("DisableDeletionProtection") && (r.DeletionProtection != nil && *r.DeletionProtection) {
 		_, err := r.svc.ModifyDBCluster(ctx, &docdb.ModifyDBClusterInput{
 			DBClusterIdentifier: r.ID,
 			DeletionProtection:  aws.Bool(false),
