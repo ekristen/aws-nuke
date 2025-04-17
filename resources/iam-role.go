@@ -43,6 +43,7 @@ func init() {
 type IAMRole struct {
 	svc          iamiface.IAMAPI
 	settings     *libsettings.Setting
+	logger       *logrus.Entry
 	Name         *string
 	Path         *string
 	CreateDate   *time.Time
@@ -65,14 +66,49 @@ func (r *IAMRole) Filter() error {
 }
 
 func (r *IAMRole) Remove(_ context.Context) error {
-	_, err := r.svc.DeleteRole(&iam.DeleteRoleInput{
-		RoleName: r.Name,
-	})
-	if err != nil {
+	if strings.HasPrefix(*r.Path, "/aws-service-role/") {
+		result, err := r.svc.DeleteServiceLinkedRole(&iam.DeleteServiceLinkedRoleInput{
+			RoleName: r.Name,
+		})
+
+		if err != nil {
+			return err
+		}
+
+		// short delay requierd for the task to propagate
+		// otherwise immediate 404 for deletion task id
+		time.Sleep(1000 * time.Millisecond)
+
+		deletionTaskId := result.DeletionTaskId
+		for poll := 1; poll <= 10; poll++ {
+			result, err := r.svc.GetServiceLinkedRoleDeletionStatus(&iam.GetServiceLinkedRoleDeletionStatusInput{
+				DeletionTaskId: deletionTaskId,
+			})
+
+			if err != nil {
+				return err
+			}
+
+			// Valid values for status can be found @
+			// https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetServiceLinkedRoleDeletionStatus.html
+			if *result.Status == "FAILED" {
+				return fmt.Errorf("failed to delete role %s - %+v", *r.Name, *result.Reason)
+			} else if *result.Status == "SUCCEEDED" {
+				return nil
+			} else {
+				// All other values are non-terminal, so log and wait a second
+				r.logger.Infof("IAMRole (ServiceLinkedRole) deletion status. name=%s poll=%d status=%s", *r.Name, poll, *result.Status)
+				time.Sleep(1000 * time.Millisecond)
+			}
+		}
+
+		return fmt.Errorf("timed out when deleting role %s", *r.Name)
+	} else {
+		_, err := r.svc.DeleteRole(&iam.DeleteRoleInput{
+			RoleName: r.Name,
+		})
 		return err
 	}
-
-	return nil
 }
 
 func (r *IAMRole) Properties() types.Properties {
@@ -119,6 +155,7 @@ func (l *IAMRoleLister) List(_ context.Context, o interface{}) ([]resource.Resou
 
 			resources = append(resources, &IAMRole{
 				svc:          svc,
+				logger:       opts.Logger,
 				Name:         role.RoleName,
 				Path:         role.Path,
 				CreateDate:   role.CreateDate,
