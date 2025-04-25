@@ -41,7 +41,7 @@ endpoints:
       - service: acm
         url: https://10.16.145.115/api/v2/aws/acm
 
-account-blocklist:
+blocklist:
   - "account-id-of-custom-region-prod" # production
 
 accounts:
