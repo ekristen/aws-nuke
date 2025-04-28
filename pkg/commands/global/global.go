@@ -26,8 +26,15 @@ func Flags() []cli.Flag {
 			EnvVars: []string{"AWS_NUKE_LOG_CALLER"},
 		},
 		&cli.BoolFlag{
-			Name:  "log-disable-color",
-			Usage: "disable log coloring",
+			Name:    "log-disable-colors",
+			Usage:   "disable log coloring",
+			Aliases: []string{"log-disable-color"},
+			EnvVars: []string{"AWS_NUKE_LOG_DISABLE_COLOR"},
+		},
+		&cli.BoolFlag{
+			Name:    "log-force-colors",
+			Usage:   "force enable log output to always show colors",
+			EnvVars: []string{"AWS_NUKE_LOG_FORCE_COLORS"},
 		},
 		&cli.BoolFlag{
 			Name:  "log-full-timestamp",
@@ -51,6 +58,7 @@ func Flags() []cli.Flag {
 
 func Before(c *cli.Context) error {
 	formatter := &logrus.TextFormatter{
+		ForceColors:   c.Bool("log-force-colors"),
 		DisableColors: c.Bool("log-disable-color"),
 		FullTimestamp: c.Bool("log-full-timestamp"),
 	}
