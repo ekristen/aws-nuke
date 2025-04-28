@@ -96,7 +96,7 @@ The following are comparisons  that you can use to filter resources. These are u
 - `exact`
 - `contains`
 - `glob`
-- `regex` 
+- `regex`
 - `dateOlderThan`
 - `dateOlderThanNow`
 
@@ -242,7 +242,7 @@ presets:
 If the current time is `2024-10-15T00:00:00Z`, then the modified now time is `2024-10-14T12:00:00Z`.
 
 If the value of `LastUsedDate` is `2024-10-14T14:30:00Z` then the result of the filter will be `true`. It is **NOT**
-older than the modified time, and since the invert is set to true, anything **newer** to the modified time is filtered. 
+older than the modified time, and since the invert is set to true, anything **newer** to the modified time is filtered.
 
 If the value of `LastUsedDate` is `2024-10-13T12:30:00Z` then the result of the filter will be `false` and the resource
 will be marked for removal.
@@ -251,7 +251,7 @@ will be marked for removal.
 
 By default, when writing a filter if you do not specify a property, it will use the `Name` property. However, resources
 that do no support Properties, aws-nuke will fall back to what is called the `Legacy String`, it's essentially a
-function that returns a string representation of the resource. 
+function that returns a string representation of the resource.
 
 Some resources support filtering via properties. When a resource support these properties, they will be listed in
 the output like in this example:
@@ -310,7 +310,7 @@ presets:
 
 It is possible to filter this is important for not deleting the current user for example or for resources like S3
 Buckets which have a globally shared namespace and might be hard to recreate. Currently, the filtering is based on
-the resource identifier. The identifier will be printed as the first step of *aws-nuke* (eg `i-01b489457a60298dd` 
+the resource identifier. The identifier will be printed as the first step of *aws-nuke* (eg `i-01b489457a60298dd`
 for an EC2 instance).
 
 !!! warning
@@ -327,7 +327,7 @@ regions:
   - global
   - us-east-1
 
-account-blocklist:
+blocklist:
   - 1234567890
 
 accounts:
@@ -361,7 +361,7 @@ regions:
   - "global"
   - "eu-west-1"
 
-account-blocklist:
+blocklist:
   - 1234567890
 
 accounts:
@@ -408,7 +408,7 @@ It is also possible to configure the resource types in the config file like in t
 regions:
   - "us-east-1"
 
-account-blocklist:
+blocklist:
   - 1234567890
 
 resource-types:
@@ -427,7 +427,7 @@ accounts:
 regions:
   - "us-east-1"
 
-account-blocklist:
+blocklist:
   - 1234567890
 
 resource-types:

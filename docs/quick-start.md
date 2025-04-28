@@ -9,7 +9,7 @@ regions:
   - global
   - us-east-1
 
-account-blocklist:
+blocklist:
 - "999999999999" # production
 
 accounts:
@@ -54,7 +54,7 @@ Therefore, we have to extend the config, so it ignores this user:
 regions:
 - us-east-1
 
-account-blocklist:
+blocklist:
 - "999999999999" # production
 
 accounts:
@@ -132,4 +132,3 @@ if they keep to appear.
 
 *aws-nuke* retries deleting all resources until all specified ones are deleted
 or until there are only resources with errors left.
-
