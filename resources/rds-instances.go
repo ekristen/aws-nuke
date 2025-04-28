@@ -65,6 +65,11 @@ func (l *RDSInstanceLister) List(_ context.Context, o interface{}) ([]resource.R
 			continue
 		}
 
+		if ptr.ToString(instance.Engine) == "docdb" {
+			opts.Logger.Debug("skipping docdb instance, it is handled by DocDBInstance")
+			continue
+		}
+
 		tags, err := svc.ListTagsForResource(&rds.ListTagsForResourceInput{
 			ResourceName: instance.DBInstanceArn,
 		})
