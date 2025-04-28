@@ -276,6 +276,13 @@ nav:
     - Dax Subnet Group: resources/dax-subnet-group.md
     - Device Farm Project: resources/device-farm-project.md
     - Directory Service Directory: resources/directory-service-directory.md
+    - Doc Db Cluster: resources/doc-db-cluster.md
+    - Doc Db Elastic Cluster: resources/doc-db-elastic-cluster.md
+    - Doc Db Event Subscription: resources/doc-db-event-subscription.md
+    - Doc Db Instance: resources/doc-db-instance.md
+    - Doc Db Parameter Group: resources/doc-db-parameter-group.md
+    - Doc Db Snapshot: resources/doc-db-snapshot.md
+    - Doc Db Subnet Group: resources/doc-db-subnet-group.md
     - Dsql Cluster: resources/dsql-cluster.md
     - Dynamo Db Backup: resources/dynamo-db-backup.md
     - Dynamo Db Table Item: resources/dynamo-db-table-item.md

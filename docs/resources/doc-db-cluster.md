@@ -2,20 +2,20 @@
 generated: true
 ---
 
-# APIGatewayDomainName
+# DocDBCluster
 
 
 ## Resource
 
 ```text
-APIGatewayDomainName
+DocDBCluster
 ```
 
 ## Properties
 
 
-- `DomainName`: No Description
-- `DomainNameID`: No Description
+- `DeletionProtection`: No Description
+- `ID`: No Description
 - `tag:<key>:`: This resource has tags with property `Tags`. These are key/value pairs that are
 	added as their own property with the prefix of `tag:` (e.g. [tag:example: "value"]) 
 
@@ -30,4 +30,27 @@ resources support properties. To write a filter against the string representatio
 the filter.
 
 The string value is always what is used in the output of the log format when a resource is identified.
+
+## Settings
+
+- `DisableDeletionProtection`
+
+
+### DisableDeletionProtection
+
+!!! note
+    There is currently no description for this setting. Often times settings are fairly self-explanatory. However, we
+    are working on adding descriptions for all settings.
+
+```text
+DisableDeletionProtection
+```
+
+### DependsOn
+
+!!! important - Experimental Feature
+    This resource depends on a resource using the experimental feature. This means that the resource will
+    only be deleted if all the resources of a particular type are deleted first or reach a terminal state.
+
+- [DocDBInstance](./doc-db-instance.md)
 

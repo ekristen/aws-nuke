@@ -28,6 +28,7 @@ AWS::AccessAnalyzer::Analyzer
 - `ARN`: The ARN of the analyzer
 - `Name`: The name of the analyzer
 - `Status`: The status of the analyzer
+- `Type`: The type of the analyzer
 - `tag:<key>:`: This resource has tags with property `Tags`. These are key/value pairs that are
 	added as their own property with the prefix of `tag:` (e.g. [tag:example: "value"]) 
 
