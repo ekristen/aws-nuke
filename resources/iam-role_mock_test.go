@@ -5,13 +5,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gotidy/ptr"
-
 	"github.com/golang/mock/gomock"
+	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/iam"
 
+	liberrors "github.com/ekristen/libnuke/pkg/errors"
 	libsettings "github.com/ekristen/libnuke/pkg/settings"
 
 	"github.com/ekristen/aws-nuke/v3/mocks/mock_iamiface"
@@ -87,6 +88,197 @@ func Test_Mock_IAMRole_Remove(t *testing.T) {
 
 	err := iamRole.Remove(context.TODO())
 	a.Nil(err)
+}
+
+func Test_Mock_IAMRole_SLR_Remove(t *testing.T) {
+	a := assert.New(t)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockIAM := mock_iamiface.NewMockIAMAPI(ctrl)
+
+	iamRole := IAMRole{
+		svc:  mockIAM,
+		Name: ptr.String("test"),
+		Path: ptr.String("/aws-service-role/MyRole"),
+		Tags: []*iam.Tag{},
+	}
+
+	deletionTaskID := ptr.String("test")
+
+	mockIAM.EXPECT().DeleteServiceLinkedRole(gomock.Eq(&iam.DeleteServiceLinkedRoleInput{
+		RoleName: iamRole.Name,
+	})).Return(&iam.DeleteServiceLinkedRoleOutput{
+		DeletionTaskId: deletionTaskID,
+	}, nil)
+
+	err := iamRole.Remove(context.TODO())
+	a.Nil(err)
+	a.Equal("test", *iamRole.deletionTaskID)
+}
+
+func Test_Mock_IAMRole_no_deletionTaskID_HandleWait(t *testing.T) {
+	a := assert.New(t)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockIAM := mock_iamiface.NewMockIAMAPI(ctrl)
+
+	iamRole := IAMRole{
+		svc:            mockIAM,
+		deletionTaskID: nil,
+		Name:           ptr.String("test"),
+		Path:           ptr.String("/aws-service-role/MyRole"),
+		Tags:           []*iam.Tag{},
+	}
+
+	err := iamRole.HandleWait(context.TODO())
+	a.Nil(err)
+}
+
+func Test_Mock_IAMRole_404_GetDeletionStatus_HandleWait(t *testing.T) {
+	a := assert.New(t)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockIAM := mock_iamiface.NewMockIAMAPI(ctrl)
+
+	deletionTaskID := ptr.String("taskId")
+
+	iamRole := IAMRole{
+		svc:            mockIAM,
+		deletionTaskID: deletionTaskID,
+		Name:           ptr.String("test"),
+		Path:           ptr.String("/aws-service-role/MyRole"),
+		Tags:           []*iam.Tag{},
+	}
+
+	mockIAM.EXPECT().GetServiceLinkedRoleDeletionStatus(gomock.Eq(&iam.GetServiceLinkedRoleDeletionStatusInput{
+		DeletionTaskId: deletionTaskID,
+	})).Return(nil, awserr.New(iam.ErrCodeNoSuchEntityException, "", nil))
+
+	err := iamRole.HandleWait(context.TODO())
+	var errWait liberrors.ErrWaitResource
+	a.ErrorAs(err, &errWait)
+}
+
+func Test_Mock_IAMRole_Success_HandleWait(t *testing.T) {
+	a := assert.New(t)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockIAM := mock_iamiface.NewMockIAMAPI(ctrl)
+
+	deletionTaskID := ptr.String("taskId")
+
+	iamRole := IAMRole{
+		svc:            mockIAM,
+		deletionTaskID: deletionTaskID,
+		Name:           ptr.String("test"),
+		Path:           ptr.String("/aws-service-role/MyRole"),
+		Tags:           []*iam.Tag{},
+	}
+
+	mockIAM.EXPECT().GetServiceLinkedRoleDeletionStatus(gomock.Eq(&iam.GetServiceLinkedRoleDeletionStatusInput{
+		DeletionTaskId: deletionTaskID,
+	})).Return(&iam.GetServiceLinkedRoleDeletionStatusOutput{
+		Status: ptr.String("SUCCEEDED"),
+	}, nil)
+
+	err := iamRole.HandleWait(context.TODO())
+	a.Nil(err)
+}
+
+func Test_Mock_IAMRole_Failed_NoRoles_HandleWait(t *testing.T) {
+	a := assert.New(t)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockIAM := mock_iamiface.NewMockIAMAPI(ctrl)
+
+	deletionTaskID := ptr.String("taskId")
+
+	iamRole := IAMRole{
+		svc:            mockIAM,
+		deletionTaskID: deletionTaskID,
+		Name:           ptr.String("test"),
+		Path:           ptr.String("/aws-service-role/MyRole"),
+		Tags:           []*iam.Tag{},
+	}
+
+	mockIAM.EXPECT().GetServiceLinkedRoleDeletionStatus(gomock.Eq(&iam.GetServiceLinkedRoleDeletionStatusInput{
+		DeletionTaskId: deletionTaskID,
+	})).Return(&iam.GetServiceLinkedRoleDeletionStatusOutput{
+		Status: ptr.String("FAILED"),
+		Reason: &iam.DeletionTaskFailureReasonType{
+			Reason: ptr.String("internal failure"),
+		},
+	}, nil)
+
+	err := iamRole.HandleWait(context.TODO())
+	a.NotNil(err)
+	a.NotNil(iamRole.deletionTaskID)
+}
+
+func Test_Mock_IAMRole_Failed_UsageRoles_HandleWait(t *testing.T) {
+	a := assert.New(t)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockIAM := mock_iamiface.NewMockIAMAPI(ctrl)
+
+	deletionTaskID := ptr.String("taskId")
+
+	iamRole := IAMRole{
+		svc:            mockIAM,
+		deletionTaskID: deletionTaskID,
+		Name:           ptr.String("test"),
+		Path:           ptr.String("/aws-service-role/MyRole"),
+		Tags:           []*iam.Tag{},
+	}
+
+	mockIAM.EXPECT().GetServiceLinkedRoleDeletionStatus(gomock.Eq(&iam.GetServiceLinkedRoleDeletionStatusInput{
+		DeletionTaskId: deletionTaskID,
+	})).Return(&iam.GetServiceLinkedRoleDeletionStatusOutput{
+		Status: ptr.String("FAILED"),
+		Reason: &iam.DeletionTaskFailureReasonType{
+			Reason:        ptr.String("internal failure"),
+			RoleUsageList: make([]*iam.RoleUsageType, 0),
+		},
+	}, nil)
+
+	err := iamRole.HandleWait(context.TODO())
+	a.NotNil(err)
+	a.Nil(iamRole.deletionTaskID)
+}
+
+func Test_Mock_IAMRole_InProgress_HandleWait(t *testing.T) {
+	a := assert.New(t)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockIAM := mock_iamiface.NewMockIAMAPI(ctrl)
+
+	deletionTaskID := ptr.String("taskId")
+
+	iamRole := IAMRole{
+		svc:            mockIAM,
+		deletionTaskID: deletionTaskID,
+		Name:           ptr.String("test"),
+		Path:           ptr.String("/aws-service-role/MyRole"),
+		Tags:           []*iam.Tag{},
+	}
+
+	mockIAM.EXPECT().GetServiceLinkedRoleDeletionStatus(gomock.Eq(&iam.GetServiceLinkedRoleDeletionStatusInput{
+		DeletionTaskId: deletionTaskID,
+	})).Return(&iam.GetServiceLinkedRoleDeletionStatusOutput{
+		Status: ptr.String("IN_PROGRESS"),
+	}, nil)
+
+	err := iamRole.HandleWait(context.TODO())
+	a.NotNil(err)
+	var errWait liberrors.ErrWaitResource
+	a.ErrorAs(err, &errWait)
 }
 
 func Test_Mock_IAMRole_Filter_ServiceLinked(t *testing.T) {

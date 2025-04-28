@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -9,9 +10,11 @@ import (
 	"github.com/gotidy/ptr"
 	"github.com/sirupsen/logrus"
 
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 
+	liberror "github.com/ekristen/libnuke/pkg/errors"
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	libsettings "github.com/ekristen/libnuke/pkg/settings"
@@ -41,13 +44,14 @@ func init() {
 }
 
 type IAMRole struct {
-	svc          iamiface.IAMAPI
-	settings     *libsettings.Setting
-	Name         *string
-	Path         *string
-	CreateDate   *time.Time
-	LastUsedDate *time.Time
-	Tags         []*iam.Tag
+	svc            iamiface.IAMAPI
+	settings       *libsettings.Setting
+	deletionTaskID *string
+	Name           *string
+	Path           *string
+	CreateDate     *time.Time
+	LastUsedDate   *time.Time
+	Tags           []*iam.Tag
 }
 
 func (r *IAMRole) Settings(settings *libsettings.Setting) {
@@ -64,15 +68,59 @@ func (r *IAMRole) Filter() error {
 	return nil
 }
 
-func (r *IAMRole) Remove(_ context.Context) error {
-	_, err := r.svc.DeleteRole(&iam.DeleteRoleInput{
-		RoleName: r.Name,
+func (r *IAMRole) HandleWait(_ context.Context) error {
+	if r.deletionTaskID == nil {
+		return nil
+	}
+
+	result, err := r.svc.GetServiceLinkedRoleDeletionStatus(&iam.GetServiceLinkedRoleDeletionStatusInput{
+		DeletionTaskId: r.deletionTaskID,
 	})
+
 	if err != nil {
+		var awsErr awserr.Error
+		ok := errors.As(err, &awsErr)
+		if ok && awsErr.Code() == iam.ErrCodeNoSuchEntityException {
+			return liberror.ErrWaitResource(fmt.Sprintf("Deletion task for role %s still propagating", *r.Name))
+		}
+
 		return err
 	}
 
-	return nil
+	if *result.Status == iam.DeletionTaskStatusTypeSucceeded {
+		return nil
+	} else if *result.Status == iam.DeletionTaskStatusTypeFailed {
+		if result.Reason.RoleUsageList != nil {
+			r.deletionTaskID = nil // reset to allow trying deletion again
+		}
+
+		return fmt.Errorf("failed to delete role %s - %+v", *r.Name, *result.Reason)
+	} else {
+		return liberror.ErrWaitResource(fmt.Sprintf("Deletion task for role %s still pending: %s", *r.Name, *result.Status))
+	}
+}
+
+func (r *IAMRole) Remove(_ context.Context) error {
+	if strings.HasPrefix(*r.Path, "/aws-service-role/") {
+		if r.deletionTaskID == nil {
+			result, err := r.svc.DeleteServiceLinkedRole(&iam.DeleteServiceLinkedRoleInput{
+				RoleName: r.Name,
+			})
+
+			if err != nil {
+				return err
+			}
+
+			r.deletionTaskID = result.DeletionTaskId
+		}
+
+		return nil
+	} else {
+		_, err := r.svc.DeleteRole(&iam.DeleteRoleInput{
+			RoleName: r.Name,
+		})
+		return err
+	}
 }
 
 func (r *IAMRole) Properties() types.Properties {
@@ -118,12 +166,13 @@ func (l *IAMRoleLister) List(_ context.Context, o interface{}) ([]resource.Resou
 			}
 
 			resources = append(resources, &IAMRole{
-				svc:          svc,
-				Name:         role.RoleName,
-				Path:         role.Path,
-				CreateDate:   role.CreateDate,
-				LastUsedDate: getLastUsedDate(role),
-				Tags:         role.Tags,
+				svc:            svc,
+				deletionTaskID: nil,
+				Name:           role.RoleName,
+				Path:           role.Path,
+				CreateDate:     role.CreateDate,
+				LastUsedDate:   getLastUsedDate(role),
+				Tags:           role.Tags,
 			})
 		}
 
