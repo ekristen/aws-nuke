@@ -85,3 +85,7 @@ func (o *OSCollection) Properties() types.Properties {
 	}
 	return properties
 }
+
+func (o *OSCollection) String() string {
+	return *o.name
+}
