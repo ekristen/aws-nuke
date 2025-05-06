@@ -21,7 +21,7 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-go@0aaccfd150d50ccaeb58ebd88d36e91967a5f35b # v5
         with:
-          go-version: '1.21.x'
+          go-version: '1.24.x'
       - name: generate-token
         id: generate_token
         uses: tibdex/github-app-token@3beb63f4bd073e61482598c45c71c1019b59b73a # v2
