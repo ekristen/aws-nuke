@@ -47,8 +47,8 @@
     "customManagers": [
         {
             "customType": "regex",
-            "fileMatch": [
-                "^.github/workflows/.*"
+            "managerFilePatterns": [
+                "/^.github/workflows/.*/"
             ],
             "matchStrings": [
                 "go-version: (?<currentValue>.*?)\n"
