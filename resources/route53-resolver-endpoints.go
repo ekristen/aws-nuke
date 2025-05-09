@@ -2,8 +2,9 @@ package resources
 
 import (
 	"context"
-
 	"fmt"
+
+	"github.com/gotidy/ptr"
 
 	"github.com/aws/aws-sdk-go/service/route53resolver"
 
@@ -94,5 +95,5 @@ func (r *Route53ResolverEndpoint) Properties() types.Properties {
 
 // String implements Stringer
 func (r *Route53ResolverEndpoint) String() string {
-	return fmt.Sprintf("%s (%s)", *r.id, *r.name)
+	return fmt.Sprintf("%s (%s)", ptr.ToString(r.id), ptr.ToString(r.name))
 }
