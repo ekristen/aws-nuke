@@ -227,10 +227,14 @@ type BatchDelete struct {
 //	}); err != nil {
 //		return err
 //	}
-func NewBatchDeleteWithClient(s3client DeleteObjectsAPIClient, options ...func(*BatchDelete)) *BatchDelete {
+func NewBatchDeleteWithClient(s3client DeleteObjectsAPIClient, batchSize int, options ...func(*BatchDelete)) *BatchDelete {
 	svc := &BatchDelete{
 		Client:    s3client,
 		BatchSize: DefaultBatchSize,
+	}
+
+	if batchSize != -1 {
+		svc.BatchSize = batchSize
 	}
 
 	for _, opt := range options {
@@ -261,9 +265,10 @@ func NewBatchDeleteWithClient(s3client DeleteObjectsAPIClient, options ...func(*
 //	}); err != nil {
 //		return err
 //	}
-func NewBatchDelete(c *aws.Config, options ...func(*BatchDelete)) *BatchDelete {
+func NewBatchDelete(c *aws.Config, batchSize int, options ...func(*BatchDelete)) *BatchDelete {
 	s3client := s3.NewFromConfig(*c)
-	return NewBatchDeleteWithClient(s3client, options...)
+
+	return NewBatchDeleteWithClient(s3client, batchSize, options...)
 }
 
 // BatchDeleteObject is a wrapper object for calling the batch delete operation.

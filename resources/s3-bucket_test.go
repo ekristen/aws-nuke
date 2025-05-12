@@ -104,7 +104,7 @@ func (suite *TestS3BucketSuite) TearDownSuite() {
 	iterator := newS3DeleteVersionListIterator(suite.svc, &s3.ListObjectVersionsInput{
 		Bucket: suite.bucket,
 	}, true)
-	if err := awsmod.NewBatchDeleteWithClient(suite.svc).Delete(context.TODO(), iterator, bypassGovernanceRetention); err != nil {
+	if err := awsmod.NewBatchDeleteWithClient(suite.svc, -1).Delete(context.TODO(), iterator, bypassGovernanceRetention); err != nil {
 		if !strings.Contains(err.Error(), "NoSuchBucket") {
 			suite.T().Fatalf("failed to delete objects, %v", err)
 		}
@@ -113,7 +113,7 @@ func (suite *TestS3BucketSuite) TearDownSuite() {
 	iterator2 := newS3ObjectDeleteListIterator(suite.svc, &s3.ListObjectsV2Input{
 		Bucket: suite.bucket,
 	}, true)
-	if err := awsmod.NewBatchDeleteWithClient(suite.svc).Delete(context.TODO(), iterator2, bypassGovernanceRetention); err != nil {
+	if err := awsmod.NewBatchDeleteWithClient(suite.svc, -1).Delete(context.TODO(), iterator2, bypassGovernanceRetention); err != nil {
 		if !strings.Contains(err.Error(), "NoSuchBucket") {
 			suite.T().Fatalf("failed to delete objects, %v", err)
 		}
@@ -178,10 +178,34 @@ func (suite *TestS3BucketBypassGovernanceSuite) TestS3BucketRemoveWithBypass() {
 	assert.Nil(suite.T(), err)
 }
 
+type TestS3BucketBatchSizeSuite struct {
+	TestS3BucketSuite
+}
+
+func (suite *TestS3BucketBatchSizeSuite) TestS3BucketRemoveWithNonDefaultBatchSize() {
+	// Create the S3Bucket object
+	bucket := &S3Bucket{
+		svc: suite.svc,
+		settings: &libsettings.Setting{
+			"BypassGovernanceRetention": true,
+			"S3ObjectDeleteBatchSize":   1000,
+		},
+		Name:       suite.bucket,
+		ObjectLock: s3types.ObjectLockEnabledEnabled,
+	}
+
+	err := bucket.Remove(context.TODO())
+	assert.Nil(suite.T(), err)
+}
+
 func TestS3BucketObjectLock(t *testing.T) {
 	suite.Run(t, new(TestS3BucketObjectLockSuite))
 }
 
 func TestS3BucketBypassGovernance(t *testing.T) {
 	suite.Run(t, new(TestS3BucketBypassGovernanceSuite))
+}
+
+func TestS3BucketBatchSize(t *testing.T) {
+	suite.Run(t, new(TestS3BucketBatchSizeSuite))
 }
