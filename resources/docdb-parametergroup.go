@@ -2,6 +2,8 @@ package resources
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/docdb"
@@ -73,6 +75,13 @@ type DocDBParameterGroup struct {
 	Tags []docdbtypes.Tag
 }
 
+func (r *DocDBParameterGroup) Filter() error {
+	if strings.HasPrefix(*r.Name, "default.") {
+		return fmt.Errorf("default parameter group")
+	}
+	return nil
+}
+
 func (r *DocDBParameterGroup) Remove(ctx context.Context) error {
 	_, err := r.svc.DeleteDBClusterParameterGroup(ctx, &docdb.DeleteDBClusterParameterGroupInput{
 		DBClusterParameterGroupName: r.Name,
@@ -82,4 +91,8 @@ func (r *DocDBParameterGroup) Remove(ctx context.Context) error {
 
 func (r *DocDBParameterGroup) Properties() types.Properties {
 	return types.NewPropertiesFromStruct(r)
+}
+
+func (r *DocDBParameterGroup) String() string {
+	return *r.Name
 }
