@@ -15,7 +15,7 @@ const (
 	// DefaultBatchSize is the batch size we initialize when constructing a batch delete client.
 	// This value is used when calling DeleteObjects. This represents how many objects to delete
 	// per DeleteObjects call.
-	DefaultBatchSize = 100
+	DefaultBatchSize = 1000
 )
 
 // BatchError will contain the key and bucket of the object that failed to
