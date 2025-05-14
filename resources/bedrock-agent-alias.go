@@ -21,6 +21,9 @@ func init() {
 		Scope:    nuke.Account,
 		Lister:   &BedrockAgentAliasLister{},
 		Resource: &BedrockAgentAlias{},
+		DependsOn: []string{
+			BedrockAgentResource,
+		},
 	})
 }
 
