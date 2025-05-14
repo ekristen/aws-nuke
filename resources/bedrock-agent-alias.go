@@ -35,15 +35,15 @@ func (l *BedrockAgentAliasLister) List(_ context.Context, o interface{}) ([]reso
 	svc := bedrockagent.New(opts.Session)
 	resources := make([]resource.Resource, 0)
 
-	agentIds, err := ListBedrockAgentIds(svc)
+	agentIDs, err := ListBedrockAgentIds(svc)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, agentId := range agentIds {
+	for _, agentID := range agentIDs {
 		params := &bedrockagent.ListAgentAliasesInput{
 			MaxResults: aws.Int64(100),
-			AgentId:    aws.String(agentId),
+			AgentId:    aws.String(agentID),
 		}
 		for {
 			output, err := svc.ListAgentAliases(params)
@@ -54,9 +54,9 @@ func (l *BedrockAgentAliasLister) List(_ context.Context, o interface{}) ([]reso
 			for _, agentAliasInfo := range output.AgentAliasSummaries {
 				resources = append(resources, &BedrockAgentAlias{
 					svc:            svc,
-					AgentId:        aws.String(agentId),
+					AgentID:        aws.String(agentID),
 					AgentAliasName: agentAliasInfo.AgentAliasName,
-					AgentAliasId:   agentAliasInfo.AgentAliasId,
+					AgentAliasID:   agentAliasInfo.AgentAliasId,
 				})
 			}
 
@@ -67,14 +67,13 @@ func (l *BedrockAgentAliasLister) List(_ context.Context, o interface{}) ([]reso
 		}
 
 	}
-
 	return resources, nil
 }
 
 type BedrockAgentAlias struct {
 	svc            *bedrockagent.BedrockAgent
-	AgentId        *string
-	AgentAliasId   *string
+	AgentID        *string
+	AgentAliasID   *string
 	AgentAliasName *string
 }
 
@@ -84,8 +83,8 @@ func (r *BedrockAgentAlias) Properties() types.Properties {
 
 func (r *BedrockAgentAlias) Remove(_ context.Context) error {
 	_, err := r.svc.DeleteAgentAlias(&bedrockagent.DeleteAgentAliasInput{
-		AgentAliasId: r.AgentAliasId,
-		AgentId:      r.AgentId,
+		AgentAliasId: r.AgentAliasID,
+		AgentId:      r.AgentID,
 	})
 	return err
 }

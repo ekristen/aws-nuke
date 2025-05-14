@@ -34,15 +34,15 @@ func (l *BedrockFlowAliasLister) List(_ context.Context, o interface{}) ([]resou
 	svc := bedrockagent.New(opts.Session)
 	resources := make([]resource.Resource, 0)
 
-	flowIds, err := ListBedrockFlowIds(svc)
+	flowIDs, err := ListBedrockFlowIds(svc)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, flowId := range flowIds {
+	for _, flowID := range flowIDs {
 		params := &bedrockagent.ListFlowAliasesInput{
 			MaxResults:     aws.Int64(100),
-			FlowIdentifier: aws.String(flowId),
+			FlowIdentifier: aws.String(flowID),
 		}
 		for {
 			output, err := svc.ListFlowAliases(params)
@@ -53,8 +53,8 @@ func (l *BedrockFlowAliasLister) List(_ context.Context, o interface{}) ([]resou
 			for _, flowAliasInfo := range output.FlowAliasSummaries {
 				resources = append(resources, &BedrockFlowAlias{
 					svc:           svc,
-					FlowId:        flowAliasInfo.FlowId,
-					FlowAliasId:   flowAliasInfo.Id,
+					FlowID:        flowAliasInfo.FlowId,
+					FlowAliasID:   flowAliasInfo.Id,
 					FlowAliasName: flowAliasInfo.Name,
 				})
 			}
@@ -64,16 +64,14 @@ func (l *BedrockFlowAliasLister) List(_ context.Context, o interface{}) ([]resou
 			}
 			params.NextToken = output.NextToken
 		}
-
 	}
-
 	return resources, nil
 }
 
 type BedrockFlowAlias struct {
 	svc           *bedrockagent.BedrockAgent
-	FlowId        *string
-	FlowAliasId   *string
+	FlowID        *string
+	FlowAliasID   *string
 	FlowAliasName *string
 }
 
@@ -90,8 +88,8 @@ func (r *BedrockFlowAlias) Properties() types.Properties {
 
 func (r *BedrockFlowAlias) Remove(_ context.Context) error {
 	_, err := r.svc.DeleteFlowAlias(&bedrockagent.DeleteFlowAliasInput{
-		AliasIdentifier: r.FlowAliasId,
-		FlowIdentifier:  r.FlowId,
+		AliasIdentifier: r.FlowAliasID,
+		FlowIdentifier:  r.FlowID,
 	})
 	return err
 }
@@ -101,7 +99,6 @@ func (r *BedrockFlowAlias) String() string {
 }
 
 func ListBedrockFlowIds(svc *bedrockagent.BedrockAgent) ([]string, error) {
-
 	flowIds := []string{}
 	params := &bedrockagent.ListFlowsInput{
 		MaxResults: aws.Int64(100),
