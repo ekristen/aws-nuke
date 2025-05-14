@@ -65,7 +65,6 @@ func (l *BedrockAgentAliasLister) List(_ context.Context, o interface{}) ([]reso
 			}
 			params.NextToken = output.NextToken
 		}
-
 	}
 	return resources, nil
 }
@@ -94,7 +93,6 @@ func (r *BedrockAgentAlias) String() string {
 }
 
 func ListBedrockAgentIds(svc *bedrockagent.BedrockAgent) ([]string, error) {
-
 	agentIds := []string{}
 	params := &bedrockagent.ListAgentsInput{
 		MaxResults: aws.Int64(100),
