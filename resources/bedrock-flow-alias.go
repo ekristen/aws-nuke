@@ -19,9 +19,10 @@ const BedrockFlowAliasResource = "BedrockFlowAlias"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:   BedrockFlowAliasResource,
-		Scope:  nuke.Account,
-		Lister: &BedrockFlowAliasLister{},
+		Name:     BedrockFlowAliasResource,
+		Scope:    nuke.Account,
+		Lister:   &BedrockFlowAliasLister{},
+		Resource: &BedrockFlowAlias{},
 	})
 }
 
