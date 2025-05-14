@@ -77,6 +77,29 @@ type BedrockFlowAlias struct {
 	FlowAliasName *string
 }
 
+func (r *BedrockFlowAlias) Filter() error {
+	if strings.HasPrefix(*r.FlowAliasName, "TSTALIASID") {
+		return fmt.Errorf("cannot delete AWS managed Flow Alias")
+	}
+	return nil
+}
+
+func (r *BedrockFlowAlias) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
+}
+
+func (r *BedrockFlowAlias) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteFlowAlias(&bedrockagent.DeleteFlowAliasInput{
+		AliasIdentifier: r.FlowAliasId,
+		FlowIdentifier:  r.FlowId,
+	})
+	return err
+}
+
+func (r *BedrockFlowAlias) String() string {
+	return *r.FlowAliasName
+}
+
 func ListBedrockFlowIds(svc *bedrockagent.BedrockAgent) ([]string, error) {
 
 	flowIds := []string{}
@@ -100,27 +123,4 @@ func ListBedrockFlowIds(svc *bedrockagent.BedrockAgent) ([]string, error) {
 	}
 
 	return flowIds, nil
-}
-
-func (f *BedrockFlowAlias) Filter() error {
-	if strings.HasPrefix(*f.FlowAliasName, "TSTALIASID") {
-		return fmt.Errorf("cannot delete AWS managed Flow Alias")
-	}
-	return nil
-}
-
-func (f *BedrockFlowAlias) Properties() types.Properties {
-	return types.NewPropertiesFromStruct(f)
-}
-
-func (f *BedrockFlowAlias) Remove(_ context.Context) error {
-	_, err := f.svc.DeleteFlowAlias(&bedrockagent.DeleteFlowAliasInput{
-		AliasIdentifier: f.FlowAliasId,
-		FlowIdentifier:  f.FlowId,
-	})
-	return err
-}
-
-func (f *BedrockFlowAlias) String() string {
-	return *f.FlowAliasName
 }
