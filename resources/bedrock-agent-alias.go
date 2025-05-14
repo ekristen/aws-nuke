@@ -100,18 +100,18 @@ func ListBedrockAgentIds(svc *bedrockagent.BedrockAgent) ([]string, error) {
 	return agentIds, nil
 }
 
-func (f *BedrockAgentAlias) Properties() types.Properties {
-	return types.NewPropertiesFromStruct(f)
+func (r *BedrockAgentAlias) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
 
-func (f *BedrockAgentAlias) Remove(_ context.Context) error {
-	_, err := f.svc.DeleteAgentAlias(&bedrockagent.DeleteAgentAliasInput{
-		AgentAliasId: f.AgentAliasId,
-		AgentId:      f.AgentId,
+func (r *BedrockAgentAlias) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteAgentAlias(&bedrockagent.DeleteAgentAliasInput{
+		AgentAliasId: r.AgentAliasId,
+		AgentId:      r.AgentId,
 	})
 	return err
 }
 
-func (f *BedrockAgentAlias) String() string {
-	return *f.AgentAliasName
+func (r *BedrockAgentAlias) String() string {
+	return *r.AgentAliasName
 }
