@@ -231,7 +231,8 @@ func (r *S3Bucket) RemoveAllVersions(ctx context.Context) error {
 	}
 
 	iterator := newS3DeleteVersionListIterator(r.svc, params, setBypass)
-	return awsmod.NewBatchDeleteWithClient(r.svc).Delete(ctx, iterator, opts...)
+	batchSize := r.settings.GetInt("S3VersionDeleteBatchSize")
+	return awsmod.NewBatchDeleteWithClient(r.svc, batchSize).Delete(ctx, iterator, opts...)
 }
 
 func (r *S3Bucket) RemoveAllObjects(ctx context.Context) error {
@@ -248,7 +249,8 @@ func (r *S3Bucket) RemoveAllObjects(ctx context.Context) error {
 	}
 
 	iterator := newS3ObjectDeleteListIterator(r.svc, params, setBypass)
-	return awsmod.NewBatchDeleteWithClient(r.svc).Delete(ctx, iterator, opts...)
+	batchSize := r.settings.GetInt("S3ObjectDeleteBatchSize")
+	return awsmod.NewBatchDeleteWithClient(r.svc, batchSize).Delete(ctx, iterator, opts...)
 }
 
 func (r *S3Bucket) Settings(settings *libsettings.Setting) {
