@@ -36,6 +36,8 @@ github.com/aws/aws-sdk-go-v2/service/cloudfront v1.44.12 h1:GEdQ1mVjgYH/c7vKrt+r
 github.com/aws/aws-sdk-go-v2/service/cloudfront v1.44.12/go.mod h1:nr2/4ch+huedh56oGZClTeCVENvMBqeEkzkObAFCDQM=
 github.com/aws/aws-sdk-go-v2/service/docdb v1.41.1 h1:KxSpigaQoHsAcRHuhcFAtqishNM/waI2iaU5Zf8hEYg=
 github.com/aws/aws-sdk-go-v2/service/docdb v1.41.1/go.mod h1:Ft+c7KOTOwfkPKQrPRm5wfEFWXq9oHtFi0yGszwYAgg=
+github.com/aws/aws-sdk-go-v2/service/docdb v1.41.3 h1:T2sXMXyCDN9obuaWUWbE4xBiQxPvIf1QlN/mbcBdnOo=
+github.com/aws/aws-sdk-go-v2/service/docdb v1.41.3/go.mod h1:Ft+c7KOTOwfkPKQrPRm5wfEFWXq9oHtFi0yGszwYAgg=
 github.com/aws/aws-sdk-go-v2/service/docdbelastic v1.15.2 h1:2J/DFkFyag8lMMafxZWccTlkEa+IP3D1jvKbBOVNS20=
 github.com/aws/aws-sdk-go-v2/service/docdbelastic v1.15.2/go.mod h1:1eCPm+lTHEN641XC1gE+YAGIVg3ME+MebW9Dc+qeiOA=
 github.com/aws/aws-sdk-go-v2/service/dsql v1.1.1 h1:h2YbGqsnzL36l2B/Bd/dvrHfrKo/b7HVpZykL3yIQn8=
