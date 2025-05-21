@@ -16,6 +16,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/docdbelastic v1.15.2
 	github.com/aws/aws-sdk-go-v2/service/dsql v1.1.2
 	github.com/aws/aws-sdk-go-v2/service/ecs v1.54.6
+	github.com/aws/aws-sdk-go-v2/service/efs v1.35.3
 	github.com/aws/aws-sdk-go-v2/service/iam v1.38.10
 	github.com/aws/aws-sdk-go-v2/service/neptunegraph v1.17.3
 	github.com/aws/aws-sdk-go-v2/service/route53profiles v1.4.17

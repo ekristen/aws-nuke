@@ -5,7 +5,8 @@ import (
 
 	"go.uber.org/ratelimit"
 
-	"github.com/aws/aws-sdk-go/service/efs"
+	"github.com/aws/aws-sdk-go-v2/service/efs"
+	efsTypes "github.com/aws/aws-sdk-go-v2/service/efs/types"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
@@ -27,9 +28,9 @@ func init() {
 
 type EFSFileSystemLister struct{}
 
-func (l *EFSFileSystemLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *EFSFileSystemLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
-	svc := efs.New(opts.Session)
+	svc := efs.NewFromConfig(*opts.Config)
 	resources := make([]resource.Resource, 0)
 
 	// Note: AWS does not publish what the RPS is for the DescribeFileSystems API call
@@ -37,24 +38,32 @@ func (l *EFSFileSystemLister) List(_ context.Context, o interface{}) ([]resource
 	describeRL := ratelimit.New(10)
 
 	params := &efs.DescribeFileSystemsInput{}
+
 	for {
 		describeRL.Take()
 
-		resp, err := svc.DescribeFileSystems(params)
+		resp, err := svc.DescribeFileSystems(ctx, params)
 		if err != nil {
 			return nil, err
 		}
 
-		for _, fs := range resp.FileSystems {
-			lto, err := svc.ListTagsForResource(&efs.ListTagsForResourceInput{ResourceId: fs.FileSystemId})
+		for idx := range resp.FileSystems {
+			fs := resp.FileSystems[idx]
+			lto, err := svc.ListTagsForResource(ctx, &efs.ListTagsForResourceInput{ResourceId: fs.FileSystemId})
 			if err != nil {
 				return nil, err
 			}
+
+			tagList := make([]*efsTypes.Tag, 0)
+			for _, tag := range lto.Tags {
+				tagList = append(tagList, &tag)
+			}
+
 			resources = append(resources, &EFSFileSystem{
 				svc:     svc,
 				id:      *fs.FileSystemId,
 				name:    *fs.CreationToken,
-				tagList: lto.Tags,
+				tagList: tagList,
 			})
 		}
 
@@ -69,14 +78,14 @@ func (l *EFSFileSystemLister) List(_ context.Context, o interface{}) ([]resource
 }
 
 type EFSFileSystem struct {
-	svc     *efs.EFS
+	svc     *efs.Client
 	id      string
 	name    string
-	tagList []*efs.Tag
+	tagList []*efsTypes.Tag
 }
 
-func (e *EFSFileSystem) Remove(_ context.Context) error {
-	_, err := e.svc.DeleteFileSystem(&efs.DeleteFileSystemInput{
+func (e *EFSFileSystem) Remove(ctx context.Context) error {
+	_, err := e.svc.DeleteFileSystem(ctx, &efs.DeleteFileSystemInput{
 		FileSystemId: &e.id,
 	})
 
