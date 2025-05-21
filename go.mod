@@ -12,7 +12,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/apigateway v1.28.12
 	github.com/aws/aws-sdk-go-v2/service/appsync v1.42.3
 	github.com/aws/aws-sdk-go-v2/service/cloudfront v1.44.12
-	github.com/aws/aws-sdk-go-v2/service/docdb v1.41.1
+	github.com/aws/aws-sdk-go-v2/service/docdb v1.41.3
 	github.com/aws/aws-sdk-go-v2/service/docdbelastic v1.15.2
 	github.com/aws/aws-sdk-go-v2/service/dsql v1.1.2
 	github.com/aws/aws-sdk-go-v2/service/ecs v1.54.6
