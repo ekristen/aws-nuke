@@ -29,7 +29,7 @@ func (l *AutoScalingPlansScalingPlanLister) List(_ context.Context, o interface{
 	opts := o.(*nuke.ListerOpts)
 
 	svc := autoscalingplans.New(opts.Session)
-	svc.ClientInfo.SigningName = "autoscaling-plans"
+	svc.SigningName = "autoscaling-plans"
 	resources := make([]resource.Resource, 0)
 
 	params := &autoscalingplans.DescribeScalingPlansInput{

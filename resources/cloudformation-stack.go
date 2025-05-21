@@ -260,7 +260,7 @@ func (r *CloudFormationStack) doRemove() error { //nolint:gocyclo
 	}
 	stack := o.Stacks[0]
 
-	if *stack.StackStatus == cloudformation.StackStatusDeleteComplete {
+	if *stack.StackStatus == cloudformation.StackStatusDeleteComplete { //nolint:staticcheck
 		// stack already deleted, no need to re-delete
 		return nil
 	} else if *stack.StackStatus == cloudformation.StackStatusDeleteInProgress {
