@@ -87,7 +87,7 @@ func (r *IAMRole) HandleWait(_ context.Context) error {
 		return err
 	}
 
-	if *result.Status == iam.DeletionTaskStatusTypeSucceeded {
+	if *result.Status == iam.DeletionTaskStatusTypeSucceeded { //nolint:staticcheck
 		return nil
 	} else if *result.Status == iam.DeletionTaskStatusTypeFailed {
 		if result.Reason.RoleUsageList != nil {

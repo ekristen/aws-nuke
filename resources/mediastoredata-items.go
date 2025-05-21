@@ -31,7 +31,7 @@ func (l *MediaStoreDataItemsLister) List(_ context.Context, o interface{}) ([]re
 
 	containerSvc := mediastore.New(opts.Session)
 	svc := mediastoredata.New(opts.Session)
-	svc.ClientInfo.SigningName = "mediastore"
+	svc.SigningName = "mediastore"
 
 	resources := make([]resource.Resource, 0)
 	var containers []*mediastore.Container
