@@ -30,12 +30,12 @@ func Flags() []cli.Flag {
 			Name:    "log-disable-colors",
 			Usage:   "disable log coloring",
 			Aliases: []string{"log-disable-color"},
-			EnvVars: []string{"AWS_NUKE_LOG_DISABLE_COLOR"},
+			Sources: cli.EnvVars("AWS_NUKE_LOG_DISABLE_COLORS"),
 		},
 		&cli.BoolFlag{
 			Name:    "log-force-colors",
 			Usage:   "force enable log output to always show colors",
-			EnvVars: []string{"AWS_NUKE_LOG_FORCE_COLORS"},
+			Sources: cli.EnvVars("AWS_NUKE_LOG_FORCE_COLORS"),
 		},
 		&cli.BoolFlag{
 			Name:  "log-full-timestamp",

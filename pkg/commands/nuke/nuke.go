@@ -353,14 +353,14 @@ func init() { //nolint:funlen
 		&cli.IntFlag{
 			Name:    "parallel-queries",
 			Usage:   "CAUTION! ADVANCED USAGE! number of parallel resource queries to run at a time",
-			EnvVars: []string{"AWS_NUKE_PARALLEL_QUERIES"},
+			Sources: cli.EnvVars("AWS_NUKE_PARALLEL_QUERIES"),
 			Value:   scanner.DefaultParallelQueries,
 			Hidden:  true,
 		},
 		&cli.IntFlag{
 			Name:    "max-queue-size",
 			Usage:   "CAUTION! ADVANCED USAGE! the max number of items to queue up before aws-nuke will error",
-			EnvVars: []string{"AWS_NUKE_MAX_QUEUE_SIZE"},
+			Sources: cli.EnvVars("AWS_NUKE_MAX_QUEUE_SIZE"),
 			Value:   scanner.DefaultQueueSize,
 			Hidden:  true,
 		},
