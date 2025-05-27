@@ -58,13 +58,13 @@ func execute(baseCtx context.Context, c *cli.Command) error { //nolint:funlen,go
 	// Create the parameters object that will be used to configure the nuke process.
 	params := &libnuke.Parameters{
 		Force:          c.Bool("force"),
-		ForceSleep:     int(c.Int("force-sleep")),
+		ForceSleep:     c.Int("force-sleep"),
 		Quiet:          c.Bool("quiet"),
 		NoDryRun:       c.Bool("no-dry-run"),
 		Includes:       c.StringSlice("include"),
 		Excludes:       c.StringSlice("exclude"),
 		Alternatives:   c.StringSlice("cloud-control"),
-		MaxWaitRetries: int(c.Int("max-wait-retries")),
+		MaxWaitRetries: c.Int("max-wait-retries"),
 	}
 
 	if len(c.StringSlice("feature-flag")) > 0 {

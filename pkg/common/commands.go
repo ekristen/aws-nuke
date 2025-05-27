@@ -3,11 +3,12 @@ package common
 import (
 	"context"
 	"fmt"
-	"github.com/sirupsen/logrus"
-	"github.com/urfave/cli/v3"
 	"math"
 	"os"
 	"time"
+
+	"github.com/sirupsen/logrus"
+	"github.com/urfave/cli/v3"
 )
 
 var commands []*cli.Command

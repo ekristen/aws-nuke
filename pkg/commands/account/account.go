@@ -3,6 +3,7 @@ package account
 import (
 	"context"
 	"fmt"
+
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v3"
 
