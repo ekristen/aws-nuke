@@ -1,12 +1,13 @@
 package global
 
 import (
+	"context"
 	"fmt"
 	"path"
 	"runtime"
 
 	"github.com/sirupsen/logrus"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 
 	"github.com/ekristen/libnuke/pkg/log"
 )
@@ -17,24 +18,24 @@ func Flags() []cli.Flag {
 			Name:    "log-level",
 			Usage:   "Log Level",
 			Aliases: []string{"l"},
-			EnvVars: []string{"LOGLEVEL", "AWS_NUKE_LOG_LEVEL"},
+			Sources: cli.EnvVars("LOGLEVEL", "AWS_NUKE_LOG_LEVEL"),
 			Value:   "info",
 		},
 		&cli.BoolFlag{
 			Name:    "log-caller",
 			Usage:   "log the caller (aka line number and file)",
-			EnvVars: []string{"AWS_NUKE_LOG_CALLER"},
+			Sources: cli.EnvVars("AWS_NUKE_LOG_CALLER"),
 		},
 		&cli.BoolFlag{
 			Name:    "log-disable-colors",
 			Usage:   "disable log coloring",
 			Aliases: []string{"log-disable-color"},
-			EnvVars: []string{"AWS_NUKE_LOG_DISABLE_COLOR"},
+			Sources: cli.EnvVars("AWS_NUKE_LOG_DISABLE_COLORS"),
 		},
 		&cli.BoolFlag{
 			Name:    "log-force-colors",
 			Usage:   "force enable log output to always show colors",
-			EnvVars: []string{"AWS_NUKE_LOG_FORCE_COLORS"},
+			Sources: cli.EnvVars("AWS_NUKE_LOG_FORCE_COLORS"),
 		},
 		&cli.BoolFlag{
 			Name:  "log-full-timestamp",
@@ -44,19 +45,19 @@ func Flags() []cli.Flag {
 			Name:    "log-format",
 			Usage:   "log format",
 			Value:   "standard",
-			EnvVars: []string{"AWS_NUKE_LOG_FORMAT"},
+			Sources: cli.EnvVars("AWS_NUKE_LOG_FORMAT"),
 		},
 		&cli.BoolFlag{
 			Name:    "json",
 			Usage:   "output as json, shorthand for --log-format=json",
-			EnvVars: []string{"AWS_NUKE_LOG_FORMAT_JSON"},
+			Sources: cli.EnvVars("AWS_NUKE_LOG_FORMAT_JSON"),
 		},
 	}
 
 	return globalFlags
 }
 
-func Before(c *cli.Context) error {
+func Before(ctx context.Context, c *cli.Command) (context.Context, error) {
 	formatter := &logrus.TextFormatter{
 		ForceColors:   c.Bool("log-force-colors"),
 		DisableColors: c.Bool("log-disable-color"),
@@ -107,7 +108,7 @@ func Before(c *cli.Context) error {
 		logrus.SetLevel(logrus.ErrorLevel)
 	}
 
-	return nil
+	return ctx, nil
 }
 
 type StructuredHook struct {
