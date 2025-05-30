@@ -63,6 +63,7 @@ func (l *Route53ResolverRuleLister) List(_ context.Context, o interface{}) ([]re
 				ID:         rule.Id,
 				Name:       rule.Name,
 				DomainName: rule.DomainName,
+				OwnerId:    rule.OwnerId,
 			})
 		}
 
@@ -83,6 +84,7 @@ type Route53ResolverRule struct {
 	ID         *string
 	Name       *string
 	DomainName *string
+	OwnerId    *string
 }
 
 // Filter removes resources automatically from being nuked

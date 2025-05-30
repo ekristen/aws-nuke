@@ -30,16 +30,19 @@ func Test_Mock_Route53ResolverRule_List(t *testing.T) {
 				Id:         ptr.String("rslvr-rr-1"),
 				Name:       ptr.String("rule1"),
 				DomainName: ptr.String("example.com"),
+				OwnerId:    ptr.String("123456789012"),
 			},
 			{
 				Id:         ptr.String("rslvr-rr-2"),
 				Name:       ptr.String("rule2"),
 				DomainName: ptr.String("example.org"),
+				OwnerId:    ptr.String("234567890123"),
 			},
 			{
 				Id:         ptr.String("rslvr-autodefined-rr-3"),
 				Name:       ptr.String("Internet Resolver"),
 				DomainName: ptr.String("."),
+				OwnerId:    ptr.String("Route 53 Resolver"),
 			},
 		},
 	}, nil)
@@ -76,6 +79,7 @@ func Test_Mock_Route53ResolverRule_List(t *testing.T) {
 			ID:         ptr.String("rslvr-rr-1"),
 			Name:       ptr.String("rule1"),
 			DomainName: ptr.String("example.com"),
+			OwnerId:    ptr.String("123456789012"),
 		},
 		&Route53ResolverRule{
 			svc:        mockRoute53Resolver,
@@ -83,6 +87,7 @@ func Test_Mock_Route53ResolverRule_List(t *testing.T) {
 			ID:         ptr.String("rslvr-rr-2"),
 			Name:       ptr.String("rule2"),
 			DomainName: ptr.String("example.org"),
+			OwnerId:    ptr.String("234567890123"),
 		},
 		&Route53ResolverRule{
 			svc:        mockRoute53Resolver,
@@ -90,6 +95,7 @@ func Test_Mock_Route53ResolverRule_List(t *testing.T) {
 			ID:         ptr.String("rslvr-autodefined-rr-3"),
 			Name:       ptr.String("Internet Resolver"),
 			DomainName: ptr.String("."),
+			OwnerId:    ptr.String("Route 53 Resolver"),
 		},
 	}
 
@@ -162,6 +168,7 @@ func Test_Mock_Route53ResolverRule_Remove(t *testing.T) {
 		ID:         ptr.String("rslvr-rr-1"),
 		Name:       ptr.String("rule1"),
 		DomainName: ptr.String("example.com"),
+		OwnerId:    ptr.String("123456789012"),
 	}
 
 	err := rule.Remove(context.TODO())
@@ -175,12 +182,14 @@ func Test_Mock_Route53ResolverRule_Properties(t *testing.T) {
 		ID:         ptr.String("rslvr-rr-1"),
 		Name:       ptr.String("rule1"),
 		DomainName: ptr.String("example.com"),
+		OwnerId:    ptr.String("123456789012"),
 	}
 
 	properties := rule.Properties()
 	a.Equal("rslvr-rr-1", properties.Get("ID"))
 	a.Equal("rule1", properties.Get("Name"))
 	a.Equal("example.com", properties.Get("DomainName"))
+	a.Equal("123456789012", properties.Get("OwnerId"))
 
 	a.Equal("rslvr-rr-1 (rule1)", rule.String())
 
