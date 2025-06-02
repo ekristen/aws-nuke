@@ -2,11 +2,12 @@ package resources
 
 import (
 	"context"
-
-	"github.com/gotidy/ptr"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
+	"github.com/gotidy/ptr"
+	"go.uber.org/ratelimit"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
@@ -26,6 +27,12 @@ func init() {
 	})
 }
 
+// ref - https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_limits.html
+
+var CloudWatchAlarmDescribeRateLimit = ratelimit.New(8, ratelimit.Per(time.Second))
+var CloudWatchAlarmDeleteRateLimit = ratelimit.New(3, ratelimit.Per(time.Second))
+var CloudWatchAlarmListTagsRateLimit = ratelimit.New(5, ratelimit.Per(time.Second))
+
 type CloudWatchAlarmLister struct{}
 
 func (l *CloudWatchAlarmLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
@@ -43,6 +50,8 @@ func (l *CloudWatchAlarmLister) List(_ context.Context, o interface{}) ([]resour
 	}
 
 	for {
+		CloudWatchAlarmDescribeRateLimit.Take()
+
 		output, err := svc.DescribeAlarms(params)
 		if err != nil {
 			return nil, err
@@ -85,6 +94,8 @@ func (l *CloudWatchAlarmLister) List(_ context.Context, o interface{}) ([]resour
 }
 
 func GetAlarmTags(svc *cloudwatch.CloudWatch, arn *string) ([]*cloudwatch.Tag, error) {
+	CloudWatchAlarmListTagsRateLimit.Take()
+
 	resp, err := svc.ListTagsForResource(&cloudwatch.ListTagsForResourceInput{ResourceARN: arn})
 	if err != nil {
 		return nil, err
@@ -101,6 +112,8 @@ type CloudWatchAlarm struct {
 }
 
 func (r *CloudWatchAlarm) Remove(_ context.Context) error {
+	CloudWatchAlarmDeleteRateLimit.Take()
+
 	_, err := r.svc.DeleteAlarms(&cloudwatch.DeleteAlarmsInput{
 		AlarmNames: []*string{r.Name},
 	})
