@@ -120,9 +120,9 @@ func (l *CloudWatchLogsLogGroupLister) List(_ context.Context, o interface{}) ([
 
 type CloudWatchLogsLogGroup struct {
 	svc             *cloudwatchlogs.CloudWatchLogs
-	Name            *string    `description:"The name of the log group"`
+	Name            *string    `description:"The name of the log group" libnuke:"uniqueKey"`
 	CreatedTime     *int64     `description:"The creation time of the log group in unix timestamp format"`
-	CreationTime    *time.Time `description:"The creation time of the log group in RFC3339 format"`
+	CreationTime    *time.Time `description:"The creation time of the log group in RFC3339 format" libnuke:"uniqueKey"`
 	LastEvent       *time.Time `description:"The last event time of the log group in RFC3339 format"`
 	RetentionInDays int64      `description:"The number of days to retain log events in the log group"`
 	Tags            map[string]*string
