@@ -1,5 +1,6 @@
 name: semantic
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
