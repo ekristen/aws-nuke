@@ -3,11 +3,13 @@ package resources
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/secretsmanager"
 
 	"github.com/ekristen/aws-nuke/v3/mocks/mock_secretsmanageriface"
@@ -24,7 +26,10 @@ func Test_Mock_SecretsManager_List(t *testing.T) {
 		mockSvc: mockSvc,
 	}
 
-	mockSvc.EXPECT().ListSecrets(gomock.Any()).Return(&secretsmanager.ListSecretsOutput{
+	mockSvc.EXPECT().ListSecrets(gomock.Eq(&secretsmanager.ListSecretsInput{
+		MaxResults:             aws.Int64(100),
+		IncludePlannedDeletion: ptr.Bool(true),
+	})).Return(&secretsmanager.ListSecretsOutput{
 		SecretList: []*secretsmanager.SecretListEntry{
 			{
 				Name: ptr.String("foo"),
@@ -40,6 +45,7 @@ func Test_Mock_SecretsManager_List(t *testing.T) {
 				Name:          ptr.String("bar"),
 				ARN:           ptr.String("arn:bar"),
 				PrimaryRegion: ptr.String("us-west-2"),
+				DeletedDate:   ptr.Time(time.Now()),
 			},
 		},
 	}, nil)

@@ -50,7 +50,8 @@ func (l *SecretsManagerSecretLister) List(_ context.Context, o interface{}) ([]r
 	resources := make([]resource.Resource, 0)
 
 	params := &secretsmanager.ListSecretsInput{
-		MaxResults: aws.Int64(100),
+		MaxResults:             aws.Int64(100),
+		IncludePlannedDeletion: aws.Bool(true),
 	}
 
 	for {
