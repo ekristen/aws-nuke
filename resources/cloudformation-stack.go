@@ -188,7 +188,8 @@ func (r *CloudFormationStack) removeWithAttempts(ctx context.Context, attempt in
 						*r.Name, attempt, r.maxDeleteAttempts)
 					return err
 				}
-			} else if awsErr.Message() == fmt.Sprintf("Stack [%s] cannot be deleted while TerminationProtection is enabled", *r.Name) {
+			} else if strings.Contains(awsErr.Message(), "cannot be deleted while TerminationProtection is enabled") &&
+				strings.Contains(awsErr.Message(), *r.Name) {
 				// check if the setting for the resource is set to allow deletion protection to be disabled
 				if r.settings.GetBool("DisableDeletionProtection") {
 					r.logger.Infof("CloudFormationStack stackName=%s attempt=%d maxAttempts=%d updating termination protection",
