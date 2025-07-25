@@ -50,9 +50,6 @@ func init() {
 	RegisterCloudControl("AWS::Timestream::ScheduledQuery")
 	RegisterCloudControl("AWS::Timestream::Table")
 	RegisterCloudControl("AWS::Transfer::Workflow")
-	RegisterCloudControl("AWS::NetworkFirewall::Firewall")
-	RegisterCloudControl("AWS::NetworkFirewall::FirewallPolicy")
-	RegisterCloudControl("AWS::NetworkFirewall::RuleGroup")
 }
 
 // describeRateLimit is a rate limiter to avoid throttling when describing resources via the cloud control api.
