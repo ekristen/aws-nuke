@@ -76,9 +76,6 @@ automatically scanned.
 - `AWS::Timestream::ScheduledQuery`
 - `AWS::Timestream::Table`
 - `AWS::Transfer::Workflow`
-- `AWS::NetworkFirewall::Firewall`
-- `AWS::NetworkFirewall::FirewallPolicy`
-- `AWS::NetworkFirewall::RuleGroup`
 
 ## References
 
