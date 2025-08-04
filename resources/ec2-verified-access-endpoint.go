@@ -3,7 +3,8 @@ package resources
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
@@ -25,16 +26,16 @@ func init() {
 
 type EC2VerifiedAccessEndpointLister struct{}
 
-func (l *EC2VerifiedAccessEndpointLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *EC2VerifiedAccessEndpointLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 
-	svc := ec2.New(opts.Session)
+	svc := ec2.NewFromConfig(*opts.Config)
 
 	params := &ec2.DescribeVerifiedAccessEndpointsInput{}
 	resources := make([]resource.Resource, 0)
 
 	for {
-		resp, err := svc.DescribeVerifiedAccessEndpoints(params)
+		resp, err := svc.DescribeVerifiedAccessEndpoints(ctx, params)
 		if err != nil {
 			return nil, err
 		}
@@ -42,7 +43,7 @@ func (l *EC2VerifiedAccessEndpointLister) List(_ context.Context, o interface{})
 		for _, endpoint := range resp.VerifiedAccessEndpoints {
 			resources = append(resources, &EC2VerifiedAccessEndpoint{
 				svc:      svc,
-				endpoint: endpoint,
+				endpoint: &endpoint,
 			})
 		}
 
@@ -56,16 +57,16 @@ func (l *EC2VerifiedAccessEndpointLister) List(_ context.Context, o interface{})
 }
 
 type EC2VerifiedAccessEndpoint struct {
-	svc      *ec2.EC2
-	endpoint *ec2.VerifiedAccessEndpoint
+	svc      *ec2.Client
+	endpoint *ec2types.VerifiedAccessEndpoint
 }
 
-func (r *EC2VerifiedAccessEndpoint) Remove(_ context.Context) error {
+func (r *EC2VerifiedAccessEndpoint) Remove(ctx context.Context) error {
 	params := &ec2.DeleteVerifiedAccessEndpointInput{
 		VerifiedAccessEndpointId: r.endpoint.VerifiedAccessEndpointId,
 	}
 
-	_, err := r.svc.DeleteVerifiedAccessEndpoint(params)
+	_, err := r.svc.DeleteVerifiedAccessEndpoint(ctx, params)
 	return err
 }
 
@@ -87,7 +88,7 @@ func (r *EC2VerifiedAccessEndpoint) Properties() types.Properties {
 	properties.Set("LastUpdatedTime", r.endpoint.LastUpdatedTime)
 	properties.Set("Status", r.endpoint.Status)
 
-	if r.endpoint.AttachmentType != nil {
+	if r.endpoint.AttachmentType != "" {
 		properties.Set("AttachmentType", r.endpoint.AttachmentType)
 	}
 

@@ -3,7 +3,8 @@ package resources
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
@@ -29,16 +30,16 @@ func init() {
 
 type EC2VerifiedAccessInstanceLister struct{}
 
-func (l *EC2VerifiedAccessInstanceLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *EC2VerifiedAccessInstanceLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 
-	svc := ec2.New(opts.Session)
+	svc := ec2.NewFromConfig(*opts.Config)
 
 	params := &ec2.DescribeVerifiedAccessInstancesInput{}
 	resources := make([]resource.Resource, 0)
 
 	for {
-		resp, err := svc.DescribeVerifiedAccessInstances(params)
+		resp, err := svc.DescribeVerifiedAccessInstances(ctx, params)
 		if err != nil {
 			return nil, err
 		}
@@ -46,7 +47,7 @@ func (l *EC2VerifiedAccessInstanceLister) List(_ context.Context, o interface{})
 		for _, instance := range resp.VerifiedAccessInstances {
 			resources = append(resources, &EC2VerifiedAccessInstance{
 				svc:      svc,
-				instance: instance,
+				instance: &instance,
 			})
 		}
 
@@ -60,16 +61,16 @@ func (l *EC2VerifiedAccessInstanceLister) List(_ context.Context, o interface{})
 }
 
 type EC2VerifiedAccessInstance struct {
-	svc      *ec2.EC2
-	instance *ec2.VerifiedAccessInstance
+	svc      *ec2.Client
+	instance *ec2types.VerifiedAccessInstance
 }
 
-func (r *EC2VerifiedAccessInstance) Remove(_ context.Context) error {
+func (r *EC2VerifiedAccessInstance) Remove(ctx context.Context) error {
 	params := &ec2.DeleteVerifiedAccessInstanceInput{
 		VerifiedAccessInstanceId: r.instance.VerifiedAccessInstanceId,
 	}
 
-	_, err := r.svc.DeleteVerifiedAccessInstance(params)
+	_, err := r.svc.DeleteVerifiedAccessInstance(ctx, params)
 	return err
 }
 

@@ -3,7 +3,8 @@ package resources
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
@@ -28,16 +29,16 @@ func init() {
 
 type EC2VerifiedAccessGroupLister struct{}
 
-func (l *EC2VerifiedAccessGroupLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *EC2VerifiedAccessGroupLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 
-	svc := ec2.New(opts.Session)
+	svc := ec2.NewFromConfig(*opts.Config)
 
 	params := &ec2.DescribeVerifiedAccessGroupsInput{}
 	resources := make([]resource.Resource, 0)
 
 	for {
-		resp, err := svc.DescribeVerifiedAccessGroups(params)
+		resp, err := svc.DescribeVerifiedAccessGroups(ctx, params)
 		if err != nil {
 			return nil, err
 		}
@@ -45,7 +46,7 @@ func (l *EC2VerifiedAccessGroupLister) List(_ context.Context, o interface{}) ([
 		for _, group := range resp.VerifiedAccessGroups {
 			resources = append(resources, &EC2VerifiedAccessGroup{
 				svc:   svc,
-				group: group,
+				group: &group,
 			})
 		}
 
@@ -59,16 +60,16 @@ func (l *EC2VerifiedAccessGroupLister) List(_ context.Context, o interface{}) ([
 }
 
 type EC2VerifiedAccessGroup struct {
-	svc   *ec2.EC2
-	group *ec2.VerifiedAccessGroup
+	svc   *ec2.Client
+	group *ec2types.VerifiedAccessGroup
 }
 
-func (r *EC2VerifiedAccessGroup) Remove(_ context.Context) error {
+func (r *EC2VerifiedAccessGroup) Remove(ctx context.Context) error {
 	params := &ec2.DeleteVerifiedAccessGroupInput{
 		VerifiedAccessGroupId: r.group.VerifiedAccessGroupId,
 	}
 
-	_, err := r.svc.DeleteVerifiedAccessGroup(params)
+	_, err := r.svc.DeleteVerifiedAccessGroup(ctx, params)
 	return err
 }
 

@@ -3,29 +3,29 @@ package resources
 import (
 	"testing"
 
-	"github.com/aws/aws-sdk-go/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/assert"
 )
 
 func Test_EC2VerifiedAccessEndpoint_Properties_MinimalData(t *testing.T) {
 	endpoint := &EC2VerifiedAccessEndpoint{
-		endpoint: &ec2.VerifiedAccessEndpoint{
+		endpoint: &ec2types.VerifiedAccessEndpoint{
 			VerifiedAccessEndpointId: ptr.String("vae-1234567890abcdef0"),
 			VerifiedAccessInstanceId: ptr.String("vai-1234567890abcdef0"),
 			VerifiedAccessGroupId:    ptr.String("vag-1234567890abcdef0"),
-			EndpointType:             ptr.String("load-balancer"),
+			EndpointType:             "load-balancer",
 			ApplicationDomain:        ptr.String("example.com"),
 			EndpointDomain:           ptr.String("test.example.com"),
 			Description:              ptr.String("Test verified access endpoint"),
 			CreationTime:             ptr.String(now),
 			LastUpdatedTime:          ptr.String(now),
-			Status: &ec2.VerifiedAccessEndpointStatus{
-				Code: ptr.String("active"),
+			Status: &ec2types.VerifiedAccessEndpointStatus{
+				Code: "active",
 			},
-			AttachmentType:       nil,
+			AttachmentType:       "",
 			DomainCertificateArn: nil,
-			Tags:                 []*ec2.Tag{},
+			Tags:                 []ec2types.Tag{},
 		},
 	}
 
@@ -38,7 +38,7 @@ func Test_EC2VerifiedAccessEndpoint_Properties_MinimalData(t *testing.T) {
 
 func Test_EC2VerifiedAccessEndpoint_String(t *testing.T) {
 	endpoint := &EC2VerifiedAccessEndpoint{
-		endpoint: &ec2.VerifiedAccessEndpoint{
+		endpoint: &ec2types.VerifiedAccessEndpoint{
 			VerifiedAccessEndpointId: ptr.String("vae-1234567890abcdef0"),
 		},
 	}

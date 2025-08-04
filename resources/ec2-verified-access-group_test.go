@@ -3,21 +3,21 @@ package resources
 import (
 	"testing"
 
-	"github.com/aws/aws-sdk-go/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/assert"
 )
 
 func Test_EC2VerifiedAccessGroup_Properties(t *testing.T) {
 	group := &EC2VerifiedAccessGroup{
-		group: &ec2.VerifiedAccessGroup{
+		group: &ec2types.VerifiedAccessGroup{
 			VerifiedAccessGroupId:    ptr.String("vag-1234567890abcdef0"),
 			VerifiedAccessInstanceId: ptr.String("vai-1234567890abcdef0"),
 			Description:              ptr.String("Test verified access group"),
 			Owner:                    ptr.String("123456789012"),
 			CreationTime:             ptr.String(now),
 			LastUpdatedTime:          ptr.String(now),
-			Tags: []*ec2.Tag{
+			Tags: []ec2types.Tag{
 				{
 					Key:   ptr.String("Name"),
 					Value: ptr.String("TestGroup"),
@@ -44,7 +44,7 @@ func Test_EC2VerifiedAccessGroup_Properties(t *testing.T) {
 
 func Test_EC2VerifiedAccessGroup_String(t *testing.T) {
 	group := &EC2VerifiedAccessGroup{
-		group: &ec2.VerifiedAccessGroup{
+		group: &ec2types.VerifiedAccessGroup{
 			VerifiedAccessGroupId: ptr.String("vag-1234567890abcdef0"),
 		},
 	}

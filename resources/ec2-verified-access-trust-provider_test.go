@@ -3,20 +3,20 @@ package resources
 import (
 	"testing"
 
-	"github.com/aws/aws-sdk-go/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/assert"
 )
 
 func Test_EC2VerifiedAccessTrustProvider_Properties(t *testing.T) {
 	trustProvider := &EC2VerifiedAccessTrustProvider{
-		trustProvider: &ec2.VerifiedAccessTrustProvider{
+		trustProvider: &ec2types.VerifiedAccessTrustProvider{
 			VerifiedAccessTrustProviderId: ptr.String("vatp-1234567890abcdef0"),
-			TrustProviderType:             ptr.String("user"),
+			TrustProviderType:             "user",
 			Description:                   ptr.String("Test trust provider"),
 			CreationTime:                  ptr.String(now),
 			LastUpdatedTime:               ptr.String(now),
-			Tags: []*ec2.Tag{
+			Tags: []ec2types.Tag{
 				{
 					Key:   ptr.String("Name"),
 					Value: ptr.String("TestTrustProvider"),
@@ -42,7 +42,7 @@ func Test_EC2VerifiedAccessTrustProvider_Properties(t *testing.T) {
 
 func Test_EC2VerifiedAccessTrustProvider_String(t *testing.T) {
 	trustProvider := &EC2VerifiedAccessTrustProvider{
-		trustProvider: &ec2.VerifiedAccessTrustProvider{
+		trustProvider: &ec2types.VerifiedAccessTrustProvider{
 			VerifiedAccessTrustProviderId: ptr.String("vatp-1234567890abcdef0"),
 		},
 	}

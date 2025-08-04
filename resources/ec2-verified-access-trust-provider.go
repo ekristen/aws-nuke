@@ -3,7 +3,8 @@ package resources
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
@@ -25,16 +26,16 @@ func init() {
 
 type EC2VerifiedAccessTrustProviderLister struct{}
 
-func (l *EC2VerifiedAccessTrustProviderLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *EC2VerifiedAccessTrustProviderLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 
-	svc := ec2.New(opts.Session)
+	svc := ec2.NewFromConfig(*opts.Config)
 
 	params := &ec2.DescribeVerifiedAccessTrustProvidersInput{}
 	resources := make([]resource.Resource, 0)
 
 	for {
-		resp, err := svc.DescribeVerifiedAccessTrustProviders(params)
+		resp, err := svc.DescribeVerifiedAccessTrustProviders(ctx, params)
 		if err != nil {
 			return nil, err
 		}
@@ -42,7 +43,7 @@ func (l *EC2VerifiedAccessTrustProviderLister) List(_ context.Context, o interfa
 		for _, trustProvider := range resp.VerifiedAccessTrustProviders {
 			resources = append(resources, &EC2VerifiedAccessTrustProvider{
 				svc:           svc,
-				trustProvider: trustProvider,
+				trustProvider: &trustProvider,
 			})
 		}
 
@@ -56,16 +57,16 @@ func (l *EC2VerifiedAccessTrustProviderLister) List(_ context.Context, o interfa
 }
 
 type EC2VerifiedAccessTrustProvider struct {
-	svc           *ec2.EC2
-	trustProvider *ec2.VerifiedAccessTrustProvider
+	svc           *ec2.Client
+	trustProvider *ec2types.VerifiedAccessTrustProvider
 }
 
-func (r *EC2VerifiedAccessTrustProvider) Remove(_ context.Context) error {
+func (r *EC2VerifiedAccessTrustProvider) Remove(ctx context.Context) error {
 	params := &ec2.DeleteVerifiedAccessTrustProviderInput{
 		VerifiedAccessTrustProviderId: r.trustProvider.VerifiedAccessTrustProviderId,
 	}
 
-	_, err := r.svc.DeleteVerifiedAccessTrustProvider(params)
+	_, err := r.svc.DeleteVerifiedAccessTrustProvider(ctx, params)
 	return err
 }
 
