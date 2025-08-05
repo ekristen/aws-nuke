@@ -52,7 +52,6 @@ func init() {
 	RegisterCloudControl("AWS::Transfer::Workflow")
 	RegisterCloudControl("AWS::NetworkFirewall::Firewall")
 	RegisterCloudControl("AWS::NetworkFirewall::FirewallPolicy")
-	RegisterCloudControl("AWS::NetworkFirewall::LoggingConfiguration")
 	RegisterCloudControl("AWS::NetworkFirewall::RuleGroup")
 }
 
