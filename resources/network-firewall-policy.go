@@ -5,9 +5,8 @@ import (
 
 	"github.com/gotidy/ptr"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/networkfirewall"
-	"github.com/aws/aws-sdk-go/service/networkfirewall/networkfirewalliface"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/networkfirewall"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
@@ -28,52 +27,46 @@ func init() {
 	})
 }
 
-type NetworkFirewallPolicyLister struct {
-	mockSvc networkfirewalliface.NetworkFirewallAPI
-}
+type NetworkFirewallPolicyLister struct{}
 
-func (l *NetworkFirewallPolicyLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *NetworkFirewallPolicyLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
+	svc := networkfirewall.NewFromConfig(*opts.Config)
 	resources := make([]resource.Resource, 0)
 
-	var svc networkfirewalliface.NetworkFirewallAPI
-	if l.mockSvc != nil {
-		svc = l.mockSvc
-	} else {
-		svc = networkfirewall.New(opts.Session)
-	}
-
 	params := &networkfirewall.ListFirewallPoliciesInput{
-		MaxResults: aws.Int64(100),
+		MaxResults: aws.Int32(100),
 	}
 
-	if err := svc.ListFirewallPoliciesPages(params,
-		func(page *networkfirewall.ListFirewallPoliciesOutput, lastPage bool) bool {
-			for _, policy := range page.FirewallPolicies {
-				resources = append(resources, &NetworkFirewallPolicy{
-					svc:        svc,
-					accountID:  opts.AccountID,
-					PolicyArn:  policy.Arn,
-					PolicyName: policy.Name,
-				})
-			}
-			return !lastPage
-		}); err != nil {
-		return nil, err
+	paginator := networkfirewall.NewListFirewallPoliciesPaginator(svc, params)
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, policy := range page.FirewallPolicies {
+			resources = append(resources, &NetworkFirewallPolicy{
+				svc:        svc,
+				accountID:  opts.AccountID,
+				PolicyArn:  policy.Arn,
+				PolicyName: policy.Name,
+			})
+		}
 	}
 
 	return resources, nil
 }
 
 type NetworkFirewallPolicy struct {
-	svc        networkfirewalliface.NetworkFirewallAPI
+	svc        *networkfirewall.Client
 	accountID  *string
 	PolicyArn  *string `description:"The ARN of the firewall policy."`
 	PolicyName *string `description:"The name of the firewall policy."`
 }
 
-func (r *NetworkFirewallPolicy) Remove(_ context.Context) error {
-	_, err := r.svc.DeleteFirewallPolicy(&networkfirewall.DeleteFirewallPolicyInput{
+func (r *NetworkFirewallPolicy) Remove(ctx context.Context) error {
+	_, err := r.svc.DeleteFirewallPolicy(ctx, &networkfirewall.DeleteFirewallPolicyInput{
 		FirewallPolicyArn: r.PolicyArn,
 	})
 	return err

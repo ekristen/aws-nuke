@@ -6,9 +6,9 @@ import (
 
 	"github.com/gotidy/ptr"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/networkfirewall"
-	"github.com/aws/aws-sdk-go/service/networkfirewall/networkfirewalliface"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/networkfirewall"
+	networkfirewalltypes "github.com/aws/aws-sdk-go-v2/service/networkfirewall/types"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
@@ -29,79 +29,73 @@ func init() {
 	})
 }
 
-type NetworkFirewallLoggingConfigurationLister struct {
-	mockSvc networkfirewalliface.NetworkFirewallAPI
-}
+type NetworkFirewallLoggingConfigurationLister struct{}
 
-func (l *NetworkFirewallLoggingConfigurationLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *NetworkFirewallLoggingConfigurationLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
+	svc := networkfirewall.NewFromConfig(*opts.Config)
 	resources := make([]resource.Resource, 0)
 
-	var svc networkfirewalliface.NetworkFirewallAPI
-	if l.mockSvc != nil {
-		svc = l.mockSvc
-	} else {
-		svc = networkfirewall.New(opts.Session)
-	}
-
 	params := &networkfirewall.ListFirewallsInput{
-		MaxResults: aws.Int64(100),
+		MaxResults: aws.Int32(100),
 	}
 
-	if err := svc.ListFirewallsPages(params,
-		func(page *networkfirewall.ListFirewallsOutput, lastPage bool) bool {
-			for _, firewall := range page.Firewalls {
-				loggingParams := &networkfirewall.DescribeLoggingConfigurationInput{
-					FirewallArn: firewall.FirewallArn,
-				}
-				loggingOutput, err := svc.DescribeLoggingConfiguration(loggingParams)
-				if err != nil {
-					if opts.Logger != nil {
-						opts.Logger.WithError(err).
-							WithField("firewall-arn", ptr.ToString(firewall.FirewallArn)).
-							Warn("failed to describe logging configuration, skipping")
-					}
-					continue
-				}
+	paginator := networkfirewall.NewListFirewallsPaginator(svc, params)
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, err
+		}
 
-				if loggingOutput.LoggingConfiguration != nil && len(loggingOutput.LoggingConfiguration.LogDestinationConfigs) > 0 {
-					resources = append(resources, &NetworkFirewallLoggingConfiguration{
-						svc:           svc,
-						accountID:     opts.AccountID,
-						FirewallArn:   firewall.FirewallArn,
-						FirewallName:  firewall.FirewallName,
-						LoggingConfig: loggingOutput.LoggingConfiguration,
-					})
-				}
+		for _, firewall := range page.Firewalls {
+			loggingParams := &networkfirewall.DescribeLoggingConfigurationInput{
+				FirewallArn: firewall.FirewallArn,
 			}
-			return !lastPage
-		}); err != nil {
-		return nil, err
+			loggingOutput, err := svc.DescribeLoggingConfiguration(ctx, loggingParams)
+			if err != nil {
+				if opts.Logger != nil {
+					opts.Logger.WithError(err).
+						WithField("firewall-arn", ptr.ToString(firewall.FirewallArn)).
+						Warn("failed to describe logging configuration, skipping")
+				}
+				continue
+			}
+
+			if loggingOutput.LoggingConfiguration != nil && len(loggingOutput.LoggingConfiguration.LogDestinationConfigs) > 0 {
+				resources = append(resources, &NetworkFirewallLoggingConfiguration{
+					svc:           svc,
+					accountID:     opts.AccountID,
+					FirewallArn:   firewall.FirewallArn,
+					FirewallName:  firewall.FirewallName,
+					LoggingConfig: loggingOutput.LoggingConfiguration,
+				})
+			}
+		}
 	}
 
 	return resources, nil
 }
 
 type NetworkFirewallLoggingConfiguration struct {
-	svc           networkfirewalliface.NetworkFirewallAPI
+	svc           *networkfirewall.Client
 	accountID     *string
 	FirewallArn   *string `description:"The ARN of the firewall."`
 	FirewallName  *string `description:"The name of the firewall."`
-	LoggingConfig *networkfirewall.LoggingConfiguration
+	LoggingConfig *networkfirewalltypes.LoggingConfiguration
 }
 
 func (r *NetworkFirewallLoggingConfiguration) Filter() error {
 	return nil
 }
 
-func (r *NetworkFirewallLoggingConfiguration) Remove(_ context.Context) error {
+func (r *NetworkFirewallLoggingConfiguration) Remove(ctx context.Context) error {
 	updateParams := &networkfirewall.UpdateLoggingConfigurationInput{
 		FirewallArn: r.FirewallArn,
-		LoggingConfiguration: &networkfirewall.LoggingConfiguration{
-			LogDestinationConfigs: []*networkfirewall.LogDestinationConfig{},
+		LoggingConfiguration: &networkfirewalltypes.LoggingConfiguration{
+			LogDestinationConfigs: []networkfirewalltypes.LogDestinationConfig{},
 		},
 	}
-	_, err := r.svc.UpdateLoggingConfiguration(updateParams)
+	_, err := r.svc.UpdateLoggingConfiguration(ctx, updateParams)
 	return err
 }
 
