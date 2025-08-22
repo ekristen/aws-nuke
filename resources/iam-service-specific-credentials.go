@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/gotidy/ptr"
 	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go/service/iam"
@@ -58,7 +59,7 @@ func (l *IAMServiceSpecificCredentialLister) List(ctx context.Context, o interfa
 		for _, credential := range serviceCredentials.ServiceSpecificCredentials {
 			resources = append(resources, &IAMServiceSpecificCredential{
 				svc:         svc,
-				name:        credential.ServiceUserName,
+				name:        credential.UserName,
 				serviceName: credential.ServiceName,
 				id:          credential.ServiceSpecificCredentialId,
 				userName:    user.Name,
@@ -99,5 +100,5 @@ func (e *IAMServiceSpecificCredential) Properties() types.Properties {
 }
 
 func (e *IAMServiceSpecificCredential) String() string {
-	return fmt.Sprintf("%s -> %s", *e.userName, *e.name)
+	return fmt.Sprintf("%s -> %s", ptr.ToString(e.userName), ptr.ToString(e.serviceName))
 }
