@@ -41,7 +41,8 @@ func (l *EC2VerifiedAccessEndpointLister) List(ctx context.Context, o interface{
 			return nil, err
 		}
 
-		for _, endpoint := range resp.VerifiedAccessEndpoints {
+		for i := range resp.VerifiedAccessEndpoints {
+			endpoint := &resp.VerifiedAccessEndpoints[i]
 			resources = append(resources, &EC2VerifiedAccessEndpoint{
 				svc:                   svc,
 				ID:                    endpoint.VerifiedAccessEndpointId,

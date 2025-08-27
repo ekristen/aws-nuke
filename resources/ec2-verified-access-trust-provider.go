@@ -41,7 +41,8 @@ func (l *EC2VerifiedAccessTrustProviderLister) List(ctx context.Context, o inter
 			return nil, err
 		}
 
-		for _, trustProvider := range resp.VerifiedAccessTrustProviders {
+		for i := range resp.VerifiedAccessTrustProviders {
+			trustProvider := &resp.VerifiedAccessTrustProviders[i]
 			resources = append(resources, &EC2VerifiedAccessTrustProvider{
 				svc:             svc,
 				ID:              trustProvider.VerifiedAccessTrustProviderId,

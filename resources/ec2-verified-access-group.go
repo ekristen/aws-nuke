@@ -43,7 +43,8 @@ func (l *EC2VerifiedAccessGroupLister) List(ctx context.Context, o interface{}) 
 			return nil, err
 		}
 
-		for _, group := range resp.VerifiedAccessGroups {
+		for i := range resp.VerifiedAccessGroups {
+			group := &resp.VerifiedAccessGroups[i]
 			resources = append(resources, &EC2VerifiedAccessGroup{
 				svc:                      svc,
 				ID:                       group.VerifiedAccessGroupId,

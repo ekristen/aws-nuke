@@ -44,7 +44,8 @@ func (l *EC2VerifiedAccessInstanceLister) List(ctx context.Context, o interface{
 			return nil, err
 		}
 
-		for _, instance := range resp.VerifiedAccessInstances {
+		for i := range resp.VerifiedAccessInstances {
+			instance := &resp.VerifiedAccessInstances[i]
 			trustProviders := make([]string, 0)
 			if instance.VerifiedAccessTrustProviders != nil {
 				for _, tp := range instance.VerifiedAccessTrustProviders {

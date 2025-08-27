@@ -64,7 +64,9 @@ func Test_EC2VerifiedAccessEndpoint_Properties_WithTags(t *testing.T) {
 	assert.Equal(t, "example.com", properties.Get("ApplicationDomain"))
 	assert.Equal(t, "load-balancer", properties.Get("EndpointType"))
 	assert.Equal(t, "vpc", properties.Get("AttachmentType"))
-	assert.Equal(t, "arn:aws:acm:us-east-1:123456789012:certificate/12345678-1234-1234-1234-123456789012", properties.Get("DomainCertificateArn"))
+	assert.Equal(t,
+		"arn:aws:acm:us-east-1:123456789012:certificate/12345678-1234-1234-1234-123456789012",
+		properties.Get("DomainCertificateArn"))
 	assert.Equal(t, now, properties.Get("CreationTime"))
 	assert.Equal(t, now, properties.Get("LastUpdatedTime"))
 	assert.Equal(t, "TestEndpoint", properties.Get("tag:Name"))
