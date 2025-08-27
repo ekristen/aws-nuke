@@ -68,13 +68,13 @@ func (l *EC2VerifiedAccessGroupLister) List(ctx context.Context, o interface{}) 
 
 type EC2VerifiedAccessGroup struct {
 	svc                      *ec2.Client
-	ID                       *string
-	Description              *string
-	CreationTime             *string
-	LastUpdatedTime          *string
-	VerifiedAccessInstanceId *string
-	Owner                    *string
-	Tags                     []ec2types.Tag
+	ID                       *string           `description:"The unique identifier of the Verified Access group"`
+	Description              *string           `description:"A description for the Verified Access group"`
+	CreationTime             *string           `description:"The timestamp when the Verified Access group was created"`
+	LastUpdatedTime          *string           `description:"The timestamp when the Verified Access group was last updated"`
+	VerifiedAccessInstanceId *string           `description:"The ID of the Verified Access instance this group belongs to"`
+	Owner                    *string           `description:"The AWS account ID that owns the Verified Access group"`
+	Tags                     []ec2types.Tag    `description:"The tags associated with the Verified Access group"`
 }
 
 func (r *EC2VerifiedAccessGroup) Remove(ctx context.Context) error {

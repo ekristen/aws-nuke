@@ -14,11 +14,11 @@ EC2VerifiedAccessInstance
 ## Properties
 
 
-- `CreationTime`: No Description
-- `Description`: No Description
-- `ID`: No Description
-- `LastUpdatedTime`: No Description
-- `TrustProviders`: No Description
+- `CreationTime`: The timestamp when the Verified Access instance was created
+- `Description`: A description for the Verified Access instance
+- `ID`: The unique identifier of the Verified Access instance
+- `LastUpdatedTime`: The timestamp when the Verified Access instance was last updated
+- `TrustProviders`: A list of trust provider IDs attached to the Verified Access instance
 - `tag:<key>:`: This resource has tags with property `Tags`. These are key/value pairs that are
 	added as their own property with the prefix of `tag:` (e.g. [tag:example: "value"]) 
 

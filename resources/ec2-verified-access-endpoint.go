@@ -69,16 +69,16 @@ func (l *EC2VerifiedAccessEndpointLister) List(ctx context.Context, o interface{
 
 type EC2VerifiedAccessEndpoint struct {
 	svc                   *ec2.Client
-	ID                    *string
-	Description           *string
-	CreationTime          *string
-	LastUpdatedTime       *string
-	VerifiedAccessGroupId *string
-	ApplicationDomain     *string
-	EndpointType          *string
-	AttachmentType        *string
-	DomainCertificateArn  *string
-	Tags                  []ec2types.Tag
+	ID                    *string           `description:"The unique identifier of the Verified Access endpoint"`
+	Description           *string           `description:"A description for the Verified Access endpoint"`
+	CreationTime          *string           `description:"The timestamp when the Verified Access endpoint was created"`
+	LastUpdatedTime       *string           `description:"The timestamp when the Verified Access endpoint was last updated"`
+	VerifiedAccessGroupId *string           `description:"The ID of the Verified Access group this endpoint belongs to"`
+	ApplicationDomain     *string           `description:"The DNS name for the application (e.g., example.com)"`
+	EndpointType          *string           `description:"The type of endpoint (network-interface or load-balancer)"`
+	AttachmentType        *string           `description:"The type of attachment (vpc)"`
+	DomainCertificateArn  *string           `description:"The ARN of the SSL/TLS certificate for the domain"`
+	Tags                  []ec2types.Tag    `description:"The tags associated with the Verified Access endpoint"`
 }
 
 func (r *EC2VerifiedAccessEndpoint) Remove(ctx context.Context) error {
