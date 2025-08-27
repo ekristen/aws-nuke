@@ -65,12 +65,12 @@ func (l *EC2VerifiedAccessTrustProviderLister) List(ctx context.Context, o inter
 
 type EC2VerifiedAccessTrustProvider struct {
 	svc             *ec2.Client
-	ID              *string           `description:"The unique identifier of the Verified Access trust provider"`
-	Type            *string           `description:"The type of trust provider (user, device, or oidc)"`
-	Description     *string           `description:"A description for the Verified Access trust provider"`
-	CreationTime    *string           `description:"The timestamp when the Verified Access trust provider was created"`
-	LastUpdatedTime *string           `description:"The timestamp when the Verified Access trust provider was last updated"`
-	Tags            []ec2types.Tag    `description:"The tags associated with the Verified Access trust provider"`
+	ID              *string        `description:"The unique identifier of the Verified Access trust provider"`
+	Type            *string        `description:"The type of trust provider (user, device, or oidc)"`
+	Description     *string        `description:"A description for the Verified Access trust provider"`
+	CreationTime    *string        `description:"The timestamp when the Verified Access trust provider was created"`
+	LastUpdatedTime *string        `description:"The timestamp when the Verified Access trust provider was last updated"`
+	Tags            []ec2types.Tag `description:"The tags associated with the Verified Access trust provider"`
 }
 
 func (r *EC2VerifiedAccessTrustProvider) Remove(ctx context.Context) error {

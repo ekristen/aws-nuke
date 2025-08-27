@@ -77,12 +77,12 @@ func (l *EC2VerifiedAccessInstanceLister) List(ctx context.Context, o interface{
 
 type EC2VerifiedAccessInstance struct {
 	svc             *ec2.Client
-	ID              *string           `description:"The unique identifier of the Verified Access instance"`
-	Description     *string           `description:"A description for the Verified Access instance"`
-	CreationTime    *string           `description:"The timestamp when the Verified Access instance was created"`
-	LastUpdatedTime *string           `description:"The timestamp when the Verified Access instance was last updated"`
-	TrustProviders  *[]string         `description:"A list of trust provider IDs attached to the Verified Access instance"`
-	Tags            []ec2types.Tag    `description:"The tags associated with the Verified Access instance"`
+	ID              *string        `description:"The unique identifier of the Verified Access instance"`
+	Description     *string        `description:"A description for the Verified Access instance"`
+	CreationTime    *string        `description:"The timestamp when the Verified Access instance was created"`
+	LastUpdatedTime *string        `description:"The timestamp when the Verified Access instance was last updated"`
+	TrustProviders  *[]string      `description:"A list of trust provider IDs attached to the Verified Access instance"`
+	Tags            []ec2types.Tag `description:"The tags associated with the Verified Access instance"`
 }
 
 func (r *EC2VerifiedAccessInstance) Remove(ctx context.Context) error {
