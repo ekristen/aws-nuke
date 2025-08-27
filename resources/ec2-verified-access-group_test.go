@@ -28,12 +28,18 @@ func Test_EC2VerifiedAccessGroup_Properties(t *testing.T) {
 				},
 			},
 		},
+		ID:                       ptr.String("vag-1234567890abcdef0"),
+		Description:              ptr.String("Test verified access group"),
+		CreationTime:             ptr.String(now),
+		LastUpdatedTime:          ptr.String(now),
+		VerifiedAccessInstanceId: ptr.String("vai-1234567890abcdef0"),
+		Owner:                    ptr.String("123456789012"),
 	}
 
 	properties := group.Properties()
 
 	assert.Equal(t, "vag-1234567890abcdef0", properties.Get("ID"))
-	assert.Equal(t, "vai-1234567890abcdef0", properties.Get("InstanceID"))
+	assert.Equal(t, "vai-1234567890abcdef0", properties.Get("VerifiedAccessInstanceId"))
 	assert.Equal(t, "Test verified access group", properties.Get("Description"))
 	assert.Equal(t, "123456789012", properties.Get("Owner"))
 	assert.Equal(t, now, properties.Get("CreationTime"))

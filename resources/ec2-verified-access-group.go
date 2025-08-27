@@ -45,8 +45,14 @@ func (l *EC2VerifiedAccessGroupLister) List(ctx context.Context, o interface{}) 
 
 		for _, group := range resp.VerifiedAccessGroups {
 			resources = append(resources, &EC2VerifiedAccessGroup{
-				svc:   svc,
-				group: &group,
+				svc:                      svc,
+				group:                    &group,
+				ID:                       group.VerifiedAccessGroupId,
+				Description:              group.Description,
+				CreationTime:             group.CreationTime,
+				LastUpdatedTime:          group.LastUpdatedTime,
+				VerifiedAccessInstanceId: group.VerifiedAccessInstanceId,
+				Owner:                    group.Owner,
 			})
 		}
 
@@ -60,8 +66,14 @@ func (l *EC2VerifiedAccessGroupLister) List(ctx context.Context, o interface{}) 
 }
 
 type EC2VerifiedAccessGroup struct {
-	svc   *ec2.Client
-	group *ec2types.VerifiedAccessGroup
+	svc                      *ec2.Client
+	group                    *ec2types.VerifiedAccessGroup
+	ID                       *string
+	Description              *string
+	CreationTime             *string
+	LastUpdatedTime          *string
+	VerifiedAccessInstanceId *string
+	Owner                    *string
 }
 
 func (r *EC2VerifiedAccessGroup) Remove(ctx context.Context) error {
@@ -74,19 +86,12 @@ func (r *EC2VerifiedAccessGroup) Remove(ctx context.Context) error {
 }
 
 func (r *EC2VerifiedAccessGroup) Properties() types.Properties {
-	properties := types.NewProperties()
-
+	properties := types.NewPropertiesFromStruct(r)
+	
 	for _, tag := range r.group.Tags {
 		properties.SetTag(tag.Key, tag.Value)
 	}
-
-	properties.Set("ID", r.group.VerifiedAccessGroupId)
-	properties.Set("InstanceID", r.group.VerifiedAccessInstanceId)
-	properties.Set("Description", r.group.Description)
-	properties.Set("Owner", r.group.Owner)
-	properties.Set("CreationTime", r.group.CreationTime)
-	properties.Set("LastUpdatedTime", r.group.LastUpdatedTime)
-
+	
 	return properties
 }
 

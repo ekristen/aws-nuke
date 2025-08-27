@@ -45,9 +45,23 @@ func (l *EC2VerifiedAccessInstanceLister) List(ctx context.Context, o interface{
 		}
 
 		for _, instance := range resp.VerifiedAccessInstances {
+			trustProviders := make([]string, 0)
+			if instance.VerifiedAccessTrustProviders != nil {
+				for _, tp := range instance.VerifiedAccessTrustProviders {
+					if tp.VerifiedAccessTrustProviderId != nil {
+						trustProviders = append(trustProviders, *tp.VerifiedAccessTrustProviderId)
+					}
+				}
+			}
+
 			resources = append(resources, &EC2VerifiedAccessInstance{
-				svc:      svc,
-				instance: &instance,
+				svc:             svc,
+				instance:        &instance,
+				ID:              instance.VerifiedAccessInstanceId,
+				Description:     instance.Description,
+				CreationTime:    instance.CreationTime,
+				LastUpdatedTime: instance.LastUpdatedTime,
+				TrustProviders:  &trustProviders,
 			})
 		}
 
@@ -61,8 +75,13 @@ func (l *EC2VerifiedAccessInstanceLister) List(ctx context.Context, o interface{
 }
 
 type EC2VerifiedAccessInstance struct {
-	svc      *ec2.Client
-	instance *ec2types.VerifiedAccessInstance
+	svc             *ec2.Client
+	instance        *ec2types.VerifiedAccessInstance
+	ID              *string
+	Description     *string
+	CreationTime    *string
+	LastUpdatedTime *string
+	TrustProviders  *[]string
 }
 
 func (r *EC2VerifiedAccessInstance) Remove(ctx context.Context) error {
@@ -75,25 +94,12 @@ func (r *EC2VerifiedAccessInstance) Remove(ctx context.Context) error {
 }
 
 func (r *EC2VerifiedAccessInstance) Properties() types.Properties {
-	properties := types.NewProperties()
-
+	properties := types.NewPropertiesFromStruct(r)
+	
 	for _, tag := range r.instance.Tags {
 		properties.SetTag(tag.Key, tag.Value)
 	}
-
-	properties.Set("ID", r.instance.VerifiedAccessInstanceId)
-	properties.Set("Description", r.instance.Description)
-	properties.Set("CreationTime", r.instance.CreationTime)
-	properties.Set("LastUpdatedTime", r.instance.LastUpdatedTime)
-
-	if r.instance.VerifiedAccessTrustProviders != nil {
-		trustProviders := make([]*string, len(r.instance.VerifiedAccessTrustProviders))
-		for i, tp := range r.instance.VerifiedAccessTrustProviders {
-			trustProviders[i] = tp.VerifiedAccessTrustProviderId
-		}
-		properties.Set("TrustProviders", trustProviders)
-	}
-
+	
 	return properties
 }
 

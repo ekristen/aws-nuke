@@ -27,6 +27,15 @@ func Test_EC2VerifiedAccessEndpoint_Properties_MinimalData(t *testing.T) {
 			DomainCertificateArn: nil,
 			Tags:                 []ec2types.Tag{},
 		},
+		ID:                    ptr.String("vae-1234567890abcdef0"),
+		Description:           ptr.String("Test verified access endpoint"),
+		CreationTime:          ptr.String(now),
+		LastUpdatedTime:       ptr.String(now),
+		VerifiedAccessGroupId: ptr.String("vag-1234567890abcdef0"),
+		ApplicationDomain:     ptr.String("example.com"),
+		EndpointType:          ptr.String("load-balancer"),
+		AttachmentType:        ptr.String(""),
+		DomainCertificateArn:  nil,
 	}
 
 	properties := endpoint.Properties()

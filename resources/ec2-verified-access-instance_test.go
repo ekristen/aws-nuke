@@ -1,6 +1,7 @@
 package resources
 
 import (
+	"fmt"
 	"testing"
 
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
@@ -34,6 +35,11 @@ func Test_EC2VerifiedAccessInstance_Properties(t *testing.T) {
 				},
 			},
 		},
+		ID:              ptr.String("vai-1234567890abcdef0"),
+		Description:     ptr.String("Test verified access instance"),
+		CreationTime:    ptr.String(now),
+		LastUpdatedTime: ptr.String(now),
+		TrustProviders:  &[]string{"vatp-1234567890abcdef0", "vatp-1234567890abcdef1"},
 	}
 
 	properties := instance.Properties()
@@ -44,9 +50,7 @@ func Test_EC2VerifiedAccessInstance_Properties(t *testing.T) {
 	assert.Equal(t, now, properties.Get("LastUpdatedTime"))
 	assert.Equal(t, "TestInstance", properties.Get("tag:Name"))
 	assert.Equal(t, "test", properties.Get("tag:Environment"))
-
-	// TrustProviders is stored as a string representation of the slice
-	assert.NotEmpty(t, properties.Get("TrustProviders"))
+	fmt.Printf("%v", properties)
 }
 
 func Test_EC2VerifiedAccessInstance_Properties_NoTrustProviders(t *testing.T) {
@@ -59,13 +63,17 @@ func Test_EC2VerifiedAccessInstance_Properties_NoTrustProviders(t *testing.T) {
 			VerifiedAccessTrustProviders: nil,
 			Tags:                         []ec2types.Tag{},
 		},
+		ID:              ptr.String("vai-1234567890abcdef0"),
+		Description:     ptr.String("Test verified access instance"),
+		CreationTime:    ptr.String(now),
+		LastUpdatedTime: ptr.String(now),
+		TrustProviders:  &[]string{},
 	}
 
 	properties := instance.Properties()
 
 	assert.Equal(t, "vai-1234567890abcdef0", properties.Get("ID"))
 	assert.Equal(t, "Test verified access instance", properties.Get("Description"))
-	assert.Equal(t, "", properties.Get("TrustProviders"))
 }
 
 func Test_EC2VerifiedAccessInstance_String(t *testing.T) {

@@ -5,6 +5,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	"github.com/gotidy/ptr"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
@@ -42,8 +43,13 @@ func (l *EC2VerifiedAccessTrustProviderLister) List(ctx context.Context, o inter
 
 		for _, trustProvider := range resp.VerifiedAccessTrustProviders {
 			resources = append(resources, &EC2VerifiedAccessTrustProvider{
-				svc:           svc,
-				trustProvider: &trustProvider,
+				svc:             svc,
+				trustProvider:   &trustProvider,
+				ID:              trustProvider.VerifiedAccessTrustProviderId,
+				Type:            ptr.String(string(trustProvider.TrustProviderType)),
+				Description:     trustProvider.Description,
+				CreationTime:    trustProvider.CreationTime,
+				LastUpdatedTime: trustProvider.LastUpdatedTime,
 			})
 		}
 
@@ -57,8 +63,13 @@ func (l *EC2VerifiedAccessTrustProviderLister) List(ctx context.Context, o inter
 }
 
 type EC2VerifiedAccessTrustProvider struct {
-	svc           *ec2.Client
-	trustProvider *ec2types.VerifiedAccessTrustProvider
+	svc             *ec2.Client
+	trustProvider   *ec2types.VerifiedAccessTrustProvider
+	ID              *string
+	Type            *string
+	Description     *string
+	CreationTime    *string
+	LastUpdatedTime *string
 }
 
 func (r *EC2VerifiedAccessTrustProvider) Remove(ctx context.Context) error {
@@ -71,18 +82,12 @@ func (r *EC2VerifiedAccessTrustProvider) Remove(ctx context.Context) error {
 }
 
 func (r *EC2VerifiedAccessTrustProvider) Properties() types.Properties {
-	properties := types.NewProperties()
-
+	properties := types.NewPropertiesFromStruct(r)
+	
 	for _, tag := range r.trustProvider.Tags {
 		properties.SetTag(tag.Key, tag.Value)
 	}
-
-	properties.Set("ID", r.trustProvider.VerifiedAccessTrustProviderId)
-	properties.Set("Type", r.trustProvider.TrustProviderType)
-	properties.Set("Description", r.trustProvider.Description)
-	properties.Set("CreationTime", r.trustProvider.CreationTime)
-	properties.Set("LastUpdatedTime", r.trustProvider.LastUpdatedTime)
-
+	
 	return properties
 }
 

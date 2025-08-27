@@ -27,6 +27,11 @@ func Test_EC2VerifiedAccessTrustProvider_Properties(t *testing.T) {
 				},
 			},
 		},
+		ID:              ptr.String("vatp-1234567890abcdef0"),
+		Type:            ptr.String("user"),
+		Description:     ptr.String("Test trust provider"),
+		CreationTime:    ptr.String(now),
+		LastUpdatedTime: ptr.String(now),
 	}
 
 	properties := trustProvider.Properties()
