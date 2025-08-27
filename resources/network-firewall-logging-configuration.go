@@ -67,7 +67,7 @@ func (l *NetworkFirewallLoggingConfigurationLister) List(ctx context.Context, o 
 					accountID:     opts.AccountID,
 					FirewallArn:   firewall.FirewallArn,
 					FirewallName:  firewall.FirewallName,
-					LoggingConfig: loggingOutput.LoggingConfiguration,
+					loggingConfig: loggingOutput.LoggingConfiguration,
 				})
 			}
 		}
@@ -81,7 +81,7 @@ type NetworkFirewallLoggingConfiguration struct {
 	accountID     *string
 	FirewallArn   *string `description:"The ARN of the firewall."`
 	FirewallName  *string `description:"The name of the firewall."`
-	LoggingConfig *networkfirewalltypes.LoggingConfiguration
+	loggingConfig *networkfirewalltypes.LoggingConfiguration
 }
 
 func (r *NetworkFirewallLoggingConfiguration) Filter() error {
@@ -100,12 +100,7 @@ func (r *NetworkFirewallLoggingConfiguration) Remove(ctx context.Context) error 
 }
 
 func (r *NetworkFirewallLoggingConfiguration) Properties() types.Properties {
-	props := types.NewPropertiesFromStruct(r)
-	if r.LoggingConfig != nil && len(r.LoggingConfig.LogDestinationConfigs) > 0 {
-		props.Set("HasLoggingConfiguration", true)
-		props.Set("LogDestinationConfigsCount", len(r.LoggingConfig.LogDestinationConfigs))
-	}
-	return props
+	return types.NewPropertiesFromStruct(r)
 }
 
 func (r *NetworkFirewallLoggingConfiguration) String() string {
