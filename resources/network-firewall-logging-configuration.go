@@ -109,5 +109,5 @@ func (r *NetworkFirewallLoggingConfiguration) Properties() types.Properties {
 }
 
 func (r *NetworkFirewallLoggingConfiguration) String() string {
-	return fmt.Sprintf("%s (Firewall: %s)", NetworkFirewallLoggingConfigurationResource, ptr.ToString(r.FirewallName))
+	return fmt.Sprintf("%s -> %s", ptr.ToString(r.FirewallName), NetworkFirewallLoggingConfigurationResource)
 }
