@@ -44,12 +44,12 @@ func (l *EC2VerifiedAccessTrustProviderLister) List(ctx context.Context, o inter
 		for _, trustProvider := range resp.VerifiedAccessTrustProviders {
 			resources = append(resources, &EC2VerifiedAccessTrustProvider{
 				svc:             svc,
-				trustProvider:   &trustProvider,
 				ID:              trustProvider.VerifiedAccessTrustProviderId,
 				Type:            ptr.String(string(trustProvider.TrustProviderType)),
 				Description:     trustProvider.Description,
 				CreationTime:    trustProvider.CreationTime,
 				LastUpdatedTime: trustProvider.LastUpdatedTime,
+				Tags:            trustProvider.Tags,
 			})
 		}
 
@@ -64,17 +64,17 @@ func (l *EC2VerifiedAccessTrustProviderLister) List(ctx context.Context, o inter
 
 type EC2VerifiedAccessTrustProvider struct {
 	svc             *ec2.Client
-	trustProvider   *ec2types.VerifiedAccessTrustProvider
 	ID              *string
 	Type            *string
 	Description     *string
 	CreationTime    *string
 	LastUpdatedTime *string
+	Tags            []ec2types.Tag
 }
 
 func (r *EC2VerifiedAccessTrustProvider) Remove(ctx context.Context) error {
 	params := &ec2.DeleteVerifiedAccessTrustProviderInput{
-		VerifiedAccessTrustProviderId: r.trustProvider.VerifiedAccessTrustProviderId,
+		VerifiedAccessTrustProviderId: r.ID,
 	}
 
 	_, err := r.svc.DeleteVerifiedAccessTrustProvider(ctx, params)
@@ -82,15 +82,9 @@ func (r *EC2VerifiedAccessTrustProvider) Remove(ctx context.Context) error {
 }
 
 func (r *EC2VerifiedAccessTrustProvider) Properties() types.Properties {
-	properties := types.NewPropertiesFromStruct(r)
-	
-	for _, tag := range r.trustProvider.Tags {
-		properties.SetTag(tag.Key, tag.Value)
-	}
-	
-	return properties
+	return types.NewPropertiesFromStruct(r)
 }
 
 func (r *EC2VerifiedAccessTrustProvider) String() string {
-	return *r.trustProvider.VerifiedAccessTrustProviderId
+	return *r.ID
 }

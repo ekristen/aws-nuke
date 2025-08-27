@@ -46,13 +46,13 @@ func (l *EC2VerifiedAccessGroupLister) List(ctx context.Context, o interface{}) 
 		for _, group := range resp.VerifiedAccessGroups {
 			resources = append(resources, &EC2VerifiedAccessGroup{
 				svc:                      svc,
-				group:                    &group,
 				ID:                       group.VerifiedAccessGroupId,
 				Description:              group.Description,
 				CreationTime:             group.CreationTime,
 				LastUpdatedTime:          group.LastUpdatedTime,
 				VerifiedAccessInstanceId: group.VerifiedAccessInstanceId,
 				Owner:                    group.Owner,
+				Tags:                     group.Tags,
 			})
 		}
 
@@ -67,18 +67,18 @@ func (l *EC2VerifiedAccessGroupLister) List(ctx context.Context, o interface{}) 
 
 type EC2VerifiedAccessGroup struct {
 	svc                      *ec2.Client
-	group                    *ec2types.VerifiedAccessGroup
 	ID                       *string
 	Description              *string
 	CreationTime             *string
 	LastUpdatedTime          *string
 	VerifiedAccessInstanceId *string
 	Owner                    *string
+	Tags                     []ec2types.Tag
 }
 
 func (r *EC2VerifiedAccessGroup) Remove(ctx context.Context) error {
 	params := &ec2.DeleteVerifiedAccessGroupInput{
-		VerifiedAccessGroupId: r.group.VerifiedAccessGroupId,
+		VerifiedAccessGroupId: r.ID,
 	}
 
 	_, err := r.svc.DeleteVerifiedAccessGroup(ctx, params)
@@ -86,15 +86,9 @@ func (r *EC2VerifiedAccessGroup) Remove(ctx context.Context) error {
 }
 
 func (r *EC2VerifiedAccessGroup) Properties() types.Properties {
-	properties := types.NewPropertiesFromStruct(r)
-	
-	for _, tag := range r.group.Tags {
-		properties.SetTag(tag.Key, tag.Value)
-	}
-	
-	return properties
+	return types.NewPropertiesFromStruct(r)
 }
 
 func (r *EC2VerifiedAccessGroup) String() string {
-	return *r.group.VerifiedAccessGroupId
+	return *r.ID
 }

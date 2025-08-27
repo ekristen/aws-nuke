@@ -44,7 +44,6 @@ func (l *EC2VerifiedAccessEndpointLister) List(ctx context.Context, o interface{
 		for _, endpoint := range resp.VerifiedAccessEndpoints {
 			resources = append(resources, &EC2VerifiedAccessEndpoint{
 				svc:                   svc,
-				endpoint:              &endpoint,
 				ID:                    endpoint.VerifiedAccessEndpointId,
 				Description:           endpoint.Description,
 				CreationTime:          endpoint.CreationTime,
@@ -54,6 +53,7 @@ func (l *EC2VerifiedAccessEndpointLister) List(ctx context.Context, o interface{
 				EndpointType:          ptr.String(string(endpoint.EndpointType)),
 				AttachmentType:        ptr.String(string(endpoint.AttachmentType)),
 				DomainCertificateArn:  endpoint.DomainCertificateArn,
+				Tags:                  endpoint.Tags,
 			})
 		}
 
@@ -68,7 +68,6 @@ func (l *EC2VerifiedAccessEndpointLister) List(ctx context.Context, o interface{
 
 type EC2VerifiedAccessEndpoint struct {
 	svc                   *ec2.Client
-	endpoint              *ec2types.VerifiedAccessEndpoint
 	ID                    *string
 	Description           *string
 	CreationTime          *string
@@ -78,11 +77,12 @@ type EC2VerifiedAccessEndpoint struct {
 	EndpointType          *string
 	AttachmentType        *string
 	DomainCertificateArn  *string
+	Tags                  []ec2types.Tag
 }
 
 func (r *EC2VerifiedAccessEndpoint) Remove(ctx context.Context) error {
 	params := &ec2.DeleteVerifiedAccessEndpointInput{
-		VerifiedAccessEndpointId: r.endpoint.VerifiedAccessEndpointId,
+		VerifiedAccessEndpointId: r.ID,
 	}
 
 	_, err := r.svc.DeleteVerifiedAccessEndpoint(ctx, params)
@@ -90,15 +90,9 @@ func (r *EC2VerifiedAccessEndpoint) Remove(ctx context.Context) error {
 }
 
 func (r *EC2VerifiedAccessEndpoint) Properties() types.Properties {
-	properties := types.NewPropertiesFromStruct(r)
-	
-	for _, tag := range r.endpoint.Tags {
-		properties.SetTag(tag.Key, tag.Value)
-	}
-	
-	return properties
+	return types.NewPropertiesFromStruct(r)
 }
 
 func (r *EC2VerifiedAccessEndpoint) String() string {
-	return *r.endpoint.VerifiedAccessEndpointId
+	return *r.ID
 }

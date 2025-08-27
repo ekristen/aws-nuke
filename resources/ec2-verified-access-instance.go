@@ -56,12 +56,12 @@ func (l *EC2VerifiedAccessInstanceLister) List(ctx context.Context, o interface{
 
 			resources = append(resources, &EC2VerifiedAccessInstance{
 				svc:             svc,
-				instance:        &instance,
 				ID:              instance.VerifiedAccessInstanceId,
 				Description:     instance.Description,
 				CreationTime:    instance.CreationTime,
 				LastUpdatedTime: instance.LastUpdatedTime,
 				TrustProviders:  &trustProviders,
+				Tags:            instance.Tags,
 			})
 		}
 
@@ -76,17 +76,17 @@ func (l *EC2VerifiedAccessInstanceLister) List(ctx context.Context, o interface{
 
 type EC2VerifiedAccessInstance struct {
 	svc             *ec2.Client
-	instance        *ec2types.VerifiedAccessInstance
 	ID              *string
 	Description     *string
 	CreationTime    *string
 	LastUpdatedTime *string
 	TrustProviders  *[]string
+	Tags            []ec2types.Tag
 }
 
 func (r *EC2VerifiedAccessInstance) Remove(ctx context.Context) error {
 	params := &ec2.DeleteVerifiedAccessInstanceInput{
-		VerifiedAccessInstanceId: r.instance.VerifiedAccessInstanceId,
+		VerifiedAccessInstanceId: r.ID,
 	}
 
 	_, err := r.svc.DeleteVerifiedAccessInstance(ctx, params)
@@ -94,15 +94,9 @@ func (r *EC2VerifiedAccessInstance) Remove(ctx context.Context) error {
 }
 
 func (r *EC2VerifiedAccessInstance) Properties() types.Properties {
-	properties := types.NewPropertiesFromStruct(r)
-	
-	for _, tag := range r.instance.Tags {
-		properties.SetTag(tag.Key, tag.Value)
-	}
-	
-	return properties
+	return types.NewPropertiesFromStruct(r)
 }
 
 func (r *EC2VerifiedAccessInstance) String() string {
-	return *r.instance.VerifiedAccessInstanceId
+	return *r.ID
 }

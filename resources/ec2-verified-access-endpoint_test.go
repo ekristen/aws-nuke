@@ -10,23 +10,6 @@ import (
 
 func Test_EC2VerifiedAccessEndpoint_Properties_MinimalData(t *testing.T) {
 	endpoint := &EC2VerifiedAccessEndpoint{
-		endpoint: &ec2types.VerifiedAccessEndpoint{
-			VerifiedAccessEndpointId: ptr.String("vae-1234567890abcdef0"),
-			VerifiedAccessInstanceId: ptr.String("vai-1234567890abcdef0"),
-			VerifiedAccessGroupId:    ptr.String("vag-1234567890abcdef0"),
-			EndpointType:             "load-balancer",
-			ApplicationDomain:        ptr.String("example.com"),
-			EndpointDomain:           ptr.String("test.example.com"),
-			Description:              ptr.String("Test verified access endpoint"),
-			CreationTime:             ptr.String(now),
-			LastUpdatedTime:          ptr.String(now),
-			Status: &ec2types.VerifiedAccessEndpointStatus{
-				Code: "active",
-			},
-			AttachmentType:       "",
-			DomainCertificateArn: nil,
-			Tags:                 []ec2types.Tag{},
-		},
 		ID:                    ptr.String("vae-1234567890abcdef0"),
 		Description:           ptr.String("Test verified access endpoint"),
 		CreationTime:          ptr.String(now),
@@ -36,6 +19,7 @@ func Test_EC2VerifiedAccessEndpoint_Properties_MinimalData(t *testing.T) {
 		EndpointType:          ptr.String("load-balancer"),
 		AttachmentType:        ptr.String(""),
 		DomainCertificateArn:  nil,
+		Tags:                  []ec2types.Tag{},
 	}
 
 	properties := endpoint.Properties()
@@ -45,11 +29,52 @@ func Test_EC2VerifiedAccessEndpoint_Properties_MinimalData(t *testing.T) {
 	assert.Equal(t, "", properties.Get("DomainCertificateArn"))
 }
 
+func Test_EC2VerifiedAccessEndpoint_Properties_WithTags(t *testing.T) {
+	endpoint := &EC2VerifiedAccessEndpoint{
+		ID:                    ptr.String("vae-1234567890abcdef0"),
+		Description:           ptr.String("Test verified access endpoint with tags"),
+		CreationTime:          ptr.String(now),
+		LastUpdatedTime:       ptr.String(now),
+		VerifiedAccessGroupId: ptr.String("vag-1234567890abcdef0"),
+		ApplicationDomain:     ptr.String("example.com"),
+		EndpointType:          ptr.String("load-balancer"),
+		AttachmentType:        ptr.String("vpc"),
+		DomainCertificateArn:  ptr.String("arn:aws:acm:us-east-1:123456789012:certificate/12345678-1234-1234-1234-123456789012"),
+		Tags: []ec2types.Tag{
+			{
+				Key:   ptr.String("Name"),
+				Value: ptr.String("TestEndpoint"),
+			},
+			{
+				Key:   ptr.String("Environment"),
+				Value: ptr.String("test"),
+			},
+			{
+				Key:   ptr.String("Team"),
+				Value: ptr.String("security"),
+			},
+		},
+	}
+
+	properties := endpoint.Properties()
+
+	assert.Equal(t, "vae-1234567890abcdef0", properties.Get("ID"))
+	assert.Equal(t, "Test verified access endpoint with tags", properties.Get("Description"))
+	assert.Equal(t, "vag-1234567890abcdef0", properties.Get("VerifiedAccessGroupId"))
+	assert.Equal(t, "example.com", properties.Get("ApplicationDomain"))
+	assert.Equal(t, "load-balancer", properties.Get("EndpointType"))
+	assert.Equal(t, "vpc", properties.Get("AttachmentType"))
+	assert.Equal(t, "arn:aws:acm:us-east-1:123456789012:certificate/12345678-1234-1234-1234-123456789012", properties.Get("DomainCertificateArn"))
+	assert.Equal(t, now, properties.Get("CreationTime"))
+	assert.Equal(t, now, properties.Get("LastUpdatedTime"))
+	assert.Equal(t, "TestEndpoint", properties.Get("tag:Name"))
+	assert.Equal(t, "test", properties.Get("tag:Environment"))
+	assert.Equal(t, "security", properties.Get("tag:Team"))
+}
+
 func Test_EC2VerifiedAccessEndpoint_String(t *testing.T) {
 	endpoint := &EC2VerifiedAccessEndpoint{
-		endpoint: &ec2types.VerifiedAccessEndpoint{
-			VerifiedAccessEndpointId: ptr.String("vae-1234567890abcdef0"),
-		},
+		ID: ptr.String("vae-1234567890abcdef0"),
 	}
 
 	assert.Equal(t, "vae-1234567890abcdef0", endpoint.String())
