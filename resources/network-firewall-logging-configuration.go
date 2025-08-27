@@ -65,8 +65,8 @@ func (l *NetworkFirewallLoggingConfigurationLister) List(ctx context.Context, o 
 				resources = append(resources, &NetworkFirewallLoggingConfiguration{
 					svc:           svc,
 					accountID:     opts.AccountID,
-					FirewallArn:   firewall.FirewallArn,
-					FirewallName:  firewall.FirewallName,
+					ARN:           firewall.FirewallArn,
+					Name:          firewall.FirewallName,
 					loggingConfig: loggingOutput.LoggingConfiguration,
 				})
 			}
@@ -79,8 +79,8 @@ func (l *NetworkFirewallLoggingConfigurationLister) List(ctx context.Context, o 
 type NetworkFirewallLoggingConfiguration struct {
 	svc           *networkfirewall.Client
 	accountID     *string
-	FirewallArn   *string `description:"The ARN of the firewall."`
-	FirewallName  *string `description:"The name of the firewall."`
+	ARN           *string `description:"The ARN of the firewall."`
+	Name          *string `description:"The name of the firewall."`
 	loggingConfig *networkfirewalltypes.LoggingConfiguration
 }
 
@@ -90,7 +90,7 @@ func (r *NetworkFirewallLoggingConfiguration) Filter() error {
 
 func (r *NetworkFirewallLoggingConfiguration) Remove(ctx context.Context) error {
 	updateParams := &networkfirewall.UpdateLoggingConfigurationInput{
-		FirewallArn: r.FirewallArn,
+		FirewallArn: r.ARN,
 		LoggingConfiguration: &networkfirewalltypes.LoggingConfiguration{
 			LogDestinationConfigs: []networkfirewalltypes.LogDestinationConfig{},
 		},
@@ -104,5 +104,5 @@ func (r *NetworkFirewallLoggingConfiguration) Properties() types.Properties {
 }
 
 func (r *NetworkFirewallLoggingConfiguration) String() string {
-	return fmt.Sprintf("%s -> %s", ptr.ToString(r.FirewallName), NetworkFirewallLoggingConfigurationResource)
+	return fmt.Sprintf("%s -> %s", ptr.ToString(r.Name), NetworkFirewallLoggingConfigurationResource)
 }

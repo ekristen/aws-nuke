@@ -47,10 +47,10 @@ func (l *NetworkFirewallRuleGroupLister) List(ctx context.Context, o interface{}
 
 		for _, ruleGroup := range page.RuleGroups {
 			resources = append(resources, &NetworkFirewallRuleGroup{
-				svc:           svc,
-				accountID:     opts.AccountID,
-				RuleGroupArn:  ruleGroup.Arn,
-				RuleGroupName: ruleGroup.Name,
+				svc:       svc,
+				accountID: opts.AccountID,
+				ARN:       ruleGroup.Arn,
+				Name:      ruleGroup.Name,
 			})
 		}
 	}
@@ -59,15 +59,15 @@ func (l *NetworkFirewallRuleGroupLister) List(ctx context.Context, o interface{}
 }
 
 type NetworkFirewallRuleGroup struct {
-	svc           *networkfirewall.Client
-	accountID     *string
-	RuleGroupArn  *string `description:"The ARN of the rule group."`
-	RuleGroupName *string `description:"The name of the rule group."`
+	svc       *networkfirewall.Client
+	accountID *string
+	ARN       *string `description:"The ARN of the rule group."`
+	Name      *string `description:"The name of the rule group."`
 }
 
 func (r *NetworkFirewallRuleGroup) Remove(ctx context.Context) error {
 	_, err := r.svc.DeleteRuleGroup(ctx, &networkfirewall.DeleteRuleGroupInput{
-		RuleGroupArn: r.RuleGroupArn,
+		RuleGroupArn: r.ARN,
 	})
 	return err
 }
@@ -77,5 +77,5 @@ func (r *NetworkFirewallRuleGroup) Properties() types.Properties {
 }
 
 func (r *NetworkFirewallRuleGroup) String() string {
-	return ptr.ToString(r.RuleGroupName)
+	return ptr.ToString(r.Name)
 }

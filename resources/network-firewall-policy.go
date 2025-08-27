@@ -47,10 +47,10 @@ func (l *NetworkFirewallPolicyLister) List(ctx context.Context, o interface{}) (
 
 		for _, policy := range page.FirewallPolicies {
 			resources = append(resources, &NetworkFirewallPolicy{
-				svc:        svc,
-				accountID:  opts.AccountID,
-				PolicyArn:  policy.Arn,
-				PolicyName: policy.Name,
+				svc:       svc,
+				accountID: opts.AccountID,
+				ARN:       policy.Arn,
+				Name:      policy.Name,
 			})
 		}
 	}
@@ -59,15 +59,15 @@ func (l *NetworkFirewallPolicyLister) List(ctx context.Context, o interface{}) (
 }
 
 type NetworkFirewallPolicy struct {
-	svc        *networkfirewall.Client
-	accountID  *string
-	PolicyArn  *string `description:"The ARN of the firewall policy."`
-	PolicyName *string `description:"The name of the firewall policy."`
+	svc       *networkfirewall.Client
+	accountID *string
+	ARN       *string `description:"The ARN of the firewall policy."`
+	Name      *string `description:"The name of the firewall policy."`
 }
 
 func (r *NetworkFirewallPolicy) Remove(ctx context.Context) error {
 	_, err := r.svc.DeleteFirewallPolicy(ctx, &networkfirewall.DeleteFirewallPolicyInput{
-		FirewallPolicyArn: r.PolicyArn,
+		FirewallPolicyArn: r.ARN,
 	})
 	return err
 }
@@ -77,5 +77,5 @@ func (r *NetworkFirewallPolicy) Properties() types.Properties {
 }
 
 func (r *NetworkFirewallPolicy) String() string {
-	return ptr.ToString(r.PolicyName)
+	return ptr.ToString(r.Name)
 }
