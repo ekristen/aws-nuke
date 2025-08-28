@@ -183,10 +183,12 @@ nav:
     - Batch Compute Environment: resources/batch-compute-environment.md
     - Batch Job Queue State: resources/batch-job-queue-state.md
     - Batch Job Queue: resources/batch-job-queue.md
+    - Bedrock Agent Alias: resources/bedrock-agent-alias.md
     - Bedrock Agent: resources/bedrock-agent.md
     - Bedrock Custom Model: resources/bedrock-custom-model.md
     - Bedrock Data Source: resources/bedrock-data-source.md
     - Bedrock Evaluation Job: resources/bedrock-evaluation-job.md
+    - Bedrock Flow Alias: resources/bedrock-flow-alias.md
     - Bedrock Guardrail: resources/bedrock-guardrail.md
     - Bedrock Knowledge Base: resources/bedrock-knowledge-base.md
     - Bedrock Model Customization Job: resources/bedrock-model-customization-job.md
@@ -319,6 +321,10 @@ nav:
     - EC2 VPC Endpoint: resources/ec2-vpc-endpoint.md
     - EC2 VPC Peering Connection: resources/ec2-vpc-peering-connection.md
     - EC2 VPC: resources/ec2-vpc.md
+    - EC2 Verified Access Endpoint: resources/ec2-verified-access-endpoint.md
+    - EC2 Verified Access Group: resources/ec2-verified-access-group.md
+    - EC2 Verified Access Instance: resources/ec2-verified-access-instance.md
+    - EC2 Verified Access Trust Provider: resources/ec2-verified-access-trust-provider.md
     - EC2 Volume: resources/ec2-volume.md
     - EC2 Vpn Connection: resources/ec2-vpn-connection.md
     - EC2 Vpn Gateway Attachment: resources/ec2-vpn-gateway-attachment.md

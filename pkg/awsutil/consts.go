@@ -11,3 +11,9 @@ const StateDeleting = "deleting"
 
 // StateRejected is a generic constant for the word rejected for state
 const StateRejected = "rejected"
+
+// StateExpired is a generic constant for the word expired for state
+const StateExpired = "expired"
+
+// StateFailed is a generic constant for the word failed for state
+const StateFailed = "failed"
