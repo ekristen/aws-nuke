@@ -2,7 +2,6 @@ package resources
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/gotidy/ptr"
 
@@ -63,11 +62,10 @@ func (l *NetworkFirewallLoggingConfigurationLister) List(ctx context.Context, o 
 
 			if loggingOutput.LoggingConfiguration != nil && len(loggingOutput.LoggingConfiguration.LogDestinationConfigs) > 0 {
 				resources = append(resources, &NetworkFirewallLoggingConfiguration{
-					svc:           svc,
-					accountID:     opts.AccountID,
-					ARN:           firewall.FirewallArn,
-					Name:          firewall.FirewallName,
-					loggingConfig: loggingOutput.LoggingConfiguration,
+					svc:       svc,
+					accountID: opts.AccountID,
+					ARN:       firewall.FirewallArn,
+					Name:      firewall.FirewallName,
 				})
 			}
 		}
@@ -77,11 +75,10 @@ func (l *NetworkFirewallLoggingConfigurationLister) List(ctx context.Context, o 
 }
 
 type NetworkFirewallLoggingConfiguration struct {
-	svc           *networkfirewall.Client
-	accountID     *string
-	ARN           *string `description:"The ARN of the firewall."`
-	Name          *string `description:"The name of the firewall."`
-	loggingConfig *networkfirewalltypes.LoggingConfiguration
+	svc       *networkfirewall.Client
+	accountID *string
+	ARN       *string `description:"The ARN of the firewall."`
+	Name      *string `description:"The name of the firewall."`
 }
 
 func (r *NetworkFirewallLoggingConfiguration) Filter() error {
@@ -104,5 +101,5 @@ func (r *NetworkFirewallLoggingConfiguration) Properties() types.Properties {
 }
 
 func (r *NetworkFirewallLoggingConfiguration) String() string {
-	return fmt.Sprintf("%s -> %s", ptr.ToString(r.Name), NetworkFirewallLoggingConfigurationResource)
+	return ptr.ToString(r.Name)
 }
