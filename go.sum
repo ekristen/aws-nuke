@@ -18,6 +18,8 @@ github.com/aws/aws-sdk-go-v2/internal/ini v1.8.1 h1:VaRN3TlFdd6KxX1x3ILT5ynH6HvK
 github.com/aws/aws-sdk-go-v2/internal/ini v1.8.1/go.mod h1:FbtygfRFze9usAadmnGJNc8KsP346kEe+y2/oyhGAGc=
 github.com/aws/aws-sdk-go-v2/internal/v4a v1.3.27 h1:AmB5QxnD+fBFrg9LcqzkgF/CaYvMyU/BTlejG4t1S7Q=
 github.com/aws/aws-sdk-go-v2/internal/v4a v1.3.27/go.mod h1:Sai7P3xTiyv9ZUYO3IFxMnmiIP759/67iQbU4kdmkyU=
+github.com/aws/aws-sdk-go-v2/service/amp v1.36.0 h1:bkMWckc+0CtmzdUls0WxNMgJW+FfVFBWXbI8gaD8xts=
+github.com/aws/aws-sdk-go-v2/service/amp v1.36.0/go.mod h1:LJjtJRt+mqjs4D8JRKGEYjW4w4XNd7s5oXjivdbPXfc=
 github.com/aws/aws-sdk-go-v2/service/apigateway v1.28.12 h1:m7O0X55xKIbwUnGcHOs3AMdPN7ZN6wFA8fyL0wIH1vM=
 github.com/aws/aws-sdk-go-v2/service/apigateway v1.28.12/go.mod h1:n1JY79L1AAtLhKJXIRv9pACaj9IAuoOOAz6cekbTEkk=
 github.com/aws/aws-sdk-go-v2/service/appsync v1.42.3 h1:Q903rtU9x/OmFMqXGm3033459yx/M1F9UcOWwoowH+s=
