@@ -43,7 +43,7 @@ func (l *AMPWorkspaceLister) List(ctx context.Context, o interface{}) ([]resourc
 				svc:            svc,
 				WorkspaceAlias: ws.Alias,
 				WorkspaceARN:   ws.Arn,
-				WorkspaceID:    ws.WorkspaceId,
+				WorkspaceId:    ws.WorkspaceId,
 			})
 		}
 	}
@@ -55,12 +55,12 @@ type AMPWorkspace struct {
 	svc            *amp.Client
 	WorkspaceAlias *string
 	WorkspaceARN   *string
-	WorkspaceID    *string
+	WorkspaceId    *string
 }
 
 func (f *AMPWorkspace) Remove(ctx context.Context) error {
 	_, err := f.svc.DeleteWorkspace(ctx, &amp.DeleteWorkspaceInput{
-		WorkspaceId: f.WorkspaceID,
+		WorkspaceId: f.WorkspaceId,
 	})
 
 	return err
