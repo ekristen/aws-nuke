@@ -44,6 +44,7 @@ func (l *AMPWorkspaceLister) List(ctx context.Context, o interface{}) ([]resourc
 				WorkspaceAlias: ws.Alias,
 				WorkspaceARN:   ws.Arn,
 				WorkspaceId:    ws.WorkspaceId,
+				Tags:           ws.Tags,
 			})
 		}
 	}
@@ -56,6 +57,7 @@ type AMPWorkspace struct {
 	WorkspaceAlias *string
 	WorkspaceARN   *string
 	WorkspaceId    *string
+	Tags           map[string]string
 }
 
 func (f *AMPWorkspace) Remove(ctx context.Context) error {
