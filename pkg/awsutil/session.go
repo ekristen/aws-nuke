@@ -22,8 +22,9 @@ import (
 	"github.com/aws/aws-sdk-go/service/iottwinmaker"
 	"github.com/aws/aws-sdk-go/service/s3control"
 
-	"github.com/ekristen/aws-nuke/v3/pkg/config"
 	liberrors "github.com/ekristen/libnuke/pkg/errors"
+
+	"github.com/ekristen/aws-nuke/v3/pkg/config"
 )
 
 const (
@@ -275,7 +276,7 @@ func skipGlobalHandler(global bool) func(r *request.Request) {
 						service))
 			} else {
 				host := r.HTTPRequest.URL.Hostname()
-				_, err := net.LookupHost(host)
+				_, err := net.DefaultResolver.LookupHost(r.Context(), host)
 				if err != nil {
 					log.Debug(err)
 					r.Error = liberrors.ErrUnknownEndpoint(
