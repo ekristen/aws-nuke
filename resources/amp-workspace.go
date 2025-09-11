@@ -54,10 +54,10 @@ func (l *AMPWorkspaceLister) List(ctx context.Context, o interface{}) ([]resourc
 
 type AMPWorkspace struct {
 	svc            *amp.Client
-	WorkspaceAlias *string
-	WorkspaceARN   *string
-	WorkspaceId    *string
-	Tags           map[string]string
+	WorkspaceAlias *string           `description:"The alias of the AMP Workspace"`
+	WorkspaceARN   *string           `description:"The ARN of the AMP Workspace"`
+	WorkspaceId    *string           `description:"The ID of the AMP Workspace"`
+	Tags           map[string]string `description:"The tags of the AMP Workspace"`
 }
 
 func (f *AMPWorkspace) Remove(ctx context.Context) error {

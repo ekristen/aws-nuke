@@ -53,9 +53,9 @@ func (l *AMPScraperLister) List(ctx context.Context, o interface{}) ([]resource.
 
 type AMPScraper struct {
 	svc       *amp.Client
-	ScraperID *string
-	Alias     *string
-	Tags      map[string]string
+	ScraperID *string           `description:"The ID of the AMP Scraper"`
+	Alias     *string           `description:"The alias of the AMP Scraper"`
+	Tags      map[string]string `description:"The tags of the AMP Scraper"`
 }
 
 func (f *AMPScraper) Remove(ctx context.Context) error {
