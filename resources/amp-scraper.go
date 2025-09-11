@@ -41,7 +41,7 @@ func (l *AMPScraperLister) List(ctx context.Context, o interface{}) ([]resource.
 		for _, ws := range page.Scrapers {
 			resources = append(resources, &AMPScraper{
 				svc:       svc,
-				ScraperId: ws.ScraperId,
+				ScraperID: ws.ScraperId,
 				Alias:     ws.Alias,
 				Tags:      ws.Tags,
 			})
@@ -53,14 +53,14 @@ func (l *AMPScraperLister) List(ctx context.Context, o interface{}) ([]resource.
 
 type AMPScraper struct {
 	svc       *amp.Client
-	ScraperId *string
+	ScraperID *string
 	Alias     *string
 	Tags      map[string]string
 }
 
 func (f *AMPScraper) Remove(ctx context.Context) error {
 	_, err := f.svc.DeleteScraper(ctx, &amp.DeleteScraperInput{
-		ScraperId: f.ScraperId,
+		ScraperId: f.ScraperID,
 	})
 
 	return err
