@@ -183,12 +183,10 @@ nav:
     - Batch Compute Environment: resources/batch-compute-environment.md
     - Batch Job Queue State: resources/batch-job-queue-state.md
     - Batch Job Queue: resources/batch-job-queue.md
-    - Bedrock Agent Alias: resources/bedrock-agent-alias.md
     - Bedrock Agent: resources/bedrock-agent.md
     - Bedrock Custom Model: resources/bedrock-custom-model.md
     - Bedrock Data Source: resources/bedrock-data-source.md
     - Bedrock Evaluation Job: resources/bedrock-evaluation-job.md
-    - Bedrock Flow Alias: resources/bedrock-flow-alias.md
     - Bedrock Guardrail: resources/bedrock-guardrail.md
     - Bedrock Knowledge Base: resources/bedrock-knowledge-base.md
     - Bedrock Model Customization Job: resources/bedrock-model-customization-job.md
@@ -495,8 +493,12 @@ nav:
     - Memory Db Subnet Group: resources/memory-db-subnet-group.md
     - Memory Db User: resources/memory-db-user.md
     - Memory Dbacl: resources/memory-dbacl.md
+    - Mgn Application: resources/mgn-application.md
     - Mgn Job: resources/mgn-job.md
+    - Mgn Launch Configuration Template: resources/mgn-launch-configuration-template.md
+    - Mgn Replication Configuration Template: resources/mgn-replication-configuration-template.md
     - Mgn Source Server: resources/mgn-source-server.md
+    - Mgn Wave: resources/mgn-wave.md
     - Mobile Project: resources/mobile-project.md
     - Mq Broker: resources/mq-broker.md
     - Msk Cluster: resources/msk-cluster.md

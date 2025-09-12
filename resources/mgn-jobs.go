@@ -4,18 +4,22 @@ import (
 	"context"
 	"errors"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/mgn"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/mgn"
+	"github.com/aws/aws-sdk-go-v2/service/mgn/types"
+	"github.com/aws/smithy-go"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
-	"github.com/ekristen/libnuke/pkg/types"
+	libtypes "github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-const MGNJobResource = "MGNJob"
+const (
+	MGNJobResource                      = "MGNJob"
+	mgnJobUninitializedAccountException = "UninitializedAccountException"
+)
 
 func init() {
 	registry.Register(&registry.Registration{
@@ -28,35 +32,47 @@ func init() {
 
 type MGNJobLister struct{}
 
-func (l *MGNJobLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *MGNJobLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 
-	svc := mgn.New(opts.Session)
+	svc := mgn.NewFromConfig(*opts.Config)
 	resources := make([]resource.Resource, 0)
 
 	params := &mgn.DescribeJobsInput{
-		MaxResults: aws.Int64(50),
+		MaxResults: aws.Int32(50),
 	}
 
 	for {
-		output, err := svc.DescribeJobs(params)
+		output, err := svc.DescribeJobs(ctx, params)
 		if err != nil {
-			var awsErr awserr.Error
-			ok := errors.As(err, &awsErr)
-			if ok && awsErr.Code() == "UninitializedAccountException" {
+			var apiErr smithy.APIError
+			if errors.As(err, &apiErr) && apiErr.ErrorCode() == mgnJobUninitializedAccountException {
 				return nil, nil
 			}
-
 			return nil, err
 		}
 
-		for _, job := range output.Items {
-			resources = append(resources, &MGNJob{
-				svc:   svc,
-				jobID: job.JobID,
-				arn:   job.Arn,
-				tags:  job.Tags,
-			})
+		for i := range output.Items {
+			job := &output.Items[i]
+			mgnJob := &MGNJob{
+				svc:         svc,
+				job:         job,
+				JobID:       job.JobID,
+				Arn:         job.Arn,
+				Type:        string(job.Type),
+				Status:      string(job.Status),
+				InitiatedBy: string(job.InitiatedBy),
+				Tags:        job.Tags,
+			}
+
+			if job.CreationDateTime != nil {
+				mgnJob.CreationDateTime = job.CreationDateTime
+			}
+			if job.EndDateTime != nil {
+				mgnJob.EndDateTime = job.EndDateTime
+			}
+
+			resources = append(resources, mgnJob)
 		}
 
 		if output.NextToken == nil {
@@ -70,32 +86,32 @@ func (l *MGNJobLister) List(_ context.Context, o interface{}) ([]resource.Resour
 }
 
 type MGNJob struct {
-	svc   *mgn.Mgn
-	jobID *string
-	arn   *string
-	tags  map[string]*string
+	svc *mgn.Client `description:"-"`
+	job *types.Job  `description:"-"`
+
+	// Exposed properties
+	JobID            *string           `description:"The unique identifier of the job"`
+	Arn              *string           `description:"The ARN of the job"`
+	Type             string            `description:"The type of job (LAUNCH, TERMINATE, etc.)"`
+	Status           string            `description:"The status of the job"`
+	InitiatedBy      string            `description:"Who initiated the job"`
+	CreationDateTime *string           `description:"The date and time the job was created"`
+	EndDateTime      *string           `description:"The date and time the job ended"`
+	Tags             map[string]string `description:"The tags associated with the job"`
 }
 
-func (f *MGNJob) Remove(_ context.Context) error {
-	_, err := f.svc.DeleteJob(&mgn.DeleteJobInput{
-		JobID: f.jobID,
+func (f *MGNJob) Remove(ctx context.Context) error {
+	_, err := f.svc.DeleteJob(ctx, &mgn.DeleteJobInput{
+		JobID: f.job.JobID,
 	})
 
 	return err
 }
 
-func (f *MGNJob) Properties() types.Properties {
-	properties := types.NewProperties()
-	properties.Set("JobID", f.jobID)
-	properties.Set("ARN", f.arn)
-
-	for key, val := range f.tags {
-		properties.SetTag(&key, val)
-	}
-
-	return properties
+func (f *MGNJob) Properties() libtypes.Properties {
+	return libtypes.NewPropertiesFromStruct(f)
 }
 
 func (f *MGNJob) String() string {
-	return *f.jobID
+	return *f.JobID
 }
