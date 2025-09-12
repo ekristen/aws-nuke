@@ -7,9 +7,11 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ecs"
+	"github.com/sirupsen/logrus"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
@@ -69,11 +71,23 @@ func (l *ECSServiceLister) List(_ context.Context, o interface{}) ([]resource.Re
 			}
 
 			for _, serviceArn := range output.ServiceArns {
-				resources = append(resources, &ECSService{
+				ecsService := &ECSService{
 					svc:        svc,
-					serviceARN: serviceArn,
-					clusterARN: clusterArn,
+					ServiceARN: serviceArn,
+					ClusterARN: clusterArn,
+				}
+
+				// Fetch tags for the service
+				tags, err := svc.ListTagsForResource(&ecs.ListTagsForResourceInput{
+					ResourceArn: serviceArn,
 				})
+				if err != nil {
+					logrus.WithError(err).Error("unable to get tags for ECS service")
+				} else if tags != nil {
+					ecsService.Tags = tags.Tags
+				}
+
+				resources = append(resources, ecsService)
 			}
 
 			if output.NextToken == nil {
@@ -89,14 +103,19 @@ func (l *ECSServiceLister) List(_ context.Context, o interface{}) ([]resource.Re
 
 type ECSService struct {
 	svc        *ecs.ECS
-	serviceARN *string
-	clusterARN *string
+	ServiceARN *string     `description:"The ARN of the ECS service"`
+	ClusterARN *string     `description:"The ARN of the ECS cluster"`
+	Tags       []*ecs.Tag  `description:"The tags associated with the service"`
+}
+
+func (f *ECSService) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(f)
 }
 
 func (f *ECSService) Remove(_ context.Context) error {
 	_, err := f.svc.DeleteService(&ecs.DeleteServiceInput{
-		Cluster: f.clusterARN,
-		Service: f.serviceARN,
+		Cluster: f.ClusterARN,
+		Service: f.ServiceARN,
 		Force:   aws.Bool(true),
 	})
 
@@ -104,5 +123,5 @@ func (f *ECSService) Remove(_ context.Context) error {
 }
 
 func (f *ECSService) String() string {
-	return fmt.Sprintf("%s -> %s", *f.serviceARN, *f.clusterARN)
+	return fmt.Sprintf("%s -> %s", *f.ServiceARN, *f.ClusterARN)
 }
