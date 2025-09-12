@@ -47,19 +47,19 @@ func (l *EC2SnapshotLister) List(ctx context.Context, o interface{}) ([]resource
 			snapshot := &resp.Snapshots[i]
 			resources = append(resources, &EC2Snapshot{
 				svc:                 svc,
-				SnapshotId:          snapshot.SnapshotId,
+				SnapshotID:          snapshot.SnapshotId,
 				Description:         snapshot.Description,
-				VolumeId:            snapshot.VolumeId,
+				VolumeID:            snapshot.VolumeId,
 				VolumeSize:          snapshot.VolumeSize,
 				State:               &snapshot.State,
 				StateMessage:        snapshot.StateMessage,
 				StartTime:           snapshot.StartTime,
 				Progress:            snapshot.Progress,
-				OwnerId:             snapshot.OwnerId,
+				OwnerID:             snapshot.OwnerId,
 				OwnerAlias:          snapshot.OwnerAlias,
 				Encrypted:           snapshot.Encrypted,
-				KmsKeyId:            snapshot.KmsKeyId,
-				DataEncryptionKeyId: snapshot.DataEncryptionKeyId,
+				KmsKeyID:            snapshot.KmsKeyId,
+				DataEncryptionKeyID: snapshot.DataEncryptionKeyId,
 				StorageTier:         &snapshot.StorageTier,
 				RestoreExpiryTime:   snapshot.RestoreExpiryTime,
 				Tags:                &snapshot.Tags,
@@ -77,19 +77,19 @@ func (l *EC2SnapshotLister) List(ctx context.Context, o interface{}) ([]resource
 
 type EC2Snapshot struct {
 	svc                 *ec2.Client
-	SnapshotId          *string                 `description:"The ID of the snapshot"`
+	SnapshotID          *string                 `description:"The ID of the snapshot"`
 	Description         *string                 `description:"The description for the snapshot"`
-	VolumeId            *string                 `description:"The ID of the volume that was used to create the snapshot"`
+	VolumeID            *string                 `description:"The ID of the volume that was used to create the snapshot"`
 	VolumeSize          *int32                  `description:"The size of the volume in GiB"`
 	State               *ec2types.SnapshotState `description:"The snapshot state"`
 	StateMessage        *string                 `description:"Encrypted Amazon EBS snapshots are copied asynchronously"`
 	StartTime           *time.Time              `description:"The time stamp when the snapshot was initiated"`
 	Progress            *string                 `description:"The progress of the snapshot as a percentage"`
-	OwnerId             *string                 `description:"The AWS account ID of the EBS snapshot owner"`
+	OwnerID             *string                 `description:"The AWS account ID of the EBS snapshot owner"`
 	OwnerAlias          *string                 `description:"The AWS owner alias"`
 	Encrypted           *bool                   `description:"Indicates whether the snapshot is encrypted"`
-	KmsKeyId            *string                 `description:"The Amazon Resource Name (ARN) of the AWS KMS key used for encryption"`
-	DataEncryptionKeyId *string                 `description:"The data encryption key identifier for the snapshot"`
+	KmsKeyID            *string                 `description:"The Amazon Resource Name (ARN) of the AWS KMS key used for encryption"`
+	DataEncryptionKeyID *string                 `description:"The data encryption key identifier for the snapshot"`
 	StorageTier         *ec2types.StorageTier   `description:"The storage tier in which the snapshot is stored"`
 	RestoreExpiryTime   *time.Time              `description:"Only for archived snapshots that are temporarily restored"`
 	Tags                *[]ec2types.Tag         `description:"The tags associated with the snapshot"`
@@ -97,7 +97,7 @@ type EC2Snapshot struct {
 
 func (r *EC2Snapshot) Remove(ctx context.Context) error {
 	params := &ec2.DeleteSnapshotInput{
-		SnapshotId: r.SnapshotId,
+		SnapshotId: r.SnapshotID,
 	}
 
 	_, err := r.svc.DeleteSnapshot(ctx, params)
@@ -109,5 +109,5 @@ func (r *EC2Snapshot) Properties() types.Properties {
 }
 
 func (r *EC2Snapshot) String() string {
-	return *r.SnapshotId
+	return *r.SnapshotID
 }

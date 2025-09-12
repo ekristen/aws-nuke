@@ -45,14 +45,14 @@ func (l *EC2VolumeLister) List(ctx context.Context, o interface{}) ([]resource.R
 			volume := &resp.Volumes[i]
 			resources = append(resources, &EC2Volume{
 				svc:                svc,
-				VolumeId:           volume.VolumeId,
+				VolumeID:           volume.VolumeId,
 				VolumeType:         &volume.VolumeType,
 				State:              &volume.State,
 				Size:               volume.Size,
 				AvailabilityZone:   volume.AvailabilityZone,
 				CreateTime:         volume.CreateTime,
 				Encrypted:          volume.Encrypted,
-				KmsKeyId:           volume.KmsKeyId,
+				KmsKeyID:           volume.KmsKeyId,
 				Iops:               volume.Iops,
 				Throughput:         volume.Throughput,
 				MultiAttachEnabled: volume.MultiAttachEnabled,
@@ -71,14 +71,14 @@ func (l *EC2VolumeLister) List(ctx context.Context, o interface{}) ([]resource.R
 
 type EC2Volume struct {
 	svc                *ec2.Client
-	VolumeId           *string               `description:"The ID of the EBS volume"`
+	VolumeID           *string               `description:"The ID of the EBS volume"`
 	VolumeType         *ec2types.VolumeType  `description:"The volume type (gp2, gp3, io1, io2, st1, sc1, standard)"`
 	State              *ec2types.VolumeState `description:"The state of the volume (creating, available, in-use, deleting, deleted, error)"`
 	Size               *int32                `description:"The size of the volume in GiB"`
 	AvailabilityZone   *string               `description:"The Availability Zone in which the volume was created"`
 	CreateTime         *time.Time            `description:"The time stamp when volume creation was initiated"`
 	Encrypted          *bool                 `description:"Indicates whether the volume is encrypted"`
-	KmsKeyId           *string               `description:"The Amazon Resource Name (ARN) of the AWS KMS key used for encryption"`
+	KmsKeyID           *string               `description:"The Amazon Resource Name (ARN) of the AWS KMS key used for encryption"`
 	Iops               *int32                `description:"The number of I/O operations per second (IOPS)"`
 	Throughput         *int32                `description:"The throughput that the volume supports in MiB/s"`
 	MultiAttachEnabled *bool                 `description:"Indicates whether Amazon EBS Multi-Attach is enabled"`
@@ -87,7 +87,7 @@ type EC2Volume struct {
 
 func (r *EC2Volume) Remove(ctx context.Context) error {
 	params := &ec2.DeleteVolumeInput{
-		VolumeId: r.VolumeId,
+		VolumeId: r.VolumeID,
 	}
 
 	_, err := r.svc.DeleteVolume(ctx, params)
@@ -99,5 +99,5 @@ func (r *EC2Volume) Properties() types.Properties {
 }
 
 func (r *EC2Volume) String() string {
-	return *r.VolumeId
+	return *r.VolumeID
 }

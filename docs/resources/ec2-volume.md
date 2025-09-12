@@ -18,12 +18,12 @@ EC2Volume
 - `CreateTime`: The time stamp when volume creation was initiated
 - `Encrypted`: Indicates whether the volume is encrypted
 - `Iops`: The number of I/O operations per second (IOPS)
-- `KmsKeyId`: The Amazon Resource Name (ARN) of the AWS KMS key used for encryption
+- `KmsKeyID`: The Amazon Resource Name (ARN) of the AWS KMS key used for encryption
 - `MultiAttachEnabled`: Indicates whether Amazon EBS Multi-Attach is enabled
 - `Size`: The size of the volume in GiB
 - `State`: The state of the volume (creating, available, in-use, deleting, deleted, error)
 - `Throughput`: The throughput that the volume supports in MiB/s
-- `VolumeId`: The ID of the EBS volume
+- `VolumeID`: The ID of the EBS volume
 - `VolumeType`: The volume type (gp2, gp3, io1, io2, st1, sc1, standard)
 - `tag:<key>:`: This resource has tags with property `Tags`. These are key/value pairs that are
 	added as their own property with the prefix of `tag:` (e.g. [tag:example: "value"]) 

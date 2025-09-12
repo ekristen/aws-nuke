@@ -14,7 +14,7 @@ func Test_EC2Volume_String(t *testing.T) {
 	a := assert.New(t)
 
 	ec2Volume := EC2Volume{
-		VolumeId: ptr.String("vol-1234567890abcdef0"),
+		VolumeID: ptr.String("vol-1234567890abcdef0"),
 	}
 
 	a.Equal("vol-1234567890abcdef0", ec2Volume.String())
@@ -28,14 +28,14 @@ func Test_EC2Volume_Properties(t *testing.T) {
 	state := ec2types.VolumeStateAvailable
 
 	ec2Volume := EC2Volume{
-		VolumeId:           ptr.String("vol-1234567890abcdef0"),
+		VolumeID:           ptr.String("vol-1234567890abcdef0"),
 		VolumeType:         &volumeType,
 		State:              &state,
 		Size:               ptr.Int32(100),
 		AvailabilityZone:   ptr.String("us-east-1a"),
 		CreateTime:         &createTime,
 		Encrypted:          ptr.Bool(true),
-		KmsKeyId:           ptr.String("arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012"),
+		KmsKeyID:           ptr.String("arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012"),
 		Iops:               ptr.Int32(3000),
 		Throughput:         ptr.Int32(125),
 		MultiAttachEnabled: ptr.Bool(false),
@@ -53,13 +53,13 @@ func Test_EC2Volume_Properties(t *testing.T) {
 
 	properties := ec2Volume.Properties()
 
-	a.Equal("vol-1234567890abcdef0", properties.Get("VolumeId"))
+	a.Equal("vol-1234567890abcdef0", properties.Get("VolumeID"))
 	a.Equal("gp3", properties.Get("VolumeType"))
 	a.Equal("available", properties.Get("State"))
 	a.Equal("100", properties.Get("Size"))
 	a.Equal("us-east-1a", properties.Get("AvailabilityZone"))
 	a.Equal("true", properties.Get("Encrypted"))
-	a.Equal("arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012", properties.Get("KmsKeyId"))
+	a.Equal("arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012", properties.Get("KmsKeyID"))
 	a.Equal("3000", properties.Get("Iops"))
 	a.Equal("125", properties.Get("Throughput"))
 	a.Equal("false", properties.Get("MultiAttachEnabled"))
@@ -75,7 +75,7 @@ func Test_EC2Volume_Properties_EmptyTags(t *testing.T) {
 	state := ec2types.VolumeStateInUse
 
 	ec2Volume := EC2Volume{
-		VolumeId:         ptr.String("vol-1234567890abcdef0"),
+		VolumeID:         ptr.String("vol-1234567890abcdef0"),
 		VolumeType:       &volumeType,
 		State:            &state,
 		Size:             ptr.Int32(8),
@@ -87,7 +87,7 @@ func Test_EC2Volume_Properties_EmptyTags(t *testing.T) {
 
 	properties := ec2Volume.Properties()
 
-	a.Equal("vol-1234567890abcdef0", properties.Get("VolumeId"))
+	a.Equal("vol-1234567890abcdef0", properties.Get("VolumeID"))
 	a.Equal("gp2", properties.Get("VolumeType"))
 	a.Equal("in-use", properties.Get("State"))
 	a.Equal("8", properties.Get("Size"))
@@ -103,7 +103,7 @@ func Test_EC2Volume_Properties_SpecialCharactersInTags(t *testing.T) {
 	state := ec2types.VolumeStateAvailable
 
 	ec2Volume := EC2Volume{
-		VolumeId:         ptr.String("vol-1234567890abcdef0"),
+		VolumeID:         ptr.String("vol-1234567890abcdef0"),
 		VolumeType:       &volumeType,
 		State:            &state,
 		Size:             ptr.Int32(500),
@@ -125,7 +125,7 @@ func Test_EC2Volume_Properties_SpecialCharactersInTags(t *testing.T) {
 
 	properties := ec2Volume.Properties()
 
-	a.Equal("vol-1234567890abcdef0", properties.Get("VolumeId"))
+	a.Equal("vol-1234567890abcdef0", properties.Get("VolumeID"))
 	a.Equal("io1", properties.Get("VolumeType"))
 	a.Equal("available", properties.Get("State"))
 	a.Equal("500", properties.Get("Size"))
