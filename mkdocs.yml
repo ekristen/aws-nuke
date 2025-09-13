@@ -167,6 +167,7 @@ nav:
     - App Stream Stack Fleet Attachment: resources/app-stream-stack-fleet-attachment.md
     - App Stream Stack: resources/app-stream-stack.md
     - App Sync Api Association: resources/app-sync-api-association.md
+    - App Sync Api: resources/app-sync-api.md
     - App Sync Domain Name: resources/app-sync-domain-name.md
     - App Sync Graphql Api: resources/app-sync-graphql-api.md
     - Application Auto Scaling Scalable Target: resources/application-auto-scaling-scalable-target.md
@@ -184,12 +185,10 @@ nav:
     - Batch Compute Environment: resources/batch-compute-environment.md
     - Batch Job Queue State: resources/batch-job-queue-state.md
     - Batch Job Queue: resources/batch-job-queue.md
-    - Bedrock Agent Alias: resources/bedrock-agent-alias.md
     - Bedrock Agent: resources/bedrock-agent.md
     - Bedrock Custom Model: resources/bedrock-custom-model.md
     - Bedrock Data Source: resources/bedrock-data-source.md
     - Bedrock Evaluation Job: resources/bedrock-evaluation-job.md
-    - Bedrock Flow Alias: resources/bedrock-flow-alias.md
     - Bedrock Guardrail: resources/bedrock-guardrail.md
     - Bedrock Knowledge Base: resources/bedrock-knowledge-base.md
     - Bedrock Model Customization Job: resources/bedrock-model-customization-job.md
