@@ -132,6 +132,7 @@ nav:
     - Access Analyzer Archive Rule: resources/access-analyzer-archive-rule.md
     - Access Analyzer: resources/access-analyzer.md
     - Amg Workspace: resources/amg-workspace.md
+    - Amp Scraper: resources/amp-scraper.md
     - Amp Workspace: resources/amp-workspace.md
     - Amplify App: resources/amplify-app.md
     - Api Gateway Api Key: resources/api-gateway-api-key.md
