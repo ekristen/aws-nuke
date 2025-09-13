@@ -618,6 +618,8 @@ nav:
     - Ses Receipt Rule Set: resources/ses-receipt-rule-set.md
     - Ses Template: resources/ses-template.md
     - Sfn State Machine: resources/sfn-state-machine.md
+    - Shield Protection Group: resources/shield-protection-group.md
+    - Shield Protection: resources/shield-protection.md
     - Signer Signing Job: resources/signer-signing-job.md
     - Simple Db Domain: resources/simple-db-domain.md
     - Storage Gateway File Share: resources/storage-gateway-file-share.md
