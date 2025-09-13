@@ -4,7 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
@@ -24,51 +25,79 @@ func init() {
 	})
 }
 
-type EC2Volume struct {
-	svc    *ec2.EC2
-	volume *ec2.Volume
-}
-
 type EC2VolumeLister struct{}
 
-func (l *EC2VolumeLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *EC2VolumeLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 
-	svc := ec2.New(opts.Session)
+	svc := ec2.NewFromConfig(*opts.Config)
 
-	resp, err := svc.DescribeVolumes(nil)
-	if err != nil {
-		return nil, err
-	}
-
+	params := &ec2.DescribeVolumesInput{}
 	resources := make([]resource.Resource, 0)
-	for _, out := range resp.Volumes {
-		resources = append(resources, &EC2Volume{
-			svc:    svc,
-			volume: out,
-		})
+
+	for {
+		resp, err := svc.DescribeVolumes(ctx, params)
+		if err != nil {
+			return nil, err
+		}
+
+		for i := range resp.Volumes {
+			volume := &resp.Volumes[i]
+			resources = append(resources, &EC2Volume{
+				svc:                svc,
+				VolumeID:           volume.VolumeId,
+				VolumeType:         &volume.VolumeType,
+				State:              &volume.State,
+				Size:               volume.Size,
+				AvailabilityZone:   volume.AvailabilityZone,
+				CreateTime:         volume.CreateTime,
+				Encrypted:          volume.Encrypted,
+				KmsKeyID:           volume.KmsKeyId,
+				Iops:               volume.Iops,
+				Throughput:         volume.Throughput,
+				MultiAttachEnabled: volume.MultiAttachEnabled,
+				Tags:               &volume.Tags,
+			})
+		}
+
+		if resp.NextToken == nil {
+			break
+		}
+		params.NextToken = resp.NextToken
 	}
 
 	return resources, nil
 }
 
-func (e *EC2Volume) Remove(_ context.Context) error {
-	_, err := e.svc.DeleteVolume(&ec2.DeleteVolumeInput{
-		VolumeId: e.volume.VolumeId,
-	})
+type EC2Volume struct {
+	svc                *ec2.Client
+	VolumeID           *string               `description:"The ID of the EBS volume"`
+	VolumeType         *ec2types.VolumeType  `description:"The volume type (gp2, gp3, io1, io2, st1, sc1, standard)"`
+	State              *ec2types.VolumeState `description:"The state of the volume (creating, available, in-use, deleting, deleted, error)"`
+	Size               *int32                `description:"The size of the volume in GiB"`
+	AvailabilityZone   *string               `description:"The Availability Zone in which the volume was created"`
+	CreateTime         *time.Time            `description:"The time stamp when volume creation was initiated"`
+	Encrypted          *bool                 `description:"Indicates whether the volume is encrypted"`
+	KmsKeyID           *string               `description:"The Amazon Resource Name (ARN) of the AWS KMS key used for encryption"`
+	Iops               *int32                `description:"The number of I/O operations per second (IOPS)"`
+	Throughput         *int32                `description:"The throughput that the volume supports in MiB/s"`
+	MultiAttachEnabled *bool                 `description:"Indicates whether Amazon EBS Multi-Attach is enabled"`
+	Tags               *[]ec2types.Tag       `description:"The tags associated with the EBS volume"`
+}
+
+func (r *EC2Volume) Remove(ctx context.Context) error {
+	params := &ec2.DeleteVolumeInput{
+		VolumeId: r.VolumeID,
+	}
+
+	_, err := r.svc.DeleteVolume(ctx, params)
 	return err
 }
 
-func (e *EC2Volume) Properties() types.Properties {
-	properties := types.NewProperties()
-	properties.Set("State", e.volume.State)
-	properties.Set("CreateTime", e.volume.CreateTime.Format(time.RFC3339))
-	for _, tagValue := range e.volume.Tags {
-		properties.SetTag(tagValue.Key, tagValue.Value)
-	}
-	return properties
+func (r *EC2Volume) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
 
-func (e *EC2Volume) String() string {
-	return *e.volume.VolumeId
+func (r *EC2Volume) String() string {
+	return *r.VolumeID
 }
