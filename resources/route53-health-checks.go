@@ -42,9 +42,18 @@ func (l *Route53HealthCheckLister) List(_ context.Context, o interface{}) ([]res
 		}
 
 		for _, check := range resp.HealthChecks {
+			tags, err := svc.ListTagsForResource(&route53.ListTagsForResourceInput{
+				ResourceId:   check.Id,
+				ResourceType: aws.String("healthcheck"),
+			})
+			if err != nil {
+				return nil, err
+			}
+
 			resources = append(resources, &Route53HealthCheck{
-				svc: svc,
-				id:  check.Id,
+				svc:  svc,
+				ID:   check.Id,
+				Tags: tags.ResourceTagSet.Tags,
 			})
 		}
 
@@ -59,13 +68,14 @@ func (l *Route53HealthCheckLister) List(_ context.Context, o interface{}) ([]res
 }
 
 type Route53HealthCheck struct {
-	svc *route53.Route53
-	id  *string
+	svc  *route53.Route53
+	ID   *string
+	Tags []*route53.Tag
 }
 
 func (hz *Route53HealthCheck) Remove(_ context.Context) error {
 	params := &route53.DeleteHealthCheckInput{
-		HealthCheckId: hz.id,
+		HealthCheckId: hz.ID,
 	}
 
 	_, err := hz.svc.DeleteHealthCheck(params)
@@ -77,10 +87,9 @@ func (hz *Route53HealthCheck) Remove(_ context.Context) error {
 }
 
 func (hz *Route53HealthCheck) Properties() types.Properties {
-	return types.NewProperties().
-		Set("ID", hz.id)
+	return types.NewPropertiesFromStruct(hz)
 }
 
 func (hz *Route53HealthCheck) String() string {
-	return ptr.ToString(hz.id)
+	return ptr.ToString(hz.ID)
 }

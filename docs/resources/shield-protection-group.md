@@ -2,21 +2,24 @@
 generated: true
 ---
 
-# AMPWorkspace
+# ShieldProtectionGroup
 
 
 ## Resource
 
 ```text
-AMPWorkspace
+ShieldProtectionGroup
 ```
 
 ## Properties
 
 
-- `WorkspaceARN`: The ARN of the AMP Workspace
-- `WorkspaceAlias`: The alias of the AMP Workspace
-- `WorkspaceId`: The ID of the AMP Workspace
+- `Aggregation`: The aggregation type for the protection group
+- `Members`: The list of resource ARNs that are members of the protection group
+- `Pattern`: The pattern for the protection group
+- `ProtectionGroupArn`: The ARN of the Shield protection group
+- `ProtectionGroupId`: The unique identifier of the Shield protection group
+- `ResourceType`: The resource type for the protection group
 - `tag:<key>:`: This resource has tags with property `Tags`. These are key/value pairs that are
 	added as their own property with the prefix of `tag:` (e.g. [tag:example: "value"]) 
 

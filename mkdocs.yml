@@ -132,6 +132,7 @@ nav:
     - Access Analyzer Archive Rule: resources/access-analyzer-archive-rule.md
     - Access Analyzer: resources/access-analyzer.md
     - Amg Workspace: resources/amg-workspace.md
+    - Amp Scraper: resources/amp-scraper.md
     - Amp Workspace: resources/amp-workspace.md
     - Amplify App: resources/amplify-app.md
     - Api Gateway Api Key: resources/api-gateway-api-key.md
@@ -166,6 +167,7 @@ nav:
     - App Stream Stack Fleet Attachment: resources/app-stream-stack-fleet-attachment.md
     - App Stream Stack: resources/app-stream-stack.md
     - App Sync Api Association: resources/app-sync-api-association.md
+    - App Sync Api: resources/app-sync-api.md
     - App Sync Domain Name: resources/app-sync-domain-name.md
     - App Sync Graphql Api: resources/app-sync-graphql-api.md
     - Application Auto Scaling Scalable Target: resources/application-auto-scaling-scalable-target.md
@@ -507,6 +509,10 @@ nav:
     - Neptune Graph: resources/neptune-graph.md
     - Neptune Instance: resources/neptune-instance.md
     - Neptune Snapshot: resources/neptune-snapshot.md
+    - Network Firewall Logging Configuration: resources/network-firewall-logging-configuration.md
+    - Network Firewall Policy: resources/network-firewall-policy.md
+    - Network Firewall Rule Group: resources/network-firewall-rule-group.md
+    - Network Firewall: resources/network-firewall.md
     - Network Manager Connect Peer: resources/network-manager-connect-peer.md
     - Network Manager Core Network: resources/network-manager-core-network.md
     - Network Manager Global Network: resources/network-manager-global-network.md
@@ -616,6 +622,8 @@ nav:
     - Ses Receipt Rule Set: resources/ses-receipt-rule-set.md
     - Ses Template: resources/ses-template.md
     - Sfn State Machine: resources/sfn-state-machine.md
+    - Shield Protection Group: resources/shield-protection-group.md
+    - Shield Protection: resources/shield-protection.md
     - Signer Signing Job: resources/signer-signing-job.md
     - Simple Db Domain: resources/simple-db-domain.md
     - Storage Gateway File Share: resources/storage-gateway-file-share.md

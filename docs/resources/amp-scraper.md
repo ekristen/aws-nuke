@@ -2,21 +2,20 @@
 generated: true
 ---
 
-# AMPWorkspace
+# AMPScraper
 
 
 ## Resource
 
 ```text
-AMPWorkspace
+AMPScraper
 ```
 
 ## Properties
 
 
-- `WorkspaceARN`: The ARN of the AMP Workspace
-- `WorkspaceAlias`: The alias of the AMP Workspace
-- `WorkspaceId`: The ID of the AMP Workspace
+- `Alias`: The alias of the AMP Scraper
+- `ScraperID`: The ID of the AMP Scraper
 - `tag:<key>:`: This resource has tags with property `Tags`. These are key/value pairs that are
 	added as their own property with the prefix of `tag:` (e.g. [tag:example: "value"]) 
 
