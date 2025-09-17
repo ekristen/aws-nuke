@@ -39,5 +39,7 @@ func Test_ECSService_String(t *testing.T) {
 		ClusterARN: ptr.String("arn:aws:ecs:us-east-1:123456789012:cluster/my-cluster"),
 	}
 
-	assert.Equal(t, "arn:aws:ecs:us-east-1:123456789012:service/my-cluster/my-service -> arn:aws:ecs:us-east-1:123456789012:cluster/my-cluster", r.String())
+	expected := "arn:aws:ecs:us-east-1:123456789012:service/my-cluster/my-service -> " +
+		"arn:aws:ecs:us-east-1:123456789012:cluster/my-cluster"
+	assert.Equal(t, expected, r.String())
 }

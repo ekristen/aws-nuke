@@ -103,9 +103,9 @@ func (l *ECSServiceLister) List(_ context.Context, o interface{}) ([]resource.Re
 
 type ECSService struct {
 	svc        *ecs.ECS
-	ServiceARN *string     `description:"The ARN of the ECS service"`
-	ClusterARN *string     `description:"The ARN of the ECS cluster"`
-	Tags       []*ecs.Tag  `description:"The tags associated with the service"`
+	ServiceARN *string    `description:"The ARN of the ECS service"`
+	ClusterARN *string    `description:"The ARN of the ECS cluster"`
+	Tags       []*ecs.Tag `description:"The tags associated with the service"`
 }
 
 func (f *ECSService) Properties() types.Properties {

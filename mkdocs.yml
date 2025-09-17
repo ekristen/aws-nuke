@@ -495,8 +495,12 @@ nav:
     - Memory Db Subnet Group: resources/memory-db-subnet-group.md
     - Memory Db User: resources/memory-db-user.md
     - Memory Dbacl: resources/memory-dbacl.md
+    - Mgn Application: resources/mgn-application.md
     - Mgn Job: resources/mgn-job.md
+    - Mgn Launch Configuration Template: resources/mgn-launch-configuration-template.md
+    - Mgn Replication Configuration Template: resources/mgn-replication-configuration-template.md
     - Mgn Source Server: resources/mgn-source-server.md
+    - Mgn Wave: resources/mgn-wave.md
     - Mobile Project: resources/mobile-project.md
     - Mq Broker: resources/mq-broker.md
     - Msk Cluster: resources/msk-cluster.md
