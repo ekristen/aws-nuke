@@ -2,27 +2,21 @@
 generated: true
 ---
 
-# MGNWave
+# BedrockFlowAlias
 
 
 ## Resource
 
 ```text
-MGNWave
+BedrockFlowAlias
 ```
 
 ## Properties
 
 
-- `Arn`: The ARN of the wave
-- `CreationDateTime`: The date and time the wave was created
-- `Description`: The description of the wave
-- `IsArchived`: Whether the wave is archived
-- `LastModifiedDateTime`: The date and time the wave was last modified
-- `Name`: The name of the wave
-- `WaveID`: The unique identifier of the wave
-- `tag:<key>:`: This resource has tags with property `Tags`. These are key/value pairs that are
-	added as their own property with the prefix of `tag:` (e.g. [tag:example: "value"]) 
+- `FlowAliasID`: No Description
+- `FlowAliasName`: No Description
+- `FlowID`: No Description
 
 !!! note - Using Properties
     Properties are what [Filters](../config-filtering.md) are written against in your configuration. You use the property
