@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	libsettings "github.com/ekristen/libnuke/pkg/settings"
 	"github.com/golang/mock/gomock"
 	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/assert"
@@ -68,6 +69,7 @@ func Test_Mock_IAMUser_Remove(t *testing.T) {
 		svc:                   mockIAM,
 		Name:                  ptr.String("foobar"),
 		HasPermissionBoundary: true,
+		settings:              &libsettings.Setting{},
 	}
 
 	err := iamUser.Remove(context.TODO())

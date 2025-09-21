@@ -4,7 +4,6 @@ generated: true
 
 # MGNJob
 
-AWS Application Migration Service (MGN) Job represents a migration job that has been initiated within AWS MGN. Jobs can be of different types such as LAUNCH, TERMINATE, and others, and track the progress of migration operations.
 
 ## Resource
 
@@ -14,16 +13,26 @@ MGNJob
 
 ## Properties
 
-- `JobID` - The unique identifier of the job
-- `Arn` - The ARN of the job
-- `Type` - The type of job (LAUNCH, TERMINATE, etc.)
-- `Status` - The status of the job
-- `InitiatedBy` - Who initiated the job
-- `CreationDateTime` - The date and time the job was created
-- `EndDateTime` - The date and time the job ended
-- `Tags` - The tags associated with the job
 
-## Deletion Process
+- `Arn`: The ARN of the job
+- `CreationDateTime`: The date and time the job was created
+- `EndDateTime`: The date and time the job ended
+- `InitiatedBy`: Who initiated the job
+- `JobID`: The unique identifier of the job
+- `Status`: The status of the job
+- `Type`: The type of job (LAUNCH, TERMINATE, etc.)
+- `tag:<key>:`: This resource has tags with property `Tags`. These are key/value pairs that are
+	added as their own property with the prefix of `tag:` (e.g. [tag:example: "value"]) 
 
-MGN Jobs are deleted directly using the `DeleteJob` API call. This removes the job record from AWS MGN.
+!!! note - Using Properties
+    Properties are what [Filters](../config-filtering.md) are written against in your configuration. You use the property
+    names to write filters for what you want to **keep** and omit from the nuke process.
+
+### String Property
+
+The string representation of a resource is generally the value of the Name, ID or ARN field of the resource. Not all
+resources support properties. To write a filter against the string representation, simply omit the `property` field in
+the filter.
+
+The string value is always what is used in the output of the log format when a resource is identified.
 
