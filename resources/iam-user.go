@@ -57,7 +57,7 @@ type IAMUser struct {
 }
 
 func (r *IAMUser) Remove(_ context.Context) error {
-	if r.HasPermissionBoundary && r.settings.GetBool("IgnorePermissionBoundary") == false {
+	if r.HasPermissionBoundary && !r.settings.GetBool("IgnorePermissionBoundary") {
 		fmt.Println("Removing permission boundary for user", *r.Name)
 		_, err := r.svc.DeleteUserPermissionsBoundary(&iam.DeleteUserPermissionsBoundaryInput{
 			UserName: r.Name,
