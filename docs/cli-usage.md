@@ -34,24 +34,37 @@ NAME:
    aws-nuke run - run nuke against an aws account and remove everything from it
 
 USAGE:
-   aws-nuke run [command options] [arguments...]
+   aws-nuke run [command [command options]]
 
 OPTIONS:
-   --config value                                                       path to config file (default: "config.yaml")
-   --include value, --target value [ --include value, --target value ]  only run against these resource types
-   --exclude value [ --exclude value ]                                  exclude these resource types
-   --cloud-control value [ --cloud-control value ]                      use these resource types with the Cloud Control API instead of the default
-   --quiet                                                              hide filtered messages (default: false)
-   --no-dry-run                                                         actually run the removal of the resources after discovery (default: false)
-   --no-alias-check                                                     disable aws account alias check - requires entry in config as well (default: false)
-   --no-prompt, --force                                                 disable prompting for verification to run (default: false)
-   --prompt-delay value, --force-sleep value                            seconds to delay after prompt before running (minimum: 3 seconds) (default: 10)
-   --feature-flag value [ --feature-flag value ]                        enable experimental behaviors that may not be fully tested or supported
-   --log-level value, -l value                                          Log Level (default: "info") [$LOGLEVEL]
-   --log-caller                                                         log the caller (aka line number and file) (default: false)
-   --log-disable-color                                                  disable log coloring (default: false)
-   --log-full-timestamp                                                 force log output to always show full timestamp (default: false)
-   --help, -h                                                           show help  
+   --config string, -c string                                                                   path to config file (default: "config.yaml")
+   --include string, --target string [ --include string, --target string ]                      only run against these resource types
+   --exclude string, --exclude-resource string [ --exclude string, --exclude-resource string ]  exclude these resource types
+   --cloud-control string [ --cloud-control string ]                                            use these resource types with the Cloud Control API instead of the default
+   --quiet, -q                                                                                  hide filtered messages (default: false)
+   --no-dry-run                                                                                 actually run the removal of the resources after discovery (default: false)
+   --no-prompt, --force                                                                         disable prompting for verification to run (default: false)
+   --prompt-delay int, --force-sleep int                                                        seconds to delay after prompt before running (minimum: 3 seconds) (default: 10)
+   --max-wait-retries int                                                                       maximum number of retries to wait for dependencies to be removed (default: 0)
+   --run-sleep-delay duration                                                                   time to sleep between run/loops of resource deletions, default is 5 seconds (default: 5s) [$AWS_NUKE_RUN_SLEEP_DELAY]
+   --no-alias-check                                                                             disable aws account alias check - requires entry in config as well (default: false)
+   --feature-flag string [ --feature-flag string ]                                              enable experimental behaviors that may not be fully tested or supported
+   --default-region string                                                                      the default aws region to use when setting up the aws auth session [$AWS_DEFAULT_REGION]
+   --access-key-id string                                                                       the aws access key id to use when setting up the aws auth session [$AWS_ACCESS_KEY_ID]
+   --secret-access-key string                                                                   the aws secret access key to use when setting up the aws auth session [$AWS_SECRET_ACCESS_KEY]
+   --session-token string                                                                       the aws session token to use when setting up the aws auth session, typically used for temporary credentials [$AWS_SESSION_TOKEN]
+   --profile string                                                                             the aws profile to use when setting up the aws auth session, typically used for shared credentials files [$AWS_PROFILE]
+   --assume-role-arn string                                                                     the role arn to assume using the credentials provided in the profile or statically set [$AWS_ASSUME_ROLE_ARN]
+   --assume-role-session-name string                                                            the session name to provide for the assumed role [$AWS_ASSUME_ROLE_SESSION_NAME]
+   --assume-role-external-id string                                                             the external id to provide for the assumed role [$AWS_ASSUME_ROLE_EXTERNAL_ID]
+   --log-level string, -l string                                                                Log Level (default: "info") [$LOGLEVEL, $AWS_NUKE_LOG_LEVEL]
+   --log-caller                                                                                 log the caller (aka line number and file) (default: false) [$AWS_NUKE_LOG_CALLER]
+   --log-disable-colors, --log-disable-color                                                    disable log coloring (default: false) [$AWS_NUKE_LOG_DISABLE_COLORS]
+   --log-force-colors                                                                           force enable log output to always show colors (default: false) [$AWS_NUKE_LOG_FORCE_COLORS]
+   --log-full-timestamp                                                                         force log output to always show full timestamp (default: false)
+   --log-format string                                                                          log format (default: "standard") [$AWS_NUKE_LOG_FORMAT]
+   --json                                                                                       output as json, shorthand for --log-format=json (default: false) [$AWS_NUKE_LOG_FORMAT_JSON]
+   --help, -h                                                                                   show help
 ```
 
 ## aws-nuke explain-account

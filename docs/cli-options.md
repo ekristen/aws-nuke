@@ -21,3 +21,4 @@ This is not a comprehensive list of options, but rather a list of features that 
 - `--log-caller` will log the caller (aka line number and file). This is useful if you are debugging.
 - `--log-disable-color` will disable log coloring. This is useful if you are running in an environment that does not support color.
 - `--log-full-timestamp` will force log output to always show full timestamp. This is useful if you want to see the full timestamp in the logs.
+- `--log-format=json` (or `--json`) will output logs as JSON. This is useful for parsing output and generating reports.
