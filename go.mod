@@ -5,7 +5,7 @@ go 1.24
 toolchain go1.24.5
 
 require (
-	github.com/aws/aws-sdk-go v1.55.7
+	github.com/aws/aws-sdk-go v1.55.8
 	github.com/aws/aws-sdk-go-v2 v1.39.2
 	github.com/aws/aws-sdk-go-v2/config v1.28.11
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.68
@@ -19,6 +19,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.239.0
 	github.com/aws/aws-sdk-go-v2/service/ecs v1.54.6
 	github.com/aws/aws-sdk-go-v2/service/efs v1.35.4
+	github.com/aws/aws-sdk-go-v2/service/eks v1.74.2
 	github.com/aws/aws-sdk-go-v2/service/iam v1.38.10
 	github.com/aws/aws-sdk-go-v2/service/mgn v1.37.1
 	github.com/aws/aws-sdk-go-v2/service/neptunegraph v1.17.3
@@ -53,7 +54,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.7.9 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.8.1 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/v4a v1.3.27 // indirect
-	github.com/aws/aws-sdk-go-v2/service/eks v1.74.2 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.13.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.4.8 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.13.1 // indirect
