@@ -3,8 +3,8 @@ package resources
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go/aws/endpoints"
-	"github.com/aws/aws-sdk-go/service/lightsail"
+	"github.com/aws/aws-sdk-go/aws/endpoints"     //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/service/lightsail" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"

@@ -11,11 +11,11 @@ import (
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/kms"
-	"github.com/aws/aws-sdk-go/service/sts"
+	"github.com/aws/aws-sdk-go/aws"         //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/aws/awserr"  //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/aws/session" //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/service/kms" //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/service/sts" //nolint:staticcheck
 )
 
 func Test_KMSKey_Remove(t *testing.T) {
@@ -32,14 +32,14 @@ func Test_KMSKey_Remove(t *testing.T) {
 	createInput := &kms.CreateKeyInput{
 		Policy: aws.String(fmt.Sprintf(`{
 			"Version": "2012-10-17",
-			"Statement": [	
-				{	
-					"Effect": "Allow",	
-					"Principal": {	
-						"AWS": "arn:aws:iam::%s:root"	
-					},	
-					"Action": "kms:*",	
-					"Resource": "*"	
+			"Statement": [
+				{
+					"Effect": "Allow",
+					"Principal": {
+						"AWS": "arn:aws:iam::%s:root"
+					},
+					"Action": "kms:*",
+					"Resource": "*"
 				}
 			]
 		}`, *ident.Account)),

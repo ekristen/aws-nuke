@@ -7,9 +7,9 @@ package mock_dynamodbiface
 import (
 	reflect "reflect"
 
-	aws "github.com/aws/aws-sdk-go/aws"
-	request "github.com/aws/aws-sdk-go/aws/request"
-	dynamodb "github.com/aws/aws-sdk-go/service/dynamodb"
+	aws "github.com/aws/aws-sdk-go/aws" //nolint:staticcheck
+	request "github.com/aws/aws-sdk-go/aws/request" //nolint:staticcheck
+	dynamodb "github.com/aws/aws-sdk-go/service/dynamodb" //nolint:staticcheck
 	gomock "github.com/golang/mock/gomock"
 )
 

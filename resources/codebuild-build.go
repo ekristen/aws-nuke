@@ -3,7 +3,7 @@ package resources
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go/service/codebuild"
+	"github.com/aws/aws-sdk-go/service/codebuild" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"

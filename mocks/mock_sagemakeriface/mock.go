@@ -7,9 +7,9 @@ package mock_sagemakeriface
 import (
 	reflect "reflect"
 
-	aws "github.com/aws/aws-sdk-go/aws"
-	request "github.com/aws/aws-sdk-go/aws/request"
-	sagemaker "github.com/aws/aws-sdk-go/service/sagemaker"
+	aws "github.com/aws/aws-sdk-go/aws" //nolint:staticcheck
+	request "github.com/aws/aws-sdk-go/aws/request" //nolint:staticcheck
+	sagemaker "github.com/aws/aws-sdk-go/service/sagemaker" //nolint:staticcheck
 	gomock "github.com/golang/mock/gomock"
 )
 

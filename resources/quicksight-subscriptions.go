@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/service/quicksight"
+	"github.com/aws/aws-sdk-go/service/quicksight" //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/quicksight/quicksightiface"
 
 	"github.com/ekristen/libnuke/pkg/registry"

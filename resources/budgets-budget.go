@@ -7,8 +7,9 @@ import (
 	"github.com/gotidy/ptr"
 	"github.com/sirupsen/logrus"
 
-	"github.com/aws/aws-sdk-go/service/budgets"
+	"github.com/aws/aws-sdk-go/service/budgets" //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/budgets/budgetsiface"
+
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"

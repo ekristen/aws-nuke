@@ -3,11 +3,13 @@ package resources
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go/service/rds"
-	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
+	"github.com/aws/aws-sdk-go/service/rds" //nolint:staticcheck
+
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
+
+	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
 const RDSProxyResource = "RDSProxy"

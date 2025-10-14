@@ -10,7 +10,7 @@ import (
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
-	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/service/dynamodb" //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"

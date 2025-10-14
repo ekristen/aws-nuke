@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/service/codepipeline"
+	"github.com/aws/aws-sdk-go/service/codepipeline" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
+	"github.com/ekristen/aws-nuke/v3/pkg/awsutil"
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
@@ -70,7 +71,7 @@ type CodePipelineCustomActionType struct {
 }
 
 func (r *CodePipelineCustomActionType) Filter() error {
-	if !strings.HasPrefix(*r.Owner, "Custom") {
+	if !strings.HasPrefix(*r.Owner, awsutil.Custom) {
 		return fmt.Errorf("cannot delete default codepipeline custom action type")
 	}
 	return nil

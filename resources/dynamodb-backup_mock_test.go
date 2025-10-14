@@ -9,7 +9,7 @@ import (
 	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/service/dynamodb" //nolint:staticcheck
 
 	"github.com/ekristen/aws-nuke/v3/mocks/mock_dynamodbiface"
 )

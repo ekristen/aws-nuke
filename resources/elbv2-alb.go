@@ -5,9 +5,9 @@ import (
 	"errors"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/elbv2"
+	"github.com/aws/aws-sdk-go/aws"           //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/aws/awserr"    //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/service/elbv2" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"

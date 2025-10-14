@@ -3,7 +3,7 @@ package resources
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go/service/datapipeline"
+	"github.com/aws/aws-sdk-go/service/datapipeline" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"

@@ -9,7 +9,7 @@ import (
 	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/aws/aws-sdk-go/service/sagemaker"
+	"github.com/aws/aws-sdk-go/service/sagemaker" //nolint:staticcheck
 
 	"github.com/ekristen/aws-nuke/v3/mocks/mock_sagemakeriface"
 )

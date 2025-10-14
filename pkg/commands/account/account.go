@@ -7,7 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v3"
 
-	"github.com/aws/aws-sdk-go/aws/endpoints"
+	"github.com/aws/aws-sdk-go/aws/endpoints" //nolint:staticcheck
 
 	libconfig "github.com/ekristen/libnuke/pkg/config"
 	"github.com/ekristen/libnuke/pkg/registry"

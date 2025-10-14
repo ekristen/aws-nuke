@@ -7,9 +7,9 @@ package mock_stsiface
 import (
 	reflect "reflect"
 
-	aws "github.com/aws/aws-sdk-go/aws"
-	request "github.com/aws/aws-sdk-go/aws/request"
-	sts "github.com/aws/aws-sdk-go/service/sts"
+	aws "github.com/aws/aws-sdk-go/aws" //nolint:staticcheck
+	request "github.com/aws/aws-sdk-go/aws/request" //nolint:staticcheck
+	sts "github.com/aws/aws-sdk-go/service/sts" //nolint:staticcheck
 	gomock "github.com/golang/mock/gomock"
 )
 

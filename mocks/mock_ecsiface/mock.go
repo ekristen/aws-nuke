@@ -7,9 +7,9 @@ package mock_ecsiface
 import (
 	reflect "reflect"
 
-	aws "github.com/aws/aws-sdk-go/aws"
-	request "github.com/aws/aws-sdk-go/aws/request"
-	ecs "github.com/aws/aws-sdk-go/service/ecs"
+	aws "github.com/aws/aws-sdk-go/aws" //nolint:staticcheck
+	request "github.com/aws/aws-sdk-go/aws/request" //nolint:staticcheck
+	ecs "github.com/aws/aws-sdk-go/service/ecs" //nolint:staticcheck
 	gomock "github.com/golang/mock/gomock"
 )
 

@@ -6,7 +6,7 @@ import (
 	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/aws/aws-sdk-go/service/ecs"
+	"github.com/aws/aws-sdk-go/service/ecs" //nolint:staticcheck
 )
 
 func Test_ECSService_Properties(t *testing.T) {

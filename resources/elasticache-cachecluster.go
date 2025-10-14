@@ -6,7 +6,7 @@ import (
 	"github.com/gotidy/ptr"
 	"github.com/sirupsen/logrus"
 
-	"github.com/aws/aws-sdk-go/service/elasticache"
+	"github.com/aws/aws-sdk-go/service/elasticache" //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/elasticache/elasticacheiface"
 
 	"github.com/ekristen/libnuke/pkg/registry"

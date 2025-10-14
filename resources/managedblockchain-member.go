@@ -6,9 +6,8 @@ import (
 
 	"github.com/gotidy/ptr"
 
-	"github.com/aws/aws-sdk-go/aws/awserr"
-
-	"github.com/aws/aws-sdk-go/service/managedblockchain"
+	"github.com/aws/aws-sdk-go/aws/awserr"                //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/service/managedblockchain" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"

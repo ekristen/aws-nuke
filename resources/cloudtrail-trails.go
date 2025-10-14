@@ -3,8 +3,9 @@ package resources
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go/service/cloudtrail"
 	"github.com/sirupsen/logrus"
+
+	"github.com/aws/aws-sdk-go/service/cloudtrail" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"

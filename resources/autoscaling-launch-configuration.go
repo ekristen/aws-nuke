@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/aws/aws-sdk-go/service/autoscaling" //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
 
 	"github.com/ekristen/libnuke/pkg/registry"

@@ -8,8 +8,8 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/quicksight"
+	"github.com/aws/aws-sdk-go/aws"                //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/service/quicksight" //nolint:staticcheck
 
 	libsettings "github.com/ekristen/libnuke/pkg/settings"
 

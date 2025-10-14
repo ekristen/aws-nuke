@@ -7,9 +7,9 @@ package mock_glueiface
 import (
 	reflect "reflect"
 
-	aws "github.com/aws/aws-sdk-go/aws"
-	request "github.com/aws/aws-sdk-go/aws/request"
-	glue "github.com/aws/aws-sdk-go/service/glue"
+	aws "github.com/aws/aws-sdk-go/aws" //nolint:staticcheck
+	request "github.com/aws/aws-sdk-go/aws/request" //nolint:staticcheck
+	glue "github.com/aws/aws-sdk-go/service/glue" //nolint:staticcheck
 	gomock "github.com/golang/mock/gomock"
 )
 

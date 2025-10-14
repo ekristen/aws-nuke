@@ -3,11 +3,10 @@ package resources
 import (
 	"context"
 
+	"github.com/gotidy/ptr"
 	"github.com/sirupsen/logrus"
 
-	"github.com/gotidy/ptr"
-
-	"github.com/aws/aws-sdk-go/service/sqs"
+	"github.com/aws/aws-sdk-go/service/sqs" //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
 
 	"github.com/ekristen/libnuke/pkg/registry"

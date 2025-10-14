@@ -3,9 +3,9 @@ package resources
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/waf"
-	"github.com/aws/aws-sdk-go/service/wafregional"
+	"github.com/aws/aws-sdk-go/aws"                 //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/service/waf"         //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/service/wafregional" //nolint:staticcheck
 	"go.uber.org/ratelimit"
 
 	"github.com/ekristen/libnuke/pkg/registry"

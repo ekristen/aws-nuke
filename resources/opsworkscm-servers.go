@@ -5,7 +5,7 @@ import (
 
 	"github.com/gotidy/ptr"
 
-	"github.com/aws/aws-sdk-go/service/opsworkscm"
+	"github.com/aws/aws-sdk-go/service/opsworkscm" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"

@@ -5,9 +5,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/endpoints"
-	"github.com/aws/aws-sdk-go/service/wafv2"
+	"github.com/aws/aws-sdk-go/aws"           //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/aws/endpoints" //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/service/wafv2" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"

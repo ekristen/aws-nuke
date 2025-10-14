@@ -2,12 +2,11 @@ package resources
 
 import (
 	"context"
-
 	"fmt"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/elasticache"
+	"github.com/aws/aws-sdk-go/aws"                 //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/service/elasticache" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"

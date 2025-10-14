@@ -5,8 +5,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/servicediscovery"
+	"github.com/aws/aws-sdk-go/aws"                      //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/service/servicediscovery" //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/servicediscovery/servicediscoveryiface"
 
 	"github.com/ekristen/libnuke/pkg/registry"

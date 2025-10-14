@@ -8,8 +8,8 @@ import (
 	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/aws/awserr"       //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/service/dynamodb" //nolint:staticcheck
 
 	libsettings "github.com/ekristen/libnuke/pkg/settings"
 

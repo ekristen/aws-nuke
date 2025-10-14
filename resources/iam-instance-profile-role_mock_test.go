@@ -9,8 +9,8 @@ import (
 	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go/aws"         //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/service/iam" //nolint:staticcheck
 
 	"github.com/ekristen/aws-nuke/v3/mocks/mock_iamiface"
 )

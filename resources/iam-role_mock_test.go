@@ -9,8 +9,8 @@ import (
 	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go/aws/awserr"  //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/service/iam" //nolint:staticcheck
 
 	liberrors "github.com/ekristen/libnuke/pkg/errors"
 	libsettings "github.com/ekristen/libnuke/pkg/settings"

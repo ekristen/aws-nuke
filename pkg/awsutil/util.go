@@ -9,7 +9,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/aws/awserr" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/utils"
 )

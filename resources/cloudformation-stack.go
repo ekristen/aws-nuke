@@ -10,9 +10,9 @@ import (
 	"github.com/gotidy/ptr"
 	"github.com/sirupsen/logrus"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/cloudformation"
+	"github.com/aws/aws-sdk-go/aws"                    //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/aws/awserr"             //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/service/cloudformation" //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/cloudformation/cloudformationiface"
 
 	"github.com/aws/aws-sdk-go-v2/service/iam"

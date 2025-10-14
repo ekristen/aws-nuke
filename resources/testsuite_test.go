@@ -3,7 +3,7 @@ package resources
 import (
 	"github.com/gotidy/ptr"
 
-	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/aws/session" //nolint:staticcheck
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )

@@ -5,7 +5,7 @@ import (
 
 	"github.com/gotidy/ptr"
 
-	"github.com/aws/aws-sdk-go/service/glue"
+	"github.com/aws/aws-sdk-go/service/glue" //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/glue/glueiface"
 
 	"github.com/ekristen/libnuke/pkg/registry"

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/aws/aws-sdk-go/service/kms" //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/kms/kmsiface"
 
 	"github.com/ekristen/libnuke/pkg/registry"

@@ -10,8 +10,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/elasticache"
+	"github.com/aws/aws-sdk-go/aws/awserr"          //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/service/elasticache" //nolint:staticcheck
 
 	"github.com/ekristen/aws-nuke/v3/mocks/mock_elasticacheiface"
 	"github.com/ekristen/aws-nuke/v3/pkg/testsuite"

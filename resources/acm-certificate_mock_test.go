@@ -7,7 +7,7 @@ import (
 	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/aws/aws-sdk-go/service/acm"
+	"github.com/aws/aws-sdk-go/service/acm" //nolint:staticcheck
 )
 
 func Test_Mock_ACMCertificate_Properties(t *testing.T) {

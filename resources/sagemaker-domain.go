@@ -7,8 +7,8 @@ import (
 	"github.com/gotidy/ptr"
 	"github.com/sirupsen/logrus"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/sagemaker"
+	"github.com/aws/aws-sdk-go/aws"               //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/service/sagemaker" //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/sagemaker/sagemakeriface"
 
 	"github.com/ekristen/libnuke/pkg/registry"

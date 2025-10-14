@@ -8,9 +8,9 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/service/iam"
-	"github.com/aws/aws-sdk-go/service/sts"
+	"github.com/aws/aws-sdk-go/service/ec2" //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/service/iam" //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/service/sts" //nolint:staticcheck
 
 	"github.com/ekristen/aws-nuke/v3/pkg/config"
 )

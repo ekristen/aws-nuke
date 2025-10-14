@@ -7,7 +7,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/aws/aws-sdk-go/service/cloudformation"
+	"github.com/aws/aws-sdk-go/service/cloudformation" //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/cloudformation/cloudformationiface"
 
 	"github.com/ekristen/libnuke/pkg/registry"

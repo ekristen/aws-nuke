@@ -7,9 +7,9 @@ package mock_route53resolveriface
 import (
 	reflect "reflect"
 
-	aws "github.com/aws/aws-sdk-go/aws"
-	request "github.com/aws/aws-sdk-go/aws/request"
-	route53resolver "github.com/aws/aws-sdk-go/service/route53resolver"
+	aws "github.com/aws/aws-sdk-go/aws" //nolint:staticcheck
+	request "github.com/aws/aws-sdk-go/aws/request" //nolint:staticcheck
+	route53resolver "github.com/aws/aws-sdk-go/service/route53resolver" //nolint:staticcheck
 	gomock "github.com/golang/mock/gomock"
 )
 

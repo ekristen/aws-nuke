@@ -3,8 +3,8 @@ package resources
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/codestarconnections"
+	"github.com/aws/aws-sdk-go/aws"                         //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/service/codestarconnections" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"

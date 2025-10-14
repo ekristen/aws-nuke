@@ -3,12 +3,13 @@ package resources
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go/service/cloudfront"
+	"github.com/aws/aws-sdk-go/service/cloudfront" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
+	"github.com/ekristen/aws-nuke/v3/pkg/awsutil"
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
@@ -45,7 +46,7 @@ func (l *CloudFrontCachePolicyLister) List(_ context.Context, o interface{}) ([]
 		}
 
 		for _, item := range resp.CachePolicyList.Items {
-			if *item.Type == "custom" { //nolint:goconst
+			if *item.Type == awsutil.Custom {
 				resources = append(resources, &CloudFrontCachePolicy{
 					svc:  svc,
 					ID:   item.CachePolicy.Id,

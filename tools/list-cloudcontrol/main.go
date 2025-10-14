@@ -10,10 +10,10 @@ import (
 	"github.com/fatih/color"
 	"github.com/sirupsen/logrus"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/endpoints"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/cloudformation"
+	"github.com/aws/aws-sdk-go/aws"                    //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/aws/endpoints"          //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/aws/session"            //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/service/cloudformation" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/registry"
 )
