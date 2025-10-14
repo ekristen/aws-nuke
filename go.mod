@@ -2,7 +2,7 @@ module github.com/ekristen/aws-nuke/v3
 
 go 1.24.0
 
-toolchain go1.24.5
+toolchain go1.25.3
 
 require (
 	github.com/aws/aws-sdk-go v1.55.8
