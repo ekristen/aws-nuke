@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/qldb"
+	"github.com/aws/aws-sdk-go/aws"          //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/service/qldb" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"

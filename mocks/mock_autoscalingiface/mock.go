@@ -7,9 +7,9 @@ package mock_autoscalingiface
 import (
 	reflect "reflect"
 
-	aws "github.com/aws/aws-sdk-go/aws"
-	request "github.com/aws/aws-sdk-go/aws/request"
-	autoscaling "github.com/aws/aws-sdk-go/service/autoscaling"
+	aws "github.com/aws/aws-sdk-go/aws" //nolint:staticcheck //nolint:staticcheck
+	request "github.com/aws/aws-sdk-go/aws/request" //nolint:staticcheck
+	autoscaling "github.com/aws/aws-sdk-go/service/autoscaling" //nolint:staticcheck
 	gomock "github.com/golang/mock/gomock"
 )
 

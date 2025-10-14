@@ -9,7 +9,7 @@ import (
 	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/aws/aws-sdk-go/service/autoscaling" //nolint:staticcheck
 
 	"github.com/ekristen/aws-nuke/v3/mocks/mock_autoscalingiface"
 )

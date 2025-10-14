@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/endpoints"
-	"github.com/aws/aws-sdk-go/service/ecrpublic"
+	"github.com/aws/aws-sdk-go/aws"               //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/aws/endpoints"     //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/service/ecrpublic" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"

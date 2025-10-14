@@ -13,14 +13,14 @@ import (
 
 	awsv2 "github.com/aws/aws-sdk-go-v2/aws"
 	credentialsv2 "github.com/aws/aws-sdk-go-v2/credentials"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
-	"github.com/aws/aws-sdk-go/aws/endpoints"
-	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/iottwinmaker"
-	"github.com/aws/aws-sdk-go/service/s3control"
+	"github.com/aws/aws-sdk-go/aws"                      //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/aws/credentials"          //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/aws/credentials/stscreds" //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/aws/endpoints"            //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/aws/request"              //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/aws/session"              //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/service/iottwinmaker"     //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/service/s3control"        //nolint:staticcheck
 
 	liberrors "github.com/ekristen/libnuke/pkg/errors"
 

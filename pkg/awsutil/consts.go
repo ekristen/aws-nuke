@@ -3,6 +3,9 @@ package awsutil
 // Default is a generic constant for the word default
 const Default = "default"
 
+// Custom is a generic constant for the word custom
+const Custom = "custom"
+
 // StateDeleted is a generic constant for the word deleted for state
 const StateDeleted = "deleted"
 

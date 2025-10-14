@@ -7,9 +7,9 @@ package mock_gameliftiface
 import (
 	reflect "reflect"
 
-	aws "github.com/aws/aws-sdk-go/aws"
-	request "github.com/aws/aws-sdk-go/aws/request"
-	gamelift "github.com/aws/aws-sdk-go/service/gamelift"
+	aws "github.com/aws/aws-sdk-go/aws" //nolint:staticcheck
+	request "github.com/aws/aws-sdk-go/aws/request" //nolint:staticcheck
+	gamelift "github.com/aws/aws-sdk-go/service/gamelift" //nolint:staticcheck
 	gomock "github.com/golang/mock/gomock"
 )
 

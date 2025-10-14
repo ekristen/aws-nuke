@@ -3,9 +3,10 @@ package resources
 import (
 	"testing"
 
-	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/aws/aws-sdk-go/service/ec2" //nolint:staticcheck
 )
 
 var testEC2NetworkInterface = &ec2.NetworkInterface{

@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/sns"
+	"github.com/aws/aws-sdk-go/aws/awserr"  //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/service/sns" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"

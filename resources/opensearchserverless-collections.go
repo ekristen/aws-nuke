@@ -3,7 +3,7 @@ package resources
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go/service/opensearchserverless"
+	"github.com/aws/aws-sdk-go/service/opensearchserverless" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"

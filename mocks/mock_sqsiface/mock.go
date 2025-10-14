@@ -7,9 +7,9 @@ package mock_sqsiface
 import (
 	reflect "reflect"
 
-	aws "github.com/aws/aws-sdk-go/aws"
-	request "github.com/aws/aws-sdk-go/aws/request"
-	sqs "github.com/aws/aws-sdk-go/service/sqs"
+	aws "github.com/aws/aws-sdk-go/aws" //nolint:staticcheck
+	request "github.com/aws/aws-sdk-go/aws/request" //nolint:staticcheck
+	sqs "github.com/aws/aws-sdk-go/service/sqs" //nolint:staticcheck
 	gomock "github.com/golang/mock/gomock"
 )
 

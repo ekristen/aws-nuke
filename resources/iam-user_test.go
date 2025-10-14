@@ -9,10 +9,10 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go/aws" //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/aws/awserr" //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/aws/session" //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/service/iam" //nolint:staticcheck
 )
 
 func Test_IAMUser_Remove(t *testing.T) {

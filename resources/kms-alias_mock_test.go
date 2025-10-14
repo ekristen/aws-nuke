@@ -8,9 +8,9 @@ import (
 	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/aws/aws-sdk-go/aws"         //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/aws/awserr"  //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/service/kms" //nolint:staticcheck
 
 	"github.com/ekristen/aws-nuke/v3/mocks/mock_kmsiface"
 )

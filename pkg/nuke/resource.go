@@ -4,7 +4,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/aws/session" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/registry"
 )

@@ -4,14 +4,15 @@ import (
 	"context"
 	"errors"
 
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go/aws/awserr"  //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/service/iam" //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
+	"github.com/ekristen/aws-nuke/v3/pkg/awsutil"
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
@@ -74,9 +75,9 @@ func (r *IAMAccountSettingPasswordPolicy) Remove(_ context.Context) error {
 }
 
 func (r *IAMAccountSettingPasswordPolicy) String() string {
-	return "custom"
+	return awsutil.Custom
 }
 
 func (r *IAMAccountSettingPasswordPolicy) Properties() types.Properties {
-	return types.NewProperties().Set("type", "custom")
+	return types.NewProperties().Set("type", awsutil.Custom)
 }

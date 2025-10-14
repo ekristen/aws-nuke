@@ -8,7 +8,7 @@ import (
 	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/aws/aws-sdk-go/service/sqs"
+	"github.com/aws/aws-sdk-go/service/sqs" //nolint:staticcheck
 
 	"github.com/ekristen/aws-nuke/v3/mocks/mock_sqsiface"
 )

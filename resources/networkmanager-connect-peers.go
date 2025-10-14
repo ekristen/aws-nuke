@@ -7,7 +7,7 @@ import (
 
 	"github.com/gotidy/ptr"
 
-	"github.com/aws/aws-sdk-go/service/networkmanager"
+	"github.com/aws/aws-sdk-go/service/networkmanager" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"

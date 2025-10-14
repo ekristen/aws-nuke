@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/gotidy/ptr"
 
-	"github.com/aws/aws-sdk-go/service/scheduler"
+	"github.com/aws/aws-sdk-go/service/scheduler" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"

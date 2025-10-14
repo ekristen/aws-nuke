@@ -2,14 +2,14 @@ package resources
 
 import (
 	"context"
+	"fmt"
 
-	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
+	"github.com/aws/aws-sdk-go/service/backup" //nolint:staticcheck
+
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 
-	"fmt"
-
-	"github.com/aws/aws-sdk-go/service/backup"
+	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
 const AWSBackupVaultAccessPolicyResource = "AWSBackupVaultAccessPolicy"

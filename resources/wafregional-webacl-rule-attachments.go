@@ -5,9 +5,9 @@ import (
 
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/waf"
-	"github.com/aws/aws-sdk-go/service/wafregional"
+	"github.com/aws/aws-sdk-go/aws"                 //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/service/waf"         //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/service/wafregional" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"

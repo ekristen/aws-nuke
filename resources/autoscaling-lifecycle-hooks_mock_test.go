@@ -7,8 +7,8 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/aws/aws-sdk-go/aws"                 //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/service/autoscaling" //nolint:staticcheck
 
 	"github.com/ekristen/aws-nuke/v3/mocks/mock_autoscalingiface"
 )

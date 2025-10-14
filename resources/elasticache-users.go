@@ -6,13 +6,14 @@ import (
 
 	"github.com/gotidy/ptr"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/elasticache"
+	"github.com/aws/aws-sdk-go/aws"                 //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/service/elasticache" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
+	"github.com/ekristen/aws-nuke/v3/pkg/awsutil"
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
@@ -73,7 +74,7 @@ type ElasticacheUser struct {
 }
 
 func (i *ElasticacheUser) Filter() error {
-	if ptr.ToString(i.userID) == "default" {
+	if ptr.ToString(i.userID) == awsutil.Default {
 		return fmt.Errorf("cannot delete default user")
 	}
 	return nil

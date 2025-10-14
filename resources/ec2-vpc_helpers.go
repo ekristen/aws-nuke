@@ -1,7 +1,7 @@
 package resources
 
 import (
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/ec2" //nolint:staticcheck
 	"github.com/aws/smithy-go/ptr"
 )
 

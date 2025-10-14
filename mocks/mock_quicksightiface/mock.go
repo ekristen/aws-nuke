@@ -7,9 +7,9 @@ package mock_quicksightiface
 import (
 	reflect "reflect"
 
-	aws "github.com/aws/aws-sdk-go/aws"
-	request "github.com/aws/aws-sdk-go/aws/request"
-	quicksight "github.com/aws/aws-sdk-go/service/quicksight"
+	aws "github.com/aws/aws-sdk-go/aws" //nolint:staticcheck
+	request "github.com/aws/aws-sdk-go/aws/request" //nolint:staticcheck
+	quicksight "github.com/aws/aws-sdk-go/service/quicksight" //nolint:staticcheck
 	gomock "github.com/golang/mock/gomock"
 )
 

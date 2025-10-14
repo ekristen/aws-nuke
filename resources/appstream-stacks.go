@@ -3,7 +3,7 @@ package resources
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go/service/appstream"
+	"github.com/aws/aws-sdk-go/service/appstream" //nolint:staticcheck
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 	"github.com/ekristen/libnuke/pkg/registry"

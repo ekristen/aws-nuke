@@ -8,8 +8,8 @@ import (
 
 	"github.com/gotidy/ptr"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/secretsmanager"
+	"github.com/aws/aws-sdk-go/aws"                    //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/service/secretsmanager" //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/secretsmanager/secretsmanageriface"
 
 	"github.com/ekristen/libnuke/pkg/registry"

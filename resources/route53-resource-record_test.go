@@ -6,7 +6,7 @@ import (
 	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/aws/aws-sdk-go/service/route53"
+	"github.com/aws/aws-sdk-go/service/route53" //nolint:staticcheck
 )
 
 func TestRoute53ResourceRecordSet_Properties(t *testing.T) {

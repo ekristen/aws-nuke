@@ -7,9 +7,9 @@ package mock_cognitoidentityprovideriface
 import (
 	reflect "reflect"
 
-	aws "github.com/aws/aws-sdk-go/aws"
-	request "github.com/aws/aws-sdk-go/aws/request"
-	cognitoidentityprovider "github.com/aws/aws-sdk-go/service/cognitoidentityprovider"
+	aws "github.com/aws/aws-sdk-go/aws" //nolint:staticcheck
+	request "github.com/aws/aws-sdk-go/aws/request" //nolint:staticcheck
+	cognitoidentityprovider "github.com/aws/aws-sdk-go/service/cognitoidentityprovider" //nolint:staticcheck
 	gomock "github.com/golang/mock/gomock"
 )
 

@@ -2,10 +2,9 @@ package resources
 
 import (
 	"context"
-
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go/service/iam" //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 
 	"github.com/ekristen/libnuke/pkg/registry"

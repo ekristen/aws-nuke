@@ -12,8 +12,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"go.uber.org/ratelimit"
 
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/cloudcontrolapi"
+	"github.com/aws/aws-sdk-go/aws/awserr"              //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/service/cloudcontrolapi" //nolint:staticcheck
 
 	liberrors "github.com/ekristen/libnuke/pkg/errors"
 	"github.com/ekristen/libnuke/pkg/registry"

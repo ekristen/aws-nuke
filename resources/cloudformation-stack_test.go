@@ -10,8 +10,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/cloudformation"
+	"github.com/aws/aws-sdk-go/aws/awserr"             //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/service/cloudformation" //nolint:staticcheck
 
 	libsettings "github.com/ekristen/libnuke/pkg/settings"
 

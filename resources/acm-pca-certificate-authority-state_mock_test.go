@@ -6,7 +6,7 @@ import (
 	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/aws/aws-sdk-go/service/acmpca"
+	"github.com/aws/aws-sdk-go/service/acmpca" //nolint:staticcheck
 )
 
 func Test_Mock_ACMPCACertificateAuthorityState_Properties(t *testing.T) {

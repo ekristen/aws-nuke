@@ -9,8 +9,8 @@ import (
 	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/route53resolver"
+	"github.com/aws/aws-sdk-go/aws"                     //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/service/route53resolver" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/resource"
 

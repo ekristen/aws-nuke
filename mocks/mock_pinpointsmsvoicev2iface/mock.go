@@ -7,9 +7,9 @@ package mock_pinpointsmsvoicev2iface
 import (
 	reflect "reflect"
 
-	aws "github.com/aws/aws-sdk-go/aws"
-	request "github.com/aws/aws-sdk-go/aws/request"
-	pinpointsmsvoicev2 "github.com/aws/aws-sdk-go/service/pinpointsmsvoicev2"
+	aws "github.com/aws/aws-sdk-go/aws" //nolint:staticcheck
+	request "github.com/aws/aws-sdk-go/aws/request" //nolint:staticcheck
+	pinpointsmsvoicev2 "github.com/aws/aws-sdk-go/service/pinpointsmsvoicev2" //nolint:staticcheck
 	gomock "github.com/golang/mock/gomock"
 )
 
