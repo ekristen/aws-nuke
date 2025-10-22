@@ -60,7 +60,6 @@ func (l *Inspector2Lister) List(ctx context.Context, o interface{}) ([]resource.
 
 type Inspector2 struct {
 	svc           *inspector2.Client
-	triggered     bool
 	AccountID     *string
 	Status        *inspectortypes.Status
 	ResourceState map[string]string `property:"tagPrefix=resourceType"`
