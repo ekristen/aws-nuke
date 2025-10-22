@@ -2,14 +2,21 @@ package resources
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/gotidy/ptr"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/iam"
+	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/aws/aws-sdk-go-v2/service/ssmquicksetup"
+	"github.com/aws/aws-sdk-go-v2/service/sts"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	"github.com/ekristen/libnuke/pkg/settings"
 	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
@@ -23,6 +30,9 @@ func init() {
 		Scope:    nuke.Account,
 		Resource: &SSMQuickSetupConfigurationManager{},
 		Lister:   &SSMQuickSetupConfigurationManagerLister{},
+		Settings: []string{
+			"CreateRoleToDelete",
+		},
 	})
 }
 
@@ -40,9 +50,12 @@ func (l *SSMQuickSetupConfigurationManagerLister) List(ctx context.Context, o in
 
 	for _, p := range res.ConfigurationManagersList {
 		resources = append(resources, &SSMQuickSetupConfigurationManager{
-			svc:  svc,
-			ARN:  p.ManagerArn,
-			Name: p.Name,
+			svc:          svc,
+			iamSvc:       iam.NewFromConfig(*opts.Config),
+			stsSvc:       sts.NewFromConfig(*opts.Config),
+			ARN:          p.ManagerArn,
+			Name:         p.Name,
+			createdRoles: make(map[string]bool), // Track which roles we created
 		})
 	}
 
@@ -50,9 +63,13 @@ func (l *SSMQuickSetupConfigurationManagerLister) List(ctx context.Context, o in
 }
 
 type SSMQuickSetupConfigurationManager struct {
-	svc  *ssmquicksetup.Client
-	ARN  *string
-	Name *string
+	svc          *ssmquicksetup.Client
+	iamSvc       *iam.Client
+	stsSvc       *sts.Client
+	ARN          *string
+	Name         *string
+	settings     *settings.Setting
+	createdRoles map[string]bool // Track roles created during deletion process
 }
 
 // GetName returns the name of the resource or the last part of the ARN if not set so that the stringer resource has
@@ -66,10 +83,43 @@ func (r *SSMQuickSetupConfigurationManager) GetName() string {
 	return parts[len(parts)-1]
 }
 
+func (r *SSMQuickSetupConfigurationManager) Settings(setting *settings.Setting) {
+	r.settings = setting
+}
+
 func (r *SSMQuickSetupConfigurationManager) Remove(ctx context.Context) error {
 	_, err := r.svc.DeleteConfigurationManager(ctx, &ssmquicksetup.DeleteConfigurationManagerInput{
 		ManagerArn: r.ARN,
 	})
+
+	// Check if we got the specific error about role access and if CreateRoleToDelete setting is enabled
+	if err != nil && r.settings.GetBool("CreateRoleToDelete") {
+		if roleName := r.extractRoleNameFromError(err); roleName != "" {
+			// Initialize createdRoles map if nil
+			if r.createdRoles == nil {
+				r.createdRoles = make(map[string]bool)
+			}
+
+			// Create the specific role mentioned in the error message
+			if createErr := r.createRoleFromError(ctx, roleName); createErr != nil {
+				return createErr
+			}
+
+			// Mark this role as created by us
+			r.createdRoles[roleName] = true
+
+			// Retry the deletion after creating role
+			_, err = r.svc.DeleteConfigurationManager(ctx, &ssmquicksetup.DeleteConfigurationManagerInput{
+				ManagerArn: r.ARN,
+			})
+		}
+	}
+
+	// If deletion was successful and we created roles, clean them up
+	if err == nil && len(r.createdRoles) > 0 {
+		r.cleanupCreatedRoles(ctx)
+	}
+
 	return err
 }
 
@@ -79,4 +129,259 @@ func (r *SSMQuickSetupConfigurationManager) Properties() types.Properties {
 
 func (r *SSMQuickSetupConfigurationManager) String() string {
 	return r.GetName()
+}
+
+// cleanupCreatedRoles removes all roles that were created during the deletion process
+func (r *SSMQuickSetupConfigurationManager) cleanupCreatedRoles(ctx context.Context) {
+	// Clean up roles in order: execution roles first, then admin roles
+	// This ensures we don't have dependency issues
+	var adminRoles []string
+	var execRoles []string
+
+	for roleName := range r.createdRoles {
+		if strings.Contains(roleName, "Administration") {
+			adminRoles = append(adminRoles, roleName)
+		} else if strings.Contains(roleName, "Execution") {
+			execRoles = append(execRoles, roleName)
+		}
+	}
+
+	// Clean up execution roles first
+	for _, roleName := range execRoles {
+		if err := r.cleanupRole(ctx, roleName, false); err != nil {
+			// Log the error but don't fail the overall operation
+			// The main resource has been successfully deleted
+			continue
+		}
+	}
+
+	// Clean up admin roles last
+	for _, roleName := range adminRoles {
+		if err := r.cleanupRole(ctx, roleName, true); err != nil {
+			// Log the error but don't fail the overall operation
+			// The main resource has been successfully deleted
+			continue
+		}
+	}
+}
+
+// cleanupRole removes a specific role and its associated policies
+func (r *SSMQuickSetupConfigurationManager) cleanupRole(ctx context.Context, roleName string, isAdminRole bool) error {
+	// For admin roles, remove the inline policy first
+	if isAdminRole {
+		_, err := r.iamSvc.DeleteRolePolicy(ctx, &iam.DeleteRolePolicyInput{
+			RoleName:   aws.String(roleName),
+			PolicyName: aws.String("AssumeLocalExecutionRole"),
+		})
+		if err != nil {
+			return err
+		}
+	} else {
+		// For execution roles, detach the managed policy
+		policyArn := "arn:aws:iam::aws:policy/AWSQuickSetupDeploymentRolePolicy"
+		_, err := r.iamSvc.DetachRolePolicy(ctx, &iam.DetachRolePolicyInput{
+			RoleName:  aws.String(roleName),
+			PolicyArn: aws.String(policyArn),
+		})
+		if err != nil {
+			return err
+		}
+	}
+
+	// Delete the role
+	_, err := r.iamSvc.DeleteRole(ctx, &iam.DeleteRoleInput{
+		RoleName: aws.String(roleName),
+	})
+
+	return err
+}
+
+// extractRoleNameFromError extracts the role name from the error message
+func (r *SSMQuickSetupConfigurationManager) extractRoleNameFromError(err error) string {
+	errStr := err.Error()
+
+	// Look for the pattern "Role ROLE_NAME can't be accessed"
+	if strings.Contains(errStr, "can't be accessed") {
+		// Find "Role " and extract the role name after it
+		roleIndex := strings.Index(errStr, "Role ")
+		if roleIndex != -1 {
+			roleStart := roleIndex + 5 // Length of "Role "
+			roleEnd := strings.Index(errStr[roleStart:], " can't be accessed")
+			if roleEnd != -1 {
+				return errStr[roleStart : roleStart+roleEnd]
+			}
+		}
+	}
+
+	return ""
+}
+
+// createRoleFromError creates the specific role mentioned in the error message
+func (r *SSMQuickSetupConfigurationManager) createRoleFromError(ctx context.Context, roleName string) error {
+	// Get current account ID
+	callerIdentity, err := r.stsSvc.GetCallerIdentity(ctx, &sts.GetCallerIdentityInput{})
+	if err != nil {
+		return err
+	}
+	accountID := *callerIdentity.Account
+
+	// Determine which type of role to create based on the role name
+	if strings.Contains(roleName, "Administration") {
+		return r.createAdminRole(ctx, roleName, accountID)
+	} else if strings.Contains(roleName, "Execution") {
+		return r.createExecRole(ctx, roleName, accountID)
+	}
+
+	return nil
+}
+
+// createAdminRole creates the LocalAdministrationRole with CloudFormation trust policy
+func (r *SSMQuickSetupConfigurationManager) createAdminRole(ctx context.Context, roleName, accountID string) error {
+	// Define trust policy for CloudFormation service with conditions
+	trustPolicy := map[string]interface{}{
+		"Version": "2012-10-17",
+		"Statement": []map[string]interface{}{
+			{
+				"Effect": "Allow",
+				"Principal": map[string]interface{}{
+					"Service": "cloudformation.amazonaws.com",
+				},
+				"Action": "sts:AssumeRole",
+				"Condition": map[string]interface{}{
+					"StringEquals": map[string]interface{}{
+						"aws:SourceAccount": accountID,
+					},
+					"StringLike": map[string]interface{}{
+						"aws:SourceArn": fmt.Sprintf("arn:aws:cloudformation:*:%s:stackset/AWS-QuickSetup-*", accountID),
+					},
+				},
+			},
+		},
+	}
+
+	trustPolicyJSON, err := json.Marshal(trustPolicy)
+	if err != nil {
+		return err
+	}
+
+	// Create the role
+	_, err = r.iamSvc.CreateRole(ctx, &iam.CreateRoleInput{
+		RoleName:                 aws.String(roleName),
+		AssumeRolePolicyDocument: aws.String(string(trustPolicyJSON)),
+		Description:              aws.String("LocalAdministrationRole created by aws-nuke for SSM QuickSetup Configuration Manager deletion"),
+		Path:                     aws.String("/"),
+		Tags: []iamtypes.Tag{
+			{
+				Key:   aws.String("CreatedBy"),
+				Value: aws.String("aws-nuke"),
+			},
+			{
+				Key:   aws.String("Purpose"),
+				Value: aws.String("SSMQuickSetupConfigurationManager-Deletion"),
+			},
+			{
+				Key:   aws.String("ConfigurationManager"),
+				Value: aws.String(r.GetName()),
+			},
+		},
+	})
+
+	if err != nil {
+		return err
+	}
+
+	// Create inline policy for assuming execution roles (both LocalExecutionRole and LocalDeploymentExecutionRole)
+	execRoleBaseName := strings.Replace(roleName, "LocalAdministrationRole", "", 1)
+	policyDocument := map[string]interface{}{
+		"Version": "2012-10-17",
+		"Statement": []map[string]interface{}{
+			{
+				"Action": []string{"sts:AssumeRole"},
+				"Resource": []string{
+					fmt.Sprintf("arn:aws:iam::%s:role/%sLocalExecutionRole", accountID, execRoleBaseName),
+					fmt.Sprintf("arn:aws:iam::%s:role/%sLocalDeploymentExecutionRole", accountID, execRoleBaseName),
+				},
+				"Effect": "Allow",
+			},
+		},
+	}
+
+	policyJSON, err := json.Marshal(policyDocument)
+	if err != nil {
+		return err
+	}
+
+	// Attach inline policy
+	_, err = r.iamSvc.PutRolePolicy(ctx, &iam.PutRolePolicyInput{
+		RoleName:       aws.String(roleName),
+		PolicyName:     aws.String("AssumeLocalExecutionRole"),
+		PolicyDocument: aws.String(string(policyJSON)),
+	})
+
+	return err
+}
+
+// createExecRole creates the LocalExecutionRole/LocalDeploymentExecutionRole with LocalAdministrationRole trust policy
+func (r *SSMQuickSetupConfigurationManager) createExecRole(ctx context.Context, roleName, accountID string) error {
+	// Derive the corresponding admin role name from the execution role name
+	var adminRoleName string
+	if strings.Contains(roleName, "LocalExecutionRole") {
+		adminRoleName = strings.Replace(roleName, "LocalExecutionRole", "LocalAdministrationRole", 1)
+	} else if strings.Contains(roleName, "LocalDeploymentExecutionRole") {
+		adminRoleName = strings.Replace(roleName, "LocalDeploymentExecutionRole", "LocalAdministrationRole", 1)
+	}
+
+	// Define trust policy for LocalAdministrationRole
+	trustPolicy := map[string]interface{}{
+		"Version": "2012-10-17",
+		"Statement": []map[string]interface{}{
+			{
+				"Effect": "Allow",
+				"Principal": map[string]interface{}{
+					"AWS": fmt.Sprintf("arn:aws:iam::%s:role/%s", accountID, adminRoleName),
+				},
+				"Action": "sts:AssumeRole",
+			},
+		},
+	}
+
+	trustPolicyJSON, err := json.Marshal(trustPolicy)
+	if err != nil {
+		return err
+	}
+
+	// Create the role
+	_, err = r.iamSvc.CreateRole(ctx, &iam.CreateRoleInput{
+		RoleName:                 aws.String(roleName),
+		AssumeRolePolicyDocument: aws.String(string(trustPolicyJSON)),
+		Description:              aws.String("LocalExecutionRole created by aws-nuke for SSM QuickSetup Configuration Manager deletion"),
+		Path:                     aws.String("/"),
+		Tags: []iamtypes.Tag{
+			{
+				Key:   aws.String("Managed"),
+				Value: aws.String("aws-nuke"),
+			},
+			{
+				Key:   aws.String("Purpose"),
+				Value: aws.String("SSMQuickSetupConfigurationManager-Deletion"),
+			},
+			{
+				Key:   aws.String("ConfigurationManager"),
+				Value: aws.String(r.GetName()),
+			},
+		},
+	})
+
+	if err != nil {
+		return err
+	}
+
+	// Attach the AWSQuickSetupDeploymentRolePolicy
+	policyArn := "arn:aws:iam::aws:policy/AWSQuickSetupDeploymentRolePolicy"
+	_, err = r.iamSvc.AttachRolePolicy(ctx, &iam.AttachRolePolicyInput{
+		RoleName:  aws.String(roleName),
+		PolicyArn: aws.String(policyArn),
+	})
+
+	return err
 }
