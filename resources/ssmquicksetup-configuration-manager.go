@@ -31,7 +31,7 @@ func init() {
 		Resource: &SSMQuickSetupConfigurationManager{},
 		Lister:   &SSMQuickSetupConfigurationManagerLister{},
 		Settings: []string{
-			"CreateRole",
+			"CreateRoleToDelete",
 		},
 	})
 }
@@ -50,11 +50,12 @@ func (l *SSMQuickSetupConfigurationManagerLister) List(ctx context.Context, o in
 
 	for _, p := range res.ConfigurationManagersList {
 		resources = append(resources, &SSMQuickSetupConfigurationManager{
-			svc:    svc,
-			iamSvc: iam.NewFromConfig(*opts.Config),
-			stsSvc: sts.NewFromConfig(*opts.Config),
-			ARN:    p.ManagerArn,
-			Name:   p.Name,
+			svc:          svc,
+			iamSvc:       iam.NewFromConfig(*opts.Config),
+			stsSvc:       sts.NewFromConfig(*opts.Config),
+			ARN:          p.ManagerArn,
+			Name:         p.Name,
+			createdRoles: make(map[string]bool), // Track which roles we created
 		})
 	}
 
@@ -62,12 +63,13 @@ func (l *SSMQuickSetupConfigurationManagerLister) List(ctx context.Context, o in
 }
 
 type SSMQuickSetupConfigurationManager struct {
-	svc      *ssmquicksetup.Client
-	iamSvc   *iam.Client
-	stsSvc   *sts.Client
-	ARN      *string
-	Name     *string
-	settings *settings.Setting
+	svc          *ssmquicksetup.Client
+	iamSvc       *iam.Client
+	stsSvc       *sts.Client
+	ARN          *string
+	Name         *string
+	settings     *settings.Setting
+	createdRoles map[string]bool // Track roles created during deletion process
 }
 
 // GetName returns the name of the resource or the last part of the ARN if not set so that the stringer resource has
@@ -90,19 +92,32 @@ func (r *SSMQuickSetupConfigurationManager) Remove(ctx context.Context) error {
 		ManagerArn: r.ARN,
 	})
 
-	// Check if we got the specific error about role access and if CreateRole setting is enabled
-	if err != nil && r.settings.GetBool("CreateRole") {
+	// Check if we got the specific error about role access and if CreateRoleToDelete setting is enabled
+	if err != nil && r.settings.GetBool("CreateRoleToDelete") {
 		if roleName := r.extractRoleNameFromError(err); roleName != "" {
+			// Initialize createdRoles map if nil
+			if r.createdRoles == nil {
+				r.createdRoles = make(map[string]bool)
+			}
+
 			// Create the specific role mentioned in the error message
 			if createErr := r.createRoleFromError(ctx, roleName); createErr != nil {
 				return createErr
 			}
+
+			// Mark this role as created by us
+			r.createdRoles[roleName] = true
 
 			// Retry the deletion after creating role
 			_, err = r.svc.DeleteConfigurationManager(ctx, &ssmquicksetup.DeleteConfigurationManagerInput{
 				ManagerArn: r.ARN,
 			})
 		}
+	}
+
+	// If deletion was successful and we created roles, clean them up
+	if err == nil && len(r.createdRoles) > 0 {
+		r.cleanupCreatedRoles(ctx)
 	}
 
 	return err
@@ -114,6 +129,71 @@ func (r *SSMQuickSetupConfigurationManager) Properties() types.Properties {
 
 func (r *SSMQuickSetupConfigurationManager) String() string {
 	return r.GetName()
+}
+
+// cleanupCreatedRoles removes all roles that were created during the deletion process
+func (r *SSMQuickSetupConfigurationManager) cleanupCreatedRoles(ctx context.Context) {
+	// Clean up roles in order: execution roles first, then admin roles
+	// This ensures we don't have dependency issues
+	var adminRoles []string
+	var execRoles []string
+
+	for roleName := range r.createdRoles {
+		if strings.Contains(roleName, "Administration") {
+			adminRoles = append(adminRoles, roleName)
+		} else if strings.Contains(roleName, "Execution") {
+			execRoles = append(execRoles, roleName)
+		}
+	}
+
+	// Clean up execution roles first
+	for _, roleName := range execRoles {
+		if err := r.cleanupRole(ctx, roleName, false); err != nil {
+			// Log the error but don't fail the overall operation
+			// The main resource has been successfully deleted
+			continue
+		}
+	}
+
+	// Clean up admin roles last
+	for _, roleName := range adminRoles {
+		if err := r.cleanupRole(ctx, roleName, true); err != nil {
+			// Log the error but don't fail the overall operation
+			// The main resource has been successfully deleted
+			continue
+		}
+	}
+}
+
+// cleanupRole removes a specific role and its associated policies
+func (r *SSMQuickSetupConfigurationManager) cleanupRole(ctx context.Context, roleName string, isAdminRole bool) error {
+	// For admin roles, remove the inline policy first
+	if isAdminRole {
+		_, err := r.iamSvc.DeleteRolePolicy(ctx, &iam.DeleteRolePolicyInput{
+			RoleName:   aws.String(roleName),
+			PolicyName: aws.String("AssumeLocalExecutionRole"),
+		})
+		if err != nil {
+			// Continue even if policy deletion fails - the role might not have the policy
+		}
+	} else {
+		// For execution roles, detach the managed policy
+		policyArn := "arn:aws:iam::aws:policy/AWSQuickSetupDeploymentRolePolicy"
+		_, err := r.iamSvc.DetachRolePolicy(ctx, &iam.DetachRolePolicyInput{
+			RoleName:  aws.String(roleName),
+			PolicyArn: aws.String(policyArn),
+		})
+		if err != nil {
+			// Continue even if policy detachment fails - the policy might not be attached
+		}
+	}
+
+	// Delete the role
+	_, err := r.iamSvc.DeleteRole(ctx, &iam.DeleteRoleInput{
+		RoleName: aws.String(roleName),
+	})
+
+	return err
 }
 
 // extractRoleNameFromError extracts the role name from the error message
