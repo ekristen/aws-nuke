@@ -174,7 +174,7 @@ func (r *SSMQuickSetupConfigurationManager) cleanupRole(ctx context.Context, rol
 			PolicyName: aws.String("AssumeLocalExecutionRole"),
 		})
 		if err != nil {
-			// Continue even if policy deletion fails - the role might not have the policy
+			return err
 		}
 	} else {
 		// For execution roles, detach the managed policy
@@ -184,7 +184,7 @@ func (r *SSMQuickSetupConfigurationManager) cleanupRole(ctx context.Context, rol
 			PolicyArn: aws.String(policyArn),
 		})
 		if err != nil {
-			// Continue even if policy detachment fails - the policy might not be attached
+			return err
 		}
 	}
 
