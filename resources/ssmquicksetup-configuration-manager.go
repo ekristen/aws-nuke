@@ -3,6 +3,7 @@ package resources
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/gotidy/ptr"
@@ -85,7 +86,6 @@ func (r *SSMQuickSetupConfigurationManager) Settings(setting *settings.Setting) 
 }
 
 func (r *SSMQuickSetupConfigurationManager) Remove(ctx context.Context) error {
-	// Try to delete first, then create role if we get the specific error
 	_, err := r.svc.DeleteConfigurationManager(ctx, &ssmquicksetup.DeleteConfigurationManagerInput{
 		ManagerArn: r.ARN,
 	})
@@ -97,6 +97,7 @@ func (r *SSMQuickSetupConfigurationManager) Remove(ctx context.Context) error {
 			if createErr := r.createRoleFromError(ctx, roleName); createErr != nil {
 				return createErr
 			}
+
 			// Retry the deletion after creating role
 			_, err = r.svc.DeleteConfigurationManager(ctx, &ssmquicksetup.DeleteConfigurationManagerInput{
 				ManagerArn: r.ARN,
@@ -171,7 +172,7 @@ func (r *SSMQuickSetupConfigurationManager) createAdminRole(ctx context.Context,
 						"aws:SourceAccount": accountID,
 					},
 					"StringLike": map[string]interface{}{
-						"aws:SourceArn": "arn:aws:cloudformation:*:" + accountID + ":stackset/AWS-QuickSetup-*",
+						"aws:SourceArn": fmt.Sprintf("arn:aws:cloudformation:*:%s:stackset/AWS-QuickSetup-*", accountID),
 					},
 				},
 			},
@@ -217,8 +218,8 @@ func (r *SSMQuickSetupConfigurationManager) createAdminRole(ctx context.Context,
 			{
 				"Action": []string{"sts:AssumeRole"},
 				"Resource": []string{
-					"arn:aws:iam::" + accountID + ":role/" + execRoleBaseName + "LocalExecutionRole",
-					"arn:aws:iam::" + accountID + ":role/" + execRoleBaseName + "LocalDeploymentExecutionRole",
+					fmt.Sprintf("arn:aws:iam::%s:role/%sLocalExecutionRole", accountID, execRoleBaseName),
+					fmt.Sprintf("arn:aws:iam::%s:role/%sLocalDeploymentExecutionRole", accountID, execRoleBaseName),
 				},
 				"Effect": "Allow",
 			},
@@ -257,7 +258,7 @@ func (r *SSMQuickSetupConfigurationManager) createExecRole(ctx context.Context, 
 			{
 				"Effect": "Allow",
 				"Principal": map[string]interface{}{
-					"AWS": "arn:aws:iam::" + accountID + ":role/" + adminRoleName,
+					"AWS": fmt.Sprintf("arn:aws:iam::%s:role/%s", accountID, adminRoleName),
 				},
 				"Action": "sts:AssumeRole",
 			},
@@ -277,7 +278,7 @@ func (r *SSMQuickSetupConfigurationManager) createExecRole(ctx context.Context, 
 		Path:                     aws.String("/"),
 		Tags: []iamtypes.Tag{
 			{
-				Key:   aws.String("CreatedBy"),
+				Key:   aws.String("Managed"),
 				Value: aws.String("aws-nuke"),
 			},
 			{
