@@ -19,16 +19,16 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.239.0
 	github.com/aws/aws-sdk-go-v2/service/ecs v1.54.6
 	github.com/aws/aws-sdk-go-v2/service/efs v1.35.4
-	github.com/aws/aws-sdk-go-v2/service/eks v1.74.2
+	github.com/aws/aws-sdk-go-v2/service/eks v1.74.4
 	github.com/aws/aws-sdk-go-v2/service/iam v1.38.10
 	github.com/aws/aws-sdk-go-v2/service/inspector2 v1.44.7
-	github.com/aws/aws-sdk-go-v2/service/mgn v1.37.5
+	github.com/aws/aws-sdk-go-v2/service/mgn v1.37.6
 	github.com/aws/aws-sdk-go-v2/service/neptunegraph v1.17.6
 	github.com/aws/aws-sdk-go-v2/service/networkfirewall v1.53.0
 	github.com/aws/aws-sdk-go-v2/service/route53profiles v1.4.17
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.72.3
 	github.com/aws/aws-sdk-go-v2/service/s3control v1.52.7
-	github.com/aws/aws-sdk-go-v2/service/shield v1.34.6
+	github.com/aws/aws-sdk-go-v2/service/shield v1.34.7
 	github.com/aws/aws-sdk-go-v2/service/ssmquicksetup v1.3.10
 	github.com/aws/aws-sdk-go-v2/service/sts v1.34.1
 	github.com/aws/aws-sdk-go-v2/service/transfer v1.55.5

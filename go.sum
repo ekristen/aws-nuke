@@ -40,6 +40,8 @@ github.com/aws/aws-sdk-go-v2/service/efs v1.35.4 h1:QJHwC9X5TxJJGdesIJP65gAsu0gX
 github.com/aws/aws-sdk-go-v2/service/efs v1.35.4/go.mod h1:XT6hcgC1HV33EBGPWdXnbgyeqND4k43qX3argLyEZM8=
 github.com/aws/aws-sdk-go-v2/service/eks v1.74.2 h1:GKqBur7gp6rnYbMZXh2+89f8g+/bu26ZKwpXfXrno80=
 github.com/aws/aws-sdk-go-v2/service/eks v1.74.2/go.mod h1:f1/1x766rRjLVUk94exobjhggT1MR3vO4wxglqOvpY4=
+github.com/aws/aws-sdk-go-v2/service/eks v1.74.4 h1:ffvwf+UmHfrIBH7i8dSYIG0JwNrGh2u456+ZZxfISik=
+github.com/aws/aws-sdk-go-v2/service/eks v1.74.4/go.mod h1:o1FKzg3LHlNZP8p6mdFxzxPjJfmjww7WdX7EyVomXIo=
 github.com/aws/aws-sdk-go-v2/service/iam v1.38.10 h1:u/MwkFwRkKRDvy7D76/khJTk8HMp4mC5sZKErU53jos=
 github.com/aws/aws-sdk-go-v2/service/iam v1.38.10/go.mod h1:Gid0WEVky3EWbkeXiS67kHhbiK+q3/wO/hvPh7plR0c=
 github.com/aws/aws-sdk-go-v2/service/inspector2 v1.44.7 h1:ClhP0tP1YkEbZDyOPlztraNLHbO1/VHiTNmtoiTsO4k=
@@ -54,6 +56,8 @@ github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.18.10 h1:fXoWC2gi7tdJY
 github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.18.10/go.mod h1:cvzBApD5dVazHU8C2rbBQzzzsKc8m5+wNJ9mCRZLKPc=
 github.com/aws/aws-sdk-go-v2/service/mgn v1.37.5 h1:BMu425Ntx40waGQ0/g6BeX1F/sYvKdIcO+ABys5Jv9s=
 github.com/aws/aws-sdk-go-v2/service/mgn v1.37.5/go.mod h1:F3YMviBP/8gRnYBh8j+6MUw/c3ID0l3IMS37kHAo22Y=
+github.com/aws/aws-sdk-go-v2/service/mgn v1.37.6 h1:ITYqWof2FxKHKTmxsjkwvgTjD14gajRXJYenLIeg1qA=
+github.com/aws/aws-sdk-go-v2/service/mgn v1.37.6/go.mod h1:8LeELycYQepPpm0ZtRDbq+4upF8JMGzq5qGbuDN0m84=
 github.com/aws/aws-sdk-go-v2/service/neptunegraph v1.17.6 h1:sA9Ll0/+rmaz08n5CHBI/l5ZVzBVxqTR9VZxPjkOP5Q=
 github.com/aws/aws-sdk-go-v2/service/neptunegraph v1.17.6/go.mod h1:rbHtwGyKB0puYUphsbaSq2vQuoYfQ7Vx/ZBx9h4CnSU=
 github.com/aws/aws-sdk-go-v2/service/networkfirewall v1.53.0 h1:FHl1QPk+MTUjcbGtnNfcVnq5bPkP71Tbzt++qQ/dCnY=
@@ -66,6 +70,8 @@ github.com/aws/aws-sdk-go-v2/service/s3control v1.52.7 h1:cewH1fJ35N26pujUo8pXtq
 github.com/aws/aws-sdk-go-v2/service/s3control v1.52.7/go.mod h1:zZ6ah0Hp8TqLZERFcwSQ2T5A4lMkX5vujkDvSkFiXh8=
 github.com/aws/aws-sdk-go-v2/service/shield v1.34.6 h1:AWKt4pVqiqzLIT3xoOThd0xT6dY1lSB+7yDcn0N3I48=
 github.com/aws/aws-sdk-go-v2/service/shield v1.34.6/go.mod h1:Io5NYTndCqsmL+vdfoQEkInZkbZn8gLloqEjGvng+7M=
+github.com/aws/aws-sdk-go-v2/service/shield v1.34.7 h1:mplm4twMGSilu9B6l1FaA2If8Lk7oChQnbXKwuD/YzU=
+github.com/aws/aws-sdk-go-v2/service/shield v1.34.7/go.mod h1:N+zg9PcrYo10pDP6zAGKB9dYA7PKXCQfPHMBcBawT6U=
 github.com/aws/aws-sdk-go-v2/service/ssmquicksetup v1.3.10 h1:3e9ZvkZB5NsDellLxPuaCJSeA5Hg7SeHY+Godotzizc=
 github.com/aws/aws-sdk-go-v2/service/ssmquicksetup v1.3.10/go.mod h1:UKtH07HzEWvg7zZ6R2JixYlmGYa/3i2niz7Lz2zJoeM=
 github.com/aws/aws-sdk-go-v2/service/sso v1.25.6 h1:rGtWqkQbPk7Bkwuv3NzpE/scwwL9sC1Ul3tn9x83DUI=
