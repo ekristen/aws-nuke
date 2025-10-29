@@ -597,6 +597,9 @@ nav:
     - S3 Tables Bucket: resources/s3-tables-bucket.md
     - S3 Tables Namespace: resources/s3-tables-namespace.md
     - S3 Tables Table: resources/s3-tables-table.md
+    - S3 Vectors Bucket: resources/s3-vectors-bucket.md
+    - S3 Vectors Index: resources/s3-vectors-index.md
+    - S3 Vectors Vector: resources/s3-vectors-vector.md
     - SNS Endpoint: resources/sns-endpoint.md
     - S3Files File System: resources/s3-files-file-system.md
     - S3Files Mount Target: resources/s3-files-mount-target.md

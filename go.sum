@@ -80,6 +80,8 @@ github.com/aws/aws-sdk-go-v2/service/s3files v1.0.3 h1:S3+dpkrgIdGvw8kt4bESzv+uU
 github.com/aws/aws-sdk-go-v2/service/s3files v1.0.3/go.mod h1:peu+U0l09wQS8QIDhZU9dHM35RkvmtBjaVPWNioftX8=
 github.com/aws/aws-sdk-go-v2/service/s3tables v1.15.1 h1:3mQxvXAzMRfnc1md8Op2sYFrCjpAg52xB+2QA8VSCNo=
 github.com/aws/aws-sdk-go-v2/service/s3tables v1.15.1/go.mod h1:F3WPcRjnxxFfS5ljI+H7Tg/SZ/IXP8j8HSh0UWRIFiI=
+github.com/aws/aws-sdk-go-v2/service/s3vectors v1.4.10 h1:hgJrhznAL6SjFZAqNIexiE9L7Zjc5PMGmwPWNtTE3zc=
+github.com/aws/aws-sdk-go-v2/service/s3vectors v1.4.10/go.mod h1:gJNoydxeaa5Av62mqcKTcA/9oFJnnZRseWfDmPKfGv8=
 github.com/aws/aws-sdk-go-v2/service/shield v1.34.25 h1:mTkHhGBTt/7wd/7dMQwPpoI9xWeuR9HMk87WQSMmRTE=
 github.com/aws/aws-sdk-go-v2/service/shield v1.34.25/go.mod h1:RFFO1hD4EphzolYUUk2YSf4bQwvdW3uYS2VkGbgSnjI=
 github.com/aws/aws-sdk-go-v2/service/sqs v1.42.25 h1:8Bv3TQ1Cob6HLlpUbAnWxeHhAkYScJO9RIHh2WPXaxw=
