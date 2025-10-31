@@ -44,6 +44,8 @@ github.com/aws/aws-sdk-go-v2/service/efs v1.35.4 h1:QJHwC9X5TxJJGdesIJP65gAsu0gX
 github.com/aws/aws-sdk-go-v2/service/efs v1.35.4/go.mod h1:XT6hcgC1HV33EBGPWdXnbgyeqND4k43qX3argLyEZM8=
 github.com/aws/aws-sdk-go-v2/service/eks v1.74.10 h1:bkpRyAmbBYuMKx4ZfmVLRdTwewAXGy1S0LrvH1BFz2M=
 github.com/aws/aws-sdk-go-v2/service/eks v1.74.10/go.mod h1:lrJRZkSj6nIXH/SN3gbGQp4i4AtNyha0wT7VgYZ3KDw=
+github.com/aws/aws-sdk-go-v2/service/emrserverless v1.31.0 h1:CCqV03QxO5u7Qkzx1kW/v0cvGUf+PIrod1ZyYZjlQWU=
+github.com/aws/aws-sdk-go-v2/service/emrserverless v1.31.0/go.mod h1:ra7r/+cJo55V3ZhBdeWmUz+jWH1+nTHtUnSwjBl+IZ4=
 github.com/aws/aws-sdk-go-v2/service/iam v1.38.10 h1:u/MwkFwRkKRDvy7D76/khJTk8HMp4mC5sZKErU53jos=
 github.com/aws/aws-sdk-go-v2/service/iam v1.38.10/go.mod h1:Gid0WEVky3EWbkeXiS67kHhbiK+q3/wO/hvPh7plR0c=
 github.com/aws/aws-sdk-go-v2/service/inspector2 v1.44.12 h1:KC35deDW2vbbXPW14nUGgpf1lv3Qdg1wHhD9a1c2WDY=
