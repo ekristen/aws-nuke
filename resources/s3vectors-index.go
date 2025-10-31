@@ -12,23 +12,23 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-const S3vectorsIndexResource = "S3vectorsIndex"
+const S3VectorsIndexResource = "S3VectorsIndex"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:     S3vectorsIndexResource,
+		Name:     S3VectorsIndexResource,
 		Scope:    nuke.Account,
-		Resource: &S3vectorsIndex{},
-		Lister:   &S3vectorsIndexLister{},
+		Resource: &S3VectorsIndex{},
+		Lister:   &S3VectorsIndexLister{},
 		DependsOn: []string{
-			S3vectorsVectorResource,
+			S3VectorsVectorResource,
 		},
 	})
 }
 
-type S3vectorsIndexLister struct{}
+type S3VectorsIndexLister struct{}
 
-func (l *S3vectorsIndexLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *S3VectorsIndexLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 	svc := s3vectors.NewFromConfig(*opts.Config)
 
@@ -58,7 +58,7 @@ func (l *S3vectorsIndexLister) List(ctx context.Context, o interface{}) ([]resou
 				}
 
 				for _, index := range page.Indexes {
-					resources = append(resources, &S3vectorsIndex{
+					resources = append(resources, &S3VectorsIndex{
 						svc:        svc,
 						BucketName: bucket.VectorBucketName,
 						IndexName:  index.IndexName,
@@ -72,14 +72,14 @@ func (l *S3vectorsIndexLister) List(ctx context.Context, o interface{}) ([]resou
 	return resources, nil
 }
 
-type S3vectorsIndex struct {
+type S3VectorsIndex struct {
 	svc        *s3vectors.Client
 	BucketName *string
 	IndexName  *string
 	IndexARN   *string
 }
 
-func (r *S3vectorsIndex) Remove(ctx context.Context) error {
+func (r *S3VectorsIndex) Remove(ctx context.Context) error {
 	_, err := r.svc.DeleteIndex(ctx, &s3vectors.DeleteIndexInput{
 		VectorBucketName: r.BucketName,
 		IndexName:        r.IndexName,
@@ -87,10 +87,10 @@ func (r *S3vectorsIndex) Remove(ctx context.Context) error {
 	return err
 }
 
-func (r *S3vectorsIndex) Properties() types.Properties {
+func (r *S3VectorsIndex) Properties() types.Properties {
 	return types.NewPropertiesFromStruct(r)
 }
 
-func (r *S3vectorsIndex) String() string {
+func (r *S3VectorsIndex) String() string {
 	return *r.IndexName
 }

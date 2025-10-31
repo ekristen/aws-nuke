@@ -12,20 +12,20 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-const S3vectorsVectorResource = "S3vectorsVector"
+const S3VectorsVectorResource = "S3VectorsVector"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:     S3vectorsVectorResource,
+		Name:     S3VectorsVectorResource,
 		Scope:    nuke.Account,
-		Resource: &S3vectorsVector{},
-		Lister:   &S3vectorsVectorLister{},
+		Resource: &S3VectorsVector{},
+		Lister:   &S3VectorsVectorLister{},
 	})
 }
 
-type S3vectorsVectorLister struct{}
+type S3VectorsVectorLister struct{}
 
-func (l *S3vectorsVectorLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *S3VectorsVectorLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 	svc := s3vectors.NewFromConfig(*opts.Config)
 
@@ -71,7 +71,7 @@ func (l *S3vectorsVectorLister) List(ctx context.Context, o interface{}) ([]reso
 						}
 
 						for _, vector := range vectorPage.Vectors {
-							resources = append(resources, &S3vectorsVector{
+							resources = append(resources, &S3VectorsVector{
 								svc:              svc,
 								VectorBucketName: bucket.VectorBucketName,
 								IndexName:        index.IndexName,
@@ -87,14 +87,14 @@ func (l *S3vectorsVectorLister) List(ctx context.Context, o interface{}) ([]reso
 	return resources, nil
 }
 
-type S3vectorsVector struct {
+type S3VectorsVector struct {
 	svc              *s3vectors.Client
 	VectorBucketName *string
 	IndexName        *string
 	Key              *string
 }
 
-func (r *S3vectorsVector) Remove(ctx context.Context) error {
+func (r *S3VectorsVector) Remove(ctx context.Context) error {
 	_, err := r.svc.DeleteVectors(ctx, &s3vectors.DeleteVectorsInput{
 		VectorBucketName: r.VectorBucketName,
 		IndexName:        r.IndexName,
@@ -103,10 +103,10 @@ func (r *S3vectorsVector) Remove(ctx context.Context) error {
 	return err
 }
 
-func (r *S3vectorsVector) Properties() types.Properties {
+func (r *S3VectorsVector) Properties() types.Properties {
 	return types.NewPropertiesFromStruct(r)
 }
 
-func (r *S3vectorsVector) String() string {
+func (r *S3VectorsVector) String() string {
 	return *r.Key
 }

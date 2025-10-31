@@ -12,23 +12,23 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-const S3vectorsBucketResource = "S3vectorsBucket"
+const S3VectorsBucketResource = "S3VectorsBucket"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:     S3vectorsBucketResource,
+		Name:     S3VectorsBucketResource,
 		Scope:    nuke.Account,
-		Resource: &S3vectorsBucket{},
-		Lister:   &S3vectorsBucketLister{},
+		Resource: &S3VectorsBucket{},
+		Lister:   &S3VectorsBucketLister{},
 		DependsOn: []string{
-			S3vectorsIndexResource,
+			S3VectorsIndexResource,
 		},
 	})
 }
 
-type S3vectorsBucketLister struct{}
+type S3VectorsBucketLister struct{}
 
-func (l *S3vectorsBucketLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *S3VectorsBucketLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 	svc := s3vectors.NewFromConfig(*opts.Config)
 
@@ -43,7 +43,7 @@ func (l *S3vectorsBucketLister) List(ctx context.Context, o interface{}) ([]reso
 		}
 
 		for _, bucket := range page.VectorBuckets {
-			resources = append(resources, &S3vectorsBucket{
+			resources = append(resources, &S3VectorsBucket{
 				svc:  svc,
 				Name: bucket.VectorBucketName,
 				ARN:  bucket.VectorBucketArn,
@@ -54,23 +54,23 @@ func (l *S3vectorsBucketLister) List(ctx context.Context, o interface{}) ([]reso
 	return resources, nil
 }
 
-type S3vectorsBucket struct {
+type S3VectorsBucket struct {
 	svc  *s3vectors.Client
 	Name *string
 	ARN  *string
 }
 
-func (r *S3vectorsBucket) Remove(ctx context.Context) error {
+func (r *S3VectorsBucket) Remove(ctx context.Context) error {
 	_, err := r.svc.DeleteVectorBucket(ctx, &s3vectors.DeleteVectorBucketInput{
 		VectorBucketName: r.Name,
 	})
 	return err
 }
 
-func (r *S3vectorsBucket) Properties() types.Properties {
+func (r *S3VectorsBucket) Properties() types.Properties {
 	return types.NewPropertiesFromStruct(r)
 }
 
-func (r *S3vectorsBucket) String() string {
+func (r *S3VectorsBucket) String() string {
 	return *r.Name
 }

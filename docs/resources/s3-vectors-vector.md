@@ -2,13 +2,13 @@
 generated: true
 ---
 
-# S3vectorsVector
+# S3VectorsVector
 
 
 ## Resource
 
 ```text
-S3vectorsVector
+S3VectorsVector
 ```
 
 ## Properties
@@ -29,5 +29,3 @@ resources support properties. To write a filter against the string representatio
 the filter.
 
 The string value is always what is used in the output of the log format when a resource is identified.
-
-
