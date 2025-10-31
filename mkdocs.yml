@@ -580,6 +580,9 @@ nav:
     - S3 Bucket: resources/s3-bucket.md
     - S3 Multipart Upload: resources/s3-multipart-upload.md
     - S3 Object: resources/s3-object.md
+    - S3 Vectors Bucket: resources/s3-vectors-bucket.md
+    - S3 Vectors Index: resources/s3-vectors-index.md
+    - S3 Vectors Vector: resources/s3-vectors-vector.md
     - SNS Endpoint: resources/sns-endpoint.md
     - SNS Platform Application: resources/sns-platform-application.md
     - SNS Subscription: resources/sns-subscription.md
