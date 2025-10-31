@@ -2,13 +2,13 @@
 generated: true
 ---
 
-# S3vectorsIndex
+# S3VectorsIndex
 
 
 ## Resource
 
 ```text
-S3vectorsIndex
+S3VectorsIndex
 ```
 
 ## Properties
@@ -36,5 +36,4 @@ The string value is always what is used in the output of the log format when a r
     This resource depends on a resource using the experimental feature. This means that the resource will
     only be deleted if all the resources of a particular type are deleted first or reach a terminal state.
 
-- [S3vectorsVector](./s3-vectors-vector.md)
-
+- [S3VectorsVector](./s3-vectors-vector.md)

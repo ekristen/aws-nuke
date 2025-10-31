@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_S3vectorsBucket_Properties(t *testing.T) {
-	bucket := &S3vectorsBucket{
+func Test_S3VectorsBucket_Properties(t *testing.T) {
+	bucket := &S3VectorsBucket{
 		Name: ptr.String("my-vector-bucket"),
 		ARN:  ptr.String("arn:aws:s3vectors:us-east-1:123456789012:bucket/my-vector-bucket"),
 	}
@@ -19,8 +19,8 @@ func Test_S3vectorsBucket_Properties(t *testing.T) {
 	assert.Equal(t, "arn:aws:s3vectors:us-east-1:123456789012:bucket/my-vector-bucket", properties.Get("ARN"))
 }
 
-func Test_S3vectorsBucket_String(t *testing.T) {
-	bucket := &S3vectorsBucket{
+func Test_S3VectorsBucket_String(t *testing.T) {
+	bucket := &S3VectorsBucket{
 		Name: ptr.String("test-vector-bucket"),
 	}
 

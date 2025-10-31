@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_S3vectorsVector_Properties(t *testing.T) {
-	vector := &S3vectorsVector{
+func Test_S3VectorsVector_Properties(t *testing.T) {
+	vector := &S3VectorsVector{
 		VectorBucketName: ptr.String("my-vector-bucket"),
 		IndexName:        ptr.String("embeddings-index"),
 		Key:              ptr.String("document-123"),
@@ -21,8 +21,8 @@ func Test_S3vectorsVector_Properties(t *testing.T) {
 	assert.Equal(t, "document-123", properties.Get("Key"))
 }
 
-func Test_S3vectorsVector_String(t *testing.T) {
-	vector := &S3vectorsVector{
+func Test_S3VectorsVector_String(t *testing.T) {
+	vector := &S3VectorsVector{
 		VectorBucketName: ptr.String("test-bucket"),
 		IndexName:        ptr.String("test-index"),
 		Key:              ptr.String("test-key"),
