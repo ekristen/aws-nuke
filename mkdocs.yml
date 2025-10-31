@@ -360,6 +360,8 @@ nav:
     - Elasticache User: resources/elasticache-user.md
     - Emr Cluster: resources/emr-cluster.md
     - Emr Security Configuration: resources/emr-security-configuration.md
+    - Emr Serverless Application: resources/emr-serverless-application.md
+    - Emr Serverless Job Run: resources/emr-serverless-job-run.md
     - Es Domain: resources/es-domain.md
     - Firehose Delivery Stream: resources/firehose-delivery-stream.md
     - Fms Notification Channel: resources/fms-notification-channel.md
