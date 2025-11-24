@@ -39,10 +39,6 @@ You should take these steps if you have an idea how to improve *aws-nuke*:
 3. Join the discussion, if there is already a related issue. If this is not the case, open a new issue and describe
    your idea. Afterward, we can discuss this idea and form a proposal.
 
-### I Just Have a Question
-
-Please use [GitHub Discussions](https://github.com/ekristen/aws-nuke/discussions)
-
 ## Resource Guidelines
 
 ### Tooling
