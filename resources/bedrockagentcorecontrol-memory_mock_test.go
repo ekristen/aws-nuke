@@ -8,13 +8,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_BedrockMemory_Properties(t *testing.T) {
+func Test_BedrockAgentCoreMemory_Properties(t *testing.T) {
 	a := assert.New(t)
 
 	createdAt := time.Now().Add(-24 * time.Hour)
 	updatedAt := time.Now()
 
-	resource := BedrockMemory{
+	resource := BedrockAgentCoreMemory{
 		MemoryID:  ptr.String("test-memory-id"),
 		Arn:       ptr.String("arn:aws:bedrock:us-east-1:123456789012:memory/test"),
 		Status:    "ACTIVE",
@@ -31,10 +31,10 @@ func Test_BedrockMemory_Properties(t *testing.T) {
 	a.Equal(updatedAt.Format(time.RFC3339), props.Get("UpdatedAt"))
 }
 
-func Test_BedrockMemory_String(t *testing.T) {
+func Test_BedrockAgentCoreMemory_String(t *testing.T) {
 	a := assert.New(t)
 
-	resource := BedrockMemory{
+	resource := BedrockAgentCoreMemory{
 		MemoryID: ptr.String("test-memory-id"),
 	}
 

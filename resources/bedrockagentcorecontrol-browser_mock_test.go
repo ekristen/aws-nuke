@@ -8,13 +8,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_BedrockBrowser_Properties(t *testing.T) {
+func Test_BedrockAgentCoreBrowser_Properties(t *testing.T) {
 	a := assert.New(t)
 
 	createdAt := time.Now().Add(-24 * time.Hour)
 	updatedAt := time.Now()
 
-	resource := BedrockBrowser{
+	resource := BedrockAgentCoreBrowser{
 		BrowserID:     ptr.String("test-browser-id"),
 		BrowserArn:    ptr.String("arn:aws:bedrock:us-east-1:123456789012:browser/test"),
 		Status:        "ACTIVE",
@@ -33,10 +33,10 @@ func Test_BedrockBrowser_Properties(t *testing.T) {
 	a.Equal(updatedAt.Format(time.RFC3339), props.Get("LastUpdatedAt"))
 }
 
-func Test_BedrockBrowser_String(t *testing.T) {
+func Test_BedrockAgentCoreBrowser_String(t *testing.T) {
 	a := assert.New(t)
 
-	resource := BedrockBrowser{
+	resource := BedrockAgentCoreBrowser{
 		BrowserID: ptr.String("test-browser-id"),
 	}
 

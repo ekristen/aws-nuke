@@ -8,12 +8,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_BedrockAgentRuntime_Properties(t *testing.T) {
+func Test_BedrockAgentCoreAgentRuntime_Properties(t *testing.T) {
 	a := assert.New(t)
 
 	now := time.Now()
 
-	resource := BedrockAgentRuntime{
+	resource := BedrockAgentCoreAgentRuntime{
 		AgentRuntimeID:      ptr.String("test-runtime-id"),
 		AgentRuntimeName:    ptr.String("test-runtime-name"),
 		AgentRuntimeVersion: ptr.String("1.0"),
@@ -32,10 +32,10 @@ func Test_BedrockAgentRuntime_Properties(t *testing.T) {
 	a.Equal(now.Format(time.RFC3339), props.Get("LastUpdatedAt"))
 }
 
-func Test_BedrockAgentRuntime_String(t *testing.T) {
+func Test_BedrockAgentCoreAgentRuntime_String(t *testing.T) {
 	a := assert.New(t)
 
-	resource := BedrockAgentRuntime{
+	resource := BedrockAgentCoreAgentRuntime{
 		AgentRuntimeID: ptr.String("test-runtime-id"),
 	}
 

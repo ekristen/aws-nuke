@@ -8,13 +8,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_BedrockCodeInterpreter_Properties(t *testing.T) {
+func Test_BedrockAgentCoreCodeInterpreter_Properties(t *testing.T) {
 	a := assert.New(t)
 
 	createdAt := time.Now().Add(-24 * time.Hour)
 	updatedAt := time.Now()
 
-	resource := BedrockCodeInterpreter{
+	resource := BedrockAgentCoreCodeInterpreter{
 		CodeInterpreterID:  ptr.String("test-interpreter-id"),
 		CodeInterpreterArn: ptr.String("arn:aws:bedrock:us-east-1:123456789012:code-interpreter/test"),
 		Name:               ptr.String("test-interpreter-name"),
@@ -35,10 +35,10 @@ func Test_BedrockCodeInterpreter_Properties(t *testing.T) {
 	a.Equal(updatedAt.Format(time.RFC3339), props.Get("LastUpdatedAt"))
 }
 
-func Test_BedrockCodeInterpreter_String(t *testing.T) {
+func Test_BedrockAgentCoreCodeInterpreter_String(t *testing.T) {
 	a := assert.New(t)
 
-	resource := BedrockCodeInterpreter{
+	resource := BedrockAgentCoreCodeInterpreter{
 		CodeInterpreterID: ptr.String("test-interpreter-id"),
 	}
 

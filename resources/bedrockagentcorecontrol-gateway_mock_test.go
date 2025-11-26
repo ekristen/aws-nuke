@@ -8,13 +8,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_BedrockGateway_Properties(t *testing.T) {
+func Test_BedrockAgentCoreGateway_Properties(t *testing.T) {
 	a := assert.New(t)
 
 	createdAt := time.Now().Add(-24 * time.Hour)
 	updatedAt := time.Now()
 
-	resource := BedrockGateway{
+	resource := BedrockAgentCoreGateway{
 		GatewayID:      ptr.String("test-gateway-id"),
 		Name:           ptr.String("test-gateway-name"),
 		Status:         "ACTIVE",
@@ -37,10 +37,10 @@ func Test_BedrockGateway_Properties(t *testing.T) {
 	a.Equal(updatedAt.Format(time.RFC3339), props.Get("UpdatedAt"))
 }
 
-func Test_BedrockGateway_String(t *testing.T) {
+func Test_BedrockAgentCoreGateway_String(t *testing.T) {
 	a := assert.New(t)
 
-	resource := BedrockGateway{
+	resource := BedrockAgentCoreGateway{
 		GatewayID: ptr.String("test-gateway-id"),
 	}
 

@@ -7,10 +7,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_BedrockWorkloadIdentity_Properties(t *testing.T) {
+func Test_BedrockAgentCoreWorkloadIdentity_Properties(t *testing.T) {
 	a := assert.New(t)
 
-	resource := BedrockWorkloadIdentity{
+	resource := BedrockAgentCoreWorkloadIdentity{
 		Name:                ptr.String("test-identity-name"),
 		WorkloadIdentityArn: ptr.String("arn:aws:bedrock:us-east-1:123456789012:workload-identity/test"),
 	}
@@ -21,10 +21,10 @@ func Test_BedrockWorkloadIdentity_Properties(t *testing.T) {
 	a.Equal("arn:aws:bedrock:us-east-1:123456789012:workload-identity/test", props.Get("WorkloadIdentityArn"))
 }
 
-func Test_BedrockWorkloadIdentity_String(t *testing.T) {
+func Test_BedrockAgentCoreWorkloadIdentity_String(t *testing.T) {
 	a := assert.New(t)
 
-	resource := BedrockWorkloadIdentity{
+	resource := BedrockAgentCoreWorkloadIdentity{
 		WorkloadIdentityArn: ptr.String("arn:aws:bedrock:us-east-1:123456789012:workload-identity/test"),
 	}
 

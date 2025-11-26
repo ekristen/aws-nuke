@@ -14,7 +14,7 @@ func Test_BedrockAPIKeyCredentialProvider_Properties(t *testing.T) {
 	createdTime := time.Now().Add(-24 * time.Hour)
 	updatedTime := time.Now()
 
-	resource := BedrockAPIKeyCredentialProvider{
+	resource := BedrockAgentCoreAPIKeyCredentialProvider{
 		Name:                  ptr.String("test-provider-name"),
 		CredentialProviderArn: ptr.String("arn:aws:bedrock:us-east-1:123456789012:credential-provider/test"),
 		CreatedTime:           &createdTime,
@@ -32,7 +32,7 @@ func Test_BedrockAPIKeyCredentialProvider_Properties(t *testing.T) {
 func Test_BedrockAPIKeyCredentialProvider_String(t *testing.T) {
 	a := assert.New(t)
 
-	resource := BedrockAPIKeyCredentialProvider{
+	resource := BedrockAgentCoreAPIKeyCredentialProvider{
 		Name: ptr.String("test-provider-name"),
 	}
 
