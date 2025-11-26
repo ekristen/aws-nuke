@@ -14,7 +14,7 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-const BedrockAgentCoreAPIKeyCredentialProviderResource = "BedrockAgentCoreAPIKeyCredentialProvider" //nolint:gosec
+const BedrockAgentCoreAPIKeyCredentialProviderResource = "BedrockAgentCoreAPIKeyCredentialProvider"
 
 func init() {
 	registry.Register(&registry.Registration{
