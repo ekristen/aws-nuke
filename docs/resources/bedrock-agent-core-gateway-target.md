@@ -2,27 +2,25 @@
 generated: true
 ---
 
-# BedrockAgentCoreGateway
+# BedrockAgentCoreGatewayTarget
 
 
 ## Resource
 
 ```text
-BedrockAgentCoreGateway
+BedrockAgentCoreGatewayTarget
 ```
 
 ## Properties
 
 
-- `AuthorizerType`: No Description
 - `CreatedAt`: No Description
-- `ID`: No Description
+- `Description`: No Description
+- `GatewayIdentifier`: No Description
 - `Name`: No Description
-- `ProtocolType`: No Description
 - `Status`: No Description
+- `TargetID`: No Description
 - `UpdatedAt`: No Description
-- `tag:<key>:`: This resource has tags with property `Tags`. These are key/value pairs that are
-	added as their own property with the prefix of `tag:` (e.g. [tag:example: "value"]) 
 
 !!! note - Using Properties
     Properties are what [Filters](../config-filtering.md) are written against in your configuration. You use the property

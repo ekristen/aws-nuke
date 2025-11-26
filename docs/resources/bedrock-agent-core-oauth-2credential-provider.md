@@ -2,25 +2,22 @@
 generated: true
 ---
 
-# BedrockAgentCoreGateway
+# BedrockAgentCoreOauth2CredentialProvider
 
 
 ## Resource
 
 ```text
-BedrockAgentCoreGateway
+BedrockAgentCoreOauth2CredentialProvider
 ```
 
 ## Properties
 
 
-- `AuthorizerType`: No Description
-- `CreatedAt`: No Description
-- `ID`: No Description
+- `CreatedTime`: No Description
+- `LastUpdatedTime`: No Description
 - `Name`: No Description
-- `ProtocolType`: No Description
-- `Status`: No Description
-- `UpdatedAt`: No Description
+- `Vendor`: No Description
 - `tag:<key>:`: This resource has tags with property `Tags`. These are key/value pairs that are
 	added as their own property with the prefix of `tag:` (e.g. [tag:example: "value"]) 
 
