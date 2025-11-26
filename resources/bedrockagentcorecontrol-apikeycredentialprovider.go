@@ -14,22 +14,22 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-const BedrockAPIKeyCredentialProviderResource = "BedrockAPIKeyCredentialProvider" //nolint:gosec
+const BedrockAgentCoreAPIKeyCredentialProviderResource = "BedrockAgentCoreAPIKeyCredentialProvider" //nolint:gosec
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:     BedrockAPIKeyCredentialProviderResource,
+		Name:     BedrockAgentCoreAPIKeyCredentialProviderResource,
 		Scope:    nuke.Account,
-		Resource: &BedrockAPIKeyCredentialProvider{},
-		Lister:   &BedrockAPIKeyCredentialProviderLister{},
+		Resource: &BedrockAgentCoreAPIKeyCredentialProvider{},
+		Lister:   &BedrockAgentCoreAPIKeyCredentialProviderLister{},
 	})
 }
 
-type BedrockAPIKeyCredentialProviderLister struct {
+type BedrockAgentCoreAPIKeyCredentialProviderLister struct {
 	BedrockAgentCoreControlLister
 }
 
-func (l *BedrockAPIKeyCredentialProviderLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *BedrockAgentCoreAPIKeyCredentialProviderLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 	svc := bedrockagentcorecontrol.NewFromConfig(*opts.Config)
 	var resources []resource.Resource
@@ -51,7 +51,7 @@ func (l *BedrockAPIKeyCredentialProviderLister) List(ctx context.Context, o inte
 		}
 
 		for _, provider := range resp.CredentialProviders {
-			resources = append(resources, &BedrockAPIKeyCredentialProvider{
+			resources = append(resources, &BedrockAgentCoreAPIKeyCredentialProvider{
 				svc:                   svc,
 				Name:                  provider.Name,
 				CredentialProviderArn: provider.CredentialProviderArn,
@@ -64,7 +64,7 @@ func (l *BedrockAPIKeyCredentialProviderLister) List(ctx context.Context, o inte
 	return resources, nil
 }
 
-type BedrockAPIKeyCredentialProvider struct {
+type BedrockAgentCoreAPIKeyCredentialProvider struct {
 	svc                   *bedrockagentcorecontrol.Client
 	Name                  *string
 	CredentialProviderArn *string
@@ -72,7 +72,7 @@ type BedrockAPIKeyCredentialProvider struct {
 	LastUpdatedTime       *time.Time
 }
 
-func (r *BedrockAPIKeyCredentialProvider) Remove(ctx context.Context) error {
+func (r *BedrockAgentCoreAPIKeyCredentialProvider) Remove(ctx context.Context) error {
 	_, err := r.svc.DeleteApiKeyCredentialProvider(ctx, &bedrockagentcorecontrol.DeleteApiKeyCredentialProviderInput{
 		Name: r.Name,
 	})
@@ -80,10 +80,10 @@ func (r *BedrockAPIKeyCredentialProvider) Remove(ctx context.Context) error {
 	return err
 }
 
-func (r *BedrockAPIKeyCredentialProvider) Properties() types.Properties {
+func (r *BedrockAgentCoreAPIKeyCredentialProvider) Properties() types.Properties {
 	return types.NewPropertiesFromStruct(r)
 }
 
-func (r *BedrockAPIKeyCredentialProvider) String() string {
+func (r *BedrockAgentCoreAPIKeyCredentialProvider) String() string {
 	return *r.Name
 }
