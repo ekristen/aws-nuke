@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockagentcorecontrol"
@@ -50,23 +51,31 @@ func (l *BedrockAgentCoreWorkloadIdentityLister) List(ctx context.Context, o int
 		}
 
 		for _, identity := range resp.WorkloadIdentities {
+			// Get additional workload identity details
+			getResp, err := svc.GetWorkloadIdentity(ctx, &bedrockagentcorecontrol.GetWorkloadIdentityInput{
+				Name: identity.Name,
+			})
+			if err != nil {
+				return nil, err
+			}
+
 			// Get tags for the workload identity
 			var tags map[string]string
-			if identity.WorkloadIdentityArn != nil {
-				tagsResp, err := svc.ListTagsForResource(ctx, &bedrockagentcorecontrol.ListTagsForResourceInput{
-					ResourceArn: identity.WorkloadIdentityArn,
-				})
-				if err != nil {
-					opts.Logger.Warnf("unable to fetch tags for workload identity: %s", *identity.WorkloadIdentityArn)
-				} else {
-					tags = tagsResp.Tags
-				}
+			tagsResp, err := svc.ListTagsForResource(ctx, &bedrockagentcorecontrol.ListTagsForResourceInput{
+				ResourceArn: identity.WorkloadIdentityArn,
+			})
+			if err != nil {
+				opts.Logger.Warnf("unable to fetch tags for workload identity: %s", *identity.WorkloadIdentityArn)
+			} else {
+				tags = tagsResp.Tags
 			}
 
 			resources = append(resources, &BedrockAgentCoreWorkloadIdentity{
-				svc:  svc,
-				Name: identity.Name,
-				Tags: tags,
+				svc:             svc,
+				Name:            identity.Name,
+				CreatedTime:     getResp.CreatedTime,
+				LastUpdatedTime: getResp.LastUpdatedTime,
+				Tags:            tags,
 			})
 		}
 	}
@@ -75,9 +84,11 @@ func (l *BedrockAgentCoreWorkloadIdentityLister) List(ctx context.Context, o int
 }
 
 type BedrockAgentCoreWorkloadIdentity struct {
-	svc  *bedrockagentcorecontrol.Client
-	Name *string
-	Tags map[string]string
+	svc             *bedrockagentcorecontrol.Client
+	Name            *string
+	CreatedTime     *time.Time
+	LastUpdatedTime *time.Time
+	Tags            map[string]string
 }
 
 func (r *BedrockAgentCoreWorkloadIdentity) Remove(ctx context.Context) error {
