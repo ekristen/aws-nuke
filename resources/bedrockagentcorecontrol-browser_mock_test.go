@@ -35,8 +35,9 @@ func Test_BedrockAgentCoreBrowser_String(t *testing.T) {
 	a := assert.New(t)
 
 	resource := BedrockAgentCoreBrowser{
-		ID: ptr.String("test-browser-id"),
+		ID:   ptr.String("test-browser-id"),
+		Name: ptr.String("test-browser-name"),
 	}
 
-	a.Equal("test-browser-id", resource.String())
+	a.Equal("test-browser-name", resource.String())
 }

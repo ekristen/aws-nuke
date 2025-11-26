@@ -39,8 +39,9 @@ func Test_BedrockAgentCoreGateway_String(t *testing.T) {
 	a := assert.New(t)
 
 	resource := BedrockAgentCoreGateway{
-		ID: ptr.String("test-gateway-id"),
+		ID:   ptr.String("test-gateway-id"),
+		Name: ptr.String("test-gateway-name"),
 	}
 
-	a.Equal("test-gateway-id", resource.String())
+	a.Equal("test-gateway-name", resource.String())
 }

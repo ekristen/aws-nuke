@@ -35,8 +35,9 @@ func Test_BedrockAgentCoreCodeInterpreter_String(t *testing.T) {
 	a := assert.New(t)
 
 	resource := BedrockAgentCoreCodeInterpreter{
-		ID: ptr.String("test-interpreter-id"),
+		ID:   ptr.String("test-interpreter-id"),
+		Name: ptr.String("test-interpreter-name"),
 	}
 
-	a.Equal("test-interpreter-id", resource.String())
+	a.Equal("test-interpreter-name", resource.String())
 }
