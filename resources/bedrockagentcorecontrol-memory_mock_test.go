@@ -15,8 +15,7 @@ func Test_BedrockAgentCoreMemory_Properties(t *testing.T) {
 	updatedAt := time.Now()
 
 	resource := BedrockAgentCoreMemory{
-		MemoryID:  ptr.String("test-memory-id"),
-		Arn:       ptr.String("arn:aws:bedrock:us-east-1:123456789012:memory/test"),
+		ID:        ptr.String("test-memory-id"),
 		Status:    "ACTIVE",
 		CreatedAt: &createdAt,
 		UpdatedAt: &updatedAt,
@@ -24,8 +23,7 @@ func Test_BedrockAgentCoreMemory_Properties(t *testing.T) {
 
 	props := resource.Properties()
 
-	a.Equal("test-memory-id", props.Get("MemoryID"))
-	a.Equal("arn:aws:bedrock:us-east-1:123456789012:memory/test", props.Get("Arn"))
+	a.Equal("test-memory-id", props.Get("ID"))
 	a.Equal("ACTIVE", props.Get("Status"))
 	a.Equal(createdAt.Format(time.RFC3339), props.Get("CreatedAt"))
 	a.Equal(updatedAt.Format(time.RFC3339), props.Get("UpdatedAt"))
@@ -35,7 +33,7 @@ func Test_BedrockAgentCoreMemory_String(t *testing.T) {
 	a := assert.New(t)
 
 	resource := BedrockAgentCoreMemory{
-		MemoryID: ptr.String("test-memory-id"),
+		ID: ptr.String("test-memory-id"),
 	}
 
 	a.Equal("test-memory-id", resource.String())

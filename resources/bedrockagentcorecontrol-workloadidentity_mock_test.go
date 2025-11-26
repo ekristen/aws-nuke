@@ -11,22 +11,20 @@ func Test_BedrockAgentCoreWorkloadIdentity_Properties(t *testing.T) {
 	a := assert.New(t)
 
 	resource := BedrockAgentCoreWorkloadIdentity{
-		Name:                ptr.String("test-identity-name"),
-		WorkloadIdentityArn: ptr.String("arn:aws:bedrock:us-east-1:123456789012:workload-identity/test"),
+		Name: ptr.String("test-identity-name"),
 	}
 
 	props := resource.Properties()
 
 	a.Equal("test-identity-name", props.Get("Name"))
-	a.Equal("arn:aws:bedrock:us-east-1:123456789012:workload-identity/test", props.Get("WorkloadIdentityArn"))
 }
 
 func Test_BedrockAgentCoreWorkloadIdentity_String(t *testing.T) {
 	a := assert.New(t)
 
 	resource := BedrockAgentCoreWorkloadIdentity{
-		WorkloadIdentityArn: ptr.String("arn:aws:bedrock:us-east-1:123456789012:workload-identity/test"),
+		Name: ptr.String("test-identity-name"),
 	}
 
-	a.Equal("arn:aws:bedrock:us-east-1:123456789012:workload-identity/test", resource.String())
+	a.Equal("test-identity-name", resource.String())
 }
