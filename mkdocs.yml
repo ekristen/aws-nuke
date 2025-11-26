@@ -188,6 +188,15 @@ nav:
     - Batch Job Queue State: resources/batch-job-queue-state.md
     - Batch Job Queue: resources/batch-job-queue.md
     - Bedrock Agent Alias: resources/bedrock-agent-alias.md
+    - Bedrock Agent Core Agent Runtime: resources/bedrock-agent-core-agent-runtime.md
+    - Bedrock Agent Core Api Key Credential Provider: resources/bedrock-agent-core-api-key-credential-provider.md
+    - Bedrock Agent Core Browser: resources/bedrock-agent-core-browser.md
+    - Bedrock Agent Core Code Interpreter: resources/bedrock-agent-core-code-interpreter.md
+    - Bedrock Agent Core Gateway Target: resources/bedrock-agent-core-gateway-target.md
+    - Bedrock Agent Core Gateway: resources/bedrock-agent-core-gateway.md
+    - Bedrock Agent Core Memory: resources/bedrock-agent-core-memory.md
+    - Bedrock Agent Core Oauth 2Credential Provider: resources/bedrock-agent-core-oauth-2credential-provider.md
+    - Bedrock Agent Core Workload Identity: resources/bedrock-agent-core-workload-identity.md
     - Bedrock Agent: resources/bedrock-agent.md
     - Bedrock Custom Model: resources/bedrock-custom-model.md
     - Bedrock Data Source: resources/bedrock-data-source.md
