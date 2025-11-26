@@ -59,6 +59,7 @@ type Config struct {
 	// FeatureFlags is a collection of feature flags that can be used to enable or disable certain behaviors on
 	// resources. This is left over from the AWS Nuke tool and is deprecated. It was left to make the transition to the
 	// library and ekristen/aws-nuke@v3 easier for existing users.
+	//
 	// Deprecated: Use Settings instead. Will be removed in 4.x
 	FeatureFlags *FeatureFlags `yaml:"feature-flags"`
 
@@ -180,6 +181,7 @@ func (c *Config) ResolveDeprecatedFeatureFlags() {
 // FeatureFlags is a collection of feature flags that can be used to enable or disable certain features of the nuke
 // This is left over from the AWS Nuke tool and is deprecated. It was left to make the transition to the library and
 // ekristen/aws-nuke@v3 easier for existing users.
+//
 // Deprecated: Use Settings instead. Will be removed in 4.x
 type FeatureFlags struct {
 	DisableDeletionProtection        DisableDeletionProtection `yaml:"disable-deletion-protection"`
@@ -190,6 +192,7 @@ type FeatureFlags struct {
 // DisableDeletionProtection is a collection of feature flags that can be used to disable deletion protection for
 // certain resource types. This is left over from the AWS Nuke tool and is deprecated. It was left to make transition
 // to the library and ekristen/aws-nuke@v3 easier for existing users.
+//
 // Deprecated: Use Settings instead. Will be removed in 4.x
 type DisableDeletionProtection struct {
 	RDSInstance         bool `yaml:"RDSInstance"`
