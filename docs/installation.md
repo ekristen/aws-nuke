@@ -20,6 +20,14 @@ You can download pre-compiled binaries from the [releases](https://github.com/ek
 dist install ekristen/aws-nuke
 ```
 
+## Mise
+
+If you are an enthusiast user of [mise](https://github.com/jdx/mise), you can install it with a command like:
+
+```console
+mise use -g aws-nuke@latest
+```
+
 ## Homebrew Tap (macOS)
 
 !!! info
