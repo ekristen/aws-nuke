@@ -3,7 +3,7 @@
 Preferred installation order is the following:
 
 1. [GitHub Release](#github-releases-preferred)
-2. [Homebrew Tap](#ekristens-homebrew-tap-macoslinux)
+2. [Homebrew Tap](#homebrew-tap-macos)
 3. [Homebrew Core](#homebrew-core-macoslinux)
 
 Docker images are also available via the GitHub Container Registry.
