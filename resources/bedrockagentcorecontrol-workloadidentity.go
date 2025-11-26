@@ -38,7 +38,7 @@ func (l *BedrockAgentCoreWorkloadIdentityLister) List(ctx context.Context, o int
 	}
 
 	params := &bedrockagentcorecontrol.ListWorkloadIdentitiesInput{
-		MaxResults: aws.Int32(100),
+		MaxResults: aws.Int32(20),
 	}
 
 	paginator := bedrockagentcorecontrol.NewListWorkloadIdentitiesPaginator(svc, params)
@@ -50,10 +50,23 @@ func (l *BedrockAgentCoreWorkloadIdentityLister) List(ctx context.Context, o int
 		}
 
 		for _, identity := range resp.WorkloadIdentities {
+			// Get tags for the workload identity
+			var tags map[string]string
+			if identity.WorkloadIdentityArn != nil {
+				tagsResp, err := svc.ListTagsForResource(ctx, &bedrockagentcorecontrol.ListTagsForResourceInput{
+					ResourceArn: identity.WorkloadIdentityArn,
+				})
+				if err != nil {
+					opts.Logger.Warnf("unable to fetch tags for workload identity: %s", *identity.WorkloadIdentityArn)
+				} else {
+					tags = tagsResp.Tags
+				}
+			}
+
 			resources = append(resources, &BedrockAgentCoreWorkloadIdentity{
-				svc:                 svc,
-				Name:                identity.Name,
-				WorkloadIdentityArn: identity.WorkloadIdentityArn,
+				svc:  svc,
+				Name: identity.Name,
+				Tags: tags,
 			})
 		}
 	}
@@ -62,9 +75,9 @@ func (l *BedrockAgentCoreWorkloadIdentityLister) List(ctx context.Context, o int
 }
 
 type BedrockAgentCoreWorkloadIdentity struct {
-	svc                 *bedrockagentcorecontrol.Client
-	Name                *string
-	WorkloadIdentityArn *string
+	svc  *bedrockagentcorecontrol.Client
+	Name *string
+	Tags map[string]string
 }
 
 func (r *BedrockAgentCoreWorkloadIdentity) Remove(ctx context.Context) error {

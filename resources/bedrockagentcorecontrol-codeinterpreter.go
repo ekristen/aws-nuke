@@ -53,15 +53,27 @@ func (l *BedrockAgentCoreCodeInterpreterLister) List(ctx context.Context, o inte
 		}
 
 		for _, interpreter := range resp.CodeInterpreterSummaries {
+			// Get tags for the code interpreter
+			var tags map[string]string
+			if interpreter.CodeInterpreterArn != nil {
+				tagsResp, err := svc.ListTagsForResource(ctx, &bedrockagentcorecontrol.ListTagsForResourceInput{
+					ResourceArn: interpreter.CodeInterpreterArn,
+				})
+				if err != nil {
+					opts.Logger.Warnf("unable to fetch tags for code interpreter: %s", *interpreter.CodeInterpreterArn)
+				} else {
+					tags = tagsResp.Tags
+				}
+			}
+
 			resources = append(resources, &BedrockAgentCoreCodeInterpreter{
-				svc:                svc,
-				CodeInterpreterID:  interpreter.CodeInterpreterId,
-				CodeInterpreterArn: interpreter.CodeInterpreterArn,
-				Name:               interpreter.Name,
-				Status:             string(interpreter.Status),
-				Description:        interpreter.Description,
-				CreatedAt:          interpreter.CreatedAt,
-				LastUpdatedAt:      interpreter.LastUpdatedAt,
+				svc:           svc,
+				ID:            interpreter.CodeInterpreterId,
+				Name:          interpreter.Name,
+				Status:        string(interpreter.Status),
+				CreatedAt:     interpreter.CreatedAt,
+				LastUpdatedAt: interpreter.LastUpdatedAt,
+				Tags:          tags,
 			})
 		}
 	}
@@ -70,19 +82,18 @@ func (l *BedrockAgentCoreCodeInterpreterLister) List(ctx context.Context, o inte
 }
 
 type BedrockAgentCoreCodeInterpreter struct {
-	svc                *bedrockagentcorecontrol.Client
-	CodeInterpreterID  *string
-	CodeInterpreterArn *string
-	Name               *string
-	Status             string
-	Description        *string
-	CreatedAt          *time.Time
-	LastUpdatedAt      *time.Time
+	svc           *bedrockagentcorecontrol.Client
+	ID            *string
+	Name          *string
+	Status        string
+	CreatedAt     *time.Time
+	LastUpdatedAt *time.Time
+	Tags          map[string]string
 }
 
 func (r *BedrockAgentCoreCodeInterpreter) Remove(ctx context.Context) error {
 	_, err := r.svc.DeleteCodeInterpreter(ctx, &bedrockagentcorecontrol.DeleteCodeInterpreterInput{
-		CodeInterpreterId: r.CodeInterpreterID,
+		CodeInterpreterId: r.ID,
 	})
 
 	return err
@@ -93,5 +104,5 @@ func (r *BedrockAgentCoreCodeInterpreter) Properties() types.Properties {
 }
 
 func (r *BedrockAgentCoreCodeInterpreter) String() string {
-	return *r.CodeInterpreterID
+	return *r.Name
 }

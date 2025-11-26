@@ -53,14 +53,27 @@ func (l *BedrockAgentCoreBrowserLister) List(ctx context.Context, o interface{})
 		}
 
 		for _, browser := range resp.BrowserSummaries {
+			// Get tags for the browser
+			var tags map[string]string
+			if browser.BrowserArn != nil {
+				tagsResp, err := svc.ListTagsForResource(ctx, &bedrockagentcorecontrol.ListTagsForResourceInput{
+					ResourceArn: browser.BrowserArn,
+				})
+				if err != nil {
+					opts.Logger.Warnf("unable to fetch tags for browser: %s", *browser.BrowserArn)
+				} else {
+					tags = tagsResp.Tags
+				}
+			}
+
 			resources = append(resources, &BedrockAgentCoreBrowser{
 				svc:           svc,
-				BrowserID:     browser.BrowserId,
-				BrowserArn:    browser.BrowserArn,
+				ID:            browser.BrowserId,
+				Name:          browser.Name,
 				Status:        string(browser.Status),
-				Description:   browser.Description,
 				CreatedAt:     browser.CreatedAt,
 				LastUpdatedAt: browser.LastUpdatedAt,
+				Tags:          tags,
 			})
 		}
 	}
@@ -70,17 +83,17 @@ func (l *BedrockAgentCoreBrowserLister) List(ctx context.Context, o interface{})
 
 type BedrockAgentCoreBrowser struct {
 	svc           *bedrockagentcorecontrol.Client
-	BrowserID     *string
-	BrowserArn    *string
+	ID            *string
+	Name          *string
 	Status        string
-	Description   *string
 	CreatedAt     *time.Time
 	LastUpdatedAt *time.Time
+	Tags          map[string]string
 }
 
 func (r *BedrockAgentCoreBrowser) Remove(ctx context.Context) error {
 	_, err := r.svc.DeleteBrowser(ctx, &bedrockagentcorecontrol.DeleteBrowserInput{
-		BrowserId: r.BrowserID,
+		BrowserId: r.ID,
 	})
 
 	return err
@@ -91,5 +104,5 @@ func (r *BedrockAgentCoreBrowser) Properties() types.Properties {
 }
 
 func (r *BedrockAgentCoreBrowser) String() string {
-	return *r.BrowserID
+	return *r.Name
 }

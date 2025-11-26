@@ -51,16 +51,35 @@ func (l *BedrockAgentCoreGatewayLister) List(ctx context.Context, o interface{})
 		}
 
 		for _, gateway := range resp.Items {
+			// Get additional gateway details including ARN
+			getResp, err := svc.GetGateway(ctx, &bedrockagentcorecontrol.GetGatewayInput{
+				GatewayIdentifier: gateway.GatewayId,
+			})
+			if err != nil {
+				return nil, err
+			}
+
+			// Get tags for the gateway
+			var tags map[string]string
+			tagsResp, err := svc.ListTagsForResource(ctx, &bedrockagentcorecontrol.ListTagsForResourceInput{
+				ResourceArn: getResp.GatewayArn,
+			})
+			if err != nil {
+				opts.Logger.Warnf("unable to fetch tags for gateway: %s", *getResp.GatewayArn)
+			} else {
+				tags = tagsResp.Tags
+			}
+
 			resources = append(resources, &BedrockAgentCoreGateway{
 				svc:            svc,
-				GatewayID:      gateway.GatewayId,
+				ID:             gateway.GatewayId,
 				Name:           gateway.Name,
 				Status:         string(gateway.Status),
-				Description:    gateway.Description,
 				AuthorizerType: string(gateway.AuthorizerType),
 				ProtocolType:   string(gateway.ProtocolType),
 				CreatedAt:      gateway.CreatedAt,
 				UpdatedAt:      gateway.UpdatedAt,
+				Tags:           tags,
 			})
 		}
 	}
@@ -70,19 +89,19 @@ func (l *BedrockAgentCoreGatewayLister) List(ctx context.Context, o interface{})
 
 type BedrockAgentCoreGateway struct {
 	svc            *bedrockagentcorecontrol.Client
-	GatewayID      *string
+	ID             *string
 	Name           *string
 	Status         string
-	Description    *string
 	AuthorizerType string
 	ProtocolType   string
 	CreatedAt      *time.Time
 	UpdatedAt      *time.Time
+	Tags           map[string]string
 }
 
 func (r *BedrockAgentCoreGateway) Remove(ctx context.Context) error {
 	_, err := r.svc.DeleteGateway(ctx, &bedrockagentcorecontrol.DeleteGatewayInput{
-		GatewayIdentifier: r.GatewayID,
+		GatewayIdentifier: r.ID,
 	})
 
 	return err
@@ -93,5 +112,5 @@ func (r *BedrockAgentCoreGateway) Properties() types.Properties {
 }
 
 func (r *BedrockAgentCoreGateway) String() string {
-	return *r.GatewayID
+	return *r.Name
 }

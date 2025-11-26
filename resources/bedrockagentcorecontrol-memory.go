@@ -51,13 +51,26 @@ func (l *BedrockAgentCoreMemoryLister) List(ctx context.Context, o interface{}) 
 		}
 
 		for _, memory := range resp.Memories {
+			// Get tags for the memory
+			var tags map[string]string
+			if memory.Arn != nil {
+				tagsResp, err := svc.ListTagsForResource(ctx, &bedrockagentcorecontrol.ListTagsForResourceInput{
+					ResourceArn: memory.Arn,
+				})
+				if err != nil {
+					opts.Logger.Warnf("unable to fetch tags for memory: %s", *memory.Arn)
+				} else {
+					tags = tagsResp.Tags
+				}
+			}
+
 			resources = append(resources, &BedrockAgentCoreMemory{
 				svc:       svc,
-				MemoryID:  memory.Id,
-				Arn:       memory.Arn,
+				ID:        memory.Id,
 				Status:    string(memory.Status),
 				CreatedAt: memory.CreatedAt,
 				UpdatedAt: memory.UpdatedAt,
+				Tags:      tags,
 			})
 		}
 	}
@@ -67,16 +80,16 @@ func (l *BedrockAgentCoreMemoryLister) List(ctx context.Context, o interface{}) 
 
 type BedrockAgentCoreMemory struct {
 	svc       *bedrockagentcorecontrol.Client
-	MemoryID  *string
-	Arn       *string
+	ID        *string
 	Status    string
 	CreatedAt *time.Time
 	UpdatedAt *time.Time
+	Tags      map[string]string
 }
 
 func (r *BedrockAgentCoreMemory) Remove(ctx context.Context) error {
 	_, err := r.svc.DeleteMemory(ctx, &bedrockagentcorecontrol.DeleteMemoryInput{
-		MemoryId: r.MemoryID,
+		MemoryId: r.ID,
 	})
 
 	return err
@@ -87,8 +100,5 @@ func (r *BedrockAgentCoreMemory) Properties() types.Properties {
 }
 
 func (r *BedrockAgentCoreMemory) String() string {
-	if r.MemoryID != nil {
-		return *r.MemoryID
-	}
-	return *r.Arn
+	return *r.ID
 }

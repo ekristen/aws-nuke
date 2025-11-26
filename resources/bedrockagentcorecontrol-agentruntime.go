@@ -53,6 +53,17 @@ func (l *BedrockAgentCoreAgentRuntimeLister) List(ctx context.Context, o interfa
 		}
 
 		for _, runtime := range resp.AgentRuntimes {
+			// Get tags for the agent runtime
+			var tags map[string]string
+			tagsResp, err := svc.ListTagsForResource(ctx, &bedrockagentcorecontrol.ListTagsForResourceInput{
+				ResourceArn: runtime.AgentRuntimeArn,
+			})
+			if err != nil {
+				opts.Logger.Warnf("unable to fetch tags for agent runtime: %s", *runtime.AgentRuntimeArn)
+			} else {
+				tags = tagsResp.Tags
+			}
+
 			resources = append(resources, &BedrockAgentCoreAgentRuntime{
 				svc:                 svc,
 				AgentRuntimeID:      runtime.AgentRuntimeId,
@@ -61,6 +72,7 @@ func (l *BedrockAgentCoreAgentRuntimeLister) List(ctx context.Context, o interfa
 				Status:              string(runtime.Status),
 				Description:         runtime.Description,
 				LastUpdatedAt:       runtime.LastUpdatedAt,
+				Tags:                tags,
 			})
 		}
 	}
@@ -76,6 +88,7 @@ type BedrockAgentCoreAgentRuntime struct {
 	Status              string
 	Description         *string
 	LastUpdatedAt       *time.Time
+	Tags                map[string]string
 }
 
 func (r *BedrockAgentCoreAgentRuntime) Remove(ctx context.Context) error {
