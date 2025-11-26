@@ -13,23 +13,29 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-const BedrockWorkloadIdentityResource = "BedrockWorkloadIdentity"
+const BedrockAgentCoreWorkloadIdentityResource = "BedrockAgentCoreWorkloadIdentity"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:     BedrockWorkloadIdentityResource,
+		Name:     BedrockAgentCoreWorkloadIdentityResource,
 		Scope:    nuke.Account,
-		Resource: &BedrockWorkloadIdentity{},
-		Lister:   &BedrockWorkloadIdentityLister{},
+		Resource: &BedrockAgentCoreWorkloadIdentity{},
+		Lister:   &BedrockAgentCoreWorkloadIdentityLister{},
 	})
 }
 
-type BedrockWorkloadIdentityLister struct{}
+type BedrockAgentCoreWorkloadIdentityLister struct {
+	BedrockAgentCoreControlLister
+}
 
-func (l *BedrockWorkloadIdentityLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *BedrockAgentCoreWorkloadIdentityLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 	svc := bedrockagentcorecontrol.NewFromConfig(*opts.Config)
 	var resources []resource.Resource
+
+	if !l.IsSupportedRegion(opts.Region.Name) {
+		return resources, nil
+	}
 
 	params := &bedrockagentcorecontrol.ListWorkloadIdentitiesInput{
 		MaxResults: aws.Int32(100),
@@ -44,7 +50,7 @@ func (l *BedrockWorkloadIdentityLister) List(ctx context.Context, o interface{})
 		}
 
 		for _, identity := range resp.WorkloadIdentities {
-			resources = append(resources, &BedrockWorkloadIdentity{
+			resources = append(resources, &BedrockAgentCoreWorkloadIdentity{
 				svc:                 svc,
 				Name:                identity.Name,
 				WorkloadIdentityArn: identity.WorkloadIdentityArn,
@@ -55,13 +61,13 @@ func (l *BedrockWorkloadIdentityLister) List(ctx context.Context, o interface{})
 	return resources, nil
 }
 
-type BedrockWorkloadIdentity struct {
+type BedrockAgentCoreWorkloadIdentity struct {
 	svc                 *bedrockagentcorecontrol.Client
 	Name                *string
 	WorkloadIdentityArn *string
 }
 
-func (r *BedrockWorkloadIdentity) Remove(ctx context.Context) error {
+func (r *BedrockAgentCoreWorkloadIdentity) Remove(ctx context.Context) error {
 	_, err := r.svc.DeleteWorkloadIdentity(ctx, &bedrockagentcorecontrol.DeleteWorkloadIdentityInput{
 		Name: r.Name,
 	})
@@ -69,10 +75,10 @@ func (r *BedrockWorkloadIdentity) Remove(ctx context.Context) error {
 	return err
 }
 
-func (r *BedrockWorkloadIdentity) Properties() types.Properties {
+func (r *BedrockAgentCoreWorkloadIdentity) Properties() types.Properties {
 	return types.NewPropertiesFromStruct(r)
 }
 
-func (r *BedrockWorkloadIdentity) String() string {
+func (r *BedrockAgentCoreWorkloadIdentity) String() string {
 	return *r.Name
 }

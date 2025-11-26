@@ -14,23 +14,31 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-const BedrockAgentRuntimeResource = "BedrockAgentRuntime"
+const BedrockAgentCoreAgentRuntimeResource = "BedrockAgentCoreAgentRuntime"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:     BedrockAgentRuntimeResource,
+		Name:     BedrockAgentCoreAgentRuntimeResource,
 		Scope:    nuke.Account,
-		Resource: &BedrockAgentRuntime{},
-		Lister:   &BedrockAgentRuntimeLister{},
+		Resource: &BedrockAgentCoreAgentRuntime{},
+		Lister:   &BedrockAgentCoreAgentRuntimeLister{},
 	})
 }
 
-type BedrockAgentRuntimeLister struct{}
+type BedrockAgentCoreAgentRuntimeLister struct {
+	BedrockAgentCoreControlLister
+}
 
-func (l *BedrockAgentRuntimeLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *BedrockAgentCoreAgentRuntimeLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 	svc := bedrockagentcorecontrol.NewFromConfig(*opts.Config)
 	var resources []resource.Resource
+
+	l.SetSupportedRegions(AgentRuntimeSupportedRegions)
+
+	if !l.IsSupportedRegion(opts.Region.Name) {
+		return resources, nil
+	}
 
 	params := &bedrockagentcorecontrol.ListAgentRuntimesInput{
 		MaxResults: aws.Int32(100),
@@ -45,7 +53,7 @@ func (l *BedrockAgentRuntimeLister) List(ctx context.Context, o interface{}) ([]
 		}
 
 		for _, runtime := range resp.AgentRuntimes {
-			resources = append(resources, &BedrockAgentRuntime{
+			resources = append(resources, &BedrockAgentCoreAgentRuntime{
 				svc:                 svc,
 				AgentRuntimeID:      runtime.AgentRuntimeId,
 				AgentRuntimeName:    runtime.AgentRuntimeName,
@@ -60,7 +68,7 @@ func (l *BedrockAgentRuntimeLister) List(ctx context.Context, o interface{}) ([]
 	return resources, nil
 }
 
-type BedrockAgentRuntime struct {
+type BedrockAgentCoreAgentRuntime struct {
 	svc                 *bedrockagentcorecontrol.Client
 	AgentRuntimeID      *string
 	AgentRuntimeName    *string
@@ -70,7 +78,7 @@ type BedrockAgentRuntime struct {
 	LastUpdatedAt       *time.Time
 }
 
-func (r *BedrockAgentRuntime) Remove(ctx context.Context) error {
+func (r *BedrockAgentCoreAgentRuntime) Remove(ctx context.Context) error {
 	_, err := r.svc.DeleteAgentRuntime(ctx, &bedrockagentcorecontrol.DeleteAgentRuntimeInput{
 		AgentRuntimeId: r.AgentRuntimeID,
 	})
@@ -78,10 +86,10 @@ func (r *BedrockAgentRuntime) Remove(ctx context.Context) error {
 	return err
 }
 
-func (r *BedrockAgentRuntime) Properties() libtypes.Properties {
+func (r *BedrockAgentCoreAgentRuntime) Properties() libtypes.Properties {
 	return libtypes.NewPropertiesFromStruct(r)
 }
 
-func (r *BedrockAgentRuntime) String() string {
+func (r *BedrockAgentCoreAgentRuntime) String() string {
 	return *r.AgentRuntimeID
 }

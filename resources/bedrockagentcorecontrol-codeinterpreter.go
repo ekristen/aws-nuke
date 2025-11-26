@@ -14,23 +14,31 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-const BedrockCodeInterpreterResource = "BedrockCodeInterpreter"
+const BedrockAgentCoreCodeInterpreterResource = "BedrockAgentCoreCodeInterpreter"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:     BedrockCodeInterpreterResource,
+		Name:     BedrockAgentCoreCodeInterpreterResource,
 		Scope:    nuke.Account,
-		Resource: &BedrockCodeInterpreter{},
-		Lister:   &BedrockCodeInterpreterLister{},
+		Resource: &BedrockAgentCoreCodeInterpreter{},
+		Lister:   &BedrockAgentCoreCodeInterpreterLister{},
 	})
 }
 
-type BedrockCodeInterpreterLister struct{}
+type BedrockAgentCoreCodeInterpreterLister struct {
+	BedrockAgentCoreControlLister
+}
 
-func (l *BedrockCodeInterpreterLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *BedrockAgentCoreCodeInterpreterLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 	svc := bedrockagentcorecontrol.NewFromConfig(*opts.Config)
 	var resources []resource.Resource
+
+	l.SetSupportedRegions(BuiltInToolsSupportedRegions)
+
+	if !l.IsSupportedRegion(opts.Region.Name) {
+		return resources, nil
+	}
 
 	params := &bedrockagentcorecontrol.ListCodeInterpretersInput{
 		MaxResults: aws.Int32(100),
@@ -45,7 +53,7 @@ func (l *BedrockCodeInterpreterLister) List(ctx context.Context, o interface{}) 
 		}
 
 		for _, interpreter := range resp.CodeInterpreterSummaries {
-			resources = append(resources, &BedrockCodeInterpreter{
+			resources = append(resources, &BedrockAgentCoreCodeInterpreter{
 				svc:                svc,
 				CodeInterpreterID:  interpreter.CodeInterpreterId,
 				CodeInterpreterArn: interpreter.CodeInterpreterArn,
@@ -61,7 +69,7 @@ func (l *BedrockCodeInterpreterLister) List(ctx context.Context, o interface{}) 
 	return resources, nil
 }
 
-type BedrockCodeInterpreter struct {
+type BedrockAgentCoreCodeInterpreter struct {
 	svc                *bedrockagentcorecontrol.Client
 	CodeInterpreterID  *string
 	CodeInterpreterArn *string
@@ -72,7 +80,7 @@ type BedrockCodeInterpreter struct {
 	LastUpdatedAt      *time.Time
 }
 
-func (r *BedrockCodeInterpreter) Remove(ctx context.Context) error {
+func (r *BedrockAgentCoreCodeInterpreter) Remove(ctx context.Context) error {
 	_, err := r.svc.DeleteCodeInterpreter(ctx, &bedrockagentcorecontrol.DeleteCodeInterpreterInput{
 		CodeInterpreterId: r.CodeInterpreterID,
 	})
@@ -80,10 +88,10 @@ func (r *BedrockCodeInterpreter) Remove(ctx context.Context) error {
 	return err
 }
 
-func (r *BedrockCodeInterpreter) Properties() types.Properties {
+func (r *BedrockAgentCoreCodeInterpreter) Properties() types.Properties {
 	return types.NewPropertiesFromStruct(r)
 }
 
-func (r *BedrockCodeInterpreter) String() string {
+func (r *BedrockAgentCoreCodeInterpreter) String() string {
 	return *r.CodeInterpreterID
 }

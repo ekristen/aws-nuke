@@ -25,12 +25,18 @@ func init() {
 	})
 }
 
-type BedrockAPIKeyCredentialProviderLister struct{}
+type BedrockAPIKeyCredentialProviderLister struct {
+	BedrockAgentCoreControlLister
+}
 
 func (l *BedrockAPIKeyCredentialProviderLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 	svc := bedrockagentcorecontrol.NewFromConfig(*opts.Config)
 	var resources []resource.Resource
+
+	if !l.IsSupportedRegion(opts.Region.Name) {
+		return resources, nil
+	}
 
 	params := &bedrockagentcorecontrol.ListApiKeyCredentialProvidersInput{
 		MaxResults: aws.Int32(100),

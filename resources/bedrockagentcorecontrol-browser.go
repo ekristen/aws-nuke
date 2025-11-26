@@ -14,23 +14,31 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-const BedrockBrowserResource = "BedrockBrowser"
+const BedrockAgentCoreBrowserResource = "BedrockAgentCoreBrowser"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:     BedrockBrowserResource,
+		Name:     BedrockAgentCoreBrowserResource,
 		Scope:    nuke.Account,
-		Resource: &BedrockBrowser{},
-		Lister:   &BedrockBrowserLister{},
+		Resource: &BedrockAgentCoreBrowser{},
+		Lister:   &BedrockAgentCoreBrowserLister{},
 	})
 }
 
-type BedrockBrowserLister struct{}
+type BedrockAgentCoreBrowserLister struct {
+	BedrockAgentCoreControlLister
+}
 
-func (l *BedrockBrowserLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *BedrockAgentCoreBrowserLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 	svc := bedrockagentcorecontrol.NewFromConfig(*opts.Config)
 	var resources []resource.Resource
+
+	l.SetSupportedRegions(BuiltInToolsSupportedRegions)
+
+	if !l.IsSupportedRegion(opts.Region.Name) {
+		return resources, nil
+	}
 
 	params := &bedrockagentcorecontrol.ListBrowsersInput{
 		MaxResults: aws.Int32(100),
@@ -45,7 +53,7 @@ func (l *BedrockBrowserLister) List(ctx context.Context, o interface{}) ([]resou
 		}
 
 		for _, browser := range resp.BrowserSummaries {
-			resources = append(resources, &BedrockBrowser{
+			resources = append(resources, &BedrockAgentCoreBrowser{
 				svc:           svc,
 				BrowserID:     browser.BrowserId,
 				BrowserArn:    browser.BrowserArn,
@@ -60,7 +68,7 @@ func (l *BedrockBrowserLister) List(ctx context.Context, o interface{}) ([]resou
 	return resources, nil
 }
 
-type BedrockBrowser struct {
+type BedrockAgentCoreBrowser struct {
 	svc           *bedrockagentcorecontrol.Client
 	BrowserID     *string
 	BrowserArn    *string
@@ -70,7 +78,7 @@ type BedrockBrowser struct {
 	LastUpdatedAt *time.Time
 }
 
-func (r *BedrockBrowser) Remove(ctx context.Context) error {
+func (r *BedrockAgentCoreBrowser) Remove(ctx context.Context) error {
 	_, err := r.svc.DeleteBrowser(ctx, &bedrockagentcorecontrol.DeleteBrowserInput{
 		BrowserId: r.BrowserID,
 	})
@@ -78,10 +86,10 @@ func (r *BedrockBrowser) Remove(ctx context.Context) error {
 	return err
 }
 
-func (r *BedrockBrowser) Properties() types.Properties {
+func (r *BedrockAgentCoreBrowser) Properties() types.Properties {
 	return types.NewPropertiesFromStruct(r)
 }
 
-func (r *BedrockBrowser) String() string {
+func (r *BedrockAgentCoreBrowser) String() string {
 	return *r.BrowserID
 }

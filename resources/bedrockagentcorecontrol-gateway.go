@@ -14,23 +14,29 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-const BedrockGatewayResource = "BedrockGateway"
+const BedrockAgentCoreGatewayResource = "BedrockAgentCoreGateway"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:     BedrockGatewayResource,
+		Name:     BedrockAgentCoreGatewayResource,
 		Scope:    nuke.Account,
-		Resource: &BedrockGateway{},
-		Lister:   &BedrockGatewayLister{},
+		Resource: &BedrockAgentCoreGateway{},
+		Lister:   &BedrockAgentCoreGatewayLister{},
 	})
 }
 
-type BedrockGatewayLister struct{}
+type BedrockAgentCoreGatewayLister struct {
+	BedrockAgentCoreControlLister
+}
 
-func (l *BedrockGatewayLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *BedrockAgentCoreGatewayLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 	svc := bedrockagentcorecontrol.NewFromConfig(*opts.Config)
 	var resources []resource.Resource
+
+	if !l.IsSupportedRegion(opts.Region.Name) {
+		return resources, nil
+	}
 
 	params := &bedrockagentcorecontrol.ListGatewaysInput{
 		MaxResults: aws.Int32(100),
@@ -45,7 +51,7 @@ func (l *BedrockGatewayLister) List(ctx context.Context, o interface{}) ([]resou
 		}
 
 		for _, gateway := range resp.Items {
-			resources = append(resources, &BedrockGateway{
+			resources = append(resources, &BedrockAgentCoreGateway{
 				svc:            svc,
 				GatewayID:      gateway.GatewayId,
 				Name:           gateway.Name,
@@ -62,7 +68,7 @@ func (l *BedrockGatewayLister) List(ctx context.Context, o interface{}) ([]resou
 	return resources, nil
 }
 
-type BedrockGateway struct {
+type BedrockAgentCoreGateway struct {
 	svc            *bedrockagentcorecontrol.Client
 	GatewayID      *string
 	Name           *string
@@ -74,7 +80,7 @@ type BedrockGateway struct {
 	UpdatedAt      *time.Time
 }
 
-func (r *BedrockGateway) Remove(ctx context.Context) error {
+func (r *BedrockAgentCoreGateway) Remove(ctx context.Context) error {
 	_, err := r.svc.DeleteGateway(ctx, &bedrockagentcorecontrol.DeleteGatewayInput{
 		GatewayIdentifier: r.GatewayID,
 	})
@@ -82,10 +88,10 @@ func (r *BedrockGateway) Remove(ctx context.Context) error {
 	return err
 }
 
-func (r *BedrockGateway) Properties() types.Properties {
+func (r *BedrockAgentCoreGateway) Properties() types.Properties {
 	return types.NewPropertiesFromStruct(r)
 }
 
-func (r *BedrockGateway) String() string {
+func (r *BedrockAgentCoreGateway) String() string {
 	return *r.GatewayID
 }

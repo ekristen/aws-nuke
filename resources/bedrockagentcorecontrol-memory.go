@@ -14,23 +14,29 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-const BedrockMemoryResource = "BedrockMemory"
+const BedrockAgentCoreMemoryResource = "BedrockAgentCoreMemory"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:     BedrockMemoryResource,
+		Name:     BedrockAgentCoreMemoryResource,
 		Scope:    nuke.Account,
-		Resource: &BedrockMemory{},
-		Lister:   &BedrockMemoryLister{},
+		Resource: &BedrockAgentCoreMemory{},
+		Lister:   &BedrockAgentCoreMemoryLister{},
 	})
 }
 
-type BedrockMemoryLister struct{}
+type BedrockAgentCoreMemoryLister struct {
+	BedrockAgentCoreControlLister
+}
 
-func (l *BedrockMemoryLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *BedrockAgentCoreMemoryLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 	svc := bedrockagentcorecontrol.NewFromConfig(*opts.Config)
 	var resources []resource.Resource
+
+	if !l.IsSupportedRegion(opts.Region.Name) {
+		return resources, nil
+	}
 
 	params := &bedrockagentcorecontrol.ListMemoriesInput{
 		MaxResults: aws.Int32(100),
@@ -45,7 +51,7 @@ func (l *BedrockMemoryLister) List(ctx context.Context, o interface{}) ([]resour
 		}
 
 		for _, memory := range resp.Memories {
-			resources = append(resources, &BedrockMemory{
+			resources = append(resources, &BedrockAgentCoreMemory{
 				svc:       svc,
 				MemoryID:  memory.Id,
 				Arn:       memory.Arn,
@@ -59,7 +65,7 @@ func (l *BedrockMemoryLister) List(ctx context.Context, o interface{}) ([]resour
 	return resources, nil
 }
 
-type BedrockMemory struct {
+type BedrockAgentCoreMemory struct {
 	svc       *bedrockagentcorecontrol.Client
 	MemoryID  *string
 	Arn       *string
@@ -68,7 +74,7 @@ type BedrockMemory struct {
 	UpdatedAt *time.Time
 }
 
-func (r *BedrockMemory) Remove(ctx context.Context) error {
+func (r *BedrockAgentCoreMemory) Remove(ctx context.Context) error {
 	_, err := r.svc.DeleteMemory(ctx, &bedrockagentcorecontrol.DeleteMemoryInput{
 		MemoryId: r.MemoryID,
 	})
@@ -76,11 +82,11 @@ func (r *BedrockMemory) Remove(ctx context.Context) error {
 	return err
 }
 
-func (r *BedrockMemory) Properties() types.Properties {
+func (r *BedrockAgentCoreMemory) Properties() types.Properties {
 	return types.NewPropertiesFromStruct(r)
 }
 
-func (r *BedrockMemory) String() string {
+func (r *BedrockAgentCoreMemory) String() string {
 	if r.MemoryID != nil {
 		return *r.MemoryID
 	}
