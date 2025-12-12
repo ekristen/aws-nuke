@@ -94,7 +94,7 @@ jobs:
           docker images --format "{{.Repository}}:{{.Tag}}" | grep "${{ github.repository }}" | xargs -L1 docker push
       - name: upload artifacts
         if: ${{ github.event.pull_request.base.ref == 'main' || github.event_name == 'workflow_dispatch' }}
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: binaries
           path: releases/*.tar.gz
