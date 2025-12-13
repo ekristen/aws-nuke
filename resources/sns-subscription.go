@@ -68,6 +68,13 @@ type SNSSubscription struct {
 	TopicARN *string
 }
 
+func (r *SNSSubscription) Filter() error {
+	if *r.ARN == "Deleted" {
+		return fmt.Errorf("subscription %s is already deleted", *r.ARN)
+	}
+	return nil
+}
+
 func (r *SNSSubscription) Remove(_ context.Context) error {
 	_, err := r.svc.Unsubscribe(&sns.UnsubscribeInput{
 		SubscriptionArn: r.ARN,
