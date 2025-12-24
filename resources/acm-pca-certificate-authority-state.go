@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"            //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/aws/awserr"     //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/acmpca" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -32,7 +33,6 @@ func (l *ACMPCACertificateAuthorityStateLister) List(_ context.Context, o interf
 	svc := acmpca.New(opts.Session)
 
 	var resources []resource.Resource
-	var tags []*acmpca.Tag
 
 	params := &acmpca.ListCertificateAuthoritiesInput{
 		MaxResults: aws.Int64(100),
@@ -50,9 +50,16 @@ func (l *ACMPCACertificateAuthorityStateLister) List(_ context.Context, o interf
 				MaxResults:              aws.Int64(100),
 			}
 
+			tags := []*acmpca.Tag{}
 			for {
 				tagResp, tagErr := svc.ListTags(tagParams)
+
 				if tagErr != nil {
+					if awsTagErr, ok := err.(awserr.Error); ok {
+						if awsTagErr.Code() == acmpca.ErrCodeInvalidStateException {
+							break
+						}
+					}
 					return nil, tagErr
 				}
 
