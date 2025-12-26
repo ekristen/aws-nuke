@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"time"
 
 	"github.com/aws/aws-sdk-go/service/lambda" //nolint:staticcheck
 
@@ -56,6 +57,7 @@ func (l *LambdaFunctionLister) List(_ context.Context, o interface{}) ([]resourc
 		resources = append(resources, &LambdaFunction{
 			svc:          svc,
 			functionName: function.FunctionName,
+			lastModified: function.LastModified,
 			tags:         tags.Tags,
 		})
 	}
@@ -66,12 +68,19 @@ func (l *LambdaFunctionLister) List(_ context.Context, o interface{}) ([]resourc
 type LambdaFunction struct {
 	svc          *lambda.Lambda
 	functionName *string
+	lastModified *string
 	tags         map[string]*string
 }
 
 func (f *LambdaFunction) Properties() types.Properties {
 	properties := types.NewProperties()
 	properties.Set("Name", f.functionName)
+
+	if f.lastModified != nil {
+		if t, err := time.Parse("2006-01-02T15:04:05.000-0700", *f.lastModified); err == nil {
+			properties.Set("LastModified", t.Format(time.RFC3339))
+		}
+	}
 
 	for key, val := range f.tags {
 		properties.SetTag(&key, val)
