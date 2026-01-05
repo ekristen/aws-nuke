@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"                            //nolint:staticcheck
-	"github.com/aws/aws-sdk-go/service/textract"               //nolint:staticcheck
-	"github.com/aws/aws-sdk-go/service/textract/textractiface" //nolint:staticcheck
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/textract"
+	textracttypes "github.com/aws/aws-sdk-go-v2/service/textract/types"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
@@ -26,47 +26,33 @@ func init() {
 	})
 }
 
-type TextractAdapterLister struct {
-	mockSvc textractiface.TextractAPI
-}
+type TextractAdapterLister struct{}
 
-func (l *TextractAdapterLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *TextractAdapterLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
-
-	var svc textractiface.TextractAPI
-	if l.mockSvc != nil {
-		svc = l.mockSvc
-	} else {
-		svc = textract.New(opts.Session)
-	}
+	svc := textract.NewFromConfig(*opts.Config)
 
 	resources := make([]resource.Resource, 0)
 
 	params := &textract.ListAdaptersInput{
-		MaxResults: aws.Int64(100),
+		MaxResults: aws.Int32(100),
 	}
 
-	for {
-		resp, err := svc.ListAdapters(params)
+	paginator := textract.NewListAdaptersPaginator(svc, params)
+
+	for paginator.HasMorePages() {
+		resp, err := paginator.NextPage(ctx)
 		if err != nil {
 			return nil, err
 		}
 
 		for _, adapter := range resp.Adapters {
 			// Get detailed adapter info including tags
-			adapterDetails, err := svc.GetAdapter(&textract.GetAdapterInput{
+			adapterDetails, err := svc.GetAdapter(ctx, &textract.GetAdapterInput{
 				AdapterId: adapter.AdapterId,
 			})
 			if err != nil {
 				return nil, err
-			}
-
-			// Convert tags from map[string]*string to map[string]string
-			tags := make(map[string]string)
-			for k, v := range adapterDetails.Tags {
-				if v != nil {
-					tags[k] = *v
-				}
 			}
 
 			resources = append(resources, &TextractAdapter{
@@ -77,32 +63,27 @@ func (l *TextractAdapterLister) List(_ context.Context, o interface{}) ([]resour
 				FeatureTypes: adapter.FeatureTypes,
 				AutoUpdate:   adapterDetails.AutoUpdate,
 				Description:  adapterDetails.Description,
-				Tags:         tags,
+				Tags:         adapterDetails.Tags,
 			})
 		}
-
-		if resp.NextToken == nil {
-			break
-		}
-		params.NextToken = resp.NextToken
 	}
 
 	return resources, nil
 }
 
 type TextractAdapter struct {
-	svc          textractiface.TextractAPI
+	svc          *textract.Client
 	AdapterID    *string
 	AdapterName  *string
 	CreationTime *time.Time
-	FeatureTypes []*string
-	AutoUpdate   *string
+	FeatureTypes []textracttypes.FeatureType
+	AutoUpdate   textracttypes.AutoUpdate
 	Description  *string
 	Tags         map[string]string
 }
 
-func (r *TextractAdapter) Remove(_ context.Context) error {
-	_, err := r.svc.DeleteAdapter(&textract.DeleteAdapterInput{
+func (r *TextractAdapter) Remove(ctx context.Context) error {
+	_, err := r.svc.DeleteAdapter(ctx, &textract.DeleteAdapterInput{
 		AdapterId: r.AdapterID,
 	})
 	return err

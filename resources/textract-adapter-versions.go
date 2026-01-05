@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"                            //nolint:staticcheck
-	"github.com/aws/aws-sdk-go/service/textract"               //nolint:staticcheck
-	"github.com/aws/aws-sdk-go/service/textract/textractiface" //nolint:staticcheck
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/textract"
+	textracttypes "github.com/aws/aws-sdk-go-v2/service/textract/types"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
@@ -27,109 +27,82 @@ func init() {
 	})
 }
 
-type TextractAdapterVersionLister struct {
-	mockSvc textractiface.TextractAPI
-}
+type TextractAdapterVersionLister struct{}
 
-func (l *TextractAdapterVersionLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *TextractAdapterVersionLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
-
-	var svc textractiface.TextractAPI
-	if l.mockSvc != nil {
-		svc = l.mockSvc
-	} else {
-		svc = textract.New(opts.Session)
-	}
+	svc := textract.NewFromConfig(*opts.Config)
 
 	resources := make([]resource.Resource, 0)
 
 	// First, list all adapters
-	adapters, err := listTextractAdaptersForVersions(svc)
-	if err != nil {
-		return nil, err
+	adapterParams := &textract.ListAdaptersInput{
+		MaxResults: aws.Int32(100),
 	}
 
-	// For each adapter, list its versions
-	for _, adapter := range adapters {
-		params := &textract.ListAdapterVersionsInput{
-			AdapterId:  adapter.AdapterId,
-			MaxResults: aws.Int64(100),
+	adapterPaginator := textract.NewListAdaptersPaginator(svc, adapterParams)
+
+	for adapterPaginator.HasMorePages() {
+		adapterResp, err := adapterPaginator.NextPage(ctx)
+		if err != nil {
+			return nil, err
 		}
 
-		for {
-			resp, err := svc.ListAdapterVersions(params)
-			if err != nil {
-				return nil, err
+		// For each adapter, list its versions
+		for _, adapter := range adapterResp.Adapters {
+			versionParams := &textract.ListAdapterVersionsInput{
+				AdapterId:  adapter.AdapterId,
+				MaxResults: aws.Int32(100),
 			}
 
-			for _, item := range resp.AdapterVersions {
-				resources = append(resources, &TextractAdapterVersion{
-					svc:            svc,
-					AdapterID:      item.AdapterId,
-					AdapterVersion: item.AdapterVersion,
-					Status:         item.Status,
-					StatusMessage:  item.StatusMessage,
-					CreationTime:   item.CreationTime,
-					FeatureTypes:   item.FeatureTypes,
-				})
-			}
+			versionPaginator := textract.NewListAdapterVersionsPaginator(svc, versionParams)
 
-			if resp.NextToken == nil {
-				break
+			for versionPaginator.HasMorePages() {
+				versionResp, err := versionPaginator.NextPage(ctx)
+				if err != nil {
+					return nil, err
+				}
+
+				for _, item := range versionResp.AdapterVersions {
+					resources = append(resources, &TextractAdapterVersion{
+						svc:            svc,
+						AdapterID:      item.AdapterId,
+						AdapterVersion: item.AdapterVersion,
+						Status:         item.Status,
+						StatusMessage:  item.StatusMessage,
+						CreationTime:   item.CreationTime,
+						FeatureTypes:   item.FeatureTypes,
+					})
+				}
 			}
-			params.NextToken = resp.NextToken
 		}
 	}
 
 	return resources, nil
 }
 
-// listTextractAdaptersForVersions lists all Textract adapters for the version lister
-func listTextractAdaptersForVersions(svc textractiface.TextractAPI) ([]*textract.AdapterOverview, error) {
-	adapters := make([]*textract.AdapterOverview, 0)
-	params := &textract.ListAdaptersInput{
-		MaxResults: aws.Int64(100),
-	}
-
-	for {
-		resp, err := svc.ListAdapters(params)
-		if err != nil {
-			return nil, err
-		}
-		adapters = append(adapters, resp.Adapters...)
-		if resp.NextToken == nil {
-			break
-		}
-		params.NextToken = resp.NextToken
-	}
-
-	return adapters, nil
-}
-
 type TextractAdapterVersion struct {
-	svc            textractiface.TextractAPI
+	svc            *textract.Client
 	AdapterID      *string
 	AdapterVersion *string
-	Status         *string
+	Status         textracttypes.AdapterVersionStatus
 	StatusMessage  *string
 	CreationTime   *time.Time
-	FeatureTypes   []*string
+	FeatureTypes   []textracttypes.FeatureType
 }
 
 func (r *TextractAdapterVersion) Filter() error {
-	if r.Status != nil {
-		switch *r.Status {
-		case textract.AdapterVersionStatusCreationInProgress:
-			return fmt.Errorf("cannot delete adapter version in CREATION_IN_PROGRESS state")
-		case textract.AdapterVersionStatusCreationError:
-			return fmt.Errorf("cannot delete adapter version in CREATION_ERROR state")
-		}
+	switch r.Status {
+	case textracttypes.AdapterVersionStatusCreationInProgress:
+		return fmt.Errorf("cannot delete adapter version in CREATION_IN_PROGRESS state")
+	case textracttypes.AdapterVersionStatusCreationError:
+		return fmt.Errorf("cannot delete adapter version in CREATION_ERROR state")
 	}
 	return nil
 }
 
-func (r *TextractAdapterVersion) Remove(_ context.Context) error {
-	_, err := r.svc.DeleteAdapterVersion(&textract.DeleteAdapterVersionInput{
+func (r *TextractAdapterVersion) Remove(ctx context.Context) error {
+	_, err := r.svc.DeleteAdapterVersion(ctx, &textract.DeleteAdapterVersionInput{
 		AdapterId:      r.AdapterID,
 		AdapterVersion: r.AdapterVersion,
 	})
