@@ -16,6 +16,7 @@ NeptuneSnapshot
 
 - `CreateTime`: No Description
 - `ID`: No Description
+- `SnapshotType`: No Description
 - `Status`: No Description
 
 !!! note - Using Properties
