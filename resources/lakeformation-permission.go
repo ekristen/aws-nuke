@@ -45,6 +45,7 @@ func (l *LakeFormationPermissionLister) List(ctx context.Context, o interface{})
 				svc:          svc,
 				PrincipalARN: prp.Principal.DataLakePrincipalIdentifier,
 				Resource:     prp.Resource,
+				Permissions:  prp.Permissions,
 			})
 		}
 	}
@@ -54,8 +55,9 @@ func (l *LakeFormationPermissionLister) List(ctx context.Context, o interface{})
 
 type LakeFormationPermission struct {
 	svc          *lakeformation.Client
-	PrincipalARN *string                      `description:"The ARN of the principal to remove permissions from"`
-	Resource     *lakeformationtypes.Resource `description:"-"`
+	PrincipalARN *string                         `description:"The ARN of the principal to remove permissions from"`
+	Permissions  []lakeformationtypes.Permission `description:"The permissions to remove from the principal"`
+	Resource     *lakeformationtypes.Resource    `description:"-"`
 }
 
 func (f *LakeFormationPermission) Remove(ctx context.Context) error {
@@ -63,7 +65,8 @@ func (f *LakeFormationPermission) Remove(ctx context.Context) error {
 		Principal: &lakeformationtypes.DataLakePrincipal{
 			DataLakePrincipalIdentifier: f.PrincipalARN,
 		},
-		Resource: f.Resource,
+		Resource:    f.Resource,
+		Permissions: f.Permissions,
 	})
 
 	return err

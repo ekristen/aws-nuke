@@ -14,6 +14,7 @@ LakeFormationPermission
 ## Properties
 
 
+- `Permissions`: The permissions to remove from the principal
 - `PrincipalARN`: The ARN of the principal to remove permissions from
 - `Resource`: -
 

@@ -41,11 +41,11 @@ first letter of the field name. The field name should match what the existing pr
 #### Generating Documentation for All Resources
 
 ```console
-go run tools/generate-docs/main.go --write
+go run tools/generate-docs/docs.go --write
 ```
 
 #### Generating Documentation for a Single Resource
 
 ```console
-go run tools/generate-docs/main.go --resource EC2Instance --write
+go run tools/generate-docs/docs.go --resource EC2Instance --write
 ```
