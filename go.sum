@@ -108,6 +108,8 @@ github.com/aws/aws-sdk-go-v2/service/sts v1.34.1 h1:aUrLQwJfZtwv3/ZNG2xRtEen+NqI
 github.com/aws/aws-sdk-go-v2/service/sts v1.34.1/go.mod h1:3wFBZKoWnX3r+Sm7in79i54fBmNfwhdNdQuscCw7QIk=
 github.com/aws/aws-sdk-go-v2/service/textract v1.40.15 h1:G8sfXZKe3GAkXtfJVJBqk19sKsQtVzkd3QgwNjV5Otk=
 github.com/aws/aws-sdk-go-v2/service/textract v1.40.15/go.mod h1:mXClNsqCIxeNSwZmGcqyOqsSzWt281D0GpJuwVzuxpc=
+github.com/aws/aws-sdk-go-v2/service/textract v1.40.16 h1:JbvV3rRYlnHH8Ztj9h/SjPBWtLhKmPVrsTihLWhMY+8=
+github.com/aws/aws-sdk-go-v2/service/textract v1.40.16/go.mod h1:dYFajO9mXY0D8k9XY/0PR0S9uX8DZzX/5vTq/HRjx04=
 github.com/aws/aws-sdk-go-v2/service/transfer v1.55.5 h1:3CgAcyZciL7KG/8LCEWWoMJfZvgZV2xUzjtNGDlaBVQ=
 github.com/aws/aws-sdk-go-v2/service/transfer v1.55.5/go.mod h1:NJBUE6GjnjqSvexXpU0pj/2w+VEhRk5XPL5rRZpj7bI=
 github.com/aws/smithy-go v1.23.1 h1:sLvcH6dfAFwGkHLZ7dGiYF7aK6mg4CgKA/iDKjLDt9M=
