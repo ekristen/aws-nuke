@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"             //nolint:staticcheck
@@ -54,10 +55,11 @@ func (l *NeptuneSnapshotLister) List(_ context.Context, o interface{}) ([]resour
 
 		for _, dbClusterSnapshot := range output.DBClusterSnapshots {
 			resources = append(resources, &NeptuneSnapshot{
-				svc:        svc,
-				ID:         dbClusterSnapshot.DBClusterSnapshotIdentifier,
-				Status:     dbClusterSnapshot.Status,
-				CreateTime: dbClusterSnapshot.SnapshotCreateTime,
+				svc:          svc,
+				ID:           dbClusterSnapshot.DBClusterSnapshotIdentifier,
+				Status:       dbClusterSnapshot.Status,
+				SnapshotType: dbClusterSnapshot.SnapshotType,
+				CreateTime:   dbClusterSnapshot.SnapshotCreateTime,
 			})
 		}
 
@@ -72,10 +74,18 @@ func (l *NeptuneSnapshotLister) List(_ context.Context, o interface{}) ([]resour
 }
 
 type NeptuneSnapshot struct {
-	svc        *neptune.Neptune
-	ID         *string
-	Status     *string
-	CreateTime *time.Time
+	svc          *neptune.Neptune
+	ID           *string
+	Status       *string
+	SnapshotType *string
+	CreateTime   *time.Time
+}
+
+func (r *NeptuneSnapshot) Filter() error {
+	if *r.SnapshotType == "automated" {
+		return fmt.Errorf("cannot delete automated snapshots")
+	}
+	return nil
 }
 
 func (r *NeptuneSnapshot) Remove(_ context.Context) error {
