@@ -13,8 +13,9 @@ RUN \
   go build -ldflags '-s -w -extldflags="-static"' -o bin/aws-nuke main.go
 
 FROM base AS goreleaser
+ARG TARGETPLATFORM
 ENTRYPOINT ["/usr/local/bin/aws-nuke"]
-COPY aws-nuke /usr/local/bin/aws-nuke
+COPY $TARGETPLATFORM/aws-nuke /usr/local/bin/aws-nuke
 USER aws-nuke
 
 FROM base
