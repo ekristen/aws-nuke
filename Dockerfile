@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.20-labs@sha256:dbcde2ebc4abc8bb5c3c499b9c9a6876842bf5da243951cd2697f921a7aeb6a9
-FROM alpine:3.23.2@sha256:865b95f46d98cf867a156fe4a135ad3fe50d2056aa3f25ed31662dff6da4eb62 as base
+FROM alpine:3.23.2@sha256:865b95f46d98cf867a156fe4a135ad3fe50d2056aa3f25ed31662dff6da4eb62 AS base
 RUN apk add --no-cache ca-certificates
 RUN adduser -D aws-nuke
 
@@ -13,8 +13,9 @@ RUN \
   go build -ldflags '-s -w -extldflags="-static"' -o bin/aws-nuke main.go
 
 FROM base AS goreleaser
+ARG TARGETPLATFORM
 ENTRYPOINT ["/usr/local/bin/aws-nuke"]
-COPY aws-nuke /usr/local/bin/aws-nuke
+COPY $TARGETPLATFORM/aws-nuke /usr/local/bin/aws-nuke
 USER aws-nuke
 
 FROM base
