@@ -29,7 +29,8 @@ func init() {
 		Resource: &CloudWatchLogsLogGroup{},
 		Lister:   &CloudWatchLogsLogGroupLister{},
 		DependsOn: []string{
-			EC2VPCResource, // Reason: flow logs, if log group is cleaned before vpc, vpc can write more flow logs
+			EC2VPCResource,         // Reason: flow logs, if log group is cleaned before vpc, vpc can write more flow logs
+			LambdaFunctionResource, // Reason: Lambda functions can recreate log groups due to invocations, automatic container provisioning, etc.
 		},
 	})
 }
