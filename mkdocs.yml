@@ -473,6 +473,9 @@ nav:
     - Kinesis Analytics Application: resources/kinesis-analytics-application.md
     - Kinesis Stream: resources/kinesis-stream.md
     - Kinesis Video Project: resources/kinesis-video-project.md
+    - Lake Formation Location: resources/lake-formation-location.md
+    - Lake Formation Permission: resources/lake-formation-permission.md
+    - Lake Formation Tag: resources/lake-formation-tag.md
     - Lambda Event Source Mapping: resources/lambda-event-source-mapping.md
     - Lambda Function: resources/lambda-function.md
     - Lambda Layer: resources/lambda-layer.md
