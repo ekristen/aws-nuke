@@ -2,20 +2,24 @@
 generated: true
 ---
 
-# IoTSiteWiseProject
+# TextractAdapterVersion
 
 
 ## Resource
 
 ```text
-IoTSiteWiseProject
+TextractAdapterVersion
 ```
 
 ## Properties
 
 
-- `ID`: No Description
-- `Name`: No Description
+- `AdapterID`: No Description
+- `AdapterVersion`: No Description
+- `CreationTime`: No Description
+- `FeatureTypes`: No Description
+- `Status`: No Description
+- `StatusMessage`: No Description
 
 !!! note - Using Properties
     Properties are what [Filters](../config-filtering.md) are written against in your configuration. You use the property
@@ -28,13 +32,4 @@ resources support properties. To write a filter against the string representatio
 the filter.
 
 The string value is always what is used in the output of the log format when a resource is identified.
-
-### DependsOn
-
-!!! important - Experimental Feature
-    This resource depends on a resource using the experimental feature. This means that the resource will
-    only be deleted if all the resources of a particular type are deleted first or reach a terminal state.
-
-- [IoTSiteWiseDashboard](./io-tsite-wise-dashboard.md)
-- [IoTSiteWiseAccessPolicy](./io-tsite-wise-access-policy.md)
 

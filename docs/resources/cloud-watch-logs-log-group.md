@@ -34,6 +34,21 @@ the filter.
 
 The string value is always what is used in the output of the log format when a resource is identified.
 
+## Settings
+
+- `DisableDeletionProtection`
+
+
+### DisableDeletionProtection
+
+!!! note
+    There is currently no description for this setting. Often times settings are fairly self-explanatory. However, we
+    are working on adding descriptions for all settings.
+
+```text
+DisableDeletionProtection
+```
+
 ### DependsOn
 
 !!! important - Experimental Feature
@@ -41,4 +56,5 @@ The string value is always what is used in the output of the log format when a r
     only be deleted if all the resources of a particular type are deleted first or reach a terminal state.
 
 - [EC2VPC](./ec2-vpc.md)
+- [LambdaFunction](./lambda-function.md)
 
