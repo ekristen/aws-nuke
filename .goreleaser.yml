@@ -38,7 +38,7 @@ builds:
     hooks:
       post:
         - cmd: |
-            {{- if eq .Os "darwin" -}} 
+            {{- if eq .Os "darwin" -}}
             quill sign-and-notarize "{{ .Path }}" --dry-run={{ .IsSnapshot }} --ad-hoc={{ .IsSnapshot }} -vv
             {{- else -}}
             true
@@ -47,83 +47,67 @@ builds:
             - QUILL_LOG_FILE=/tmp/quill-{{ .Target }}.log
 archives:
   - id: default
-    builds:
+    ids:
       - default
     name_template: "{{ .ProjectName }}-v{{ .Version }}-{{ .Os }}-{{ .Arch }}{{ .Arm }}"
     format_overrides:
       - goos: windows
-        format: zip
-dockers:
-  - use: buildx
-    goos: linux
-    goarch: amd64
-    dockerfile: Dockerfile
-    image_templates:
-      - ghcr.io/ekristen/aws-nuke:v{{ .Version }}-amd64
-    build_flag_templates:
+        formats:
+          - zip
+dockers_v2:
+  - dockerfile: Dockerfile
+    images:
+      - ghcr.io/ekristen/aws-nuke
+    tags:
+      - v{{ .Version }}-amd64
+    platforms:
+      - linux/amd64
+      - linux/arm64
+      - linux/arm/v7
+    labels:
+      "org.opencontainers.image.created": "{{.Date}}"
+      "org.opencontainers.image.title": "{{.ProjectName}}"
+      "org.opencontainers.image.revision": "{{.FullCommit}}"
+      "org.opencontainers.image.version": "{{.Version}}"
+      "org.opencontainers.image.source": "https://github.com/ekristen/aws-nuke"
+    flags:
       - "--target=goreleaser"
       - "--pull"
-      - "--label=org.opencontainers.image.created={{.Date}}"
-      - "--label=org.opencontainers.image.title={{.ProjectName}}"
-      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{.Version}}"
-      - "--label=org.opencontainers.image.source=https://github.com/ekristen/aws-nuke"
-      - "--platform=linux/amd64"
-  - use: buildx
-    goos: linux
-    goarch: arm64
-    dockerfile: Dockerfile
-    image_templates:
-      - ghcr.io/ekristen/aws-nuke:v{{ .Version }}-arm64
-    build_flag_templates:
-      - "--platform=linux/arm64"
-      - "--target=goreleaser"
-      - "--pull"
-      - "--label=org.opencontainers.image.created={{.Date}}"
-      - "--label=org.opencontainers.image.title={{.ProjectName}}"
-      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{.Version}}"
-      - '--label=org.opencontainers.image.source={{replace (replace (replace .GitURL "git@" "https://") ".git" "") "github.com:" "github.com/"}}'
-  - use: buildx
-    goos: linux
-    goarch: arm
-    goarm: "7"
-    dockerfile: Dockerfile
-    image_templates:
-      - ghcr.io/ekristen/aws-nuke:v{{ .Version }}-arm32v7
-    build_flag_templates:
-      - "--platform=linux/arm/v7"
-      - "--target=goreleaser"
-      - "--pull"
-      - "--label=org.opencontainers.image.created={{.Date}}"
-      - "--label=org.opencontainers.image.title={{.ProjectName}}"
-      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{.Version}}"
-      - '--label=org.opencontainers.image.source={{replace (replace (replace .GitURL "git@" "https://") ".git" "") "github.com:" "github.com/"}}'
-docker_manifests:
-  - use: docker
-    name_template: ghcr.io/ekristen/aws-nuke:v{{ .Version }}
-    image_templates:
-      - ghcr.io/ekristen/aws-nuke:v{{ .Version }}-amd64
-      - ghcr.io/ekristen/aws-nuke:v{{ .Version }}-arm64
-      - ghcr.io/ekristen/aws-nuke:v{{ .Version }}-arm32v7
 signs:
   - ids:
       - default
     cmd: cosign
     signature: "${artifact}.sig"
     certificate: "${artifact}.pem"
-    args: ["sign-blob", "--yes", "--oidc-provider=github", "--oidc-issuer=https://token.actions.githubusercontent.com", "--output-certificate=${certificate}", "--output-signature=${signature}", "${artifact}"]
+    args:
+      [
+        "sign-blob",
+        "--yes",
+        "--oidc-provider=github",
+        "--oidc-issuer=https://token.actions.githubusercontent.com",
+        "--output-certificate=${certificate}",
+        "--output-signature=${signature}",
+        "${artifact}",
+      ]
     artifacts: all
 docker_signs:
   - ids:
       - default
     artifacts: all
     cmd: cosign
-    args: ["sign", "--yes", "--oidc-provider=github", "--oidc-issuer=https://token.actions.githubusercontent.com", "--output-certificate=${certificate}", "--output-signature=${signature}", "${artifact}"]
+    args:
+      [
+        "sign",
+        "--yes",
+        "--oidc-provider=github",
+        "--oidc-issuer=https://token.actions.githubusercontent.com",
+        "--output-certificate=${certificate}",
+        "--output-signature=${signature}",
+        "${artifact}",
+      ]
 checksum:
   name_template: "checksums.txt"
 snapshot:
-  name_template: '{{ trimprefix .Summary "v" }}'
+  version_template: '{{ trimprefix .Summary "v" }}'
 changelog:
   disable: true
