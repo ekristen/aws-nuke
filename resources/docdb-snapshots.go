@@ -85,10 +85,8 @@ type DocDBSnapshot struct {
 	Tags               []docdbtypes.Tag
 }
 
-const DocDBAutomatedSnapshot = "automated"
-
 func (r *DocDBSnapshot) Filter() error {
-	if *r.SnapshotType == DocDBAutomatedSnapshot {
+	if *r.SnapshotType == RDSAutomatedSnapshot {
 		return fmt.Errorf("cannot delete automated snapshots")
 	}
 	return nil

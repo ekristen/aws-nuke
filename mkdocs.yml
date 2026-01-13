@@ -646,6 +646,8 @@ nav:
     - Storage Gateway Gateway: resources/storage-gateway-gateway.md
     - Storage Gateway Tape: resources/storage-gateway-tape.md
     - Storage Gateway Volume: resources/storage-gateway-volume.md
+    - Textract Adapter Version: resources/textract-adapter-version.md
+    - Textract Adapter: resources/textract-adapter.md
     - Transcribe Call Analytics Category: resources/transcribe-call-analytics-category.md
     - Transcribe Call Analytics Job: resources/transcribe-call-analytics-job.md
     - Transcribe Language Model: resources/transcribe-language-model.md

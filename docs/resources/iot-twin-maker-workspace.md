@@ -36,8 +36,8 @@ The string value is always what is used in the output of the log format when a r
     This resource depends on a resource using the experimental feature. This means that the resource will
     only be deleted if all the resources of a particular type are deleted first or reach a terminal state.
 
-- [IoTTwinMakerComponentType](./iot-twin-maker-component-type.md)
-- [IoTTwinMakerEntity](./iot-twin-maker-entity.md)
-- [IoTTwinMakerScene](./iot-twin-maker-scene.md)
-- [IoTTwinMakerSyncJob](./iot-twin-maker-sync-job.md)
+- [IoTTwinMakerComponentType](./io-ttwin-maker-component-type.md)
+- [IoTTwinMakerEntity](./io-ttwin-maker-entity.md)
+- [IoTTwinMakerScene](./io-ttwin-maker-scene.md)
+- [IoTTwinMakerSyncJob](./io-ttwin-maker-sync-job.md)
 

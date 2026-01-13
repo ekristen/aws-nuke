@@ -18,8 +18,8 @@ func TestCloudWatchLogsLogGroupProperties(t *testing.T) {
 		CreationTime:    ptr.Time(now),
 		LastEvent:       ptr.Time(now),
 		RetentionInDays: 7,
-		Tags: map[string]*string{
-			"Environment": ptr.String("production"),
+		Tags: map[string]string{
+			"Environment": "production",
 		},
 	}
 

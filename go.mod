@@ -14,6 +14,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/appsync v1.42.3
 	github.com/aws/aws-sdk-go-v2/service/bedrockagentcorecontrol v1.14.1
 	github.com/aws/aws-sdk-go-v2/service/cloudfront v1.44.12
+	github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.63.1
 	github.com/aws/aws-sdk-go-v2/service/docdb v1.41.7
 	github.com/aws/aws-sdk-go-v2/service/docdbelastic v1.15.5
 	github.com/aws/aws-sdk-go-v2/service/dsql v1.1.2
@@ -23,6 +24,8 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/eks v1.74.10
 	github.com/aws/aws-sdk-go-v2/service/iam v1.38.10
 	github.com/aws/aws-sdk-go-v2/service/inspector2 v1.44.12
+	github.com/aws/aws-sdk-go-v2/service/lakeformation v1.46.4
+	github.com/aws/aws-sdk-go-v2/service/lambda v1.87.1
 	github.com/aws/aws-sdk-go-v2/service/mgn v1.37.6
 	github.com/aws/aws-sdk-go-v2/service/neptunegraph v1.17.6
 	github.com/aws/aws-sdk-go-v2/service/networkfirewall v1.53.0
@@ -51,7 +54,7 @@ require (
 )
 
 require (
-	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.6.7 // indirect
+	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.7.4 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.16.33 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.4.17 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.7.17 // indirect
@@ -61,7 +64,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.4.8 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.13.1 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.18.10 // indirect
-	github.com/aws/aws-sdk-go-v2/service/lakeformation v1.46.4 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sso v1.25.6 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.30.4 // indirect
 	github.com/benbjohnson/clock v1.3.0 // indirect

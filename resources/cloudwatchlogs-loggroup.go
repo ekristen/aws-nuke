@@ -8,10 +8,12 @@ import (
 	"github.com/gotidy/ptr"
 	"go.uber.org/ratelimit"
 
-	"github.com/aws/aws-sdk-go/service/cloudwatchlogs" //nolint:staticcheck
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	libsettings "github.com/ekristen/libnuke/pkg/settings"
 	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
@@ -28,6 +30,9 @@ func init() {
 		Scope:    nuke.Account,
 		Resource: &CloudWatchLogsLogGroup{},
 		Lister:   &CloudWatchLogsLogGroupLister{},
+		Settings: []string{
+			"DisableDeletionProtection",
+		},
 		DependsOn: []string{
 			EC2VPCResource,         // Reason: flow logs, if log group is cleaned before vpc, vpc can write more flow logs
 			LambdaFunctionResource, // Reason: Lambda functions can recreate log groups due to invocations, automatic container provisioning, etc.
@@ -37,10 +42,10 @@ func init() {
 
 type CloudWatchLogsLogGroupLister struct{}
 
-func (l *CloudWatchLogsLogGroupLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *CloudWatchLogsLogGroupLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 
-	svc := cloudwatchlogs.New(opts.Session)
+	svc := cloudwatchlogs.NewFromConfig(*opts.Config)
 	resources := make([]resource.Resource, 0)
 
 	// Note: these can be modified by the customer and account, and we could query them but for now we hard code
@@ -51,22 +56,25 @@ func (l *CloudWatchLogsLogGroupLister) List(_ context.Context, o interface{}) ([
 	streamRl := ratelimit.New(25)
 
 	params := &cloudwatchlogs.DescribeLogGroupsInput{
-		Limit: ptr.Int64(50),
+		Limit: aws.Int32(50),
 	}
 
-	for {
+	paginator := cloudwatchlogs.NewDescribeLogGroupsPaginator(svc, params)
+
+	for paginator.HasMorePages() {
 		groupRl.Take() // Wait for DescribeLogGroups rate limiter
 
-		output, err := svc.DescribeLogGroups(params)
+		output, err := paginator.NextPage(ctx)
 		if err != nil {
 			return nil, err
 		}
 
-		for _, logGroup := range output.LogGroups {
+		for i := range output.LogGroups {
+			logGroup := &output.LogGroups[i]
 			tagRl.Take() // Wait for ListTagsForResource rate limiter
 
 			arn := strings.TrimSuffix(*logGroup.Arn, ":*")
-			tagResp, err := svc.ListTagsForResource(
+			tagResp, err := svc.ListTagsForResource(ctx,
 				&cloudwatchlogs.ListTagsForResourceInput{
 					ResourceArn: &arn,
 				})
@@ -77,11 +85,11 @@ func (l *CloudWatchLogsLogGroupLister) List(_ context.Context, o interface{}) ([
 			streamRl.Take() // Wait for DescribeLogStreams rate limiter
 
 			// get last event ingestion time
-			lsResp, err := svc.DescribeLogStreams(&cloudwatchlogs.DescribeLogStreamsInput{
+			lsResp, err := svc.DescribeLogStreams(ctx, &cloudwatchlogs.DescribeLogStreamsInput{
 				LogGroupName: logGroup.LogGroupName,
-				OrderBy:      ptr.String("LastEventTime"),
-				Limit:        ptr.Int64(1),
-				Descending:   ptr.Bool(true),
+				OrderBy:      "LastEventTime",
+				Limit:        aws.Int32(1),
+				Descending:   aws.Bool(true),
 			})
 			if err != nil {
 				return nil, err
@@ -96,7 +104,7 @@ func (l *CloudWatchLogsLogGroupLister) List(_ context.Context, o interface{}) ([
 
 			var retentionInDays int64
 			if logGroup.RetentionInDays != nil {
-				retentionInDays = ptr.ToInt64(logGroup.RetentionInDays)
+				retentionInDays = int64(ptr.ToInt32(logGroup.RetentionInDays))
 			}
 
 			resources = append(resources, &CloudWatchLogsLogGroup{
@@ -107,32 +115,40 @@ func (l *CloudWatchLogsLogGroupLister) List(_ context.Context, o interface{}) ([
 				LastEvent:       ptr.Time(lastEvent), // TODO(v4): convert to UTC
 				RetentionInDays: retentionInDays,
 				Tags:            tagResp.Tags,
+				protection:      logGroup.DeletionProtectionEnabled,
 			})
 		}
-		if output.NextToken == nil {
-			break
-		}
-
-		params.NextToken = output.NextToken
 	}
 
 	return resources, nil
 }
 
 type CloudWatchLogsLogGroup struct {
-	svc             *cloudwatchlogs.CloudWatchLogs
+	svc             *cloudwatchlogs.Client
 	Name            *string    `description:"The name of the log group" libnuke:"uniqueKey"`
 	CreatedTime     *int64     `description:"The creation time of the log group in unix timestamp format"`
 	CreationTime    *time.Time `description:"The creation time of the log group in RFC3339 format" libnuke:"uniqueKey"`
 	LastEvent       *time.Time `description:"The last event time of the log group in RFC3339 format"`
 	RetentionInDays int64      `description:"The number of days to retain log events in the log group"`
-	Tags            map[string]*string
+	Tags            map[string]string
+	settings        *libsettings.Setting
+	protection      *bool
 }
 
-func (r *CloudWatchLogsLogGroup) Remove(_ context.Context) error {
+func (r *CloudWatchLogsLogGroup) Remove(ctx context.Context) error {
+	if ptr.ToBool(r.protection) && r.settings.GetBool("DisableDeletionProtection") {
+		_, err := r.svc.PutLogGroupDeletionProtection(ctx, &cloudwatchlogs.PutLogGroupDeletionProtectionInput{
+			LogGroupIdentifier:        r.Name,
+			DeletionProtectionEnabled: aws.Bool(false),
+		})
+		if err != nil {
+			return err
+		}
+	}
+
 	deleteRl.Take() // Wait for DeleteLogGroup rate limiter
 
-	_, err := r.svc.DeleteLogGroup(&cloudwatchlogs.DeleteLogGroupInput{
+	_, err := r.svc.DeleteLogGroup(ctx, &cloudwatchlogs.DeleteLogGroupInput{
 		LogGroupName: r.Name,
 	})
 
@@ -146,4 +162,8 @@ func (r *CloudWatchLogsLogGroup) String() string {
 func (r *CloudWatchLogsLogGroup) Properties() types.Properties {
 	return types.NewPropertiesFromStruct(r).
 		Set("logGroupName", r.Name) // TODO(v4): remove this property
+}
+
+func (r *CloudWatchLogsLogGroup) Settings(setting *libsettings.Setting) {
+	r.settings = setting
 }

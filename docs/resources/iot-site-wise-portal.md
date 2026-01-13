@@ -35,6 +35,6 @@ The string value is always what is used in the output of the log format when a r
     This resource depends on a resource using the experimental feature. This means that the resource will
     only be deleted if all the resources of a particular type are deleted first or reach a terminal state.
 
-- [IoTSiteWiseProject](./iot-site-wise-project.md)
-- [IoTSiteWiseAccessPolicy](./iot-site-wise-access-policy.md)
+- [IoTSiteWiseProject](./io-tsite-wise-project.md)
+- [IoTSiteWiseAccessPolicy](./io-tsite-wise-access-policy.md)
 
