@@ -69,7 +69,8 @@ func (l *CloudWatchLogsLogGroupLister) List(ctx context.Context, o interface{}) 
 			return nil, err
 		}
 
-		for _, logGroup := range output.LogGroups {
+		for i := range output.LogGroups {
+			logGroup := &output.LogGroups[i]
 			tagRl.Take() // Wait for ListTagsForResource rate limiter
 
 			arn := strings.TrimSuffix(*logGroup.Arn, ":*")

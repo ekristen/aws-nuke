@@ -17,6 +17,8 @@ import (
 
 const RDSSnapshotResource = "RDSSnapshot"
 
+const RDSAutomatedSnapshot = "automated"
+
 func init() {
 	registry.Register(&registry.Registration{
 		Name:     RDSSnapshotResource,
@@ -64,7 +66,7 @@ type RDSSnapshot struct {
 }
 
 func (i *RDSSnapshot) Filter() error {
-	if *i.snapshot.SnapshotType == "automated" {
+	if *i.snapshot.SnapshotType == RDSAutomatedSnapshot {
 		return fmt.Errorf("cannot delete automated snapshots")
 	}
 	return nil

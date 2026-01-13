@@ -41,7 +41,8 @@ func (l *LambdaFunctionLister) List(ctx context.Context, o interface{}) ([]resou
 			return nil, err
 		}
 
-		for _, function := range resp.Functions {
+		for i := range resp.Functions {
+			function := &resp.Functions[i]
 			tags, err := svc.ListTags(ctx, &lambda.ListTagsInput{
 				Resource: function.FunctionArn,
 			})
