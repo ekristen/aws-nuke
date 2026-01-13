@@ -2,7 +2,6 @@ package resources
 
 import (
 	"context"
-	"time"
 
 	"github.com/aws/aws-sdk-go/service/lambda" //nolint:staticcheck
 
@@ -56,9 +55,9 @@ func (l *LambdaFunctionLister) List(_ context.Context, o interface{}) ([]resourc
 
 		resources = append(resources, &LambdaFunction{
 			svc:          svc,
-			functionName: function.FunctionName,
-			lastModified: function.LastModified,
-			tags:         tags.Tags,
+			Name:         function.FunctionName,
+			LastModified: function.LastModified,
+			Tags:         tags.Tags,
 		})
 	}
 
@@ -67,36 +66,23 @@ func (l *LambdaFunctionLister) List(_ context.Context, o interface{}) ([]resourc
 
 type LambdaFunction struct {
 	svc          *lambda.Lambda
-	functionName *string
-	lastModified *string
-	tags         map[string]*string
+	Name         *string
+	LastModified *string
+	Tags         map[string]*string
 }
 
-func (f *LambdaFunction) Properties() types.Properties {
-	properties := types.NewProperties()
-	properties.Set("Name", f.functionName)
-
-	if f.lastModified != nil {
-		if t, err := time.Parse("2006-01-02T15:04:05.000-0700", *f.lastModified); err == nil {
-			properties.Set("LastModified", t.Format(time.RFC3339))
-		}
-	}
-
-	for key, val := range f.tags {
-		properties.SetTag(&key, val)
-	}
-
-	return properties
+func (r *LambdaFunction) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
 
-func (f *LambdaFunction) Remove(_ context.Context) error {
-	_, err := f.svc.DeleteFunction(&lambda.DeleteFunctionInput{
-		FunctionName: f.functionName,
+func (r *LambdaFunction) Remove(_ context.Context) error {
+	_, err := r.svc.DeleteFunction(&lambda.DeleteFunctionInput{
+		FunctionName: r.Name,
 	})
 
 	return err
 }
 
-func (f *LambdaFunction) String() string {
-	return *f.functionName
+func (r *LambdaFunction) String() string {
+	return *r.Name
 }
