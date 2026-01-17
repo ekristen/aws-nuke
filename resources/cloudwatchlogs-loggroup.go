@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gotidy/ptr"
+	"github.com/sirupsen/logrus"
 	"go.uber.org/ratelimit"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -79,7 +80,10 @@ func (l *CloudWatchLogsLogGroupLister) List(ctx context.Context, o interface{}) 
 					ResourceArn: &arn,
 				})
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).
+					WithField("arn", arn).
+					Warn("unable to list tags for log group, skipping to avoid incorrect filtering")
+				continue
 			}
 
 			streamRl.Take() // Wait for DescribeLogStreams rate limiter
@@ -92,7 +96,10 @@ func (l *CloudWatchLogsLogGroupLister) List(ctx context.Context, o interface{}) 
 				Descending:   aws.Bool(true),
 			})
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).
+					WithField("arn", arn).
+					Warn("unable to describe log streams for log group, skipping to avoid incorrect filtering")
+				continue
 			}
 
 			var lastEvent time.Time
