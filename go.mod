@@ -47,7 +47,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.11.1
-	github.com/urfave/cli/v3 v3.6.1
+	github.com/urfave/cli/v3 v3.6.2
 	go.uber.org/ratelimit v0.3.1
 	golang.org/x/text v0.33.0
 	gopkg.in/yaml.v3 v3.0.1
