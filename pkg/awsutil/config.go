@@ -19,6 +19,23 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// GlobalServices is the set of AWS services that operate globally
+// and should only be processed in the "global" pseudo-region.
+// The keys are the service IDs as returned by middleware.GetServiceID(ctx).
+var GlobalServices = map[string]struct{}{
+	"CloudFront":               {},
+	"IAM":                      {},
+	"Route 53":                 {},
+	"WAF":                      {}, // WAF Classic (global)
+	"CloudFront KeyValueStore": {},
+}
+
+// IsGlobalService returns true if the service should only run in global region
+func IsGlobalService(service string) bool {
+	_, ok := GlobalServices[service]
+	return ok
+}
+
 func (c *Credentials) NewConfig(ctx context.Context, region, serviceType string) (*aws.Config, error) {
 	log.Debugf("creating new config in %s for %s", region, serviceType)
 
@@ -72,6 +89,10 @@ func (c *Credentials) NewConfig(ctx context.Context, region, serviceType string)
 		if global {
 			cfgCopy.APIOptions = append(cfgCopy.APIOptions, func(stack *middleware.Stack) error {
 				return stack.Initialize.Add(SkipGlobal{}, middleware.After)
+			})
+		} else {
+			cfgCopy.APIOptions = append(cfgCopy.APIOptions, func(stack *middleware.Stack) error {
+				return stack.Initialize.Add(SkipRegionalForGlobalService{}, middleware.After)
 			})
 		}
 		cfg = &cfgCopy
@@ -153,29 +174,9 @@ func (c *Credentials) rootConfig(ctx context.Context) (*aws.Config, error) {
 	return c.cfg, nil
 }
 
-// SkipGlobal returns ErrSkipRequest when operating in the global
-// pseudo-region.
-//
-// FUTURE: define mechanism for allowing specific resources, such as those in
-// IAM, to override this skip.
-//
-// The simplest way to do this would be to remove this middleware through
-// functional options on relevant operations. e.g.:
-//
-//	 func isGlobalResource(o *iam.Options) {
-//		o.APIOptions = append(o.APIOptions, func(stack *middleware.Stack) error {
-//			stack.Initialize.Remove(config.SkipGlobal{}.ID())
-//		})
-//	 }
-//
-//	 // per-operation
-//	 out, err := svc.ListRoles(context.Background(), nil, isGlobalResource)
-//	 // on a client, if you know you're only operating in the context of global resources
-//	 svc := iam.NewFromConfig(cfg, isGlobalResource)
-//
-// You could also define some kind of "is global resource" Context flag, which
-// SkipGlobal could react to. That may be preferrable to having SkipGlobal be
-// exported from this package.
+// SkipGlobal skips requests for non-global services when operating in the
+// global pseudo-region. Global services (CloudFront, IAM, Route 53, etc.)
+// are allowed through, while regional services are skipped.
 type SkipGlobal struct{}
 
 func (SkipGlobal) ID() string {
@@ -187,7 +188,41 @@ func (SkipGlobal) HandleInitialize(
 ) (
 	out middleware.InitializeOutput, md middleware.Metadata, err error,
 ) {
-	return out, md, liberrors.ErrSkipRequest(fmt.Sprintf("skip global: '%s'", middleware.GetServiceID(ctx)))
+	service := middleware.GetServiceID(ctx)
+
+	if IsGlobalService(service) {
+		// Global service in global region - allow
+		return next.HandleInitialize(ctx, in)
+	}
+
+	// Non-global service in global region - skip
+	return out, md, liberrors.ErrSkipRequest(
+		fmt.Sprintf("service '%s' is not global, but the session is", service))
+}
+
+// SkipRegionalForGlobalService skips requests for global-only services
+// when operating in a non-global region context. This ensures global
+// services like CloudFront and IAM are only processed once in the
+// "global" pseudo-region rather than in every regional scan.
+type SkipRegionalForGlobalService struct{}
+
+func (SkipRegionalForGlobalService) ID() string {
+	return "aws-nuke::skipRegionalForGlobalService"
+}
+
+func (SkipRegionalForGlobalService) HandleInitialize(
+	ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler,
+) (
+	out middleware.InitializeOutput, md middleware.Metadata, err error,
+) {
+	service := middleware.GetServiceID(ctx)
+
+	if IsGlobalService(service) {
+		return out, md, liberrors.ErrSkipRequest(
+			fmt.Sprintf("service '%s' is global, but the session is not", service))
+	}
+
+	return next.HandleInitialize(ctx, in)
 }
 
 type traceRequest struct{}
