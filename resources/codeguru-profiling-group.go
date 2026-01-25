@@ -76,3 +76,7 @@ func (r *CodeGuruProfilingGroup) Remove(_ context.Context) error {
 func (r *CodeGuruProfilingGroup) Properties() types.Properties {
 	return types.NewPropertiesFromStruct(r)
 }
+
+func (r *CodeGuruProfilingGroup) String() string {
+	return *r.Name
+}

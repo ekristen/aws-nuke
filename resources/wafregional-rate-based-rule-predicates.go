@@ -106,3 +106,7 @@ func (r *WAFRegionalRateBasedRulePredicate) Properties() types.Properties {
 		Set("Negated", r.predicate.Negated).
 		Set("DataID", r.predicate.DataId)
 }
+
+func (r *WAFRegionalRateBasedRulePredicate) String() string {
+	return *r.ruleID
+}

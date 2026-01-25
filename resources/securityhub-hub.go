@@ -61,6 +61,10 @@ func (hub *SecurityHub) Properties() types.Properties {
 	return properties
 }
 
+func (hub *SecurityHub) String() string {
+	return *hub.id
+}
+
 func (hub *SecurityHub) Remove(_ context.Context) error {
 	_, err := hub.svc.DisableSecurityHub(&securityhub.DisableSecurityHubInput{})
 	return err

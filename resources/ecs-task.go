@@ -130,6 +130,10 @@ func (t *ECSTask) Properties() types.Properties {
 	return properties
 }
 
+func (t *ECSTask) String() string {
+	return *t.taskARN
+}
+
 func (t *ECSTask) Remove(_ context.Context) error {
 	// When StopTask is called on a task, the equivalent of docker stop is issued to the
 	// containers running in the task. This results in a SIGTERM value and a default

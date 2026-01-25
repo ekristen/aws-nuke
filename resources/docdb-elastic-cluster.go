@@ -63,3 +63,7 @@ func (r *DocDBElasticCluster) Remove(ctx context.Context) error {
 func (r *DocDBElasticCluster) Properties() types.Properties {
 	return types.NewPropertiesFromStruct(r)
 }
+
+func (r *DocDBElasticCluster) String() string {
+	return *r.Name
+}

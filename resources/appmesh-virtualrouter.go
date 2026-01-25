@@ -98,3 +98,7 @@ func (f *AppMeshVirtualRouter) Properties() types.Properties {
 
 	return properties
 }
+
+func (f *AppMeshVirtualRouter) String() string {
+	return *f.virtualRouterName
+}

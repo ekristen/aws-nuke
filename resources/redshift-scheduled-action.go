@@ -74,3 +74,7 @@ func (f *RedshiftScheduledAction) Properties() types.Properties {
 	properties.Set("scheduledActionName", f.scheduledActionName)
 	return properties
 }
+
+func (f *RedshiftScheduledAction) String() string {
+	return *f.scheduledActionName
+}

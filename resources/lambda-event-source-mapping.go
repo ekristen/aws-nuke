@@ -77,3 +77,7 @@ func (m *LambdaEventSourceMapping) Properties() types.Properties {
 
 	return properties
 }
+
+func (m *LambdaEventSourceMapping) String() string {
+	return *m.mapping.UUID
+}

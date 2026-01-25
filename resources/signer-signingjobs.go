@@ -107,3 +107,7 @@ func (j *SignerSigningJob) Properties() types.Properties {
 	properties.Set("JobInvoker", j.jobInvoker)
 	return properties
 }
+
+func (j *SignerSigningJob) String() string {
+	return *j.jobID
+}

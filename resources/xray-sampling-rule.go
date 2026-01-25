@@ -80,3 +80,7 @@ func (f *XRaySamplingRule) Properties() types.Properties {
 
 	return properties
 }
+
+func (f *XRaySamplingRule) String() string {
+	return *f.ruleName
+}

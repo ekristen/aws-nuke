@@ -71,3 +71,7 @@ func (f *CloudFrontOriginAccessIdentity) Properties() types.Properties {
 	properties.Set("ID", f.ID)
 	return properties
 }
+
+func (f *CloudFrontOriginAccessIdentity) String() string {
+	return *f.ID
+}

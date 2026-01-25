@@ -82,3 +82,7 @@ func (r *LakeFormationPermission) Filter() error {
 func (f *LakeFormationPermission) Properties() types.Properties {
 	return types.NewPropertiesFromStruct(f)
 }
+
+func (f *LakeFormationPermission) String() string {
+	return *f.PrincipalARN
+}

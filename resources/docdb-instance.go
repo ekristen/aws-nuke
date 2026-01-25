@@ -83,3 +83,7 @@ func (r *DocDBInstance) Remove(ctx context.Context) error {
 func (r *DocDBInstance) Properties() types.Properties {
 	return types.NewPropertiesFromStruct(r)
 }
+
+func (r *DocDBInstance) String() string {
+	return *r.Identifier
+}

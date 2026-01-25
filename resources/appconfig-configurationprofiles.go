@@ -92,3 +92,7 @@ func (f *AppConfigConfigurationProfile) Properties() types.Properties {
 		Set("ID", f.id).
 		Set("Name", f.name)
 }
+
+func (f *AppConfigConfigurationProfile) String() string {
+	return *f.name
+}

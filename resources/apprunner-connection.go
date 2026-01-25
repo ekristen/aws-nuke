@@ -77,3 +77,7 @@ func (f *AppRunnerConnection) Properties() types.Properties {
 	properties.Set("ConnectionName", f.ConnectionName)
 	return properties
 }
+
+func (f *AppRunnerConnection) String() string {
+	return *f.ConnectionName
+}

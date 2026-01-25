@@ -71,3 +71,7 @@ func (r *DocDBSubnetGroup) Remove(ctx context.Context) error {
 func (r *DocDBSubnetGroup) Properties() types.Properties {
 	return types.NewPropertiesFromStruct(r)
 }
+
+func (r *DocDBSubnetGroup) String() string {
+	return *r.Name
+}

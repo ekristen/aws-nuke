@@ -102,3 +102,7 @@ func (r *WAFRegionalIPSetIP) Properties() types.Properties {
 		Set("Type", r.descriptor.Type).
 		Set("Value", r.descriptor.Value)
 }
+
+func (r *WAFRegionalIPSetIP) String() string {
+	return *r.ipSetID
+}

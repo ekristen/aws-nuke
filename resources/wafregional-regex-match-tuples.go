@@ -103,3 +103,7 @@ func (r *WAFRegionalRegexMatchTuple) Properties() types.Properties {
 		Set("FieldToMatchData", r.tuple.FieldToMatch.Data).
 		Set("TextTransformation", r.tuple.TextTransformation)
 }
+
+func (r *WAFRegionalRegexMatchTuple) String() string {
+	return *r.matchSetID
+}

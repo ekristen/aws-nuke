@@ -80,3 +80,7 @@ func (f *AppRunnerService) Properties() types.Properties {
 	properties.Set("ServiceName", f.ServiceName)
 	return properties
 }
+
+func (f *AppRunnerService) String() string {
+	return *f.ServiceName
+}

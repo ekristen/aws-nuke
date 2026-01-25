@@ -84,3 +84,7 @@ func (r *DocDBEventSubscription) Remove(ctx context.Context) error {
 func (r *DocDBEventSubscription) Properties() types.Properties {
 	return types.NewPropertiesFromStruct(r)
 }
+
+func (r *DocDBEventSubscription) String() string {
+	return *r.Name
+}

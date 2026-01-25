@@ -88,3 +88,7 @@ func (f *CloudFrontPublicKey) Properties() types.Properties {
 	properties.Set("CreatedTime", f.createdTime.Format(time.RFC3339))
 	return properties
 }
+
+func (f *CloudFrontPublicKey) String() string {
+	return *f.name
+}

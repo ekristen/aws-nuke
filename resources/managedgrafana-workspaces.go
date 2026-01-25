@@ -76,3 +76,7 @@ func (f *AMGWorkspace) Properties() types.Properties {
 
 	return properties
 }
+
+func (f *AMGWorkspace) String() string {
+	return *f.name
+}

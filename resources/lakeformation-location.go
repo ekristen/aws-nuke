@@ -65,3 +65,7 @@ func (f *LakeFormationLocation) Remove(ctx context.Context) error {
 func (f *LakeFormationLocation) Properties() types.Properties {
 	return types.NewPropertiesFromStruct(f)
 }
+
+func (f *LakeFormationLocation) String() string {
+	return *f.ResourceARN
+}

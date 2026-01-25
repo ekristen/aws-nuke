@@ -88,3 +88,7 @@ func (f *CloudFrontKeyGroup) Properties() types.Properties {
 	properties.Set("LastModifiedTime", f.lastModifiedTime.Format(time.RFC3339))
 	return properties
 }
+
+func (f *CloudFrontKeyGroup) String() string {
+	return *f.name
+}

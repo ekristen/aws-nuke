@@ -125,3 +125,7 @@ func (tp *Route53TrafficPolicy) Properties() types.Properties {
 		Set("ID", *tp.id).
 		Set("Name", *tp.name)
 }
+
+func (tp *Route53TrafficPolicy) String() string {
+	return *tp.name
+}

@@ -78,3 +78,7 @@ func (f *AppMeshMesh) Properties() types.Properties {
 
 	return properties
 }
+
+func (f *AppMeshMesh) String() string {
+	return *f.meshName
+}

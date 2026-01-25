@@ -88,3 +88,7 @@ func (f *AppConfigEnvironment) Properties() types.Properties {
 		Set("ID", f.id).
 		Set("Name", f.name)
 }
+
+func (f *AppConfigEnvironment) String() string {
+	return *f.name
+}
