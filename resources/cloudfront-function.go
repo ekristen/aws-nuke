@@ -85,3 +85,7 @@ func (f *CloudFrontFunction) Properties() types.Properties {
 	properties.Set("stage", f.stage)
 	return properties
 }
+
+func (f *CloudFrontFunction) String() string {
+	return *f.name
+}

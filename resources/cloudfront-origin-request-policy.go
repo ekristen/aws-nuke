@@ -84,3 +84,7 @@ func (f *CloudFrontOriginRequestPolicy) Properties() types.Properties {
 	properties.Set("ID", f.ID)
 	return properties
 }
+
+func (f *CloudFrontOriginRequestPolicy) String() string {
+	return *f.ID
+}

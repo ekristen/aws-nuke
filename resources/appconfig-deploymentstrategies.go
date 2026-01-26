@@ -77,3 +77,7 @@ func (f *AppConfigDeploymentStrategy) Properties() types.Properties {
 		Set("ID", f.id).
 		Set("Name", f.name)
 }
+
+func (f *AppConfigDeploymentStrategy) String() string {
+	return *f.name
+}

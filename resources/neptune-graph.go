@@ -144,3 +144,7 @@ func (r *NeptuneGraph) Remove(ctx context.Context) error {
 func (r *NeptuneGraph) Properties() types.Properties {
 	return types.NewPropertiesFromStruct(r)
 }
+
+func (r *NeptuneGraph) String() string {
+	return *r.Name
+}

@@ -69,3 +69,7 @@ func (f *AMPScraper) Remove(ctx context.Context) error {
 func (f *AMPScraper) Properties() types.Properties {
 	return types.NewPropertiesFromStruct(f)
 }
+
+func (f *AMPScraper) String() string {
+	return *f.ScraperID
+}

@@ -119,3 +119,7 @@ func (f *AppMeshRoute) Properties() types.Properties {
 
 	return properties
 }
+
+func (f *AppMeshRoute) String() string {
+	return *f.routeName
+}

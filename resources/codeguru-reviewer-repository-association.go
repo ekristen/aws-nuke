@@ -79,3 +79,7 @@ func (r *CodeGuruReviewerRepositoryAssociation) Remove(_ context.Context) error 
 func (r *CodeGuruReviewerRepositoryAssociation) Properties() types.Properties {
 	return types.NewPropertiesFromStruct(r)
 }
+
+func (r *CodeGuruReviewerRepositoryAssociation) String() string {
+	return *r.Name
+}

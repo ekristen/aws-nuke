@@ -81,3 +81,7 @@ func (f *XRayGroup) Properties() types.Properties {
 
 	return properties
 }
+
+func (f *XRayGroup) String() string {
+	return *f.groupName
+}

@@ -98,3 +98,7 @@ func (f *AppMeshVirtualNode) Properties() types.Properties {
 
 	return properties
 }
+
+func (f *AppMeshVirtualNode) String() string {
+	return *f.virtualNodeName
+}

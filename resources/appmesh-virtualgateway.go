@@ -97,3 +97,7 @@ func (f *AppMeshVirtualGateway) Properties() types.Properties {
 
 	return properties
 }
+
+func (f *AppMeshVirtualGateway) String() string {
+	return *f.virtualGatewayName
+}

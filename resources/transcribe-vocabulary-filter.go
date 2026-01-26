@@ -86,3 +86,7 @@ func (r *TranscribeVocabularyFilter) Properties() types.Properties {
 	properties.Set("LastModifiedTime", r.lastModifiedTime)
 	return properties
 }
+
+func (r *TranscribeVocabularyFilter) String() string {
+	return *r.name
+}

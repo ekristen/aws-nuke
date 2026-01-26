@@ -98,3 +98,7 @@ func (f *AppMeshVirtualService) Properties() types.Properties {
 
 	return properties
 }
+
+func (f *AppMeshVirtualService) String() string {
+	return *f.virtualServiceName
+}

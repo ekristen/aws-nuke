@@ -101,3 +101,7 @@ func (r *WAFRegionalRegexPatternString) Properties() types.Properties {
 		Set("RegexPatternSetID", r.patternSetID).
 		Set("patternString", r.patternString)
 }
+
+func (r *WAFRegionalRegexPatternString) String() string {
+	return *r.patternSetID
+}

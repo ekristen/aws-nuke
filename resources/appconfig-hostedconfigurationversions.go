@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/sirupsen/logrus"
 
@@ -89,4 +90,8 @@ func (f *AppConfigHostedConfigurationVersion) Properties() types.Properties {
 		Set("ApplicationID", f.applicationID).
 		Set("ConfigurationProfileID", f.configurationProfileID).
 		Set("VersionNumber", f.versionNumber)
+}
+
+func (f *AppConfigHostedConfigurationVersion) String() string {
+	return fmt.Sprintf("%d", *f.versionNumber)
 }

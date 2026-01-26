@@ -68,3 +68,7 @@ func (f *LakeFormationTag) Remove(ctx context.Context) error {
 func (f *LakeFormationTag) Properties() types.Properties {
 	return types.NewPropertiesFromStruct(f)
 }
+
+func (f *LakeFormationTag) String() string {
+	return *f.TagKey
+}

@@ -110,3 +110,7 @@ func (r *DocDBCluster) Remove(ctx context.Context) error {
 func (r *DocDBCluster) Properties() types.Properties {
 	return types.NewPropertiesFromStruct(r)
 }
+
+func (r *DocDBCluster) String() string {
+	return *r.ID
+}

@@ -81,3 +81,7 @@ func (f *CloudFrontOriginAccessControl) Properties() types.Properties {
 	properties.Set("ID", f.ID)
 	return properties
 }
+
+func (f *CloudFrontOriginAccessControl) String() string {
+	return *f.ID
+}

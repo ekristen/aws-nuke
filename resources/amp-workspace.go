@@ -71,3 +71,7 @@ func (f *AMPWorkspace) Remove(ctx context.Context) error {
 func (f *AMPWorkspace) Properties() types.Properties {
 	return types.NewPropertiesFromStruct(f)
 }
+
+func (f *AMPWorkspace) String() string {
+	return *f.WorkspaceId
+}

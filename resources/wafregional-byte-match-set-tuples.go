@@ -103,3 +103,7 @@ func (r *WAFRegionalByteMatchSetIP) Properties() types.Properties {
 		Set("FieldToMatchData", r.tuple.FieldToMatch.Data).
 		Set("TargetString", r.tuple.TargetString)
 }
+
+func (r *WAFRegionalByteMatchSetIP) String() string {
+	return *r.matchSetID
+}
