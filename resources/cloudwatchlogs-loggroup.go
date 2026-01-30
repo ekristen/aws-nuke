@@ -119,7 +119,7 @@ func (l *CloudWatchLogsLogGroupLister) List(ctx context.Context, o interface{}) 
 				Name:            logGroup.LogGroupName,
 				CreatedTime:     logGroup.CreationTime,
 				CreationTime:    ptr.Time(time.Unix(*logGroup.CreationTime/1000, 0).UTC()),
-				LastEvent:       ptr.Time(lastEvent), // TODO(v4): convert to UTC
+				LastEvent:       ptr.Time(lastEvent.UTC()),
 				RetentionInDays: retentionInDays,
 				Tags:            tagResp.Tags,
 				protection:      logGroup.DeletionProtectionEnabled,
@@ -167,8 +167,7 @@ func (r *CloudWatchLogsLogGroup) String() string {
 }
 
 func (r *CloudWatchLogsLogGroup) Properties() types.Properties {
-	return types.NewPropertiesFromStruct(r).
-		Set("logGroupName", r.Name) // TODO(v4): remove this property
+	return types.NewPropertiesFromStruct(r)
 }
 
 func (r *CloudWatchLogsLogGroup) Settings(setting *libsettings.Setting) {

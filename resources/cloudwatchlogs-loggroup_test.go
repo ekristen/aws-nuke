@@ -24,7 +24,6 @@ func TestCloudWatchLogsLogGroupProperties(t *testing.T) {
 	}
 
 	properties := r.Properties()
-	assert.Equal(t, properties.Get("logGroupName"), "test-log-group")
 	assert.Equal(t, properties.Get("Name"), "test-log-group")
 	assert.Equal(t, properties.Get("CreatedTime"), strconv.Itoa(int(now.Unix())))
 	assert.Equal(t, properties.Get("CreationTime"), now.Format(time.RFC3339))
