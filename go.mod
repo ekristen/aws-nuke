@@ -29,6 +29,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/mgn v1.37.6
 	github.com/aws/aws-sdk-go-v2/service/neptunegraph v1.17.6
 	github.com/aws/aws-sdk-go-v2/service/networkfirewall v1.53.0
+	github.com/aws/aws-sdk-go-v2/service/ram v1.34.19
 	github.com/aws/aws-sdk-go-v2/service/route53profiles v1.4.17
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.72.3
 	github.com/aws/aws-sdk-go-v2/service/s3control v1.52.7
@@ -48,6 +49,7 @@ require (
 	github.com/sirupsen/logrus v1.9.4
 	github.com/stretchr/testify v1.11.1
 	github.com/urfave/cli/v3 v3.6.2
+	go.uber.org/mock v0.6.0
 	go.uber.org/ratelimit v0.3.1
 	golang.org/x/text v0.33.0
 	gopkg.in/yaml.v3 v3.0.1
