@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/aws/aws-sdk-go/aws"           //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/aws/endpoints" //nolint:staticcheck
 	"github.com/gotidy/ptr"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -26,17 +28,17 @@ type Account struct {
 	disabledRegions []string
 }
 
-func NewAccount(creds *Credentials, endpoints config.CustomEndpoints) (*Account, error) {
-	creds.CustomEndpoints = endpoints
+func NewAccount(creds *Credentials, customEndpoints config.CustomEndpoints) (*Account, error) {
+	creds.CustomEndpoints = customEndpoints
 	account := Account{
 		Credentials: creds,
 	}
 
 	customStackSupportSTSAndIAM := true
-	if endpoints.GetRegion(DefaultRegionID) != nil {
-		if endpoints.GetURL(DefaultRegionID, "sts") == "" {
+	if customEndpoints.GetRegion(DefaultRegionID) != nil {
+		if customEndpoints.GetURL(DefaultRegionID, "sts") == "" {
 			customStackSupportSTSAndIAM = false
-		} else if endpoints.GetURL(DefaultRegionID, "iam") == "" {
+		} else if customEndpoints.GetURL(DefaultRegionID, "iam") == "" {
 			customStackSupportSTSAndIAM = false
 		}
 	}
@@ -51,7 +53,7 @@ func NewAccount(creds *Credentials, endpoints config.CustomEndpoints) (*Account,
 		return nil, errors.Wrapf(err, "failed to create default session in %s", DefaultRegionID)
 	}
 
-	identityOutput, err := sts.New(defaultSession).GetCallerIdentity(nil)
+	identityOutput, err := sts.New(defaultSession, &aws.Config{STSRegionalEndpoint: endpoints.RegionalSTSEndpoint}).GetCallerIdentity(nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed get caller identity")
 	}
