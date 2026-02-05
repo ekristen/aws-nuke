@@ -59,7 +59,7 @@ dockers_v2:
     images:
       - ghcr.io/ekristen/aws-nuke
     tags:
-      - v{{ .Version }}-amd64
+      - v{{ .Version }}
     platforms:
       - linux/amd64
       - linux/arm64
