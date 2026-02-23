@@ -2,12 +2,15 @@ package resources
 
 import (
 	"context"
+	stderrors "errors"
 
-	"github.com/gotidy/ptr"
 	"github.com/sirupsen/logrus"
 
-	"github.com/aws/aws-sdk-go/service/comprehend" //nolint:staticcheck
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/comprehend"
+	comptypes "github.com/aws/aws-sdk-go-v2/service/comprehend/types"
 
+	"github.com/ekristen/libnuke/pkg/errors"
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
@@ -28,74 +31,102 @@ func init() {
 
 type ComprehendDocumentClassifierLister struct{}
 
-func (l *ComprehendDocumentClassifierLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *ComprehendDocumentClassifierLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
-
-	svc := comprehend.New(opts.Session)
-
-	params := &comprehend.ListDocumentClassifiersInput{}
+	svc := comprehend.NewFromConfig(*opts.Config)
 	resources := make([]resource.Resource, 0)
 
-	for {
-		resp, err := svc.ListDocumentClassifiers(params)
+	paginator := comprehend.NewListDocumentClassifiersPaginator(svc, &comprehend.ListDocumentClassifiersInput{
+		MaxResults: aws.Int32(100),
+	})
+
+	for paginator.HasMorePages() {
+		resp, err := paginator.NextPage(ctx)
 		if err != nil {
 			return nil, err
 		}
-		for _, documentClassifier := range resp.DocumentClassifierPropertiesList {
+
+		for i := range resp.DocumentClassifierPropertiesList {
 			resources = append(resources, &ComprehendDocumentClassifier{
 				svc:                svc,
-				documentClassifier: documentClassifier,
+				documentClassifier: resp.DocumentClassifierPropertiesList[i],
 			})
 		}
-
-		if resp.NextToken == nil {
-			break
-		}
-
-		params.NextToken = resp.NextToken
 	}
 
 	return resources, nil
 }
 
 type ComprehendDocumentClassifier struct {
-	svc                *comprehend.Comprehend
-	documentClassifier *comprehend.DocumentClassifierProperties
+	svc                *comprehend.Client
+	documentClassifier comptypes.DocumentClassifierProperties
 }
 
-func (ce *ComprehendDocumentClassifier) Remove(_ context.Context) error {
-	switch ptr.ToString(ce.documentClassifier.Status) {
-	case comprehend.ModelStatusInError, comprehend.ModelStatusTrained:
+func (ce *ComprehendDocumentClassifier) Remove(ctx context.Context) error {
+	switch ce.documentClassifier.Status {
+	case comptypes.ModelStatusInError, comptypes.ModelStatusTrained, comptypes.ModelStatusStopped:
 		logrus.Infof("ComprehendDocumentClassifier deleteDocumentClassifier arn=%s status=%s",
-			*ce.documentClassifier.DocumentClassifierArn, *ce.documentClassifier.Status)
+			aws.ToString(ce.documentClassifier.DocumentClassifierArn), ce.documentClassifier.Status)
 
-		_, err := ce.svc.DeleteDocumentClassifier(&comprehend.DeleteDocumentClassifierInput{
-			DocumentClassifierArn: ce.documentClassifier.DocumentClassifierArn,
+		_, err := ce.svc.DeleteDocumentClassifier(ctx, &comprehend.DeleteDocumentClassifierInput{
+			DocumentClassifierArn: aws.String(aws.ToString(ce.documentClassifier.DocumentClassifierArn)),
 		})
 		return err
-	case comprehend.ModelStatusSubmitted, comprehend.ModelStatusTraining:
+	case comptypes.ModelStatusSubmitted, comptypes.ModelStatusTraining:
 		logrus.Infof("ComprehendDocumentClassifier stopTrainingDocumentClassifier arn=%s status=%s",
-			*ce.documentClassifier.DocumentClassifierArn, *ce.documentClassifier.Status)
+			aws.ToString(ce.documentClassifier.DocumentClassifierArn), ce.documentClassifier.Status)
 
-		_, err := ce.svc.StopTrainingDocumentClassifier(&comprehend.StopTrainingDocumentClassifierInput{
-			DocumentClassifierArn: ce.documentClassifier.DocumentClassifierArn,
+		_, err := ce.svc.StopTrainingDocumentClassifier(ctx, &comprehend.StopTrainingDocumentClassifierInput{
+			DocumentClassifierArn: aws.String(aws.ToString(ce.documentClassifier.DocumentClassifierArn)),
 		})
 		return err
 	default:
 		logrus.Infof("ComprehendDocumentClassifier already deleting arn=%s status=%s",
-			*ce.documentClassifier.DocumentClassifierArn, *ce.documentClassifier.Status)
+			aws.ToString(ce.documentClassifier.DocumentClassifierArn), ce.documentClassifier.Status)
 		return nil
 	}
 }
 
 func (ce *ComprehendDocumentClassifier) Properties() types.Properties {
 	properties := types.NewProperties()
-	properties.Set("LanguageCode", ce.documentClassifier.LanguageCode)
-	properties.Set("DocumentClassifierArn", ce.documentClassifier.DocumentClassifierArn)
+	properties.Set("LanguageCode", string(ce.documentClassifier.LanguageCode))
+	properties.Set("DocumentClassifierArn", aws.ToString(ce.documentClassifier.DocumentClassifierArn))
 
 	return properties
 }
 
 func (ce *ComprehendDocumentClassifier) String() string {
-	return *ce.documentClassifier.DocumentClassifierArn
+	return aws.ToString(ce.documentClassifier.DocumentClassifierArn)
+}
+
+func (ce *ComprehendDocumentClassifier) HandleWait(ctx context.Context) error {
+	resp, err := ce.svc.DescribeDocumentClassifier(ctx, &comprehend.DescribeDocumentClassifierInput{
+		DocumentClassifierArn: aws.String(aws.ToString(ce.documentClassifier.DocumentClassifierArn)),
+	})
+	if err != nil {
+		// Check if classifier no longer exists
+		var rnf *comptypes.ResourceNotFoundException
+		if stderrors.As(err, &rnf) {
+			logrus.Info("ComprehendDocumentClassifier removed")
+			return nil
+		}
+		return err
+	}
+
+	logrus.Infof("ComprehendDocumentClassifier arn=%s, has status=%s",
+		aws.ToString(ce.documentClassifier.DocumentClassifierArn), resp.DocumentClassifierProperties.Status)
+
+	switch resp.DocumentClassifierProperties.Status {
+	case comptypes.ModelStatusDeleting:
+		return errors.ErrWaitResource("document classifier is still deleting")
+	case comptypes.ModelStatusStopped:
+		logrus.Info("ComprehendDocumentClassifier stopped, attempting deletion")
+		_, err := ce.svc.DeleteDocumentClassifier(ctx, &comprehend.DeleteDocumentClassifierInput{
+			DocumentClassifierArn: aws.String(aws.ToString(ce.documentClassifier.DocumentClassifierArn)),
+		})
+		return err
+
+	default:
+		return errors.ErrWaitResource("document classifier not deleted yet")
+	}
 }

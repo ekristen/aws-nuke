@@ -14,6 +14,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/bedrockagentcorecontrol v1.14.1
 	github.com/aws/aws-sdk-go-v2/service/cloudfront v1.44.12
 	github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.65.0
+	github.com/aws/aws-sdk-go-v2/service/comprehend v1.40.17
 	github.com/aws/aws-sdk-go-v2/service/docdb v1.41.7
 	github.com/aws/aws-sdk-go-v2/service/docdbelastic v1.15.5
 	github.com/aws/aws-sdk-go-v2/service/dsql v1.1.2
