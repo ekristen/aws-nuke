@@ -94,7 +94,7 @@ type DataZoneSubscriptionGrant struct {
 
 func (r *DataZoneSubscriptionGrant) Filter() error {
 	if r.Status != nil && types.SubscriptionGrantOverallStatus(*r.Status) == types.SubscriptionGrantOverallStatusInaccessible {
-	    return fmt.Errorf("subscription grant is inaccessible")
+		return fmt.Errorf("subscription grant is inaccessible")
 	}
 	return nil
 }

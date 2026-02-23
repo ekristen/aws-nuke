@@ -116,4 +116,3 @@ func (r *DataZoneDomain) HandleWait(ctx context.Context) error {
 func (r *DataZoneDomain) Properties() libtypes.Properties {
 	return libtypes.NewPropertiesFromStruct(r)
 }
-

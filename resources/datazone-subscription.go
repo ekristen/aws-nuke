@@ -95,7 +95,7 @@ type DataZoneSubscription struct {
 }
 
 func (r *DataZoneSubscription) Filter() error {
-//no pending or in-progress states for subscription, only cancelled, revoked or approved is available.
+	//no pending or in-progress states for subscription, only cancelled, revoked or approved is available.
 	if r.Status != nil && types.SubscriptionStatus(*r.Status) == types.SubscriptionStatusCancelled {
 		return fmt.Errorf("subscription is already cancelled")
 	}
@@ -109,7 +109,6 @@ func (r *DataZoneSubscription) Remove(ctx context.Context) error {
 	})
 	return err
 }
-
 
 func (r *DataZoneSubscription) Properties() libtypes.Properties {
 	return libtypes.NewPropertiesFromStruct(r)
