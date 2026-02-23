@@ -2,16 +2,15 @@ package resources
 
 import (
 	"context"
-	"errors"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"              //nolint:staticcheck
-	"github.com/aws/aws-sdk-go/service/datazone" //nolint:staticcheck
-	"github.com/aws/aws-sdk-go/aws/awserr"       //nolint:staticcheck
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/datazone"
+	"github.com/aws/aws-sdk-go-v2/service/datazone/types"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
-	"github.com/ekristen/libnuke/pkg/types"
+	libtypes "github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
@@ -32,61 +31,57 @@ func init() {
 
 type DataZoneSubscriptionTargetLister struct{}
 
-func (l *DataZoneSubscriptionTargetLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *DataZoneSubscriptionTargetLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 
-	svc := datazone.New(opts.Session)
+	svc := datazone.NewFromConfig(*opts.Config)
 	resources := make([]resource.Resource, 0)
 
 	// First, list all domains
 	domainParams := &datazone.ListDomainsInput{
-		MaxResults: aws.Int64(100),
+		MaxResults: aws.Int32(100),
 	}
 
-	for {
-		domainResp, err := svc.ListDomains(domainParams)
+	domainPaginator := datazone.NewListDomainsPaginator(svc, domainParams)
+	for domainPaginator.HasMorePages() {
+		domainResp, err := domainPaginator.NextPage(ctx)
 		if err != nil {
 			return nil, err
 		}
 
 		// For each domain, collect all environments efficiently
 		for _, domain := range domainResp.Items {
-			environments, err := l.listAllEnvironmentsInDomain(svc, domain.Id)
+			environments, err := l.listAllEnvironmentsInDomain(ctx, svc, domain.Id)
 			if err != nil {
 				return nil, err // Don't swallow errors - fail loudly for SCP denials
 			}
 
 			// Now list subscription targets for all environments
 			for _, env := range environments {
-				err := l.listSubscriptionTargetsInEnvironment(svc, domain, env, &resources)
+				err := l.listSubscriptionTargetsInEnvironment(ctx, svc, domain, env, &resources)
 				if err != nil {
 					return nil, err // Don't swallow errors - fail loudly for SCP denials
 				}
 			}
 		}
-
-		if domainResp.NextToken == nil {
-			break
-		}
-
-		domainParams.NextToken = domainResp.NextToken
 	}
 
 	return resources, nil
 }
 
 // Helper function to list all environments in a domain across all projects
-func (l *DataZoneSubscriptionTargetLister) listAllEnvironmentsInDomain(svc *datazone.DataZone, domainID *string) ([]*datazone.EnvironmentSummary, error) {
-	var allEnvironments []*datazone.EnvironmentSummary
+func (l *DataZoneSubscriptionTargetLister) listAllEnvironmentsInDomain(ctx context.Context, svc *datazone.Client, domainID *string) ([]types.EnvironmentSummary, error) {
+	var allEnvironments []types.EnvironmentSummary
 
 	// First, get all projects in the domain
 	projectParams := &datazone.ListProjectsInput{
 		DomainIdentifier: domainID,
-		MaxResults:       aws.Int64(100),
+		MaxResults:       aws.Int32(100),
 	}
 
-	for {
-		projectResp, err := svc.ListProjects(projectParams)
+	projectPaginator := datazone.NewListProjectsPaginator(svc, projectParams)
+	for projectPaginator.HasMorePages() {
+		projectResp, err := projectPaginator.NextPage(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -96,30 +91,19 @@ func (l *DataZoneSubscriptionTargetLister) listAllEnvironmentsInDomain(svc *data
 			envParams := &datazone.ListEnvironmentsInput{
 				DomainIdentifier:  domainID,
 				ProjectIdentifier: project.Id,
-				MaxResults:        aws.Int64(100),
+				MaxResults:        aws.Int32(100),
 			}
 
-			for {
-				envResp, err := svc.ListEnvironments(envParams)
+			envPaginator := datazone.NewListEnvironmentsPaginator(svc, envParams)
+			for envPaginator.HasMorePages() {
+				envResp, err := envPaginator.NextPage(ctx)
 				if err != nil {
 					return nil, err
 				}
 
 				allEnvironments = append(allEnvironments, envResp.Items...)
-
-				if envResp.NextToken == nil {
-					break
-				}
-
-				envParams.NextToken = envResp.NextToken
 			}
 		}
-
-		if projectResp.NextToken == nil {
-			break
-		}
-
-		projectParams.NextToken = projectResp.NextToken
 	}
 
 	return allEnvironments, nil
@@ -127,19 +111,21 @@ func (l *DataZoneSubscriptionTargetLister) listAllEnvironmentsInDomain(svc *data
 
 // Helper function to list subscription targets in a specific environment
 func (l *DataZoneSubscriptionTargetLister) listSubscriptionTargetsInEnvironment(
-	svc *datazone.DataZone,
-	domain *datazone.DomainSummary,
-	env *datazone.EnvironmentSummary,
+	ctx context.Context,
+	svc *datazone.Client,
+	domain types.DomainSummary,
+	env types.EnvironmentSummary,
 	resources *[]resource.Resource,
 ) error {
 	targetParams := &datazone.ListSubscriptionTargetsInput{
 		DomainIdentifier:      domain.Id,
 		EnvironmentIdentifier: env.Id,
-		MaxResults:            aws.Int64(100),
+		MaxResults:            aws.Int32(100),
 	}
 
-	for {
-		targetResp, err := svc.ListSubscriptionTargets(targetParams)
+	targetPaginator := datazone.NewListSubscriptionTargetsPaginator(svc, targetParams)
+	for targetPaginator.HasMorePages() {
+		targetResp, err := targetPaginator.NextPage(ctx)
 		if err != nil {
 			return err
 		}
@@ -150,31 +136,25 @@ func (l *DataZoneSubscriptionTargetLister) listSubscriptionTargetsInEnvironment(
 				DomainID:      domain.Id,
 				ID:            target.Id,
 				Name:          target.Name,
-				EnvironmentID: env.Id,
-				ProjectID:     env.ProjectId,
+				EnvironmentID: target.EnvironmentId,
+				ProjectID:     target.ProjectId,
 				DomainName:    domain.Name,
 				Type:          target.Type,
 				Provider:      target.Provider,
 				CreatedAt:     target.CreatedAt,
 			})
 		}
-
-		if targetResp.NextToken == nil {
-			break
-		}
-
-		targetParams.NextToken = targetResp.NextToken
 	}
 
 	return nil
 }
 
 type DataZoneSubscriptionTarget struct {
-	svc           *datazone.DataZone
-	DomainID      *string
+	svc           *datazone.Client
+	DomainID      *string `property:"-"`
+	EnvironmentID *string `property:"-"`
 	ID            *string
 	Name          *string
-	EnvironmentID *string
 	ProjectID     *string
 	DomainName    *string
 	Type          *string
@@ -182,49 +162,15 @@ type DataZoneSubscriptionTarget struct {
 	CreatedAt     *time.Time
 }
 
-func (r *DataZoneSubscriptionTarget) Remove(_ context.Context) error {
-	_, err := r.svc.DeleteSubscriptionTarget(&datazone.DeleteSubscriptionTargetInput{
+func (r *DataZoneSubscriptionTarget) Remove(ctx context.Context) error {
+	_, err := r.svc.DeleteSubscriptionTarget(ctx, &datazone.DeleteSubscriptionTargetInput{
 		DomainIdentifier:      r.DomainID,
 		EnvironmentIdentifier: r.EnvironmentID,
 		Identifier:            r.ID,
 	})
-
-	if err != nil {
-		var awsErr awserr.Error
-		if errors.As(err, &awsErr) {
-			switch awsErr.Code() {
-			case "ResourceNotFoundException":
-				// Target already deleted
-				return nil
-			case "ConflictException":
-				// Deletion may already be in progress or target has dependencies, accept it
-				return nil
-			}
-		}
-		return err
-	}
-
-	return nil
+	return err
 }
 
-
-func (r *DataZoneSubscriptionTarget) Properties() types.Properties {
-	properties := types.NewProperties()
-	properties.Set("ID", r.ID)
-	properties.Set("Name", r.Name)
-	properties.Set("DomainID", r.DomainID)
-	properties.Set("DomainName", r.DomainName)
-	properties.Set("EnvironmentID", r.EnvironmentID)
-	properties.Set("ProjectID", r.ProjectID)
-	if r.Type != nil {
-		properties.Set("Type", r.Type)
-	}
-	if r.Provider != nil {
-		properties.Set("Provider", r.Provider)
-	}
-	if r.CreatedAt != nil {
-		properties.Set("CreatedAt", r.CreatedAt.Format(time.RFC3339))
-	}
-
-	return properties
+func (r *DataZoneSubscriptionTarget) Properties() libtypes.Properties {
+	return libtypes.NewPropertiesFromStruct(r)
 }

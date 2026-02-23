@@ -2,16 +2,17 @@ package resources
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"              //nolint:staticcheck
-	"github.com/aws/aws-sdk-go/service/datazone" //nolint:staticcheck
-	"github.com/aws/aws-sdk-go/aws/awserr"       //nolint:staticcheck
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/datazone"
+	"github.com/aws/aws-sdk-go-v2/service/datazone/types"
 
+	liberror "github.com/ekristen/libnuke/pkg/errors"
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
-	"github.com/ekristen/libnuke/pkg/types"
+	libtypes "github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
@@ -29,19 +30,20 @@ func init() {
 
 type DataZoneSubscriptionGrantLister struct{}
 
-func (l *DataZoneSubscriptionGrantLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *DataZoneSubscriptionGrantLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 
-	svc := datazone.New(opts.Session)
+	svc := datazone.NewFromConfig(*opts.Config)
 	resources := make([]resource.Resource, 0)
 
 	// First, list all domains
 	domainParams := &datazone.ListDomainsInput{
-		MaxResults: aws.Int64(100),
+		MaxResults: aws.Int32(100),
 	}
 
-	for {
-		domainResp, err := svc.ListDomains(domainParams)
+	domainPaginator := datazone.NewListDomainsPaginator(svc, domainParams)
+	for domainPaginator.HasMorePages() {
+		domainResp, err := domainPaginator.NextPage(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -50,11 +52,12 @@ func (l *DataZoneSubscriptionGrantLister) List(_ context.Context, o interface{})
 		for _, domain := range domainResp.Items {
 			grantParams := &datazone.ListSubscriptionGrantsInput{
 				DomainIdentifier: domain.Id,
-				MaxResults:       aws.Int64(100),
+				MaxResults:       aws.Int32(100),
 			}
 
-			for {
-				grantResp, err := svc.ListSubscriptionGrants(grantParams)
+			grantPaginator := datazone.NewListSubscriptionGrantsPaginator(svc, grantParams)
+			for grantPaginator.HasMorePages() {
+				grantResp, err := grantPaginator.NextPage(ctx)
 				if err != nil {
 					return nil, err // Don't swallow errors - fail loudly for SCP denials
 				}
@@ -64,82 +67,75 @@ func (l *DataZoneSubscriptionGrantLister) List(_ context.Context, o interface{})
 						svc:            svc,
 						DomainID:       domain.Id,
 						ID:             grant.Id,
-						Status:         grant.Status,
+						Status:         aws.String(string(grant.Status)),
 						DomainName:     domain.Name,
 						SubscriptionID: grant.SubscriptionId,
 						GrantedEntity:  grant.GrantedEntity,
 						CreatedAt:      grant.CreatedAt,
 					})
 				}
-
-				if grantResp.NextToken == nil {
-					break
-				}
-
-				grantParams.NextToken = grantResp.NextToken
 			}
 		}
-
-		if domainResp.NextToken == nil {
-			break
-		}
-
-		domainParams.NextToken = domainResp.NextToken
 	}
 
 	return resources, nil
 }
 
 type DataZoneSubscriptionGrant struct {
-	svc            *datazone.DataZone
+	svc            *datazone.Client
 	DomainID       *string
 	ID             *string
 	Status         *string
 	DomainName     *string
 	SubscriptionID *string
-	GrantedEntity  *datazone.GrantedEntity
+	GrantedEntity  types.GrantedEntity
 	CreatedAt      *time.Time
 }
 
-func (r *DataZoneSubscriptionGrant) Remove(_ context.Context) error {
-	_, err := r.svc.DeleteSubscriptionGrant(&datazone.DeleteSubscriptionGrantInput{
-		DomainIdentifier: r.DomainID,
-		Identifier:       r.ID,
-	})
-
-	if err != nil {
-		var awsErr awserr.Error
-		if errors.As(err, &awsErr) {
-			switch awsErr.Code() {
-			case "ResourceNotFoundException":
-				// Grant already deleted
-				return nil
-			case "ConflictException":
-				// Deletion may already be in progress, accept it
-				return nil
-			}
-		}
-		return err
+func (r *DataZoneSubscriptionGrant) Filter() error {
+	if r.Status != nil && types.SubscriptionGrantOverallStatus(*r.Status) == types.SubscriptionGrantOverallStatusInaccessible {
+	    return fmt.Errorf("subscription grant is inaccessible")
 	}
-
 	return nil
 }
 
+func (r *DataZoneSubscriptionGrant) Remove(ctx context.Context) error {
+	_, err := r.svc.DeleteSubscriptionGrant(ctx, &datazone.DeleteSubscriptionGrantInput{
+		DomainIdentifier: r.DomainID,
+		Identifier:       r.ID,
+	})
+	return err
+}
 
-func (r *DataZoneSubscriptionGrant) Properties() types.Properties {
-	properties := types.NewProperties()
-	properties.Set("ID", r.ID)
-	properties.Set("DomainID", r.DomainID)
-	properties.Set("DomainName", r.DomainName)
-	if r.Status != nil {
-		properties.Set("Status", r.Status)
-	}
-	if r.SubscriptionID != nil {
-		properties.Set("SubscriptionID", r.SubscriptionID)
-	}
-	if r.CreatedAt != nil {
-		properties.Set("CreatedAt", r.CreatedAt.Format(time.RFC3339))
+func (r *DataZoneSubscriptionGrant) HandleWait(ctx context.Context) error {
+	resp, err := r.svc.GetSubscriptionGrant(ctx, &datazone.GetSubscriptionGrantInput{
+		DomainIdentifier: r.DomainID,
+		Identifier:       r.ID,
+	})
+	if err != nil {
+		return err
 	}
 
-	return properties
+	r.Status = aws.String(string(resp.Status))
+
+	switch resp.Status {
+	case types.SubscriptionGrantOverallStatusGrantFailed,
+		types.SubscriptionGrantOverallStatusRevokeFailed,
+		types.SubscriptionGrantOverallStatusGrantAndRevokeFailed:
+		return fmt.Errorf("subscription grant deletion failed (status=%s)", resp.Status)
+
+	case types.SubscriptionGrantOverallStatusPending,
+		types.SubscriptionGrantOverallStatusInProgress,
+		types.SubscriptionGrantOverallStatusCompleted:
+		// Keep waiting until the resource becomes NotFound.
+		return liberror.ErrWaitResource(fmt.Sprintf("subscription grant status=%s", resp.Status))
+
+	default:
+		// if AWS adds new statuses, keep waiting rather than exiting early.
+		return liberror.ErrWaitResource(fmt.Sprintf("subscription grant status=%s", resp.Status))
+	}
+}
+
+func (r *DataZoneSubscriptionGrant) Properties() libtypes.Properties {
+	return libtypes.NewPropertiesFromStruct(r)
 }

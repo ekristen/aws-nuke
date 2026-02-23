@@ -2,16 +2,17 @@ package resources
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"              //nolint:staticcheck
-	"github.com/aws/aws-sdk-go/service/datazone" //nolint:staticcheck
-	"github.com/aws/aws-sdk-go/aws/awserr"       //nolint:staticcheck
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/datazone"
+	"github.com/aws/aws-sdk-go-v2/service/datazone/types"
 
+	liberror "github.com/ekristen/libnuke/pkg/errors"
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
-	"github.com/ekristen/libnuke/pkg/types"
+	libtypes "github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
@@ -32,18 +33,19 @@ func init() {
 
 type DataZoneDomainLister struct{}
 
-func (l *DataZoneDomainLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *DataZoneDomainLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 
-	svc := datazone.New(opts.Session)
+	svc := datazone.NewFromConfig(*opts.Config)
 	resources := make([]resource.Resource, 0)
 
 	params := &datazone.ListDomainsInput{
-		MaxResults: aws.Int64(100),
+		MaxResults: aws.Int32(100),
 	}
 
-	for {
-		resp, err := svc.ListDomains(params)
+	paginator := datazone.NewListDomainsPaginator(svc, params)
+	for paginator.HasMorePages() {
+		resp, err := paginator.NextPage(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -53,24 +55,18 @@ func (l *DataZoneDomainLister) List(_ context.Context, o interface{}) ([]resourc
 				svc:         svc,
 				ID:          domain.Id,
 				Name:        domain.Name,
-				Status:      domain.Status,
+				Status:      aws.String(string(domain.Status)),
 				CreatedAt:   domain.CreatedAt,
 				Description: domain.Description,
 			})
 		}
-
-		if resp.NextToken == nil {
-			break
-		}
-
-		params.NextToken = resp.NextToken
 	}
 
 	return resources, nil
 }
 
 type DataZoneDomain struct {
-	svc         *datazone.DataZone
+	svc         *datazone.Client
 	ID          *string
 	Name        *string
 	Status      *string
@@ -78,48 +74,46 @@ type DataZoneDomain struct {
 	Description *string
 }
 
-func (r *DataZoneDomain) Remove(_ context.Context) error {
-	_, err := r.svc.DeleteDomain(&datazone.DeleteDomainInput{
-		Identifier: r.ID,
-	})
-
-	if err != nil {
-		// Handle AWS errors - check if deletion is already in progress or complete
-		var awsErr awserr.Error
-		if errors.As(err, &awsErr) {
-			// If domain is already being deleted or doesn't exist, don't fail
-			switch awsErr.Code() {
-			case "ResourceNotFoundException":
-				// Domain already deleted
-				return nil
-			case "ConflictException":
-				// Check if it's already being deleted
-				if r.Status != nil && *r.Status == "DELETING" {
-					// Deletion in progress, let it complete
-					return nil
-				}
-			}
+func (r *DataZoneDomain) Filter() error {
+	if r.Status != nil {
+		switch types.DomainStatus(*r.Status) {
+		case types.DomainStatusDeleted:
+			return fmt.Errorf("domain is already deleted")
+		case types.DomainStatusDeleting:
+			return fmt.Errorf("domain deletion already in progress")
 		}
-		return err
 	}
-
-	// Note: DeleteDomain is async - domain will transition through states
-	// aws-nuke will re-run and pick up the final state in subsequent passes
 	return nil
 }
 
-func (r *DataZoneDomain) Properties() types.Properties {
-	properties := types.NewProperties()
-	properties.Set("ID", r.ID)
-	properties.Set("Name", r.Name)
-	properties.Set("Status", r.Status)
-	if r.CreatedAt != nil {
-		properties.Set("CreatedAt", r.CreatedAt.Format(time.RFC3339))
-	}
-	if r.Description != nil {
-		properties.Set("Description", r.Description)
+func (r *DataZoneDomain) Remove(ctx context.Context) error {
+	_, err := r.svc.DeleteDomain(ctx, &datazone.DeleteDomainInput{
+		Identifier: r.ID,
+	})
+	return err
+}
+
+func (r *DataZoneDomain) HandleWait(ctx context.Context) error {
+	resp, err := r.svc.GetDomain(ctx, &datazone.GetDomainInput{
+		Identifier: r.ID,
+	})
+	if err != nil {
+		return err
 	}
 
-	return properties
+	r.Status = aws.String(string(resp.Status))
+
+	switch resp.Status {
+	case types.DomainStatusDeleted:
+		return nil
+	case types.DomainStatusDeleting:
+		return liberror.ErrWaitResource("domain deletion in progress")
+	default:
+		return liberror.ErrWaitResource(fmt.Sprintf("domain status: %s", resp.Status))
+	}
+}
+
+func (r *DataZoneDomain) Properties() libtypes.Properties {
+	return libtypes.NewPropertiesFromStruct(r)
 }
 

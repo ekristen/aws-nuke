@@ -2,16 +2,16 @@ package resources
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"              //nolint:staticcheck
-	"github.com/aws/aws-sdk-go/service/datazone" //nolint:staticcheck
-	"github.com/aws/aws-sdk-go/aws/awserr"       //nolint:staticcheck
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/datazone"
+	"github.com/aws/aws-sdk-go-v2/service/datazone/types"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
-	"github.com/ekristen/libnuke/pkg/types"
+	libtypes "github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
@@ -32,19 +32,20 @@ func init() {
 
 type DataZoneSubscriptionLister struct{}
 
-func (l *DataZoneSubscriptionLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *DataZoneSubscriptionLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 
-	svc := datazone.New(opts.Session)
+	svc := datazone.NewFromConfig(*opts.Config)
 	resources := make([]resource.Resource, 0)
 
 	// First, list all domains
 	domainParams := &datazone.ListDomainsInput{
-		MaxResults: aws.Int64(100),
+		MaxResults: aws.Int32(100),
 	}
 
-	for {
-		domainResp, err := svc.ListDomains(domainParams)
+	domainPaginator := datazone.NewListDomainsPaginator(svc, domainParams)
+	for domainPaginator.HasMorePages() {
+		domainResp, err := domainPaginator.NextPage(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -53,13 +54,14 @@ func (l *DataZoneSubscriptionLister) List(_ context.Context, o interface{}) ([]r
 		for _, domain := range domainResp.Items {
 			subParams := &datazone.ListSubscriptionsInput{
 				DomainIdentifier: domain.Id,
-				MaxResults:       aws.Int64(100),
+				MaxResults:       aws.Int32(100),
 			}
 
-			for {
-				subResp, err := svc.ListSubscriptions(subParams)
+			subPaginator := datazone.NewListSubscriptionsPaginator(svc, subParams)
+			for subPaginator.HasMorePages() {
+				subResp, err := subPaginator.NextPage(ctx)
 				if err != nil {
-					return nil, err // Don't swallow errors - fail loudly for SCP denials
+					return nil, err // fail loudly for SCP denials
 				}
 
 				for _, sub := range subResp.Items {
@@ -67,86 +69,48 @@ func (l *DataZoneSubscriptionLister) List(_ context.Context, o interface{}) ([]r
 						svc:                 svc,
 						DomainID:            domain.Id,
 						ID:                  sub.Id,
-						Status:              sub.Status,
+						Status:              aws.String(string(sub.Status)),
 						DomainName:          domain.Name,
 						SubscribedPrincipal: sub.SubscribedPrincipal,
 						SubscribedListing:   sub.SubscribedListing,
 						CreatedAt:           sub.CreatedAt,
 					})
 				}
-
-				if subResp.NextToken == nil {
-					break
-				}
-
-				subParams.NextToken = subResp.NextToken
 			}
 		}
-
-		if domainResp.NextToken == nil {
-			break
-		}
-
-		domainParams.NextToken = domainResp.NextToken
 	}
 
 	return resources, nil
 }
 
 type DataZoneSubscription struct {
-	svc                 *datazone.DataZone
+	svc                 *datazone.Client
 	DomainID            *string
 	ID                  *string
 	Status              *string
 	DomainName          *string
-	SubscribedPrincipal *datazone.SubscribedPrincipal
-	SubscribedListing   *datazone.SubscribedListing
+	SubscribedPrincipal types.SubscribedPrincipal
+	SubscribedListing   *types.SubscribedListing
 	CreatedAt           *time.Time
 }
 
-func (r *DataZoneSubscription) Remove(_ context.Context) error {
-	// Only skip if already in a terminal cancelled state
-	if r.Status != nil && *r.Status == "CANCELLED" {
-		return nil
+func (r *DataZoneSubscription) Filter() error {
+//no pending or in-progress states for subscription, only cancelled, revoked or approved is available.
+	if r.Status != nil && types.SubscriptionStatus(*r.Status) == types.SubscriptionStatusCancelled {
+		return fmt.Errorf("subscription is already cancelled")
 	}
-
-	_, err := r.svc.CancelSubscription(&datazone.CancelSubscriptionInput{
-		DomainIdentifier: r.DomainID,
-		Identifier:       r.ID,
-	})
-
-	if err != nil {
-		var awsErr awserr.Error
-		if errors.As(err, &awsErr) {
-			switch awsErr.Code() {
-			case "ResourceNotFoundException":
-				// Subscription already deleted
-				return nil
-			case "ConflictException":
-				// Cancellation may already be in progress, accept it
-				return nil
-			}
-		}
-		return err
-	}
-
-	// Note: CancelSubscription is async - subscription will transition to CANCELLED status
-	// aws-nuke will re-run and pick up the final state in subsequent passes
 	return nil
 }
 
+func (r *DataZoneSubscription) Remove(ctx context.Context) error {
+	_, err := r.svc.CancelSubscription(ctx, &datazone.CancelSubscriptionInput{
+		DomainIdentifier: r.DomainID,
+		Identifier:       r.ID,
+	})
+	return err
+}
 
-func (r *DataZoneSubscription) Properties() types.Properties {
-	properties := types.NewProperties()
-	properties.Set("ID", r.ID)
-	properties.Set("DomainID", r.DomainID)
-	properties.Set("DomainName", r.DomainName)
-	if r.Status != nil {
-		properties.Set("Status", r.Status)
-	}
-	if r.CreatedAt != nil {
-		properties.Set("CreatedAt", r.CreatedAt.Format(time.RFC3339))
-	}
 
-	return properties
+func (r *DataZoneSubscription) Properties() libtypes.Properties {
+	return libtypes.NewPropertiesFromStruct(r)
 }

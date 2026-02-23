@@ -2,16 +2,17 @@ package resources
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"              //nolint:staticcheck
-	"github.com/aws/aws-sdk-go/service/datazone" //nolint:staticcheck
-	"github.com/aws/aws-sdk-go/aws/awserr"       //nolint:staticcheck
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/datazone"
+	"github.com/aws/aws-sdk-go-v2/service/datazone/types"
 
+	liberror "github.com/ekristen/libnuke/pkg/errors"
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
-	"github.com/ekristen/libnuke/pkg/types"
+	libtypes "github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
@@ -32,19 +33,20 @@ func init() {
 
 type DataZoneProjectLister struct{}
 
-func (l *DataZoneProjectLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *DataZoneProjectLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 
-	svc := datazone.New(opts.Session)
+	svc := datazone.NewFromConfig(*opts.Config)
 	resources := make([]resource.Resource, 0)
 
 	// First, list all domains
 	domainParams := &datazone.ListDomainsInput{
-		MaxResults: aws.Int64(100),
+		MaxResults: aws.Int32(100),
 	}
 
-	for {
-		domainResp, err := svc.ListDomains(domainParams)
+	domainPaginator := datazone.NewListDomainsPaginator(svc, domainParams)
+	for domainPaginator.HasMorePages() {
+		domainResp, err := domainPaginator.NextPage(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -53,11 +55,12 @@ func (l *DataZoneProjectLister) List(_ context.Context, o interface{}) ([]resour
 		for _, domain := range domainResp.Items {
 			projectParams := &datazone.ListProjectsInput{
 				DomainIdentifier: domain.Id,
-				MaxResults:       aws.Int64(100),
+				MaxResults:       aws.Int32(100),
 			}
 
-			for {
-				projectResp, err := svc.ListProjects(projectParams)
+			projectPaginator := datazone.NewListProjectsPaginator(svc, projectParams)
+			for projectPaginator.HasMorePages() {
+				projectResp, err := projectPaginator.NextPage(ctx)
 				if err != nil {
 					return nil, err // Don't swallow errors - fail loudly for SCP denials
 				}
@@ -72,30 +75,18 @@ func (l *DataZoneProjectLister) List(_ context.Context, o interface{}) ([]resour
 						CreatedBy:     project.CreatedBy,
 						Description:   project.Description,
 						DomainName:    domain.Name,
-						ProjectStatus: project.ProjectStatus,
+						ProjectStatus: aws.String(string(project.ProjectStatus)),
 					})
 				}
-
-				if projectResp.NextToken == nil {
-					break
-				}
-
-				projectParams.NextToken = projectResp.NextToken
 			}
 		}
-
-		if domainResp.NextToken == nil {
-			break
-		}
-
-		domainParams.NextToken = domainResp.NextToken
 	}
 
 	return resources, nil
 }
 
 type DataZoneProject struct {
-	svc           *datazone.DataZone
+	svc           *datazone.Client
 	DomainID      *string
 	ID            *string
 	Name          *string
@@ -106,49 +97,45 @@ type DataZoneProject struct {
 	ProjectStatus *string
 }
 
-func (r *DataZoneProject) Remove(_ context.Context) error {
-	_, err := r.svc.DeleteProject(&datazone.DeleteProjectInput{
-		DomainIdentifier: r.DomainID,
-		Identifier:       r.ID,
-	})
-
-	if err != nil {
-		var awsErr awserr.Error
-		if errors.As(err, &awsErr) {
-			switch awsErr.Code() {
-			case "ResourceNotFoundException":
-				// Project already deleted
-				return nil
-			case "ConflictException":
-				// Deletion may already be in progress or project has dependencies, accept it
-				return nil
-			}
+func (r *DataZoneProject) Filter() error {
+	if r.ProjectStatus != nil {
+		switch types.ProjectStatus(*r.ProjectStatus) {
+		case types.ProjectStatusDeleting:
+			return fmt.Errorf("project deletion already in progress")
+		case types.ProjectStatusDeleteFailed:
+			return fmt.Errorf("project deletion previously failed")
 		}
-		return err
 	}
-
 	return nil
 }
 
+func (r *DataZoneProject) Remove(ctx context.Context) error {
+	_, err := r.svc.DeleteProject(ctx, &datazone.DeleteProjectInput{
+		DomainIdentifier: r.DomainID,
+		Identifier:       r.ID,
+	})
+	return err
+}
 
-func (r *DataZoneProject) Properties() types.Properties {
-	properties := types.NewProperties()
-	properties.Set("ID", r.ID)
-	properties.Set("Name", r.Name)
-	properties.Set("DomainID", r.DomainID)
-	properties.Set("DomainName", r.DomainName)
-	if r.ProjectStatus != nil {
-		properties.Set("ProjectStatus", r.ProjectStatus)
-	}
-	if r.CreatedAt != nil {
-		properties.Set("CreatedAt", r.CreatedAt.Format(time.RFC3339))
-	}
-	if r.CreatedBy != nil {
-		properties.Set("CreatedBy", r.CreatedBy)
-	}
-	if r.Description != nil {
-		properties.Set("Description", r.Description)
+func (r *DataZoneProject) HandleWait(ctx context.Context) error {
+	resp, err := r.svc.GetProject(ctx, &datazone.GetProjectInput{
+		DomainIdentifier: r.DomainID,
+		Identifier:       r.ID,
+	})
+	if err != nil {
+		return err
 	}
 
-	return properties
+	r.ProjectStatus = aws.String(string(resp.ProjectStatus))
+
+	switch resp.ProjectStatus {
+	case types.ProjectStatusDeleteFailed:
+		return fmt.Errorf("project deletion failed")
+	default:
+		return liberror.ErrWaitResource(fmt.Sprintf("project status=%s", resp.ProjectStatus))
+	}
+}
+
+func (r *DataZoneProject) Properties() libtypes.Properties {
+	return libtypes.NewPropertiesFromStruct(r)
 }
