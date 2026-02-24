@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -119,19 +120,21 @@ func (r *DataZoneSubscriptionGrant) HandleWait(ctx context.Context) error {
 	r.Status = aws.String(string(resp.Status))
 
 	switch resp.Status {
+	case types.SubscriptionGrantOverallStatusCompleted:
+		// Deletion finished successfully
+		return nil
+
 	case types.SubscriptionGrantOverallStatusGrantFailed,
 		types.SubscriptionGrantOverallStatusRevokeFailed,
 		types.SubscriptionGrantOverallStatusGrantAndRevokeFailed:
 		return fmt.Errorf("subscription grant deletion failed (status=%s)", resp.Status)
 
 	case types.SubscriptionGrantOverallStatusPending,
-		types.SubscriptionGrantOverallStatusInProgress,
-		types.SubscriptionGrantOverallStatusCompleted:
-		// Keep waiting until the resource becomes NotFound.
+		types.SubscriptionGrantOverallStatusInProgress:
 		return liberror.ErrWaitResource(fmt.Sprintf("subscription grant status=%s", resp.Status))
 
 	default:
-		// if AWS adds new statuses, keep waiting rather than exiting early.
+		// For any unknown new statuses, keep waiting
 		return liberror.ErrWaitResource(fmt.Sprintf("subscription grant status=%s", resp.Status))
 	}
 }

@@ -77,10 +77,9 @@ type DataZoneDomain struct {
 func (r *DataZoneDomain) Filter() error {
 	if r.Status != nil {
 		switch types.DomainStatus(*r.Status) {
+		//domains in inprogress states are handled in HandleWait, so we want to skip them here to avoid false positives
 		case types.DomainStatusDeleted:
 			return fmt.Errorf("domain is already deleted")
-		case types.DomainStatusDeleting:
-			return fmt.Errorf("domain deletion already in progress")
 		}
 	}
 	return nil

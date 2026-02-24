@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -100,10 +101,8 @@ type DataZoneProject struct {
 func (r *DataZoneProject) Filter() error {
 	if r.ProjectStatus != nil {
 		switch types.ProjectStatus(*r.ProjectStatus) {
-		case types.ProjectStatusDeleting:
-			return fmt.Errorf("project deletion already in progress")
 		case types.ProjectStatusDeleteFailed:
-			return fmt.Errorf("project deletion previously failed")
+			return fmt.Errorf("project is in delete failed state")
 		}
 	}
 	return nil
@@ -131,8 +130,10 @@ func (r *DataZoneProject) HandleWait(ctx context.Context) error {
 	switch resp.ProjectStatus {
 	case types.ProjectStatusDeleteFailed:
 		return fmt.Errorf("project deletion failed")
+	case types.ProjectStatusDeleting:
+		return liberror.ErrWaitResource("project deletion in progress")
 	default:
-		return liberror.ErrWaitResource(fmt.Sprintf("project status=%s", resp.ProjectStatus))
+		return liberror.ErrWaitResource(fmt.Sprintf("project status: %s", resp.ProjectStatus))
 	}
 }
 
