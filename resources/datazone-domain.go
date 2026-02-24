@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -77,9 +78,10 @@ type DataZoneDomain struct {
 func (r *DataZoneDomain) Filter() error {
 	if r.Status != nil {
 		switch types.DomainStatus(*r.Status) {
-		//domains in inprogress states are handled in HandleWait, so we want to skip them here to avoid false positives
 		case types.DomainStatusDeleted:
 			return fmt.Errorf("domain is already deleted")
+		case types.DomainStatusDeletionFailed:
+			return fmt.Errorf("domain is in deletion failed state")
 		}
 	}
 	return nil
@@ -97,6 +99,10 @@ func (r *DataZoneDomain) HandleWait(ctx context.Context) error {
 		Identifier: r.ID,
 	})
 	if err != nil {
+		var notFound *types.ResourceNotFoundException
+		if errors.As(err, &notFound) {
+			return nil
+		}
 		return err
 	}
 
@@ -105,6 +111,8 @@ func (r *DataZoneDomain) HandleWait(ctx context.Context) error {
 	switch resp.Status {
 	case types.DomainStatusDeleted:
 		return nil
+	case types.DomainStatusDeletionFailed:
+		return fmt.Errorf("domain deletion failed")
 	case types.DomainStatusDeleting:
 		return liberror.ErrWaitResource("domain deletion in progress")
 	default:

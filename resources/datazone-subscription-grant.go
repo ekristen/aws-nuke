@@ -94,8 +94,17 @@ type DataZoneSubscriptionGrant struct {
 }
 
 func (r *DataZoneSubscriptionGrant) Filter() error {
-	if r.Status != nil && types.SubscriptionGrantOverallStatus(*r.Status) == types.SubscriptionGrantOverallStatusInaccessible {
-		return fmt.Errorf("subscription grant is inaccessible")
+	if r.Status != nil {
+		switch types.SubscriptionGrantOverallStatus(*r.Status) {
+		case types.SubscriptionGrantOverallStatusInaccessible:
+			return fmt.Errorf("subscription grant is inaccessible")
+		case types.SubscriptionGrantOverallStatusGrantFailed:
+			return fmt.Errorf("subscription grant is in grant failed state")
+		case types.SubscriptionGrantOverallStatusRevokeFailed:
+			return fmt.Errorf("subscription grant is in revoke failed state")
+		case types.SubscriptionGrantOverallStatusGrantAndRevokeFailed:
+			return fmt.Errorf("subscription grant is in grant and revoke failed state")
+		}
 	}
 	return nil
 }
@@ -114,16 +123,17 @@ func (r *DataZoneSubscriptionGrant) HandleWait(ctx context.Context) error {
 		Identifier:       r.ID,
 	})
 	if err != nil {
+		var notFound *types.ResourceNotFoundException
+		if errors.As(err, &notFound) {
+			// Resource is gone — deletion complete
+			return nil
+		}
 		return err
 	}
 
 	r.Status = aws.String(string(resp.Status))
 
 	switch resp.Status {
-	case types.SubscriptionGrantOverallStatusCompleted:
-		// Deletion finished successfully
-		return nil
-
 	case types.SubscriptionGrantOverallStatusGrantFailed,
 		types.SubscriptionGrantOverallStatusRevokeFailed,
 		types.SubscriptionGrantOverallStatusGrantAndRevokeFailed:
@@ -134,7 +144,7 @@ func (r *DataZoneSubscriptionGrant) HandleWait(ctx context.Context) error {
 		return liberror.ErrWaitResource(fmt.Sprintf("subscription grant status=%s", resp.Status))
 
 	default:
-		// For any unknown new statuses, keep waiting
+		// Still exists but in some other state, keep waiting
 		return liberror.ErrWaitResource(fmt.Sprintf("subscription grant status=%s", resp.Status))
 	}
 }

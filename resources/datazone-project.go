@@ -122,6 +122,10 @@ func (r *DataZoneProject) HandleWait(ctx context.Context) error {
 		Identifier:       r.ID,
 	})
 	if err != nil {
+		var notFound *types.ResourceNotFoundException
+		if errors.As(err, &notFound) {
+			return nil
+		}
 		return err
 	}
 

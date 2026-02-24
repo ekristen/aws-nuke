@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/datazone"
 	"github.com/aws/aws-sdk-go-v2/service/datazone/types"
 
+	liberror "github.com/ekristen/libnuke/pkg/errors"
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	libtypes "github.com/ekristen/libnuke/pkg/types"
@@ -95,9 +97,15 @@ type DataZoneSubscription struct {
 }
 
 func (r *DataZoneSubscription) Filter() error {
-	//no pending or in-progress states for subscription, only cancelled, revoked or approved is available.
-	if r.Status != nil && types.SubscriptionStatus(*r.Status) == types.SubscriptionStatusCancelled {
-		return fmt.Errorf("subscription is already cancelled")
+	// Only APPROVED subscriptions can be cancelled. Filter out terminal states
+	// so Remove() is never called on them — avoids ConflictException.
+	if r.Status != nil {
+		switch types.SubscriptionStatus(*r.Status) {
+		case types.SubscriptionStatusCancelled:
+			return fmt.Errorf("subscription is already cancelled")
+		case types.SubscriptionStatusRevoked:
+			return fmt.Errorf("subscription is already revoked")
+		}
 	}
 	return nil
 }
@@ -108,6 +116,30 @@ func (r *DataZoneSubscription) Remove(ctx context.Context) error {
 		Identifier:       r.ID,
 	})
 	return err
+}
+
+func (r *DataZoneSubscription) HandleWait(ctx context.Context) error {
+	resp, err := r.svc.GetSubscription(ctx, &datazone.GetSubscriptionInput{
+		DomainIdentifier: r.DomainID,
+		Identifier:       r.ID,
+	})
+	if err != nil {
+		var notFound *types.ResourceNotFoundException
+		if errors.As(err, &notFound) {
+			return nil
+		}
+		return err
+	}
+
+	r.Status = aws.String(string(resp.Status))
+
+	switch resp.Status {
+	case types.SubscriptionStatusCancelled:
+		// Cancellation complete
+		return nil
+	default:
+		return liberror.ErrWaitResource(fmt.Sprintf("subscription cancellation in progress, status=%s", resp.Status))
+	}
 }
 
 func (r *DataZoneSubscription) Properties() libtypes.Properties {
