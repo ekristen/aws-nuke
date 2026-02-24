@@ -2,7 +2,6 @@ package resources
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
@@ -10,7 +9,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/datazone"
 	"github.com/aws/aws-sdk-go-v2/service/datazone/types"
 
-	liberror "github.com/ekristen/libnuke/pkg/errors"
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	libtypes "github.com/ekristen/libnuke/pkg/types"
@@ -123,11 +121,6 @@ func (r *DataZoneSubscriptionGrant) HandleWait(ctx context.Context) error {
 		Identifier:       r.ID,
 	})
 	if err != nil {
-		var notFound *types.ResourceNotFoundException
-		if errors.As(err, &notFound) {
-			// Resource is gone — deletion complete
-			return nil
-		}
 		return err
 	}
 
