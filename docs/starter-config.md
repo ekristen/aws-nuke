@@ -70,6 +70,11 @@ resource-types:
     - RedshiftServerlessSnapshot # Deprecated service
     - RedshiftServerlessNamespace # Deprecated service
     - RedshiftServerlessWorkgroup # Deprecated service
+    - AWS::Timestream::Database # Deprecated service
+    - AWS::Timestream::ScheduledQuery # Deprecated service
+    - AWS::Timestream::Table # Deprecated service
+    - ShieldProtection # Requires a subscription
+    - ShieldProtectionGroup # Requires a subscription
 
 presets:
   common:
