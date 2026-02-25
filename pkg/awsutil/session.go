@@ -44,7 +44,7 @@ type Credentials struct {
 
 	AccessKeyID     string
 	SecretAccessKey string
-	SessionToken    string
+	SessionToken    string //nolint:gosec // not a hardcoded credential
 	AssumeRoleArn   string
 	ExternalID      string
 	RoleSessionName string

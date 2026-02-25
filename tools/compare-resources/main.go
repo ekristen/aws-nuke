@@ -30,12 +30,13 @@ func main() { //nolint:funlen,gocyclo
 		panic("no arguments given")
 	}
 
-	upstreamDirectory := filepath.Join(args[0], "resources")
+	upstreamDirectory := filepath.Clean(filepath.Join(args[0], "resources"))
 
 	var upstreamResourceFiles []string
 	var upstreamResourceTypes []string
 	var upstreamTypeToFile = map[string]string{}
 
+	//nolint:gosec // path from CLI args
 	err := filepath.WalkDir(upstreamDirectory, func(path string, di fs.DirEntry, err error) error {
 		if !strings.HasSuffix(path, ".go") {
 			return nil
@@ -53,7 +54,7 @@ func main() { //nolint:funlen,gocyclo
 	}
 
 	for _, file := range upstreamResourceFiles {
-		originalFileContents, err := os.ReadFile(filepath.Join(upstreamDirectory, file))
+		originalFileContents, err := os.ReadFile(filepath.Clean(filepath.Join(upstreamDirectory, file))) //nolint:gosec // path from CLI args
 		if err != nil {
 			panic(err)
 		}
