@@ -49,7 +49,8 @@ func (l *DataZoneSubscriptionGrantLister) List(ctx context.Context, o interface{
 		}
 
 		// For each domain, list subscription grants
-		for _, domain := range domainResp.Items {
+		for di := range domainResp.Items {
+			domain := &domainResp.Items[di]
 			grantParams := &datazone.ListSubscriptionGrantsInput{
 				DomainIdentifier: domain.Id,
 				MaxResults:       aws.Int32(100),
@@ -62,16 +63,16 @@ func (l *DataZoneSubscriptionGrantLister) List(ctx context.Context, o interface{
 					return nil, err // Don't swallow errors - fail loudly for SCP denials
 				}
 
-				for _, grant := range grantResp.Items {
+				for i := range grantResp.Items {
+					grant := &grantResp.Items[i]
 					resources = append(resources, &DataZoneSubscriptionGrant{
-						svc:            svc,
-						DomainID:       domain.Id,
-						ID:             grant.Id,
-						Status:         aws.String(string(grant.Status)),
-						DomainName:     domain.Name,
-						SubscriptionID: grant.SubscriptionId,
-						GrantedEntity:  grant.GrantedEntity,
-						CreatedAt:      grant.CreatedAt,
+						svc:           svc,
+						DomainID:      domain.Id,
+						ID:            grant.Id,
+						Status:        aws.String(string(grant.Status)),
+						DomainName:    domain.Name,
+						GrantedEntity: grant.GrantedEntity,
+						CreatedAt:     grant.CreatedAt,
 					})
 				}
 			}
@@ -82,14 +83,13 @@ func (l *DataZoneSubscriptionGrantLister) List(ctx context.Context, o interface{
 }
 
 type DataZoneSubscriptionGrant struct {
-	svc            *datazone.Client
-	DomainID       *string
-	ID             *string
-	Status         *string
-	DomainName     *string
-	SubscriptionID *string
-	GrantedEntity  types.GrantedEntity
-	CreatedAt      *time.Time
+	svc           *datazone.Client
+	DomainID      *string
+	ID            *string
+	Status        *string
+	DomainName    *string
+	GrantedEntity types.GrantedEntity
+	CreatedAt     *time.Time
 }
 
 func (r *DataZoneSubscriptionGrant) Filter() error {

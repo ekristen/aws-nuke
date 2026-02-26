@@ -98,11 +98,8 @@ type DataZoneProject struct {
 }
 
 func (r *DataZoneProject) Filter() error {
-	if r.ProjectStatus != nil {
-		switch types.ProjectStatus(*r.ProjectStatus) {
-		case types.ProjectStatusDeleteFailed:
-			return fmt.Errorf("project is in delete failed state")
-		}
+	if r.ProjectStatus != nil && types.ProjectStatus(*r.ProjectStatus) == types.ProjectStatusDeleteFailed {
+		return fmt.Errorf("project is in delete failed state")
 	}
 	return nil
 }

@@ -50,14 +50,16 @@ func (l *DataZoneSubscriptionTargetLister) List(ctx context.Context, o interface
 		}
 
 		// For each domain, collect all environments efficiently
-		for _, domain := range domainResp.Items {
+		for di := range domainResp.Items {
+			domain := &domainResp.Items[di]
 			environments, err := l.listAllEnvironmentsInDomain(ctx, svc, domain.Id)
 			if err != nil {
 				return nil, err // Don't swallow errors - fail loudly for SCP denials
 			}
 
 			// Now list subscription targets for all environments
-			for _, env := range environments {
+			for i := range environments {
+				env := &environments[i]
 				err := l.listSubscriptionTargetsInEnvironment(ctx, svc, domain, env, &resources)
 				if err != nil {
 					return nil, err // Don't swallow errors - fail loudly for SCP denials
@@ -70,7 +72,9 @@ func (l *DataZoneSubscriptionTargetLister) List(ctx context.Context, o interface
 }
 
 // Helper function to list all environments in a domain across all projects
-func (l *DataZoneSubscriptionTargetLister) listAllEnvironmentsInDomain(ctx context.Context, svc *datazone.Client, domainID *string) ([]types.EnvironmentSummary, error) {
+func (l *DataZoneSubscriptionTargetLister) listAllEnvironmentsInDomain(
+	ctx context.Context, svc *datazone.Client, domainID *string,
+) ([]types.EnvironmentSummary, error) {
 	var allEnvironments []types.EnvironmentSummary
 
 	// First, get all projects in the domain
@@ -113,8 +117,8 @@ func (l *DataZoneSubscriptionTargetLister) listAllEnvironmentsInDomain(ctx conte
 func (l *DataZoneSubscriptionTargetLister) listSubscriptionTargetsInEnvironment(
 	ctx context.Context,
 	svc *datazone.Client,
-	domain types.DomainSummary,
-	env types.EnvironmentSummary,
+	domain *types.DomainSummary,
+	env *types.EnvironmentSummary,
 	resources *[]resource.Resource,
 ) error {
 	targetParams := &datazone.ListSubscriptionTargetsInput{
@@ -130,7 +134,8 @@ func (l *DataZoneSubscriptionTargetLister) listSubscriptionTargetsInEnvironment(
 			return err
 		}
 
-		for _, target := range targetResp.Items {
+		for i := range targetResp.Items {
+			target := &targetResp.Items[i]
 			*resources = append(*resources, &DataZoneSubscriptionTarget{
 				svc:           svc,
 				DomainID:      domain.Id,

@@ -96,12 +96,12 @@ type DataZoneSubscription struct {
 }
 
 func (r *DataZoneSubscription) Filter() error {
-	// Only APPROVED subscriptions can be cancelled. Filter out terminal states
+	// Only APPROVED subscriptions can be canceled. Filter out terminal states
 	// so Remove() is never called on them — avoids ConflictException.
 	if r.Status != nil {
 		switch types.SubscriptionStatus(*r.Status) {
 		case types.SubscriptionStatusCancelled:
-			return fmt.Errorf("subscription is already cancelled")
+			return fmt.Errorf("subscription is already canceled")
 		case types.SubscriptionStatusRevoked:
 			return fmt.Errorf("subscription is already revoked")
 		}
