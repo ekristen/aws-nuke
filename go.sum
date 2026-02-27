@@ -36,12 +36,10 @@ github.com/aws/aws-sdk-go-v2/service/bedrockagentcorecontrol v1.14.1 h1:boU3IIsK
 github.com/aws/aws-sdk-go-v2/service/bedrockagentcorecontrol v1.14.1/go.mod h1:rSP65Gc7ucwUaO12JTPl8o835CZlN8d3qUFcdT/6dHE=
 github.com/aws/aws-sdk-go-v2/service/cloudfront v1.44.12 h1:GEdQ1mVjgYH/c7vKrt+rrPS8Ax3wgqOHOBudPE7UIJs=
 github.com/aws/aws-sdk-go-v2/service/cloudfront v1.44.12/go.mod h1:nr2/4ch+huedh56oGZClTeCVENvMBqeEkzkObAFCDQM=
-github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.63.1 h1:l65dmgr7tO26EcHe6WMdseRnFLoJ2nqdkPz1nJdXfaw=
-github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.63.1/go.mod h1:wvnXh1w1pGS2UpEvPTKSjXYuxiXhuvob/IMaK2AWvek=
-github.com/aws/aws-sdk-go-v2/service/datazone v1.52.1 h1:RQYkUPwiZOQY44d07AmeJees2TdNToR9uNAG2T0I2iY=
-github.com/aws/aws-sdk-go-v2/service/datazone v1.52.1/go.mod h1:4KQL1HelNo3c0X1AHOeXaLpaclg3uOHh1LGnyHsdJgY=
 github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.63.2 h1:9Zc/otv2WzK7gbhXIbDfzV5aWUoaFDV7WHPcpvp4B8o=
 github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.63.2/go.mod h1:dvfInk3WN/sz8is2m5iN5EFYQzIXcQLaT2UnauE8uL4=
+github.com/aws/aws-sdk-go-v2/service/datazone v1.52.1 h1:RQYkUPwiZOQY44d07AmeJees2TdNToR9uNAG2T0I2iY=
+github.com/aws/aws-sdk-go-v2/service/datazone v1.52.1/go.mod h1:4KQL1HelNo3c0X1AHOeXaLpaclg3uOHh1LGnyHsdJgY=
 github.com/aws/aws-sdk-go-v2/service/docdb v1.41.7 h1:PcREFcABD9rw3UFjPFvhg3JIwK56gW0AFqjBpZRgpQQ=
 github.com/aws/aws-sdk-go-v2/service/docdb v1.41.7/go.mod h1:Ex1bFLSZE6w+gKwGRSROIRdSQhGa5aHXt9dE54BHSXw=
 github.com/aws/aws-sdk-go-v2/service/docdbelastic v1.15.5 h1:3fuuyMVTd8rS7nKXZcAQPj7miksKiRImi3Lh1CEFUiU=
@@ -158,8 +156,6 @@ github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZN
 github.com/rogpeppe/go-internal v1.9.0/go.mod h1:WtVeX8xhTBvf0smdhujwtBcq4Qrzq/fJaraNFVN+nFs=
 github.com/rogpeppe/go-internal v1.11.0 h1:cWPaGQEPrBb5/AsnsZesgZZ9yb1OQ+GOISoDNXVBh4M=
 github.com/rogpeppe/go-internal v1.11.0/go.mod h1:ddIwULY96R17DhadqLgMfk9H9tvdUzkipdSkR5nkCZA=
-github.com/sirupsen/logrus v1.9.3 h1:dueUQJ1C2q9oE3F7wvmSGAaVtTmUizReu6fjN8uqzbQ=
-github.com/sirupsen/logrus v1.9.3/go.mod h1:naHLuLoDiP4jHNo9R0sCBMtWGeIprob74mVsIT4qYEQ=
 github.com/sirupsen/logrus v1.9.4 h1:TsZE7l11zFCLZnZ+teH4Umoq5BhEIfIzfRDZ1Uzql2w=
 github.com/sirupsen/logrus v1.9.4/go.mod h1:ftWc9WdOfJ0a92nsE2jF5u5ZwH8Bv2zdeOC42RjbV2g=
 github.com/stevenle/topsort v0.2.0 h1:LLWgtp34HPX6/RBDRS0kElVxGOTzGBLI1lSAa5Lb46k=
