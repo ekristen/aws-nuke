@@ -83,11 +83,11 @@ func Test_Mock_Route53ResolverQueryLogConfig_List(t *testing.T) {
 			svc:                    mockRoute53Resolver,
 			resourceAssociationIds: []*string{ptr.String("vpc-11111")},
 			AssociationCount:       1,
-			Id:                     ptr.String("rqlc-12345"),
+			ID:                     ptr.String("rqlc-12345"),
 			Name:                   ptr.String("QueryLogConfig1"),
 			Arn:                    ptr.String("arn:aws:route53resolver:us-east-1:123456789012:resolver-query-log-config/rqlc-12345"),
-			CreatorRequestId:       ptr.String("RequestId1"),
-			OwnerId:                ptr.String("123456789012"),
+			CreatorRequestID:       ptr.String("RequestId1"),
+			OwnerID:                ptr.String("123456789012"),
 			ShareStatus:            r53rtypes.ShareStatusNotShared,
 			DestinationArn:         ptr.String("arn:aws:s3:::query-log-bucket-1"),
 			CreationTime:           ptr.String("2023-01-01T00:00:00Z"),
@@ -96,11 +96,11 @@ func Test_Mock_Route53ResolverQueryLogConfig_List(t *testing.T) {
 			svc:                    mockRoute53Resolver,
 			resourceAssociationIds: []*string{ptr.String("vpc-22222")},
 			AssociationCount:       1,
-			Id:                     ptr.String("rqlc-67890"),
+			ID:                     ptr.String("rqlc-67890"),
 			Name:                   ptr.String("QueryLogConfig2"),
 			Arn:                    ptr.String("arn:aws:route53resolver:us-east-1:123456789012:resolver-query-log-config/rqlc-67890"),
-			CreatorRequestId:       ptr.String("RequestId2"),
-			OwnerId:                ptr.String("123456789012"),
+			CreatorRequestID:       ptr.String("RequestId2"),
+			OwnerID:                ptr.String("123456789012"),
 			ShareStatus:            r53rtypes.ShareStatusSharedByMe,
 			DestinationArn:         ptr.String("arn:aws:s3:::query-log-bucket-2"),
 			CreationTime:           ptr.String("2023-01-02T00:00:00Z"),
@@ -132,9 +132,9 @@ func Test_Mock_Route53ResolverQueryLogConfig_Remove(t *testing.T) {
 		svc:                    mockRoute53Resolver,
 		resourceAssociationIds: []*string{ptr.String("rslvr-frgassoc-1")},
 		Arn:                    ptr.String("arn:aws:route53resolver:us-east-1:123456123456:firewall-rule-group/rslvr-frg-3"),
-		CreatorRequestId:       ptr.String("SomeAwsServiceCommand"),
-		Id:                     ptr.String("rslvr-frg-3"),
-		OwnerId:                ptr.String("Route 53 Resolver DNS Firewall"),
+		CreatorRequestID:       ptr.String("SomeAwsServiceCommand"),
+		ID:                     ptr.String("rslvr-frg-3"),
+		OwnerID:                ptr.String("Route 53 Resolver DNS Firewall"),
 		Name:                   ptr.String("Internet Resolver"),
 	}
 
@@ -147,16 +147,16 @@ func Test_Mock_Route53ResolverQueryLogConfig_Properties(t *testing.T) {
 
 	frg := &Route53ResolverQueryLogConfig{
 		Arn:              ptr.String("arn:aws:route53resolver:us-east-1:123456123456:firewall-rule-group/rslvr-frg-3"),
-		CreatorRequestId: ptr.String("SomeAwsServiceCommand"),
-		Id:               ptr.String("rslvr-frg-3"),
-		OwnerId:          ptr.String("Route 53 Resolver DNS Firewall"),
+		CreatorRequestID: ptr.String("SomeAwsServiceCommand"),
+		ID:               ptr.String("rslvr-frg-3"),
+		OwnerID:          ptr.String("Route 53 Resolver DNS Firewall"),
 		Name:             ptr.String("Internet Resolver"),
 	}
 
 	properties := frg.Properties()
 	a.Equal("arn:aws:route53resolver:us-east-1:123456123456:firewall-rule-group/rslvr-frg-3", properties.Get("Arn"))
-	a.Equal("SomeAwsServiceCommand", properties.Get("CreatorRequestId"))
-	a.Equal("rslvr-frg-3", properties.Get("Id"))
-	a.Equal("Route 53 Resolver DNS Firewall", properties.Get("OwnerId"))
+	a.Equal("SomeAwsServiceCommand", properties.Get("CreatorRequestID"))
+	a.Equal("rslvr-frg-3", properties.Get("ID"))
+	a.Equal("Route 53 Resolver DNS Firewall", properties.Get("OwnerID"))
 	a.Equal("Internet Resolver", properties.Get("Name"))
 }

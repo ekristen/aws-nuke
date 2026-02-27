@@ -43,7 +43,7 @@ func (l *AMPWorkspaceLister) List(ctx context.Context, o interface{}) ([]resourc
 				svc:            svc,
 				WorkspaceAlias: ws.Alias,
 				WorkspaceARN:   ws.Arn,
-				WorkspaceId:    ws.WorkspaceId,
+				WorkspaceID:    ws.WorkspaceId,
 				Tags:           ws.Tags,
 			})
 		}
@@ -56,22 +56,24 @@ type AMPWorkspace struct {
 	svc            *amp.Client
 	WorkspaceAlias *string           `description:"The alias of the AMP Workspace"`
 	WorkspaceARN   *string           `description:"The ARN of the AMP Workspace"`
-	WorkspaceId    *string           `description:"The ID of the AMP Workspace"`
+	WorkspaceID    *string           `description:"The ID of the AMP Workspace"`
 	Tags           map[string]string `description:"The tags of the AMP Workspace"`
 }
 
-func (f *AMPWorkspace) Remove(ctx context.Context) error {
-	_, err := f.svc.DeleteWorkspace(ctx, &amp.DeleteWorkspaceInput{
-		WorkspaceId: f.WorkspaceId,
+func (r *AMPWorkspace) Remove(ctx context.Context) error {
+	_, err := r.svc.DeleteWorkspace(ctx, &amp.DeleteWorkspaceInput{
+		WorkspaceId: r.WorkspaceID,
 	})
 
 	return err
 }
 
-func (f *AMPWorkspace) Properties() types.Properties {
-	return types.NewPropertiesFromStruct(f)
+func (r *AMPWorkspace) Properties() types.Properties {
+	props := types.NewPropertiesFromStruct(r)
+	props.Set("WorkspaceId", r.WorkspaceID) // TODO(v4): remove
+	return props
 }
 
-func (f *AMPWorkspace) String() string {
-	return *f.WorkspaceId
+func (r *AMPWorkspace) String() string {
+	return *r.WorkspaceID
 }

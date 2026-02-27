@@ -13,7 +13,7 @@ func Test_ShieldProtectionGroup_String(t *testing.T) {
 	a := assert.New(t)
 
 	shieldProtectionGroup := ShieldProtectionGroup{
-		ProtectionGroupId: ptr.String("protection-group-id"),
+		ProtectionGroupID: ptr.String("protection-group-id"),
 	}
 
 	a.Equal("protection-group-id", shieldProtectionGroup.String())
@@ -27,7 +27,7 @@ func Test_ShieldProtectionGroup_Properties(t *testing.T) {
 	resourceType := shieldtypes.ProtectedResourceTypeCloudfrontDistribution
 
 	shieldProtectionGroup := ShieldProtectionGroup{
-		ProtectionGroupId:  ptr.String("protection-group-id"),
+		ProtectionGroupID:  ptr.String("protection-group-id"),
 		Aggregation:        &aggregation,
 		Pattern:            &pattern,
 		ResourceType:       &resourceType,
@@ -63,7 +63,7 @@ func Test_ShieldProtectionGroup_Properties_EmptyTags(t *testing.T) {
 	pattern := shieldtypes.ProtectionGroupPatternAll
 
 	shieldProtectionGroup := ShieldProtectionGroup{
-		ProtectionGroupId:  ptr.String("protection-group-id"),
+		ProtectionGroupID:  ptr.String("protection-group-id"),
 		Aggregation:        &aggregation,
 		Pattern:            &pattern,
 		Members:            &[]string{},
@@ -86,7 +86,7 @@ func Test_ShieldProtectionGroup_Properties_SpecialCharactersInTags(t *testing.T)
 	pattern := shieldtypes.ProtectionGroupPatternAll
 
 	shieldProtectionGroup := ShieldProtectionGroup{
-		ProtectionGroupId:  ptr.String("protection-group-id"),
+		ProtectionGroupID:  ptr.String("protection-group-id"),
 		Aggregation:        &aggregation,
 		Pattern:            &pattern,
 		Members:            &[]string{"arn:aws:cloudfront::123456789012:distribution/EXAMPLE123"},

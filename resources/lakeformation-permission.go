@@ -60,13 +60,13 @@ type LakeFormationPermission struct {
 	Resource     *lakeformationtypes.Resource    `description:"-"`
 }
 
-func (f *LakeFormationPermission) Remove(ctx context.Context) error {
-	_, err := f.svc.RevokePermissions(ctx, &lakeformation.RevokePermissionsInput{
+func (r *LakeFormationPermission) Remove(ctx context.Context) error {
+	_, err := r.svc.RevokePermissions(ctx, &lakeformation.RevokePermissionsInput{
 		Principal: &lakeformationtypes.DataLakePrincipal{
-			DataLakePrincipalIdentifier: f.PrincipalARN,
+			DataLakePrincipalIdentifier: r.PrincipalARN,
 		},
-		Resource:    f.Resource,
-		Permissions: f.Permissions,
+		Resource:    r.Resource,
+		Permissions: r.Permissions,
 	})
 
 	return err
@@ -79,10 +79,10 @@ func (r *LakeFormationPermission) Filter() error {
 	return nil
 }
 
-func (f *LakeFormationPermission) Properties() types.Properties {
-	return types.NewPropertiesFromStruct(f)
+func (r *LakeFormationPermission) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
 
-func (f *LakeFormationPermission) String() string {
-	return *f.PrincipalARN
+func (r *LakeFormationPermission) String() string {
+	return *r.PrincipalARN
 }

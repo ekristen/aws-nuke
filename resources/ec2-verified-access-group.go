@@ -51,7 +51,7 @@ func (l *EC2VerifiedAccessGroupLister) List(ctx context.Context, o interface{}) 
 				Description:              group.Description,
 				CreationTime:             group.CreationTime,
 				LastUpdatedTime:          group.LastUpdatedTime,
-				VerifiedAccessInstanceId: group.VerifiedAccessInstanceId,
+				VerifiedAccessInstanceID: group.VerifiedAccessInstanceId,
 				Owner:                    group.Owner,
 				Tags:                     group.Tags,
 			})
@@ -72,7 +72,7 @@ type EC2VerifiedAccessGroup struct {
 	Description              *string        `description:"A description for the Verified Access group"`
 	CreationTime             *string        `description:"The timestamp when the Verified Access group was created"`
 	LastUpdatedTime          *string        `description:"The timestamp when the Verified Access group was last updated"`
-	VerifiedAccessInstanceId *string        `description:"The ID of the Verified Access instance this group belongs to"`
+	VerifiedAccessInstanceID *string        `description:"The ID of the Verified Access instance this group belongs to"`
 	Owner                    *string        `description:"The AWS account ID that owns the Verified Access group"`
 	Tags                     []ec2types.Tag `description:"The tags associated with the Verified Access group"`
 }
@@ -87,7 +87,9 @@ func (r *EC2VerifiedAccessGroup) Remove(ctx context.Context) error {
 }
 
 func (r *EC2VerifiedAccessGroup) Properties() types.Properties {
-	return types.NewPropertiesFromStruct(r)
+	props := types.NewPropertiesFromStruct(r)
+	props.Set("VerifiedAccessInstanceId", r.VerifiedAccessInstanceID)
+	return props
 }
 
 func (r *EC2VerifiedAccessGroup) String() string {

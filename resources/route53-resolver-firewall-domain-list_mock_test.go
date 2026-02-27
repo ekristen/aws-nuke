@@ -61,24 +61,24 @@ func Test_Mock_Route53ResolverFirewallDomainList_List(t *testing.T) {
 		&Route53ResolverFirewallDomainList{
 			svc:              mockRoute53Resolver,
 			Arn:              ptr.String("arn:aws:route53resolver:us-east-1:123456123456:firewall-domain-list/rslvr-fdl-1"),
-			CreatorRequestId: ptr.String("SomeAwsServiceCommand"),
-			Id:               ptr.String("rslvr-fdl-1"),
+			CreatorRequestID: ptr.String("SomeAwsServiceCommand"),
+			ID:               ptr.String("rslvr-fdl-1"),
 			ManagedOwnerName: ptr.String("Route 53 Resolver DNS Firewall"),
 			Name:             ptr.String("fdlNum1"),
 		},
 		&Route53ResolverFirewallDomainList{
 			svc:              mockRoute53Resolver,
 			Arn:              ptr.String("arn:aws:route53resolver:us-east-1:123456123456:firewall-domain-list/rslvr-fdl-2"),
-			CreatorRequestId: ptr.String("SomeAwsServiceCommand"),
-			Id:               ptr.String("rslvr-fdl-2"),
+			CreatorRequestID: ptr.String("SomeAwsServiceCommand"),
+			ID:               ptr.String("rslvr-fdl-2"),
 			ManagedOwnerName: ptr.String("Route 53 Resolver DNS Firewall"),
 			Name:             ptr.String("fdlNum2"),
 		},
 		&Route53ResolverFirewallDomainList{
 			svc:              mockRoute53Resolver,
 			Arn:              ptr.String("arn:aws:route53resolver:us-east-1:123456123456:firewall-domain-list/rslvr-fdl-3"),
-			CreatorRequestId: ptr.String("AWSConsole.88.1762108398672"),
-			Id:               ptr.String("rslvr-fdl-3"),
+			CreatorRequestID: ptr.String("AWSConsole.88.1762108398672"),
+			ID:               ptr.String("rslvr-fdl-3"),
 			Name:             ptr.String("UserCreatedDomainList"),
 		},
 	}
@@ -91,24 +91,24 @@ func Test_Mock_Route53ResolverFirewallDomainList_Filter(t *testing.T) {
 
 	cases := []struct {
 		Arn              string
-		CreatorRequestId string
-		Id               string
+		CreatorRequestID string
+		ID               string
 		ManagedOwnerName string
 		Name             string
 		Filtered         bool
 	}{
 		{
 			Arn:              "arn:aws:route53resolver:us-east-1:123456123456:firewall-domain-list/rslvr-fdl-2",
-			CreatorRequestId: "SomeAwsServiceCommand",
-			Id:               "rslvr-fdl-1",
+			CreatorRequestID: "SomeAwsServiceCommand",
+			ID:               "rslvr-fdl-1",
 			ManagedOwnerName: "Route 53 Resolver DNS Firewall",
 			Name:             "fdlNum2",
 			Filtered:         true,
 		},
 		{
 			Arn:              "arn:aws:route53resolver:us-east-1:123456123456:firewall-domain-list/rslvr-fdl-3",
-			CreatorRequestId: "SomeAwsServiceCommand",
-			Id:               "rslvr-fdl-2",
+			CreatorRequestID: "SomeAwsServiceCommand",
+			ID:               "rslvr-fdl-2",
 			Name:             "UserCreatedDomainList",
 			Filtered:         false,
 		},
@@ -125,8 +125,8 @@ func Test_Mock_Route53ResolverFirewallDomainList_Filter(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			fdl := &Route53ResolverFirewallDomainList{
 				Arn:              ptr.String(c.Arn),
-				CreatorRequestId: ptr.String(c.CreatorRequestId),
-				Id:               ptr.String(c.Id),
+				CreatorRequestID: ptr.String(c.CreatorRequestID),
+				ID:               ptr.String(c.ID),
 				ManagedOwnerName: ptr.String(c.ManagedOwnerName),
 				Name:             ptr.String(c.Name),
 			}
@@ -155,8 +155,8 @@ func Test_Mock_Route53ResolverFirewallDomainList_Remove(t *testing.T) {
 	fdl := &Route53ResolverFirewallDomainList{
 		svc:              mockRoute53Resolver,
 		Arn:              ptr.String("arn:aws:route53resolver:us-east-1:123456123456:firewall-domain-list/rslvr-fdl-3"),
-		CreatorRequestId: ptr.String("SomeAwsServiceCommand"),
-		Id:               ptr.String("rslvr-fdl-3"),
+		CreatorRequestID: ptr.String("SomeAwsServiceCommand"),
+		ID:               ptr.String("rslvr-fdl-3"),
 		ManagedOwnerName: ptr.String("Route 53 Resolver DNS Firewall"),
 		Name:             ptr.String("Internet Resolver"),
 	}
@@ -170,16 +170,16 @@ func Test_Mock_Route53ResolverFirewallDomainList_Properties(t *testing.T) {
 
 	fdl := &Route53ResolverFirewallDomainList{
 		Arn:              ptr.String("arn:aws:route53resolver:us-east-1:123456123456:firewall-domain-list/rslvr-fdl-3"),
-		CreatorRequestId: ptr.String("SomeAwsServiceCommand"),
-		Id:               ptr.String("rslvr-fdl-3"),
+		CreatorRequestID: ptr.String("SomeAwsServiceCommand"),
+		ID:               ptr.String("rslvr-fdl-3"),
 		ManagedOwnerName: ptr.String("Route 53 Resolver DNS Firewall"),
 		Name:             ptr.String("Internet Resolver"),
 	}
 
 	properties := fdl.Properties()
 	a.Equal("arn:aws:route53resolver:us-east-1:123456123456:firewall-domain-list/rslvr-fdl-3", properties.Get("Arn"))
-	a.Equal("SomeAwsServiceCommand", properties.Get("CreatorRequestId"))
-	a.Equal("rslvr-fdl-3", properties.Get("Id"))
+	a.Equal("SomeAwsServiceCommand", properties.Get("CreatorRequestID"))
+	a.Equal("rslvr-fdl-3", properties.Get("ID"))
 	a.Equal("Route 53 Resolver DNS Firewall", properties.Get("ManagedOwnerName"))
 	a.Equal("Internet Resolver", properties.Get("Name"))
 }

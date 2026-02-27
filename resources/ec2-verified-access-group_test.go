@@ -14,7 +14,7 @@ func Test_EC2VerifiedAccessGroup_Properties(t *testing.T) {
 		Description:              ptr.String("Test verified access group"),
 		CreationTime:             ptr.String(now),
 		LastUpdatedTime:          ptr.String(now),
-		VerifiedAccessInstanceId: ptr.String("vai-1234567890abcdef0"),
+		VerifiedAccessInstanceID: ptr.String("vai-1234567890abcdef0"),
 		Owner:                    ptr.String("123456789012"),
 		Tags: []ec2types.Tag{
 			{
@@ -31,7 +31,7 @@ func Test_EC2VerifiedAccessGroup_Properties(t *testing.T) {
 	properties := group.Properties()
 
 	assert.Equal(t, "vag-1234567890abcdef0", properties.Get("ID"))
-	assert.Equal(t, "vai-1234567890abcdef0", properties.Get("VerifiedAccessInstanceId"))
+	assert.Equal(t, "vai-1234567890abcdef0", properties.Get("VerifiedAccessInstanceID"))
 	assert.Equal(t, "Test verified access group", properties.Get("Description"))
 	assert.Equal(t, "123456789012", properties.Get("Owner"))
 	assert.Equal(t, now, properties.Get("CreationTime"))
@@ -46,7 +46,7 @@ func Test_EC2VerifiedAccessGroup_Properties_EmptyTags(t *testing.T) {
 		Description:              ptr.String("Test verified access group without tags"),
 		CreationTime:             ptr.String(now),
 		LastUpdatedTime:          ptr.String(now),
-		VerifiedAccessInstanceId: ptr.String("vai-1234567890abcdef0"),
+		VerifiedAccessInstanceID: ptr.String("vai-1234567890abcdef0"),
 		Owner:                    ptr.String("123456789012"),
 		Tags:                     []ec2types.Tag{},
 	}
@@ -54,7 +54,7 @@ func Test_EC2VerifiedAccessGroup_Properties_EmptyTags(t *testing.T) {
 	properties := group.Properties()
 
 	assert.Equal(t, "vag-1234567890abcdef0", properties.Get("ID"))
-	assert.Equal(t, "vai-1234567890abcdef0", properties.Get("VerifiedAccessInstanceId"))
+	assert.Equal(t, "vai-1234567890abcdef0", properties.Get("VerifiedAccessInstanceID"))
 	assert.Equal(t, "Test verified access group without tags", properties.Get("Description"))
 	assert.Equal(t, "123456789012", properties.Get("Owner"))
 	assert.Equal(t, now, properties.Get("CreationTime"))

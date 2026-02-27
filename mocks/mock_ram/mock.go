@@ -16,32 +16,32 @@ import (
 	gomock "go.uber.org/mock/gomock"
 )
 
-// MockRamAPI is a mock of RamAPI interface.
-type MockRamAPI struct {
+// MockRAMAPI is a mock of RAMAPI interface.
+type MockRAMAPI struct {
 	ctrl     *gomock.Controller
-	recorder *MockRamAPIMockRecorder
+	recorder *MockRAMAPIMockRecorder
 	isgomock struct{}
 }
 
-// MockRamAPIMockRecorder is the mock recorder for MockRamAPI.
-type MockRamAPIMockRecorder struct {
-	mock *MockRamAPI
+// MockRAMAPIMockRecorder is the mock recorder for MockRAMAPI.
+type MockRAMAPIMockRecorder struct {
+	mock *MockRAMAPI
 }
 
-// NewMockRamAPI creates a new mock instance.
-func NewMockRamAPI(ctrl *gomock.Controller) *MockRamAPI {
-	mock := &MockRamAPI{ctrl: ctrl}
-	mock.recorder = &MockRamAPIMockRecorder{mock}
+// NewMockRAMAPI creates a new mock instance.
+func NewMockRAMAPI(ctrl *gomock.Controller) *MockRAMAPI {
+	mock := &MockRAMAPI{ctrl: ctrl}
+	mock.recorder = &MockRAMAPIMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockRamAPI) EXPECT() *MockRamAPIMockRecorder {
+func (m *MockRAMAPI) EXPECT() *MockRAMAPIMockRecorder {
 	return m.recorder
 }
 
 // DeleteResourceShare mocks base method.
-func (m *MockRamAPI) DeleteResourceShare(ctx context.Context, params *ram.DeleteResourceShareInput, optFns ...func(*ram.Options)) (*ram.DeleteResourceShareOutput, error) {
+func (m *MockRAMAPI) DeleteResourceShare(ctx context.Context, params *ram.DeleteResourceShareInput, optFns ...func(*ram.Options)) (*ram.DeleteResourceShareOutput, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, params}
 	for _, a := range optFns {
@@ -54,14 +54,14 @@ func (m *MockRamAPI) DeleteResourceShare(ctx context.Context, params *ram.Delete
 }
 
 // DeleteResourceShare indicates an expected call of DeleteResourceShare.
-func (mr *MockRamAPIMockRecorder) DeleteResourceShare(ctx, params any, optFns ...any) *gomock.Call {
+func (mr *MockRAMAPIMockRecorder) DeleteResourceShare(ctx, params any, optFns ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx, params}, optFns...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteResourceShare", reflect.TypeOf((*MockRamAPI)(nil).DeleteResourceShare), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteResourceShare", reflect.TypeOf((*MockRAMAPI)(nil).DeleteResourceShare), varargs...)
 }
 
 // GetResourceShares mocks base method.
-func (m *MockRamAPI) GetResourceShares(ctx context.Context, params *ram.GetResourceSharesInput, optFns ...func(*ram.Options)) (*ram.GetResourceSharesOutput, error) {
+func (m *MockRAMAPI) GetResourceShares(ctx context.Context, params *ram.GetResourceSharesInput, optFns ...func(*ram.Options)) (*ram.GetResourceSharesOutput, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, params}
 	for _, a := range optFns {
@@ -74,8 +74,8 @@ func (m *MockRamAPI) GetResourceShares(ctx context.Context, params *ram.GetResou
 }
 
 // GetResourceShares indicates an expected call of GetResourceShares.
-func (mr *MockRamAPIMockRecorder) GetResourceShares(ctx, params any, optFns ...any) *gomock.Call {
+func (mr *MockRAMAPIMockRecorder) GetResourceShares(ctx, params any, optFns ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx, params}, optFns...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetResourceShares", reflect.TypeOf((*MockRamAPI)(nil).GetResourceShares), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetResourceShares", reflect.TypeOf((*MockRAMAPI)(nil).GetResourceShares), varargs...)
 }
