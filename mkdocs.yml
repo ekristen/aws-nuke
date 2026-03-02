@@ -654,6 +654,7 @@ nav:
     - Storage Gateway Volume: resources/storage-gateway-volume.md
     - Textract Adapter Version: resources/textract-adapter-version.md
     - Textract Adapter: resources/textract-adapter.md
+    - Timestream Influx Db Dbinstance: resources/timestream-influx-db-dbinstance.md
     - Transcribe Call Analytics Category: resources/transcribe-call-analytics-category.md
     - Transcribe Call Analytics Job: resources/transcribe-call-analytics-job.md
     - Transcribe Language Model: resources/transcribe-language-model.md
