@@ -40,7 +40,7 @@ func Test_Mock_Route53ResolverFirewallRuleGroup_List(t *testing.T) {
 				BlockResponse:        "NODATA",
 				CreationTime:         ptr.String("2023-01-01T00:00:00Z"),
 				CreatorRequestId:     ptr.String("test-request-1"),
-				FirewallDomainListId: expectedFirewallRule1a.FirewallDomainListId,
+				FirewallDomainListId: expectedFirewallRule1a.FirewallDomainListID,
 				FirewallRuleGroupId:  ptr.String("rslvr-frg-1"),
 				ModificationTime:     ptr.String("2023-01-01T00:00:00Z"),
 				Name:                 expectedFirewallRule1a.Name,
@@ -61,7 +61,7 @@ func Test_Mock_Route53ResolverFirewallRuleGroup_List(t *testing.T) {
 				BlockResponse:        "NXDOMAIN",
 				CreationTime:         ptr.String("2023-01-01T00:00:00Z"),
 				CreatorRequestId:     ptr.String("test-request-2"),
-				FirewallDomainListId: expectedFirewallRule2a.FirewallDomainListId,
+				FirewallDomainListId: expectedFirewallRule2a.FirewallDomainListID,
 				FirewallRuleGroupId:  ptr.String("rslvr-frg-2"),
 				ModificationTime:     ptr.String("2023-01-01T00:00:00Z"),
 				Name:                 expectedFirewallRule2a.Name,
@@ -72,7 +72,7 @@ func Test_Mock_Route53ResolverFirewallRuleGroup_List(t *testing.T) {
 				BlockResponse:        "NXDOMAIN",
 				CreationTime:         ptr.String("2023-01-01T00:00:00Z"),
 				CreatorRequestId:     ptr.String("test-request-2"),
-				FirewallDomainListId: expectedFirewallRule2b.FirewallDomainListId,
+				FirewallDomainListId: expectedFirewallRule2b.FirewallDomainListID,
 				FirewallRuleGroupId:  ptr.String("rslvr-frg-2"),
 				ModificationTime:     ptr.String("2023-01-01T00:00:00Z"),
 				Name:                 expectedFirewallRule2b.Name,
@@ -158,9 +158,9 @@ func Test_Mock_Route53ResolverFirewallRuleGroup_List(t *testing.T) {
 			vpcAssociationIds: []*string{ptr.String("rslvr-frgassoc-1")},
 			rules:             []*Route53ResolverFirewallRule{expectedFirewallRule1a},
 			Arn:               ptr.String("arn:aws:route53resolver:us-east-1:123456123456:firewall-rule-group/rslvr-frg-1"),
-			CreatorRequestId:  ptr.String("SomeAwsServiceCommand"),
-			Id:                ptr.String("rslvr-frg-1"),
-			OwnerId:           ptr.String("Route 53 Resolver DNS Firewall"),
+			CreatorRequestID:  ptr.String("SomeAwsServiceCommand"),
+			ID:                ptr.String("rslvr-frg-1"),
+			OwnerID:           ptr.String("Route 53 Resolver DNS Firewall"),
 			Name:              ptr.String("frgNum1"),
 			ShareStatus:       r53rtypes.ShareStatusNotShared,
 		},
@@ -169,9 +169,9 @@ func Test_Mock_Route53ResolverFirewallRuleGroup_List(t *testing.T) {
 			vpcAssociationIds: []*string{ptr.String("rslvr-frgassoc-2")},
 			rules:             []*Route53ResolverFirewallRule{expectedFirewallRule2a, expectedFirewallRule2b},
 			Arn:               ptr.String("arn:aws:route53resolver:us-east-1:123456123456:firewall-rule-group/rslvr-frg-2"),
-			CreatorRequestId:  ptr.String("SomeAwsServiceCommand"),
-			Id:                ptr.String("rslvr-frg-2"),
-			OwnerId:           ptr.String("Route 53 Resolver DNS Firewall"),
+			CreatorRequestID:  ptr.String("SomeAwsServiceCommand"),
+			ID:                ptr.String("rslvr-frg-2"),
+			OwnerID:           ptr.String("Route 53 Resolver DNS Firewall"),
 			Name:              ptr.String("frgNum2"),
 			ShareStatus:       r53rtypes.ShareStatusSharedByMe,
 		},
@@ -180,9 +180,9 @@ func Test_Mock_Route53ResolverFirewallRuleGroup_List(t *testing.T) {
 			vpcAssociationIds: nil,
 			rules:             []*Route53ResolverFirewallRule{},
 			Arn:               ptr.String("arn:aws:route53resolver:us-east-1:123456123456:firewall-rule-group/rslvr-frg-3"),
-			CreatorRequestId:  ptr.String("AWSConsole.88.1762108398672"),
-			Id:                ptr.String("rslvr-frg-3"),
-			OwnerId:           ptr.String("SomeOwnerId"),
+			CreatorRequestID:  ptr.String("AWSConsole.88.1762108398672"),
+			ID:                ptr.String("rslvr-frg-3"),
+			OwnerID:           ptr.String("SomeOwnerId"),
 			Name:              ptr.String("UserCreatedRuleGroup"),
 			ShareStatus:       r53rtypes.ShareStatusSharedWithMe,
 		},
@@ -210,22 +210,22 @@ func Test_Mock_Route53ResolverFirewallRuleGroup_Remove(t *testing.T) {
 		DeleteFirewallRuleGroup(gomock.Any(), gomock.Any()).
 		Return(&r53r.DeleteFirewallRuleGroupOutput{}, nil)
 
-	firewall_rules := []*Route53ResolverFirewallRule{
+	firewallRules := []*Route53ResolverFirewallRule{
 		{
 			Name:                       ptr.String("rule1"),
 			Qtype:                      ptr.String("AAAA"),
-			FirewallThreatProtectionId: ptr.String("ftpid_123"),
+			FirewallThreatProtectionID: ptr.String("ftpid_123"),
 		},
 	}
 
 	frg := &Route53ResolverFirewallRuleGroup{
 		svc:               mockRoute53Resolver,
 		vpcAssociationIds: []*string{ptr.String("rslvr-frgassoc-1")},
-		rules:             firewall_rules,
+		rules:             firewallRules,
 		Arn:               ptr.String("arn:aws:route53resolver:us-east-1:123456123456:firewall-rule-group/rslvr-frg-3"),
-		CreatorRequestId:  ptr.String("SomeAwsServiceCommand"),
-		Id:                ptr.String("rslvr-frg-3"),
-		OwnerId:           ptr.String("Route 53 Resolver DNS Firewall"),
+		CreatorRequestID:  ptr.String("SomeAwsServiceCommand"),
+		ID:                ptr.String("rslvr-frg-3"),
+		OwnerID:           ptr.String("Route 53 Resolver DNS Firewall"),
 		Name:              ptr.String("Internet Resolver"),
 	}
 
@@ -238,9 +238,9 @@ func Test_Mock_Route53ResolverFirewallRuleGroup_Properties(t *testing.T) {
 
 	frg := &Route53ResolverFirewallRuleGroup{
 		Arn:              ptr.String("arn:aws:route53resolver:us-east-1:123456123456:firewall-rule-group/rslvr-frg-3"),
-		CreatorRequestId: ptr.String("SomeAwsServiceCommand"),
-		Id:               ptr.String("rslvr-frg-3"),
-		OwnerId:          ptr.String("Route 53 Resolver DNS Firewall"),
+		CreatorRequestID: ptr.String("SomeAwsServiceCommand"),
+		ID:               ptr.String("rslvr-frg-3"),
+		OwnerID:          ptr.String("Route 53 Resolver DNS Firewall"),
 		Name:             ptr.String("Internet Resolver"),
 	}
 

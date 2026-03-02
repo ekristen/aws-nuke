@@ -8,23 +8,23 @@ import (
 
 // Interface for resource injection and test mocks
 // From https://stackoverflow.com/questions/72235425/simplifying-aws-sdk-go-v2-testing-mocking
-type RamAPI interface {
+type RAMAPI interface {
 	DeleteResourceShare(ctx context.Context, params *ram.DeleteResourceShareInput,
 		optFns ...func(*ram.Options)) (*ram.DeleteResourceShareOutput, error)
 	GetResourceShares(ctx context.Context, params *ram.GetResourceSharesInput,
 		optFns ...func(*ram.Options)) (*ram.GetResourceSharesOutput, error)
 }
 
-type RamClient struct {
+type RAMClient struct {
 	Client *ram.Client
 }
 
-func (c *RamClient) DeleteResourceShare(ctx context.Context, params *ram.DeleteResourceShareInput,
+func (c *RAMClient) DeleteResourceShare(ctx context.Context, params *ram.DeleteResourceShareInput,
 	optFns ...func(*ram.Options)) (*ram.DeleteResourceShareOutput, error) {
 	return c.Client.DeleteResourceShare(ctx, params, optFns...)
 }
 
-func (c *RamClient) GetResourceShares(ctx context.Context, params *ram.GetResourceSharesInput,
+func (c *RAMClient) GetResourceShares(ctx context.Context, params *ram.GetResourceSharesInput,
 	optFns ...func(*ram.Options)) (*ram.GetResourceSharesOutput, error) {
 	return c.Client.GetResourceShares(ctx, params, optFns...)
 }

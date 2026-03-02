@@ -15,23 +15,23 @@ import (
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
-const RamResourceShareResource = "RamResourceShare"
+const RAMResourceShareResource = "RAMResourceShare"
 
 func init() {
 	registry.Register(&registry.Registration{
-		Name:     RamResourceShareResource,
+		Name:     RAMResourceShareResource,
 		Scope:    nuke.Account,
-		Resource: &RamResourceShare{},
-		Lister:   &RamResourceShareLister{},
+		Resource: &RAMResourceShare{},
+		Lister:   &RAMResourceShareLister{},
 	})
 }
 
-type RamResourceShareLister struct {
-	svc RamAPI
+type RAMResourceShareLister struct {
+	svc RAMAPI
 }
 
 // List returns a list of all RAM Resource Shares owned by this account
-func (l *RamResourceShareLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *RAMResourceShareLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	var resources []resource.Resource
 
 	if l.svc == nil {
@@ -51,11 +51,11 @@ func (l *RamResourceShareLister) List(ctx context.Context, o interface{}) ([]res
 		}
 
 		for _, share := range resp.ResourceShares {
-			resources = append(resources, &RamResourceShare{
+			resources = append(resources, &RAMResourceShare{
 				svc:              l.svc,
 				Name:             share.Name,
-				OwningAccountId:  share.OwningAccountId,
-				ResourceShareArn: share.ResourceShareArn,
+				OwningAccountID:  share.OwningAccountId,
+				ResourceShareARN: share.ResourceShareArn,
 				Status:           share.Status,
 			})
 		}
@@ -70,26 +70,25 @@ func (l *RamResourceShareLister) List(ctx context.Context, o interface{}) ([]res
 	return resources, nil
 }
 
-// RamResourceShare is the resource type
-type RamResourceShare struct {
-	svc              RamAPI
-	ResourceShareArn *string
+// RAMResourceShare is the resource type
+type RAMResourceShare struct {
+	svc              RAMAPI
+	ResourceShareARN *string
 	Name             *string
-	OwningAccountId  *string
+	OwningAccountID  *string
 	Status           ramtypes.ResourceShareStatus
 }
 
 // Remove implements Resource
-func (r *RamResourceShare) Remove(ctx context.Context) error {
+func (r *RAMResourceShare) Remove(ctx context.Context) error {
 	var notFound *ramtypes.ResourceArnNotFoundException
 
 	// delete the resource share (doesn't delete the resource, just the share)
 	_, err := r.svc.DeleteResourceShare(ctx, &ram.DeleteResourceShareInput{
-		ResourceShareArn: r.ResourceShareArn,
+		ResourceShareArn: r.ResourceShareARN,
 	})
 
 	if err != nil {
-		// ignore not found error, the share is probably already deleted
 		if !errors.As(err, &notFound) {
 			return err
 		}
@@ -98,8 +97,7 @@ func (r *RamResourceShare) Remove(ctx context.Context) error {
 	return err
 }
 
-func (r *RamResourceShare) Filter() error {
-	// Ignore
+func (r *RAMResourceShare) Filter() error {
 	if r.Status != ramtypes.ResourceShareStatusActive {
 		return fmt.Errorf("RAM resource share status is %s, is not active", r.Status)
 	}
@@ -107,6 +105,10 @@ func (r *RamResourceShare) Filter() error {
 	return nil
 }
 
-func (r *RamResourceShare) Properties() types.Properties {
-	return types.NewPropertiesFromStruct(r)
+func (r *RAMResourceShare) Properties() types.Properties {
+	props := types.NewPropertiesFromStruct(r)
+	// TODO(v4): remove backward-compat properties
+	props.Set("OwningAccountId", r.OwningAccountID)
+	props.Set("ResourceShareArn", r.ResourceShareARN)
+	return props
 }

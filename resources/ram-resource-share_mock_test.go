@@ -18,16 +18,16 @@ import (
 	"github.com/ekristen/aws-nuke/v3/mocks/mock_ram"
 )
 
-var owningAccountId = "123456123456"
+var owningAccountID = "123456123456"
 
-func Test_Mock_RamResourceShare_List(t *testing.T) {
+func Test_Mock_RAMResourceShare_List(t *testing.T) {
 	a := assert.New(t)
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockRam := mock_ram.NewMockRamAPI(ctrl)
+	mockRAM := mock_ram.NewMockRAMAPI(ctrl)
 
-	mockRam.EXPECT().GetResourceShares(gomock.Any(), gomock.Any()).Return(&ram.GetResourceSharesOutput{
+	mockRAM.EXPECT().GetResourceShares(gomock.Any(), gomock.Any()).Return(&ram.GetResourceSharesOutput{
 		ResourceShares: []ramtypes.ResourceShare{
 			{
 				AllowExternalPrincipals: nil,
@@ -35,8 +35,8 @@ func Test_Mock_RamResourceShare_List(t *testing.T) {
 				FeatureSet:              "",
 				LastUpdatedTime:         ptr.Time(time.Now().UTC()),
 				Name:                    ptr.String("ShareActive"),
-				OwningAccountId:         &owningAccountId,
-				ResourceShareArn:        ptr.String(fmt.Sprintf("arn:aws:ram:us-east-1:%s:resoure-share:ShareActive", owningAccountId)),
+				OwningAccountId:         &owningAccountID,
+				ResourceShareArn:        ptr.String(fmt.Sprintf("arn:aws:ram:us-east-1:%s:resoure-share:ShareActive", owningAccountID)),
 				Status:                  "ACTIVE",
 				StatusMessage:           nil,
 				Tags:                    nil,
@@ -47,8 +47,8 @@ func Test_Mock_RamResourceShare_List(t *testing.T) {
 				FeatureSet:              "",
 				LastUpdatedTime:         ptr.Time(time.Now().UTC()),
 				Name:                    ptr.String("ShareDeleting"),
-				OwningAccountId:         &owningAccountId,
-				ResourceShareArn:        ptr.String(fmt.Sprintf("arn:aws:ram:us-east-1:%s:resoure-share:ShareDeleting", owningAccountId)),
+				OwningAccountId:         &owningAccountID,
+				ResourceShareArn:        ptr.String(fmt.Sprintf("arn:aws:ram:us-east-1:%s:resoure-share:ShareDeleting", owningAccountID)),
 				Status:                  "DELETING",
 				StatusMessage:           nil,
 				Tags:                    nil,
@@ -59,8 +59,8 @@ func Test_Mock_RamResourceShare_List(t *testing.T) {
 				FeatureSet:              "",
 				LastUpdatedTime:         ptr.Time(time.Now().UTC()),
 				Name:                    ptr.String("ShareDeleted"),
-				OwningAccountId:         &owningAccountId,
-				ResourceShareArn:        ptr.String(fmt.Sprintf("arn:aws:ram:us-east-1:%s:resoure-share:ShareDeleted", owningAccountId)),
+				OwningAccountId:         &owningAccountID,
+				ResourceShareArn:        ptr.String(fmt.Sprintf("arn:aws:ram:us-east-1:%s:resoure-share:ShareDeleted", owningAccountID)),
 				Status:                  "DELETED",
 				StatusMessage:           nil,
 				Tags:                    nil,
@@ -68,8 +68,8 @@ func Test_Mock_RamResourceShare_List(t *testing.T) {
 		},
 	}, nil)
 
-	lister := &RamResourceShareLister{
-		svc: mockRam,
+	lister := &RAMResourceShareLister{
+		svc: mockRAM,
 	}
 
 	resources, err := lister.List(context.TODO(), testListerOpts)
@@ -77,25 +77,25 @@ func Test_Mock_RamResourceShare_List(t *testing.T) {
 	a.Len(resources, 3)
 
 	expectedResources := []resource.Resource{
-		&RamResourceShare{
-			svc:              mockRam,
+		&RAMResourceShare{
+			svc:              mockRAM,
 			Name:             ptr.String("ShareActive"),
-			OwningAccountId:  &owningAccountId,
-			ResourceShareArn: ptr.String(fmt.Sprintf("arn:aws:ram:us-east-1:%s:resoure-share:ShareActive", owningAccountId)),
+			OwningAccountID:  &owningAccountID,
+			ResourceShareARN: ptr.String(fmt.Sprintf("arn:aws:ram:us-east-1:%s:resoure-share:ShareActive", owningAccountID)),
 			Status:           "ACTIVE",
 		},
-		&RamResourceShare{
-			svc:              mockRam,
+		&RAMResourceShare{
+			svc:              mockRAM,
 			Name:             ptr.String("ShareDeleting"),
-			OwningAccountId:  &owningAccountId,
-			ResourceShareArn: ptr.String(fmt.Sprintf("arn:aws:ram:us-east-1:%s:resoure-share:ShareDeleting", owningAccountId)),
+			OwningAccountID:  &owningAccountID,
+			ResourceShareARN: ptr.String(fmt.Sprintf("arn:aws:ram:us-east-1:%s:resoure-share:ShareDeleting", owningAccountID)),
 			Status:           "DELETING",
 		},
-		&RamResourceShare{
-			svc:              mockRam,
+		&RAMResourceShare{
+			svc:              mockRAM,
 			Name:             ptr.String("ShareDeleted"),
-			OwningAccountId:  &owningAccountId,
-			ResourceShareArn: ptr.String(fmt.Sprintf("arn:aws:ram:us-east-1:%s:resoure-share:ShareDeleted", owningAccountId)),
+			OwningAccountID:  &owningAccountID,
+			ResourceShareARN: ptr.String(fmt.Sprintf("arn:aws:ram:us-east-1:%s:resoure-share:ShareDeleted", owningAccountID)),
 			Status:           "DELETED",
 		},
 	}
@@ -103,35 +103,35 @@ func Test_Mock_RamResourceShare_List(t *testing.T) {
 	a.Equal(expectedResources, resources)
 }
 
-func Test_Mock_RamResourceShare_Filter(t *testing.T) {
+func Test_Mock_RAMResourceShare_Filter(t *testing.T) {
 	a := assert.New(t)
 
 	cases := []struct {
 		Name             *string
-		OwningAccountId  *string
-		ResourceShareArn *string
+		OwningAccountID  *string
+		ResourceShareARN *string
 		Status           ramtypes.ResourceShareStatus
 		Filtered         bool
 	}{
 		{
 			Name:             ptr.String("ShareActive"),
-			OwningAccountId:  &owningAccountId,
-			ResourceShareArn: ptr.String(fmt.Sprintf("arn:aws:ram:us-east-1:%s:resoure-share:ShareActive", owningAccountId)),
+			OwningAccountID:  &owningAccountID,
+			ResourceShareARN: ptr.String(fmt.Sprintf("arn:aws:ram:us-east-1:%s:resoure-share:ShareActive", owningAccountID)),
 			Status:           ramtypes.ResourceShareStatusActive,
 			// only active are not filtered since only active can be deleted
 			Filtered: false,
 		},
 		{
 			Name:             ptr.String("ShareDeleting"),
-			OwningAccountId:  &owningAccountId,
-			ResourceShareArn: ptr.String(fmt.Sprintf("arn:aws:ram:us-east-1:%s:resoure-share:ShareDeleting", owningAccountId)),
+			OwningAccountID:  &owningAccountID,
+			ResourceShareARN: ptr.String(fmt.Sprintf("arn:aws:ram:us-east-1:%s:resoure-share:ShareDeleting", owningAccountID)),
 			Status:           ramtypes.ResourceShareStatusDeleting,
 			Filtered:         true,
 		},
 		{
 			Name:             ptr.String("ShareDeleted"),
-			OwningAccountId:  &owningAccountId,
-			ResourceShareArn: ptr.String(fmt.Sprintf("arn:aws:ram:us-east-1:%s:resoure-share:ShareDeleted", owningAccountId)),
+			OwningAccountID:  &owningAccountID,
+			ResourceShareARN: ptr.String(fmt.Sprintf("arn:aws:ram:us-east-1:%s:resoure-share:ShareDeleted", owningAccountID)),
 			Status:           ramtypes.ResourceShareStatusDeleted,
 			Filtered:         true,
 		},
@@ -146,10 +146,10 @@ func Test_Mock_RamResourceShare_Filter(t *testing.T) {
 		}
 
 		t.Run(*name, func(t *testing.T) {
-			share := &RamResourceShare{
+			share := &RAMResourceShare{
 				Name:             c.Name,
-				OwningAccountId:  c.OwningAccountId,
-				ResourceShareArn: c.ResourceShareArn,
+				OwningAccountID:  c.OwningAccountID,
+				ResourceShareARN: c.ResourceShareARN,
 				Status:           c.Status,
 			}
 
@@ -163,22 +163,22 @@ func Test_Mock_RamResourceShare_Filter(t *testing.T) {
 	}
 }
 
-func Test_Mock_RamResourceShare_Remove(t *testing.T) {
+func Test_Mock_RAMResourceShare_Remove(t *testing.T) {
 	a := assert.New(t)
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockRam := mock_ram.NewMockRamAPI(ctrl)
+	mockRAM := mock_ram.NewMockRAMAPI(ctrl)
 
-	mockRam.EXPECT().
+	mockRAM.EXPECT().
 		DeleteResourceShare(gomock.Any(), gomock.Any()).
 		Return(&ram.DeleteResourceShareOutput{}, nil)
 
-	share := &RamResourceShare{
-		svc:              mockRam,
+	share := &RAMResourceShare{
+		svc:              mockRAM,
 		Name:             ptr.String("ShareActive"),
-		OwningAccountId:  &owningAccountId,
-		ResourceShareArn: ptr.String(fmt.Sprintf("arn:aws:ram:us-east-1:%s:resoure-share:ShareActive", owningAccountId)),
+		OwningAccountID:  &owningAccountID,
+		ResourceShareARN: ptr.String(fmt.Sprintf("arn:aws:ram:us-east-1:%s:resoure-share:ShareActive", owningAccountID)),
 		Status:           "Active",
 	}
 
@@ -186,19 +186,19 @@ func Test_Mock_RamResourceShare_Remove(t *testing.T) {
 	a.Nil(err)
 }
 
-func Test_Mock_RamResourceShare_Properties(t *testing.T) {
+func Test_Mock_RAMResourceShare_Properties(t *testing.T) {
 	a := assert.New(t)
 
-	share := &RamResourceShare{
+	share := &RAMResourceShare{
 		Name:             ptr.String("ShareActive"),
-		OwningAccountId:  &owningAccountId,
-		ResourceShareArn: ptr.String(fmt.Sprintf("arn:aws:ram:us-east-1:%s:resoure-share:ShareActive", owningAccountId)),
+		OwningAccountID:  &owningAccountID,
+		ResourceShareARN: ptr.String(fmt.Sprintf("arn:aws:ram:us-east-1:%s:resoure-share:ShareActive", owningAccountID)),
 		Status:           "ACTIVE",
 	}
 
 	properties := share.Properties()
 	a.Equal("ShareActive", properties.Get("Name"))
-	a.Equal(owningAccountId, properties.Get("OwningAccountId"))
-	a.Equal(fmt.Sprintf("arn:aws:ram:us-east-1:%s:resoure-share:ShareActive", owningAccountId), properties.Get("ResourceShareArn"))
+	a.Equal(owningAccountID, properties.Get("OwningAccountID"))
+	a.Equal(fmt.Sprintf("arn:aws:ram:us-east-1:%s:resoure-share:ShareActive", owningAccountID), properties.Get("ResourceShareARN"))
 	a.Equal("ACTIVE", properties.Get("Status"))
 }

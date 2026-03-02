@@ -62,7 +62,7 @@ func (l *MGNLaunchConfigurationTemplateLister) List(ctx context.Context, o inter
 				Ec2LaunchTemplateID:                 template.Ec2LaunchTemplateID,
 				LaunchDisposition:                   string(template.LaunchDisposition),
 				TargetInstanceTypeRightSizingMethod: string(template.TargetInstanceTypeRightSizingMethod),
-				CopyPrivateIp:                       template.CopyPrivateIp,
+				CopyPrivateIP:                       template.CopyPrivateIp,
 				CopyTags:                            template.CopyTags,
 				EnableMapAutoTagging:                template.EnableMapAutoTagging,
 				Tags:                                template.Tags,
@@ -90,24 +90,26 @@ type MGNLaunchConfigurationTemplate struct {
 	Ec2LaunchTemplateID                 *string           `description:"The ID of the associated EC2 launch template"`
 	LaunchDisposition                   string            `description:"The launch disposition (STOPPED, STARTED)"`
 	TargetInstanceTypeRightSizingMethod string            `description:"The method for right-sizing the target instance type"`
-	CopyPrivateIp                       *bool             `description:"Whether to copy the private IP address"`
+	CopyPrivateIP                       *bool             `description:"Whether to copy the private IP address"`
 	CopyTags                            *bool             `description:"Whether to copy tags to the launched instance"`
 	EnableMapAutoTagging                *bool             `description:"Whether to enable automatic tagging"`
 	Tags                                map[string]string `description:"The tags associated with the template"`
 }
 
-func (f *MGNLaunchConfigurationTemplate) Remove(ctx context.Context) error {
-	_, err := f.svc.DeleteLaunchConfigurationTemplate(ctx, &mgn.DeleteLaunchConfigurationTemplateInput{
-		LaunchConfigurationTemplateID: f.template.LaunchConfigurationTemplateID,
+func (r *MGNLaunchConfigurationTemplate) Remove(ctx context.Context) error {
+	_, err := r.svc.DeleteLaunchConfigurationTemplate(ctx, &mgn.DeleteLaunchConfigurationTemplateInput{
+		LaunchConfigurationTemplateID: r.template.LaunchConfigurationTemplateID,
 	})
 
 	return err
 }
 
-func (f *MGNLaunchConfigurationTemplate) Properties() libtypes.Properties {
-	return libtypes.NewPropertiesFromStruct(f)
+func (r *MGNLaunchConfigurationTemplate) Properties() libtypes.Properties {
+	props := libtypes.NewPropertiesFromStruct(r)
+	props.Set("CopyPrivateIp", r.CopyPrivateIP)
+	return props
 }
 
-func (f *MGNLaunchConfigurationTemplate) String() string {
-	return *f.LaunchConfigurationTemplateID
+func (r *MGNLaunchConfigurationTemplate) String() string {
+	return *r.LaunchConfigurationTemplateID
 }

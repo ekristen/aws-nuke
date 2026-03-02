@@ -45,6 +45,9 @@ linters:
         - opinionated
         - performance
         - style
+    staticcheck:
+      checks:
+        - "all"
     gocyclo:
       min-complexity: 15
     lll:

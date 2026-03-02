@@ -14,7 +14,7 @@ func Test_EC2VerifiedAccessEndpoint_Properties_MinimalData(t *testing.T) {
 		Description:           ptr.String("Test verified access endpoint"),
 		CreationTime:          ptr.String(now),
 		LastUpdatedTime:       ptr.String(now),
-		VerifiedAccessGroupId: ptr.String("vag-1234567890abcdef0"),
+		VerifiedAccessGroupID: ptr.String("vag-1234567890abcdef0"),
 		ApplicationDomain:     ptr.String("example.com"),
 		EndpointType:          ptr.String("load-balancer"),
 		AttachmentType:        ptr.String(""),
@@ -35,7 +35,7 @@ func Test_EC2VerifiedAccessEndpoint_Properties_WithTags(t *testing.T) {
 		Description:           ptr.String("Test verified access endpoint with tags"),
 		CreationTime:          ptr.String(now),
 		LastUpdatedTime:       ptr.String(now),
-		VerifiedAccessGroupId: ptr.String("vag-1234567890abcdef0"),
+		VerifiedAccessGroupID: ptr.String("vag-1234567890abcdef0"),
 		ApplicationDomain:     ptr.String("example.com"),
 		EndpointType:          ptr.String("load-balancer"),
 		AttachmentType:        ptr.String("vpc"),
@@ -60,7 +60,7 @@ func Test_EC2VerifiedAccessEndpoint_Properties_WithTags(t *testing.T) {
 
 	assert.Equal(t, "vae-1234567890abcdef0", properties.Get("ID"))
 	assert.Equal(t, "Test verified access endpoint with tags", properties.Get("Description"))
-	assert.Equal(t, "vag-1234567890abcdef0", properties.Get("VerifiedAccessGroupId"))
+	assert.Equal(t, "vag-1234567890abcdef0", properties.Get("VerifiedAccessGroupID"))
 	assert.Equal(t, "example.com", properties.Get("ApplicationDomain"))
 	assert.Equal(t, "load-balancer", properties.Get("EndpointType"))
 	assert.Equal(t, "vpc", properties.Get("AttachmentType"))

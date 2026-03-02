@@ -58,15 +58,15 @@ func (l *MGNReplicationConfigurationTemplateLister) List(ctx context.Context, o 
 				svc:                                svc,
 				template:                           template,
 				ReplicationConfigurationTemplateID: template.ReplicationConfigurationTemplateID,
-				Arn:                                template.Arn,
-				StagingAreaSubnetId:                template.StagingAreaSubnetId,
+				ARN:                                template.Arn,
+				StagingAreaSubnetID:                template.StagingAreaSubnetId,
 				AssociateDefaultSecurityGroup:      template.AssociateDefaultSecurityGroup,
 				BandwidthThrottling:                template.BandwidthThrottling,
 				CreatePublicIP:                     template.CreatePublicIP,
 				DataPlaneRouting:                   string(template.DataPlaneRouting),
 				DefaultLargeStagingDiskType:        string(template.DefaultLargeStagingDiskType),
-				EbsEncryption:                      string(template.EbsEncryption),
-				EbsEncryptionKeyArn:                template.EbsEncryptionKeyArn,
+				EBSEncryption:                      string(template.EbsEncryption),
+				EBSEncryptionKeyARN:                template.EbsEncryptionKeyArn,
 				ReplicationServerInstanceType:      template.ReplicationServerInstanceType,
 				UseDedicatedReplicationServer:      template.UseDedicatedReplicationServer,
 				Tags:                               template.Tags,
@@ -90,32 +90,38 @@ type MGNReplicationConfigurationTemplate struct {
 
 	// Exposed properties
 	ReplicationConfigurationTemplateID *string           `description:"The unique identifier of the replication configuration template"`
-	Arn                                *string           `description:"The ARN of the replication configuration template"`
-	StagingAreaSubnetId                *string           `description:"The subnet ID for the staging area"`
+	ARN                                *string           `description:"The ARN of the replication configuration template"`
+	StagingAreaSubnetID                *string           `description:"The subnet ID for the staging area"`
 	AssociateDefaultSecurityGroup      *bool             `description:"Whether to associate the default security group"`
 	BandwidthThrottling                int64             `description:"The bandwidth throttling setting"`
 	CreatePublicIP                     *bool             `description:"Whether to create a public IP"`
 	DataPlaneRouting                   string            `description:"The data plane routing setting"`
 	DefaultLargeStagingDiskType        string            `description:"The default large staging disk type"`
-	EbsEncryption                      string            `description:"The EBS encryption setting"`
-	EbsEncryptionKeyArn                *string           `description:"The ARN of the EBS encryption key"`
+	EBSEncryption                      string            `description:"The EBS encryption setting"`
+	EBSEncryptionKeyARN                *string           `description:"The ARN of the EBS encryption key"`
 	ReplicationServerInstanceType      *string           `description:"The instance type for the replication server"`
 	UseDedicatedReplicationServer      *bool             `description:"Whether to use a dedicated replication server"`
 	Tags                               map[string]string `description:"The tags associated with the template"`
 }
 
-func (f *MGNReplicationConfigurationTemplate) Remove(ctx context.Context) error {
-	_, err := f.svc.DeleteReplicationConfigurationTemplate(ctx, &mgn.DeleteReplicationConfigurationTemplateInput{
-		ReplicationConfigurationTemplateID: f.template.ReplicationConfigurationTemplateID,
+func (r *MGNReplicationConfigurationTemplate) Remove(ctx context.Context) error {
+	_, err := r.svc.DeleteReplicationConfigurationTemplate(ctx, &mgn.DeleteReplicationConfigurationTemplateInput{
+		ReplicationConfigurationTemplateID: r.template.ReplicationConfigurationTemplateID,
 	})
 
 	return err
 }
 
-func (f *MGNReplicationConfigurationTemplate) Properties() libtypes.Properties {
-	return libtypes.NewPropertiesFromStruct(f)
+func (r *MGNReplicationConfigurationTemplate) Properties() libtypes.Properties {
+	props := libtypes.NewPropertiesFromStruct(r)
+	// TODO(v4): remove
+	props.Set("StagingAreaSubnetId", r.StagingAreaSubnetID)
+	props.Set("Arn", r.ARN)
+	props.Set("EbsEncryption", r.EBSEncryption)
+	props.Set("EbsEncryptionKeyArn", r.EBSEncryptionKeyARN)
+	return props
 }
 
-func (f *MGNReplicationConfigurationTemplate) String() string {
-	return *f.ReplicationConfigurationTemplateID
+func (r *MGNReplicationConfigurationTemplate) String() string {
+	return *r.ReplicationConfigurationTemplateID
 }

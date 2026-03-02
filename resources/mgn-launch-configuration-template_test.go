@@ -30,7 +30,7 @@ func Test_MGNLaunchConfigurationTemplate_Properties_WithSettings(t *testing.T) {
 		Ec2LaunchTemplateID:                 ptr.String("lt-1234567890abcdef0"),
 		LaunchDisposition:                   "STOPPED",
 		TargetInstanceTypeRightSizingMethod: "BASIC",
-		CopyPrivateIp:                       ptr.Bool(true),
+		CopyPrivateIP:                       ptr.Bool(true),
 		CopyTags:                            ptr.Bool(true),
 		EnableMapAutoTagging:                ptr.Bool(false),
 		Tags: map[string]string{
@@ -46,7 +46,7 @@ func Test_MGNLaunchConfigurationTemplate_Properties_WithSettings(t *testing.T) {
 	assert.Equal(t, "lt-1234567890abcdef0", properties.Get("Ec2LaunchTemplateID"))
 	assert.Equal(t, "STOPPED", properties.Get("LaunchDisposition"))
 	assert.Equal(t, "BASIC", properties.Get("TargetInstanceTypeRightSizingMethod"))
-	assert.Equal(t, "true", properties.Get("CopyPrivateIp"))
+	assert.Equal(t, "true", properties.Get("CopyPrivateIP"))
 	assert.Equal(t, "true", properties.Get("CopyTags"))
 	assert.Equal(t, "false", properties.Get("EnableMapAutoTagging"))
 	assert.Equal(t, "TestTemplate", properties.Get("tag:Name"))

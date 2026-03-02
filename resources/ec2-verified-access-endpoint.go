@@ -49,7 +49,7 @@ func (l *EC2VerifiedAccessEndpointLister) List(ctx context.Context, o interface{
 				Description:           endpoint.Description,
 				CreationTime:          endpoint.CreationTime,
 				LastUpdatedTime:       endpoint.LastUpdatedTime,
-				VerifiedAccessGroupId: endpoint.VerifiedAccessGroupId,
+				VerifiedAccessGroupID: endpoint.VerifiedAccessGroupId,
 				ApplicationDomain:     endpoint.ApplicationDomain,
 				EndpointType:          ptr.String(string(endpoint.EndpointType)),
 				AttachmentType:        ptr.String(string(endpoint.AttachmentType)),
@@ -73,7 +73,7 @@ type EC2VerifiedAccessEndpoint struct {
 	Description           *string        `description:"A description for the Verified Access endpoint"`
 	CreationTime          *string        `description:"The timestamp when the Verified Access endpoint was created"`
 	LastUpdatedTime       *string        `description:"The timestamp when the Verified Access endpoint was last updated"`
-	VerifiedAccessGroupId *string        `description:"The ID of the Verified Access group this endpoint belongs to"`
+	VerifiedAccessGroupID *string        `description:"The ID of the Verified Access group this endpoint belongs to"`
 	ApplicationDomain     *string        `description:"The DNS name for the application (e.g., example.com)"`
 	EndpointType          *string        `description:"The type of endpoint (network-interface or load-balancer)"`
 	AttachmentType        *string        `description:"The type of attachment (vpc)"`
@@ -91,7 +91,9 @@ func (r *EC2VerifiedAccessEndpoint) Remove(ctx context.Context) error {
 }
 
 func (r *EC2VerifiedAccessEndpoint) Properties() types.Properties {
-	return types.NewPropertiesFromStruct(r)
+	props := types.NewPropertiesFromStruct(r)
+	props.Set("VerifiedAccessGroupId", r.VerifiedAccessGroupID)
+	return props
 }
 
 func (r *EC2VerifiedAccessEndpoint) String() string {

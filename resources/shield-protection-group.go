@@ -52,7 +52,7 @@ func (l *ShieldProtectionGroupLister) List(ctx context.Context, o interface{}) (
 
 			resources = append(resources, &ShieldProtectionGroup{
 				svc:                svc,
-				ProtectionGroupId:  group.ProtectionGroupId,
+				ProtectionGroupID:  group.ProtectionGroupId,
 				Aggregation:        &group.Aggregation,
 				Pattern:            &group.Pattern,
 				ResourceType:       &group.ResourceType,
@@ -73,7 +73,7 @@ func (l *ShieldProtectionGroupLister) List(ctx context.Context, o interface{}) (
 
 type ShieldProtectionGroup struct {
 	svc                *shield.Client
-	ProtectionGroupId  *string                                 `description:"The unique identifier of the Shield protection group"`
+	ProtectionGroupID  *string                                 `description:"The unique identifier of the Shield protection group"`
 	Aggregation        *shieldtypes.ProtectionGroupAggregation `description:"The aggregation type for the protection group"`
 	Pattern            *shieldtypes.ProtectionGroupPattern     `description:"The pattern for the protection group"`
 	ResourceType       *shieldtypes.ProtectedResourceType      `description:"The resource type for the protection group"`
@@ -84,7 +84,7 @@ type ShieldProtectionGroup struct {
 
 func (r *ShieldProtectionGroup) Remove(ctx context.Context) error {
 	params := &shield.DeleteProtectionGroupInput{
-		ProtectionGroupId: r.ProtectionGroupId,
+		ProtectionGroupId: r.ProtectionGroupID,
 	}
 
 	_, err := r.svc.DeleteProtectionGroup(ctx, params)
@@ -92,9 +92,12 @@ func (r *ShieldProtectionGroup) Remove(ctx context.Context) error {
 }
 
 func (r *ShieldProtectionGroup) Properties() types.Properties {
-	return types.NewPropertiesFromStruct(r)
+	props := types.NewPropertiesFromStruct(r)
+	// TODO(v4): remove backward-compat property
+	props.Set("ProtectionGroupId", r.ProtectionGroupID)
+	return props
 }
 
 func (r *ShieldProtectionGroup) String() string {
-	return *r.ProtectionGroupId
+	return *r.ProtectionGroupID
 }
