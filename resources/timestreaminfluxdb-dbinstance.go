@@ -44,7 +44,8 @@ func (l *TimestreamInfluxDBDbInstanceLister) List(ctx context.Context, o interfa
 			return nil, err
 		}
 
-		for _, item := range resp.Items {
+		for i := range resp.Items {
+			item := &resp.Items[i]
 			var tags map[string]string
 			tagsResp, err := l.svc.ListTagsForResource(ctx, &timestreaminfluxdb.ListTagsForResourceInput{
 				ResourceArn: item.Arn,
