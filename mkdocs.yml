@@ -203,6 +203,7 @@ nav:
     - Bedrock Evaluation Job: resources/bedrock-evaluation-job.md
     - Bedrock Flow Alias: resources/bedrock-flow-alias.md
     - Bedrock Guardrail: resources/bedrock-guardrail.md
+    - Bedrock Inference Profile: resources/bedrock-inference-profile.md
     - Bedrock Knowledge Base: resources/bedrock-knowledge-base.md
     - Bedrock Model Customization Job: resources/bedrock-model-customization-job.md
     - Bedrock Model Invocation Logging Configuration: resources/bedrock-model-invocation-logging-configuration.md
