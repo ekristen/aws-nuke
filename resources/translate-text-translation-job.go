@@ -49,7 +49,8 @@ func (l *TranslateTextTranslationJobLister) List(ctx context.Context, o interfac
 			return nil, err
 		}
 
-		for _, item := range resp.TextTranslationJobPropertiesList {
+		for i := range resp.TextTranslationJobPropertiesList {
+			item := &resp.TextTranslationJobPropertiesList[i]
 			resources = append(resources, &TranslateTextTranslationJob{
 				svc:                l.svc,
 				JobID:              item.JobId,

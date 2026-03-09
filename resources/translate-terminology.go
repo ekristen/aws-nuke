@@ -47,7 +47,8 @@ func (l *TranslateTerminologyLister) List(ctx context.Context, o interface{}) ([
 			return nil, err
 		}
 
-		for _, item := range resp.TerminologyPropertiesList {
+		for i := range resp.TerminologyPropertiesList {
+			item := &resp.TerminologyPropertiesList[i]
 			resources = append(resources, &TranslateTerminology{
 				svc:                l.svc,
 				Name:               item.Name,

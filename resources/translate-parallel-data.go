@@ -49,7 +49,8 @@ func (l *TranslateParallelDataLister) List(ctx context.Context, o interface{}) (
 			return nil, err
 		}
 
-		for _, item := range resp.ParallelDataPropertiesList {
+		for i := range resp.ParallelDataPropertiesList {
+			item := &resp.ParallelDataPropertiesList[i]
 			resources = append(resources, &TranslateParallelData{
 				svc:                l.svc,
 				Name:               item.Name,
