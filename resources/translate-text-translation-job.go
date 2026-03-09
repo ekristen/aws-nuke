@@ -92,8 +92,14 @@ func (r *TranslateTextTranslationJob) Filter() error {
 	switch r.JobStatus {
 	case translatetypes.JobStatusSubmitted, translatetypes.JobStatusInProgress:
 		return nil
+	case translatetypes.JobStatusStopped, translatetypes.JobStatusStopRequested:
+		return fmt.Errorf("translation job is already stopped or stop requested")
+	case translatetypes.JobStatusCompleted, translatetypes.JobStatusCompletedWithError:
+		return fmt.Errorf("translation job is already completed")
+	case translatetypes.JobStatusFailed:
+		return fmt.Errorf("translation job has failed")
 	default:
-		return fmt.Errorf("translation job status is %s, only submitted or in-progress jobs can be stopped", r.JobStatus)
+		return fmt.Errorf("translation job status is %s, cannot be stopped", r.JobStatus)
 	}
 }
 
