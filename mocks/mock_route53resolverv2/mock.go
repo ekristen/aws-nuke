@@ -17,7 +17,6 @@ import (
 	gomock "go.uber.org/mock/gomock"
 )
 
-
 // MockRoute53ResolverAPI is a mock of Route53ResolverAPI interface.
 type MockRoute53ResolverAPI struct {
 	ctrl     *gomock.Controller
@@ -282,3 +281,22 @@ func (mr *MockRoute53ResolverAPIMockRecorder) ListResolverQueryLogConfigs(ctx, p
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListResolverQueryLogConfigs", reflect.TypeOf((*MockRoute53ResolverAPI)(nil).ListResolverQueryLogConfigs), varargs...)
 }
 
+// UpdateFirewallRuleGroupAssociation mocks base method.
+func (m *MockRoute53ResolverAPI) UpdateFirewallRuleGroupAssociation(ctx context.Context, params *route53resolver.UpdateFirewallRuleGroupAssociationInput, optFns ...func(*route53resolver.Options)) (*route53resolver.UpdateFirewallRuleGroupAssociationOutput, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, params}
+	for _, a := range optFns {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateFirewallRuleGroupAssociation", varargs...)
+	ret0, _ := ret[0].(*route53resolver.UpdateFirewallRuleGroupAssociationOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateFirewallRuleGroupAssociation indicates an expected call of UpdateFirewallRuleGroupAssociation.
+func (mr *MockRoute53ResolverAPIMockRecorder) UpdateFirewallRuleGroupAssociation(ctx, params any, optFns ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, params}, optFns...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateFirewallRuleGroupAssociation", reflect.TypeOf((*MockRoute53ResolverAPI)(nil).UpdateFirewallRuleGroupAssociation), varargs...)
+}
