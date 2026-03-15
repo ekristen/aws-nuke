@@ -588,6 +588,10 @@ nav:
     - Route 53 Profile Association: resources/route-53-profile-association.md
     - Route 53 Profile: resources/route-53-profile.md
     - Route 53 Resolver Endpoint: resources/route-53-resolver-endpoint.md
+    - Route 53 Resolver Firewall Domain List: resources/route-53-resolver-firewall-domain-list.md
+    - Route 53 Resolver Firewall Rule Group Association: resources/route-53-resolver-firewall-rule-group-association.md
+    - Route 53 Resolver Firewall Rule Group: resources/route-53-resolver-firewall-rule-group.md
+    - Route 53 Resolver Query Log Config: resources/route-53-resolver-query-log-config.md
     - Route 53 Resolver Rule: resources/route-53-resolver-rule.md
     - Route 53 Resource Record Set: resources/route-53-resource-record-set.md
     - Route 53 Traffic Policy: resources/route-53-traffic-policy.md
@@ -596,6 +600,9 @@ nav:
     - S3 Access Grants Location: resources/s3-access-grants-location.md
     - S3 Access Point: resources/s3-access-point.md
     - S3 Bucket: resources/s3-bucket.md
+    - S3 Files Access Point: resources/s3-files-access-point.md
+    - S3 Files File System: resources/s3-files-file-system.md
+    - S3 Files Mount Target: resources/s3-files-mount-target.md
     - S3 Multipart Upload: resources/s3-multipart-upload.md
     - S3 Object: resources/s3-object.md
     - S3 Tables Bucket: resources/s3-tables-bucket.md
@@ -605,9 +612,6 @@ nav:
     - S3 Vectors Index: resources/s3-vectors-index.md
     - S3 Vectors Vector: resources/s3-vectors-vector.md
     - SNS Endpoint: resources/sns-endpoint.md
-    - S3Files File System: resources/s3-files-file-system.md
-    - S3Files Mount Target: resources/s3-files-mount-target.md
-    - S3Files Access Point: resources/s3-files-access-point.md
     - SNS Platform Application: resources/sns-platform-application.md
     - SNS Subscription: resources/sns-subscription.md
     - SNS Topic: resources/sns-topic.md
