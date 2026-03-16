@@ -33,6 +33,9 @@ type Route53ResolverAPI interface {
 	ListResolverQueryLogConfigAssociations(ctx context.Context,
 		params *r53r.ListResolverQueryLogConfigAssociationsInput,
 		optFns ...func(*r53r.Options)) (*r53r.ListResolverQueryLogConfigAssociationsOutput, error)
+	UpdateFirewallRuleGroupAssociation(ctx context.Context,
+		params *r53r.UpdateFirewallRuleGroupAssociationInput,
+		optFns ...func(*r53r.Options)) (*r53r.UpdateFirewallRuleGroupAssociationOutput, error)
 }
 
 type Route53ResolverClient struct {
@@ -108,4 +111,9 @@ func (c *Route53ResolverClient) ListResolverQueryLogConfigs(ctx context.Context,
 	params *r53r.ListResolverQueryLogConfigsInput,
 	optFns ...func(*r53r.Options)) (*r53r.ListResolverQueryLogConfigsOutput, error) {
 	return c.Client.ListResolverQueryLogConfigs(ctx, params, optFns...)
+}
+func (c *Route53ResolverClient) UpdateFirewallRuleGroupAssociation(ctx context.Context,
+	params *r53r.UpdateFirewallRuleGroupAssociationInput,
+	optFns ...func(*r53r.Options)) (*r53r.UpdateFirewallRuleGroupAssociationOutput, error) {
+	return c.Client.UpdateFirewallRuleGroupAssociation(ctx, params, optFns...)
 }
