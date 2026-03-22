@@ -72,9 +72,14 @@ func (c *Credentials) HasKeys() bool {
 
 func (c *Credentials) Validate() error {
 	if c.HasProfile() && c.HasKeys() {
-		return fmt.Errorf("specify either the --profile flag or " +
-			"--access-key-id with --secret-access-key and optionally " +
-			"--session-token, but not both")
+		return fmt.Errorf(
+			"specify either the --profile flag or --access-key-id with --secret-access-key\n" +
+			"and optionally --session-token, but not both.\n\n" +
+			"If you have not provided the --access-key-id, --secret-access-key, and\n" +
+			"optionally --session-token flags, but are still encountering this error,\n" +
+			"the values are likely being inferred from the AWS_ACCESS_KEY_ID,\n" +
+			"AWS_SECRET_ACCESS_KEY, and AWS_SESSION_TOKEN environment variables.\n" +
+			"Unset these environment variables and try again.")
 	}
 
 	return nil
