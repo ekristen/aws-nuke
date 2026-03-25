@@ -4,11 +4,15 @@ import (
 	"context"
 	"errors"
 
+	"github.com/sirupsen/logrus"
+
 	r53r "github.com/aws/aws-sdk-go-v2/service/route53resolver"
 	r53rtypes "github.com/aws/aws-sdk-go-v2/service/route53resolver/types"
 
+	liberrors "github.com/ekristen/libnuke/pkg/errors"
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
+	libsettings "github.com/ekristen/libnuke/pkg/settings"
 	"github.com/ekristen/libnuke/pkg/types"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
@@ -22,6 +26,9 @@ func init() {
 		Scope:    nuke.Account,
 		Resource: &Route53ResolverFirewallRuleGroup{},
 		Lister:   &Route53ResolverFirewallRuleGroupLister{},
+		Settings: []string{
+			"DisableDeletionProtection",
+		},
 	})
 }
 
@@ -57,15 +64,15 @@ func (l *Route53ResolverFirewallRuleGroupLister) List(ctx context.Context, o int
 			}
 
 			resources = append(resources, &Route53ResolverFirewallRuleGroup{
-				svc:               l.svc,
-				vpcAssociationIds: vpcAssociations[*firewallRuleGroup.Id],
-				rules:             firewallRules,
-				Arn:               firewallRuleGroup.Arn,
-				CreatorRequestID:  firewallRuleGroup.CreatorRequestId,
-				ID:                firewallRuleGroup.Id,
-				OwnerID:           firewallRuleGroup.OwnerId,
-				Name:              firewallRuleGroup.Name,
-				ShareStatus:       firewallRuleGroup.ShareStatus,
+				svc:              l.svc,
+				vpcAssociations:  vpcAssociations[*firewallRuleGroup.Id],
+				rules:            firewallRules,
+				Arn:              firewallRuleGroup.Arn,
+				CreatorRequestID: firewallRuleGroup.CreatorRequestId,
+				ID:               firewallRuleGroup.Id,
+				OwnerID:          firewallRuleGroup.OwnerId,
+				Name:             firewallRuleGroup.Name,
+				ShareStatus:      firewallRuleGroup.ShareStatus,
 			})
 		}
 
@@ -87,17 +94,27 @@ type Route53ResolverFirewallRule struct {
 	FirewallThreatProtectionID *string
 }
 
+type Route53ResolverFirewallRuleGroupVpcAssociation struct {
+	ID                 *string
+	MutationProtection r53rtypes.MutationProtectionStatus
+}
+
 // Route53ResolverFirewallRuleGroup is the resource type
 type Route53ResolverFirewallRuleGroup struct {
-	svc               Route53ResolverAPI
-	vpcAssociationIds []*string
-	rules             []*Route53ResolverFirewallRule
-	Arn               *string
-	CreatorRequestID  *string
-	ID                *string
-	OwnerID           *string
-	Name              *string
-	ShareStatus       r53rtypes.ShareStatus
+	svc              Route53ResolverAPI
+	settings         *libsettings.Setting
+	vpcAssociations  []*Route53ResolverFirewallRuleGroupVpcAssociation
+	rules            []*Route53ResolverFirewallRule
+	Arn              *string               `description:"The ARN of the firewall rule group"`
+	CreatorRequestID *string               `description:" The unique identifier (ID) for the request that created the firewall rule group"`
+	ID               *string               `description:" The unique identifier (ID) for the firewall rule group"`
+	OwnerID          *string               `description:" ID of the AWS account that created the firewall rule group"`
+	Name             *string               `description:" Name of the firewall rule group"`
+	ShareStatus      r53rtypes.ShareStatus `description:" The current sharing status of the firewall rule group"`
+}
+
+func (r *Route53ResolverFirewallRuleGroup) Settings(settings *libsettings.Setting) {
+	r.settings = settings
 }
 
 // Remove implements Resource
@@ -105,12 +122,29 @@ func (r *Route53ResolverFirewallRuleGroup) Remove(ctx context.Context) error {
 	var notFound *r53rtypes.ResourceNotFoundException
 
 	// disassociate VPCs first since that's slower
-	for _, associationID := range r.vpcAssociationIds {
+	for _, vpcAssociation := range r.vpcAssociations {
+		if r.settings.GetBool("DisableDeletionProtection") && vpcAssociation.MutationProtection == r53rtypes.MutationProtectionStatusEnabled {
+			// disable mutation protection for any associations that have it enabled
+			// This call is very fast and seems to be synchronous
+			_, err := r.svc.UpdateFirewallRuleGroupAssociation(ctx,
+				&r53r.UpdateFirewallRuleGroupAssociationInput{
+					FirewallRuleGroupAssociationId: vpcAssociation.ID,
+					MutationProtection:             r53rtypes.MutationProtectionStatusDisabled,
+				},
+			)
+			// ignore, probably already disassociated
+			if errors.As(err, &notFound) {
+				continue
+			}
+		}
+
+		// Remove the association.  This call results in an async dissociation which can
+		// take some time to complete
 		_, err := r.svc.DisassociateFirewallRuleGroup(ctx, &r53r.DisassociateFirewallRuleGroupInput{
-			FirewallRuleGroupAssociationId: associationID,
+			FirewallRuleGroupAssociationId: vpcAssociation.ID,
 		})
 		if err != nil {
-			// ignore, probably already associated
+			// ignore notFound, probably already disassociated
 			if errors.As(err, &notFound) {
 				continue
 			}
@@ -136,8 +170,13 @@ func (r *Route53ResolverFirewallRuleGroup) Remove(ctx context.Context) error {
 		}
 	}
 
+	err := waitForAssociationToStabilize(ctx, r.svc, r)
+	if err != nil {
+		return err
+	}
+
 	// finally delete the FRG
-	_, err := r.svc.DeleteFirewallRuleGroup(ctx, &r53r.DeleteFirewallRuleGroupInput{
+	_, err = r.svc.DeleteFirewallRuleGroup(ctx, &r53r.DeleteFirewallRuleGroupInput{
 		FirewallRuleGroupId: r.ID,
 	})
 
@@ -159,12 +198,14 @@ func (r *Route53ResolverFirewallRuleGroup) String() string {
 
 // ruleGroupsToAssociationIds - Associate all the FRG association ids to their firewall rule group ID to be
 // disassociated before deleting the rule.
-func ruleGroupsToAssociationIds(ctx context.Context, svc Route53ResolverAPI) (map[string][]*string, error) {
-	vpcAssociations := map[string][]*string{}
+func ruleGroupsToAssociationIds(ctx context.Context, svc Route53ResolverAPI) (map[string][]*Route53ResolverFirewallRuleGroupVpcAssociation,
+	error) {
+	vpcAssociations := map[string][]*Route53ResolverFirewallRuleGroupVpcAssociation{}
 
 	params := &r53r.ListFirewallRuleGroupAssociationsInput{}
 
 	for {
+		// Lists ALL FRG->VPC associations for all FRGs
 		resp, err := svc.ListFirewallRuleGroupAssociations(ctx, params)
 
 		if err != nil {
@@ -177,10 +218,16 @@ func ruleGroupsToAssociationIds(ctx context.Context, svc Route53ResolverAPI) (ma
 			if associationID != nil {
 				frgID := *frgas[i].FirewallRuleGroupId
 
+				frgAssoc := Route53ResolverFirewallRuleGroupVpcAssociation{
+					ID:                 associationID,
+					MutationProtection: frgas[i].MutationProtection,
+				}
+
 				if _, ok := vpcAssociations[frgID]; !ok {
-					vpcAssociations[frgID] = []*string{associationID}
+					associations := []*Route53ResolverFirewallRuleGroupVpcAssociation{&frgAssoc}
+					vpcAssociations[frgID] = associations
 				} else {
-					vpcAssociations[frgID] = append(vpcAssociations[frgID], associationID)
+					vpcAssociations[frgID] = append(vpcAssociations[frgID], &frgAssoc)
 				}
 			}
 		}
@@ -229,4 +276,41 @@ func getFirewallRules(ctx context.Context, svc Route53ResolverAPI, firewallRuleG
 	}
 
 	return rules, nil
+}
+
+// Wait for the FRG-to-VPC association to stabilize.
+func waitForAssociationToStabilize(ctx context.Context, svc Route53ResolverAPI, frg *Route53ResolverFirewallRuleGroup) error {
+	params := &r53r.ListFirewallRuleGroupAssociationsInput{
+		FirewallRuleGroupId: frg.ID,
+	}
+
+	resp, err := svc.ListFirewallRuleGroupAssociations(ctx, params)
+	frgas := resp.FirewallRuleGroupAssociations
+
+	// Not found means we successfully deleted this FRG
+	var notFound *r53rtypes.ResourceNotFoundException
+	if errors.As(err, &notFound) {
+		return err
+	}
+
+	statusIsPending := false
+	for i := range frgas {
+		currentStatus := frgas[i].Status
+		associationID := frgas[i].Id
+
+		if currentStatus == r53rtypes.FirewallRuleGroupAssociationStatusUpdating ||
+			currentStatus == r53rtypes.FirewallRuleGroupAssociationStatusDeleting {
+			logrus.Infof("Association %s on firewall rule group %s is in status %s",
+				*associationID, *frg.ID, currentStatus)
+			statusIsPending = true
+			break
+		}
+	}
+
+	if statusIsPending {
+		// Return an ErrHoldResource to put the resource in ItemStateHold and retry later
+		return liberrors.ErrHoldResource("waiting for associations to stabilize")
+	}
+
+	return nil
 }
