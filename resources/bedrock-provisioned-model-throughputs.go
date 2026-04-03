@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"             //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/bedrock" //nolint:staticcheck
 
@@ -48,7 +50,9 @@ func (l *BedrockProvisionedModelThroughputLister) List(_ context.Context, o inte
 					ResourceARN: provisionedModelSummary.ProvisionedModelArn,
 				})
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("arn", *provisionedModelSummary.ProvisionedModelArn).
+					Warn("unable to list tags for Bedrock provisioned model throughput, skipping to avoid incorrect filtering")
+				continue
 			}
 
 			resources = append(resources, &BedrockProvisionedModelThroughput{

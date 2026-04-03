@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/textract"
 	textracttypes "github.com/aws/aws-sdk-go-v2/service/textract/types"
@@ -60,7 +62,9 @@ func (l *TextractAdapterVersionLister) List(ctx context.Context, o interface{}) 
 			for versionPaginator.HasMorePages() {
 				versionResp, err := versionPaginator.NextPage(ctx)
 				if err != nil {
-					return nil, err
+					logrus.WithError(err).WithField("adapter", *adapter.AdapterId).
+						Warn("unable to list adapter versions for Textract adapter, skipping to avoid incorrect filtering")
+					break
 				}
 
 				for _, item := range versionResp.AdapterVersions {

@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/service/backup" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -54,7 +56,9 @@ func (l *AWSBackupVaultAccessPolicyLister) List(_ context.Context, o interface{}
 				// Non-existent is OK and we skip over them
 				continue
 			default:
-				return nil, err
+				logrus.WithError(err).WithField("vault", *out.BackupVaultName).
+					Warn("unable to get access policy for backup vault, skipping to avoid incorrect filtering")
+				continue
 			}
 		}
 

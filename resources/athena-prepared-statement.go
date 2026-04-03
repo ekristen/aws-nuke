@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"            //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/athena" //nolint:staticcheck
 
@@ -46,7 +48,9 @@ func (l *AthenaPreparedStatementLister) List(_ context.Context, o interface{}) (
 		for {
 			output, err := svc.ListPreparedStatements(params)
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("workgroup", *workgroup.Name).
+					Warn("unable to list prepared statements for Athena workgroup, skipping to avoid incorrect filtering")
+				break
 			}
 
 			for _, statement := range output.PreparedStatements {

@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/service/appstream" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -53,7 +55,9 @@ func (l *AppStreamStackFleetAttachmentLister) List(_ context.Context, o interfac
 		stackAssocParams.StackName = stack.Name
 		output, err := svc.ListAssociatedFleets(stackAssocParams)
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("stack", *stack.Name).
+				Warn("unable to list associated fleets for AppStream stack, skipping to avoid incorrect filtering")
+			continue
 		}
 
 		for _, name := range output.Names {

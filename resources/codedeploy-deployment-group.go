@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/service/codedeploy" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -46,7 +48,9 @@ func (l *CodeDeployDeploymentGroupLister) List(_ context.Context, o interface{})
 			}
 			deploymentGroupResp, err := svc.ListDeploymentGroups(deploymentGroupParams)
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("app", *appName).
+					Warn("unable to list deployment groups for CodeDeploy application, skipping to avoid incorrect filtering")
+				continue
 			}
 
 			for _, group := range deploymentGroupResp.DeploymentGroups {

@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"             //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/bedrock" //nolint:staticcheck
 
@@ -49,7 +51,9 @@ func (l *BedrockEvaluationJobLister) List(_ context.Context, o interface{}) ([]r
 					ResourceARN: jobSummary.JobArn,
 				})
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("arn", *jobSummary.JobArn).
+					Warn("unable to list tags for Bedrock evaluation job, skipping to avoid incorrect filtering")
+				continue
 			}
 
 			resources = append(resources, &BedrockEvaluationJob{
