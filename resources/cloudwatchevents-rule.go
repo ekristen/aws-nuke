@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"                      //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/cloudwatchevents" //nolint:staticcheck
 
@@ -46,7 +48,9 @@ func (l *CloudWatchEventsRuleLister) List(_ context.Context, o interface{}) ([]r
 				EventBusName: bus.Name,
 			})
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("bus", *bus.Name).
+					Warn("unable to list rules for CloudWatch event bus, skipping to avoid incorrect filtering")
+				continue
 			}
 
 			for _, rule := range resp.Rules {

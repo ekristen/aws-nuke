@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/service/autoscaling" //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
 
@@ -52,7 +54,9 @@ func (l *AutoScalingLifecycleHookLister) List(_ context.Context, o interface{}) 
 			AutoScalingGroupName: asg.AutoScalingGroupName,
 		})
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("asg", *asg.AutoScalingGroupName).
+				Warn("unable to describe lifecycle hooks for ASG, skipping to avoid incorrect filtering")
+			continue
 		}
 
 		for _, lch := range lchResp.LifecycleHooks {

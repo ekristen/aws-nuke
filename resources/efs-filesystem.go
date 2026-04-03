@@ -3,6 +3,7 @@ package resources
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
 	"go.uber.org/ratelimit"
 
 	"github.com/aws/aws-sdk-go-v2/service/efs"
@@ -51,7 +52,9 @@ func (l *EFSFileSystemLister) List(ctx context.Context, o interface{}) ([]resour
 			fs := resp.FileSystems[idx]
 			lto, err := svc.ListTagsForResource(ctx, &efs.ListTagsForResourceInput{ResourceId: fs.FileSystemId})
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("id", *fs.FileSystemId).
+					Warn("unable to list tags for EFS filesystem, skipping to avoid incorrect filtering")
+				continue
 			}
 
 			tagList := make([]*efsTypes.Tag, 0)

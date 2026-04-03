@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/gotidy/ptr"
+	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go/service/cloudwatchevents" //nolint:staticcheck
 
@@ -44,7 +45,9 @@ func (l *CloudWatchEventsTargetLister) List(_ context.Context, o interface{}) ([
 			EventBusName: bus.Name,
 		})
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("bus", *bus.Name).
+				Warn("unable to list rules for CloudWatch event bus, skipping to avoid incorrect filtering")
+			continue
 		}
 		for _, rule := range resp.Rules {
 			targetResp, err := svc.ListTargetsByRule(&cloudwatchevents.ListTargetsByRuleInput{
@@ -52,7 +55,9 @@ func (l *CloudWatchEventsTargetLister) List(_ context.Context, o interface{}) ([
 				EventBusName: bus.Name,
 			})
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("rule", *rule.Name).
+					Warn("unable to list targets for CloudWatch event rule, skipping to avoid incorrect filtering")
+				continue
 			}
 			for _, target := range targetResp.Targets {
 				resources = append(resources, &CloudWatchEventsTarget{

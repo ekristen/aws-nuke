@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/service/efs" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -42,12 +44,16 @@ func (l *EFSMountTargetLister) List(_ context.Context, o interface{}) ([]resourc
 			FileSystemId: fs.FileSystemId,
 		})
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("id", *fs.FileSystemId).
+				Warn("unable to describe mount targets for EFS filesystem, skipping to avoid incorrect filtering")
+			continue
 		}
 
 		lto, err := svc.ListTagsForResource(&efs.ListTagsForResourceInput{ResourceId: fs.FileSystemId})
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("id", *fs.FileSystemId).
+				Warn("unable to list tags for EFS filesystem, skipping to avoid incorrect filtering")
+			continue
 		}
 
 		for _, t := range mt.MountTargets {

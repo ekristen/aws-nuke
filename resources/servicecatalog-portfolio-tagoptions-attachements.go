@@ -69,7 +69,9 @@ func (l *ServiceCatalogTagOptionPortfolioAttachmentLister) List(_ context.Contex
 		resourceParams.TagOptionId = tagOption.Id
 		resp, err := svc.ListResourcesForTagOption(resourceParams)
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("tagOption", *tagOption.Id).
+				Warn("unable to list resources for ServiceCatalog tag option, skipping to avoid incorrect filtering")
+			continue
 		}
 
 		for _, resourceDetail := range resp.ResourceDetails {

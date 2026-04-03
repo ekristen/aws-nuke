@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws/awserr"  //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/sns" //nolint:staticcheck
 
@@ -65,7 +67,9 @@ func (l *SNSEndpointLister) List(_ context.Context, o interface{}) ([]resource.R
 
 		resp, err := svc.ListEndpointsByPlatformApplication(params)
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("arn", *platformApplication.PlatformApplicationArn).
+				Warn("unable to list endpoints for SNS platform application, skipping to avoid incorrect filtering")
+			continue
 		}
 
 		for _, endpoint := range resp.Endpoints {

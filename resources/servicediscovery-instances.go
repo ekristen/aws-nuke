@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"                      //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/servicediscovery" //nolint:staticcheck
 
@@ -63,7 +65,9 @@ func (l *ServiceDiscoveryInstanceLister) List(_ context.Context, o interface{}) 
 
 		output, err := svc.ListInstances(instanceParams)
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("service", *service.Id).
+				Warn("unable to list instances for ServiceDiscovery service, skipping to avoid incorrect filtering")
+			continue
 		}
 
 		for _, instance := range output.Instances {

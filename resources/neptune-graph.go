@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/neptunegraph"
 	neptunegraphtypes "github.com/aws/aws-sdk-go-v2/service/neptunegraph/types"
 	"github.com/gotidy/ptr"
+	"github.com/sirupsen/logrus"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
@@ -52,7 +53,9 @@ func (l *NeptuneGraphLister) List(ctx context.Context, o interface{}) ([]resourc
 				ResourceArn: p.Arn,
 			})
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("arn", *p.Arn).
+					Warn("unable to list tags for Neptune graph, skipping to avoid incorrect filtering")
+				continue
 			}
 
 			snapshots := make([]neptunegraphtypes.GraphSnapshotSummary, 0)
@@ -63,7 +66,9 @@ func (l *NeptuneGraphLister) List(ctx context.Context, o interface{}) ([]resourc
 					NextToken:       snapshotNextToken,
 				})
 				if err != nil {
-					return nil, err
+					logrus.WithError(err).WithField("arn", *p.Arn).
+						Warn("unable to list snapshots for Neptune graph, skipping to avoid incorrect filtering")
+					break
 				}
 				snapshots = append(snapshots, s.GraphSnapshots...)
 				if s.NextToken == nil {

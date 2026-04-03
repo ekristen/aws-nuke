@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"         //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/ec2" //nolint:staticcheck
 
@@ -52,7 +54,9 @@ func (l *EC2VPNGatewayAttachmentLister) List(_ context.Context, o interface{}) (
 
 		resp, err := svc.DescribeVpnGateways(params)
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("vpc", *vpc.VpcId).
+				Warn("unable to describe VPN gateways for VPC, skipping to avoid incorrect filtering")
+			continue
 		}
 
 		for _, vgw := range resp.VpnGateways {

@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go-v2/service/shield"
 	shieldtypes "github.com/aws/aws-sdk-go-v2/service/shield/types"
 
@@ -47,7 +49,9 @@ func (l *ShieldProtectionLister) List(ctx context.Context, o interface{}) ([]res
 				ResourceARN: protection.ProtectionArn,
 			})
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("arn", *protection.ProtectionArn).
+					Warn("unable to list tags for Shield protection, skipping to avoid incorrect filtering")
+				continue
 			}
 
 			resources = append(resources, &ShieldProtection{

@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/service/appmesh" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -58,7 +60,9 @@ func (l *AppMeshRouteLister) List(_ context.Context, o interface{}) ([]resource.
 			},
 		)
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("mesh", *meshName).
+				Warn("unable to list virtual routers for App Mesh, skipping to avoid incorrect filtering")
+			continue
 		}
 	}
 
@@ -76,7 +80,9 @@ func (l *AppMeshRouteLister) List(_ context.Context, o interface{}) ([]resource.
 			},
 		)
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("router", *vr.VirtualRouterName).
+				Warn("unable to list routes for App Mesh virtual router, skipping to avoid incorrect filtering")
+			continue
 		}
 	}
 

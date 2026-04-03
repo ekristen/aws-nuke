@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/gotidy/ptr"
+	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go/service/ec2" //nolint:staticcheck
 
@@ -64,7 +65,9 @@ func (l *EC2ClientVpnEndpointAttachmentLister) List(_ context.Context, o interfa
 				return true
 			})
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("endpoint", *clientVpnEndpointID).
+				Warn("unable to describe target networks for client VPN endpoint, skipping to avoid incorrect filtering")
+			continue
 		}
 	}
 

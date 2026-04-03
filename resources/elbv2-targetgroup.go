@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/service/elbv2" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -61,7 +63,10 @@ func (l *ELBv2TargetGroupLister) List(_ context.Context, o interface{}) ([]resou
 			ResourceArns: tagReqELBv2TargetGroupARNs[:requestElements],
 		})
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).
+				Warn("unable to describe tags for ELBv2 target group batch, skipping batch to avoid incorrect filtering")
+			tagReqELBv2TargetGroupARNs = tagReqELBv2TargetGroupARNs[requestElements:]
+			continue
 		}
 		for _, tagInfo := range tagResp.TagDescriptions {
 			resources = append(resources, &ELBv2TargetGroup{

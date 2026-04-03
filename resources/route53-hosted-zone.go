@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/gotidy/ptr"
+	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go/service/route53" //nolint:staticcheck
 
@@ -58,7 +59,9 @@ func (l *Route53HostedZoneLister) List(_ context.Context, o interface{}) ([]reso
 		})
 
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("id", *hz.Id).
+				Warn("unable to list tags for Route53 hosted zone, skipping to avoid incorrect filtering")
+			continue
 		}
 
 		resources = append(resources, &Route53HostedZone{

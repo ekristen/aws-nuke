@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"            //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/aws/awserr"     //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/acmpca" //nolint:staticcheck
@@ -60,7 +62,9 @@ func (l *ACMPCACertificateAuthorityStateLister) List(_ context.Context, o interf
 							break
 						}
 					}
-					return nil, tagErr
+					logrus.WithError(tagErr).WithField("arn", *certificateAuthority.Arn).
+						Warn("unable to list tags for ACM PCA certificate authority state, skipping to avoid incorrect filtering")
+					break
 				}
 
 				tags = append(tags, tagResp.Tags...)

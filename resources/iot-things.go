@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"         //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/iot" //nolint:staticcheck
 
@@ -48,7 +50,9 @@ func (l *IoTThingLister) List(_ context.Context, o interface{}) ([]resource.Reso
 				version: thing.Version,
 			})
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("name", *thing.ThingName).
+					Warn("unable to list principals for IoT thing, skipping to avoid incorrect filtering")
+				continue
 			}
 
 			resources = append(resources, t)

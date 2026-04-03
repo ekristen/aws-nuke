@@ -5,6 +5,8 @@ import (
 	"errors"
 	"time"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"           //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/aws/awserr"    //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/elbv2" //nolint:staticcheck
@@ -67,7 +69,10 @@ func (l *ELBv2Lister) List(_ context.Context, o interface{}) ([]resource.Resourc
 			ResourceArns: tagReqELBv2ARNs[:requestElements],
 		})
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).
+				Warn("unable to describe tags for ELBv2 batch, skipping batch to avoid incorrect filtering")
+			tagReqELBv2ARNs = tagReqELBv2ARNs[requestElements:]
+			continue
 		}
 		for _, elbv2TagInfo := range tagResp.TagDescriptions {
 			elb := elbv2ARNToRsc[*elbv2TagInfo.ResourceArn]

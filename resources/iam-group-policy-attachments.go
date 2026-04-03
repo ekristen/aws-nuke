@@ -5,6 +5,8 @@ import (
 
 	"fmt"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/service/iam" //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 
@@ -48,7 +50,9 @@ func (l *IAMGroupPolicyAttachmentLister) List(_ context.Context, o interface{}) 
 				GroupName: role.GroupName,
 			})
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("group", *role.GroupName).
+				Warn("unable to list attached policies for IAM group, skipping to avoid incorrect filtering")
+			continue
 		}
 
 		for _, pol := range resp.AttachedPolicies {

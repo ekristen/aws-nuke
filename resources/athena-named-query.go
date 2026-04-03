@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/service/athena" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -57,7 +59,9 @@ func (l *AthenaNamedQueryLister) List(_ context.Context, o interface{}) ([]resou
 			},
 		)
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("workgroup", *wgName).
+				Warn("unable to list named queries for Athena workgroup, skipping to avoid incorrect filtering")
+			continue
 		}
 	}
 

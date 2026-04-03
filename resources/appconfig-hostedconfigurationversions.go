@@ -63,7 +63,9 @@ func (l *AppConfigHostedConfigurationVersionLister) List(ctx context.Context, o 
 			return true
 		})
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("profile", *configurationProfile.id).
+				Warn("unable to list hosted configuration versions for AppConfig profile, skipping to avoid incorrect filtering")
+			continue
 		}
 	}
 	return resources, nil
