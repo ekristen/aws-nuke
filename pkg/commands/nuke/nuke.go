@@ -44,9 +44,53 @@ func ConfigureCreds(c *cli.Command) (creds *awsutil.Credentials) {
 	return creds
 }
 
-func execute(baseCtx context.Context, c *cli.Command) error { //nolint:funlen,gocyclo
+func execute(baseCtx context.Context, c *cli.Command) (returnErr error) { //nolint:funlen,gocyclo
 	ctx, cancel := context.WithCancel(baseCtx)
 	defer cancel()
+
+	// Record start time for duration tracking
+	startTime := time.Now()
+
+	// Initialize logger early so we can log start time
+	logger := logrus.StandardLogger()
+	logger.SetOutput(os.Stdout)
+
+	logger.WithFields(logrus.Fields{
+		"start_time": startTime.Format(time.RFC3339),
+	}).Info("Nuke process starting")
+
+	// Use defer to ensure timing is ALWAYS logged, even on errors, panics, or early exits
+	defer func() {
+		endTime := time.Now()
+		duration := endTime.Sub(startTime)
+
+		// Handle panics gracefully
+		status := "success"
+		if r := recover(); r != nil {
+			status = "panic"
+			returnErr = fmt.Errorf("panic recovered: %v", r)
+			logger.Errorf("Panic occurred: %v", r)
+		} else if returnErr != nil {
+			status = "failed"
+		}
+
+		logger.Info("=== Nuke Timing Summary ===")
+		// Use formatted message for correct field order in text output,
+		// while also including structured fields for JSON output
+		logger.WithFields(logrus.Fields{
+			"status":     status,
+			"duration":   formatDuration(duration),
+			"start_time": startTime.Format(time.RFC3339),
+			"end_time":   endTime.Format(time.RFC3339),
+		}).Infof("Nuke run completed: status=%s, duration=%s, start_time=%s, end_time=%s",
+			status,
+			formatDuration(duration),
+			startTime.Format(time.RFC3339),
+			endTime.Format(time.RFC3339),
+		)
+
+		logger.Info("TIP: Use --log-level=debug for detailed per-resource-type scan timing")
+	}()
 
 	defaultRegion := c.String("default-region")
 	creds := ConfigureCreds(c)
@@ -76,9 +120,6 @@ func execute(baseCtx context.Context, c *cli.Command) error { //nolint:funlen,go
 			params.UseFilterGroups = true
 		}
 	}
-
-	logger := logrus.StandardLogger()
-	logger.SetOutput(os.Stdout)
 
 	// Parse the user supplied configuration file to pass in part to configure the nuke process.
 	parsedConfig, err := config.New(libconfig.Options{
@@ -244,7 +285,35 @@ func execute(baseCtx context.Context, c *cli.Command) error { //nolint:funlen,go
 		}
 	}
 
-	return n.Run(ctx)
+	// Execute the nuke process
+	returnErr = n.Run(ctx)
+	return returnErr
+}
+
+// formatDuration formats a duration into a human-readable string
+func formatDuration(d time.Duration) string {
+	if d < time.Second {
+		// Show milliseconds for very short durations
+		return fmt.Sprintf("%dms", d.Milliseconds())
+	}
+
+	hours := int(d.Hours())
+	minutes := int(d.Minutes()) % 60
+	seconds := int(d.Seconds()) % 60
+
+	if hours > 0 {
+		return fmt.Sprintf("%dh %dm %ds", hours, minutes, seconds)
+	}
+	if minutes > 0 {
+		return fmt.Sprintf("%dm %ds", minutes, seconds)
+	}
+
+	// For durations under a minute, include milliseconds for precision
+	ms := (d.Milliseconds() % 1000)
+	if ms > 0 {
+		return fmt.Sprintf("%d.%03ds", seconds, ms)
+	}
+	return fmt.Sprintf("%ds", seconds)
 }
 
 func init() { //nolint:funlen
