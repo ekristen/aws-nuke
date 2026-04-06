@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"                 //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/waf"         //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/wafregional" //nolint:staticcheck
@@ -48,7 +50,9 @@ func (l *WAFRegionalByteMatchSetIPLister) List(_ context.Context, o interface{})
 				ByteMatchSetId: set.ByteMatchSetId,
 			})
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("id", *set.ByteMatchSetId).
+					Warn("unable to get WAF Regional byte match set, skipping to avoid incorrect filtering")
+				continue
 			}
 
 			for _, tuple := range details.ByteMatchSet.ByteMatchTuples {

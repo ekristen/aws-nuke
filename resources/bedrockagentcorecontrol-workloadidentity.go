@@ -56,7 +56,9 @@ func (l *BedrockAgentCoreWorkloadIdentityLister) List(ctx context.Context, o int
 				Name: identity.Name,
 			})
 			if err != nil {
-				return nil, err
+				opts.Logger.WithError(err).WithField("arn", *identity.WorkloadIdentityArn).
+					Warn("unable to get Bedrock agent core workload identity, skipping to avoid incorrect filtering")
+				continue
 			}
 
 			// Get tags for the workload identity

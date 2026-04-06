@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -45,7 +47,9 @@ func (l *S3MultipartUploadLister) List(ctx context.Context, o interface{}) ([]re
 		for {
 			resp, err := svc.ListMultipartUploads(ctx, params)
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("bucket", *bucket.Name).
+					Warn("unable to list multipart uploads for S3 bucket, skipping to avoid incorrect filtering")
+				break
 			}
 
 			for _, upload := range resp.Uploads {

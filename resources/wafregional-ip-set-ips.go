@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"                 //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/waf"         //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/wafregional" //nolint:staticcheck
@@ -48,7 +50,9 @@ func (l *WAFRegionalIPSetIPLister) List(_ context.Context, o interface{}) ([]res
 				IPSetId: set.IPSetId,
 			})
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("id", *set.IPSetId).
+					Warn("unable to get WAF Regional IP set, skipping to avoid incorrect filtering")
+				continue
 			}
 
 			for _, descriptor := range details.IPSet.IPSetDescriptors {

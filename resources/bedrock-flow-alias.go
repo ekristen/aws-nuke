@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"                  //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/bedrockagent" //nolint:staticcheck
 
@@ -47,7 +49,9 @@ func (l *BedrockFlowAliasLister) List(_ context.Context, o interface{}) ([]resou
 		for {
 			output, err := svc.ListFlowAliases(params)
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("flow", flowID).
+					Warn("unable to list flow aliases for Bedrock flow, skipping to avoid incorrect filtering")
+				break
 			}
 
 			for _, flowAliasInfo := range output.FlowAliasSummaries {

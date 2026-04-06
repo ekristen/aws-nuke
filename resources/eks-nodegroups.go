@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"         //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/eks" //nolint:staticcheck
 
@@ -71,14 +73,18 @@ func (l *EKSNodegroupLister) List(_ context.Context, o interface{}) ([]resource.
 		for {
 			resp, err := svc.ListNodegroups(nodegroupsInputParams)
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("cluster", *clusterName).
+					Warn("unable to list nodegroups for EKS cluster, skipping to avoid incorrect filtering")
+				break
 			}
 
 			for _, nodegroupName := range resp.Nodegroups {
 				describeNodegroupInputParams.NodegroupName = nodegroupName
 				nodegroupDescriptionResponse, err := svc.DescribeNodegroup(describeNodegroupInputParams)
 				if err != nil {
-					return nil, err
+					logrus.WithError(err).WithField("nodegroup", *nodegroupName).
+						Warn("unable to describe EKS nodegroup, skipping to avoid incorrect filtering")
+					continue
 				}
 				resources = append(resources, &EKSNodegroup{
 					svc:       svc,

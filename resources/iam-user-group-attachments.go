@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/service/iam" //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 
@@ -77,7 +79,9 @@ func (l *IAMUserGroupAttachmentLister) List(_ context.Context, o interface{}) ([
 				UserName: role.UserName,
 			})
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("user", *role.UserName).
+				Warn("unable to list groups for IAM user, skipping to avoid incorrect filtering")
+			continue
 		}
 
 		for _, grp := range resp.Groups {

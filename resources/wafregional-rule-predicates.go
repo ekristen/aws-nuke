@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"                 //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/waf"         //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/wafregional" //nolint:staticcheck
+	"github.com/sirupsen/logrus"
 	"go.uber.org/ratelimit"
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -56,7 +57,9 @@ func (l *WAFRegionalRulePredicateLister) List(_ context.Context, o interface{}) 
 				RuleId: rule.RuleId,
 			})
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("id", *rule.RuleId).
+					Warn("unable to get WAF Regional rule, skipping to avoid incorrect filtering")
+				continue
 			}
 
 			for _, predicate := range details.Rule.Predicates {

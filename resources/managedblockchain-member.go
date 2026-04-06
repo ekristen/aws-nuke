@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/gotidy/ptr"
+	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"                //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/managedblockchain" //nolint:staticcheck
@@ -44,7 +45,9 @@ func (l *ManagedBlockchainMemberLister) List(_ context.Context, o interface{}) (
 			NetworkId: n.Id,
 		})
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("network", *n.Id).
+				Warn("unable to list members for ManagedBlockchain network, skipping to avoid incorrect filtering")
+			continue
 		}
 
 		for _, r := range res.Members {

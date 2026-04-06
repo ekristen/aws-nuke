@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"                 //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/waf"         //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/wafregional" //nolint:staticcheck
@@ -48,7 +50,9 @@ func (l *WAFRegionalRateBasedRulePredicateLister) List(_ context.Context, o inte
 				RuleId: rule.RuleId,
 			})
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("id", *rule.RuleId).
+					Warn("unable to get WAF Regional rate based rule, skipping to avoid incorrect filtering")
+				continue
 			}
 
 			for _, predicate := range details.Rule.MatchPredicates {
