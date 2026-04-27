@@ -88,3 +88,7 @@ func (r *S3TablesNamespace) Remove(ctx context.Context) error {
 func (r *S3TablesNamespace) Properties() types.Properties {
 	return types.NewPropertiesFromStruct(r)
 }
+
+func (r *S3TablesNamespace) String() string {
+	return *r.Name
+}

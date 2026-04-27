@@ -85,3 +85,7 @@ func (r *S3TablesBucket) Remove(ctx context.Context) error {
 func (r *S3TablesBucket) Properties() types.Properties {
 	return types.NewPropertiesFromStruct(r)
 }
+
+func (r *S3TablesBucket) String() string {
+	return *r.Name
+}
