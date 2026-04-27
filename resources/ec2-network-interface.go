@@ -84,7 +84,7 @@ type EC2NetworkInterface struct {
 	svc       *ec2.EC2
 	accountID *string
 
-	ID               *string
+	ID               *string `libnuke:"uniqueKey"`
 	VPC              *string
 	AttachmentID     *string
 	AvailabilityZone *string
