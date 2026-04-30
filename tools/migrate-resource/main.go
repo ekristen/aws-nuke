@@ -56,7 +56,7 @@ func main() {
 
 	filename := filepath.Clean(filepath.Join(originalSourceDir, args[1]+".go"))
 
-	originalFileContents, err := os.ReadFile(filename) //nolint:gosec // path from CLI args is intentional
+	originalFileContents, err := os.ReadFile(filename)
 	if err != nil {
 		panic(err)
 	}

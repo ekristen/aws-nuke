@@ -173,7 +173,7 @@ dynamically populated and therefore cannot be documented here.`
 	newMkdocs := updateResources(string(mkdocs), newResources)
 
 	if c.Bool("write-to-disk") {
-		err := os.WriteFile("mkdocs.yml", []byte(newMkdocs), 0600)
+		err := os.WriteFile("mkdocs.yml", []byte(newMkdocs), 0600) //nolint:gosec // G703: path is a hardcoded constant, not user input
 		if err != nil {
 			return err
 		}
