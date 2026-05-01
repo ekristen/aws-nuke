@@ -14,6 +14,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"             //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/cloudformation" //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/cloudformation/cloudformationiface"
+	"github.com/aws/aws-sdk-go/service/sts" //nolint:staticcheck
 
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
@@ -40,6 +41,7 @@ func init() {
 		Settings: []string{
 			"DisableDeletionProtection",
 			"CreateRoleToDeleteStack",
+			"UseCurrentRoleToDeleteStack",
 		},
 	})
 }
@@ -51,6 +53,27 @@ func (l *CloudFormationStackLister) List(_ context.Context, o interface{}) ([]re
 
 	svc := cloudformation.New(opts.Session)
 	iamSvc := iam.NewFromConfig(*opts.Config)
+	stsSvc := sts.New(opts.Session)
+
+	// Get the current caller's role ARN so we can use it to override stack roles during deletion
+	var callerRoleARN *string
+	identity, err := stsSvc.GetCallerIdentity(&sts.GetCallerIdentityInput{})
+	if err == nil && identity.Arn != nil {
+		// Convert assumed-role ARN (arn:aws:sts::ACCT:assumed-role/ROLE/SESSION)
+		// to role ARN (arn:aws:iam::ACCT:role/ROLE)
+		arnStr := *identity.Arn
+		if strings.Contains(arnStr, ":assumed-role/") {
+			parts := strings.Split(arnStr, ":")
+			if len(parts) >= 6 {
+				accountID := parts[4]
+				rolePart := strings.Split(parts[5], "/")
+				if len(rolePart) >= 2 {
+					roleARN := fmt.Sprintf("arn:aws:iam::%s:role/%s", accountID, rolePart[1])
+					callerRoleARN = &roleARN
+				}
+			}
+		}
+	}
 
 	params := &cloudformation.DescribeStacksInput{}
 	resources := make([]resource.Resource, 0)
@@ -71,6 +94,7 @@ func (l *CloudFormationStackLister) List(_ context.Context, o interface{}) ([]re
 				description:       stack.Description,
 				parentID:          stack.ParentId,
 				roleARN:           stack.RoleARN,
+				callerRoleARN:     callerRoleARN,
 				CreationTime:      stack.CreationTime,
 				LastUpdatedTime:   stack.LastUpdatedTime,
 				Tags:              stack.Tags,
@@ -106,6 +130,7 @@ type CloudFormationStack struct {
 	description       *string
 	parentID          *string
 	roleARN           *string
+	callerRoleARN     *string
 	maxDeleteAttempts int
 	roleCreated       bool
 	roleName          string
@@ -150,10 +175,14 @@ func (r *CloudFormationStack) createRole(ctx context.Context) error {
 		},
 	})
 
+	if err != nil {
+		return err
+	}
+
 	r.roleCreated = true
 	r.roleName = roleParts[len(roleParts)-1]
 
-	return err
+	return nil
 }
 
 func (r *CloudFormationStack) removeRole(ctx context.Context) error {
@@ -288,10 +317,19 @@ func (r *CloudFormationStack) doRemove() error { //nolint:gocyclo
 			}
 		}
 
-		if _, err = r.svc.DeleteStack(&cloudformation.DeleteStackInput{
+		deleteInput := &cloudformation.DeleteStackInput{
 			StackName:       r.Name,
 			RetainResources: retain,
-		}); err != nil {
+		}
+		if r.settings.GetBool("UseCurrentRoleToDeleteStack") {
+			if r.callerRoleARN != nil {
+				deleteInput.RoleARN = r.callerRoleARN
+			} else {
+				r.logger.Warnf("CloudFormationStack stackName=%s UseCurrentRoleToDeleteStack is enabled but callerRoleARN is nil, falling back to default role behavior", *r.Name)
+			}
+		}
+
+		if _, err = r.svc.DeleteStack(deleteInput); err != nil {
 			return err
 		}
 
@@ -301,9 +339,20 @@ func (r *CloudFormationStack) doRemove() error { //nolint:gocyclo
 	} else {
 		if err := r.waitForStackToStabilize(*stack.StackStatus); err != nil {
 			return err
-		} else if _, err := r.svc.DeleteStack(&cloudformation.DeleteStackInput{
+		}
+
+		deleteInput := &cloudformation.DeleteStackInput{
 			StackName: r.Name,
-		}); err != nil {
+		}
+		if r.settings.GetBool("UseCurrentRoleToDeleteStack") {
+			if r.callerRoleARN != nil {
+				deleteInput.RoleARN = r.callerRoleARN
+			} else {
+				r.logger.Warnf("CloudFormationStack stackName=%s UseCurrentRoleToDeleteStack is enabled but callerRoleARN is nil, falling back to default role behavior", *r.Name)
+			}
+		}
+
+		if _, err := r.svc.DeleteStack(deleteInput); err != nil {
 			return err
 		} else if err := r.svc.WaitUntilStackDeleteComplete(&cloudformation.DescribeStacksInput{
 			StackName: r.Name,
