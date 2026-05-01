@@ -51,7 +51,8 @@ func (l *S3ObjectLister) List(ctx context.Context, o interface{}) ([]resource.Re
 				return nil, err
 			}
 
-			for _, out := range resp.Versions {
+			for i := range resp.Versions {
+				out := &resp.Versions[i]
 				if out.Key == nil {
 					continue
 				}
