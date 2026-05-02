@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/gotidy/ptr"
+	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go-v2/service/appsync"
 	rtypes "github.com/aws/aws-sdk-go-v2/service/appsync/types"
@@ -48,7 +49,9 @@ func (l *AppSyncAPIAssociationLister) List(ctx context.Context, o interface{}) (
 		if err != nil {
 			var notFound *rtypes.NotFoundException
 			if !errors.As(err, &notFound) {
-				return nil, err
+				logrus.WithError(err).WithField("domain", *p.DomainName).
+					Warn("unable to get API association for AppSync domain, skipping to avoid incorrect filtering")
+				continue
 			}
 		} else {
 			resources = append(resources, &AppSyncAPIAssociation{

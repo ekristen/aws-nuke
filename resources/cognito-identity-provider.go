@@ -59,7 +59,9 @@ func (l *CognitoIdentityProviderLister) List(ctx context.Context, o interface{})
 		for {
 			output, err := svc.ListIdentityProviders(listParams)
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("pool", *userPool.ID).
+					Warn("unable to list identity providers for Cognito user pool, skipping to avoid incorrect filtering")
+				break
 			}
 
 			for _, provider := range output.Providers {

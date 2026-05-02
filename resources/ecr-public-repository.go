@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"               //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/aws/endpoints"     //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/ecrpublic" //nolint:staticcheck
@@ -57,7 +59,9 @@ func (l *ECRPublicRepositoryLister) List(_ context.Context, o interface{}) ([]re
 				ResourceArn: repository.RepositoryArn,
 			})
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("arn", *repository.RepositoryArn).
+					Warn("unable to list tags for ECR public repository, skipping to avoid incorrect filtering")
+				continue
 			}
 			resources = append(resources, &ECRPublicRepository{
 				svc:         svc,

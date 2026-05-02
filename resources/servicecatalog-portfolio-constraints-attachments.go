@@ -69,7 +69,9 @@ func (l *ServiceCatalogConstraintPortfolioAttachmentLister) List(_ context.Conte
 		constraintParams.PortfolioId = portfolio.Id
 		resp, err := svc.ListConstraintsForPortfolio(constraintParams)
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("portfolio", *portfolio.Id).
+				Warn("unable to list constraints for ServiceCatalog portfolio, skipping to avoid incorrect filtering")
+			continue
 		}
 
 		for _, constraintDetail := range resp.ConstraintDetails {

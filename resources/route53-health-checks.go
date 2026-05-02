@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/gotidy/ptr"
+	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go/aws"             //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/route53" //nolint:staticcheck
@@ -47,7 +48,9 @@ func (l *Route53HealthCheckLister) List(_ context.Context, o interface{}) ([]res
 				ResourceType: aws.String("healthcheck"),
 			})
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("id", *check.Id).
+					Warn("unable to list tags for Route53 health check, skipping to avoid incorrect filtering")
+				continue
 			}
 
 			resources = append(resources, &Route53HealthCheck{

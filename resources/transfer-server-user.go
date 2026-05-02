@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"              //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/transfer" //nolint:staticcheck
 
@@ -52,7 +54,9 @@ func (l *TransferServerUserLister) List(_ context.Context, o interface{}) ([]res
 			for {
 				userOutput, err := svc.ListUsers(userParams)
 				if err != nil {
-					return nil, err
+					logrus.WithError(err).WithField("server", *item.ServerId).
+						Warn("unable to list users for Transfer server, skipping to avoid incorrect filtering")
+					break
 				}
 
 				for _, user := range userOutput.Users {
@@ -61,7 +65,9 @@ func (l *TransferServerUserLister) List(_ context.Context, o interface{}) ([]res
 						UserName: user.UserName,
 					})
 					if err != nil {
-						return nil, err
+						logrus.WithError(err).WithField("user", *user.UserName).WithField("server", *item.ServerId).
+							Warn("unable to describe Transfer server user, skipping to avoid incorrect filtering")
+						continue
 					}
 
 					resources = append(resources, &TransferServerUser{

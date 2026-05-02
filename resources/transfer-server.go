@@ -4,6 +4,8 @@ import (
 	"context"
 	"strings"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"              //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/transfer" //nolint:staticcheck
 
@@ -48,7 +50,9 @@ func (l *TransferServerLister) List(_ context.Context, o interface{}) ([]resourc
 				ServerId: item.ServerId,
 			})
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("id", *item.ServerId).
+					Warn("unable to describe Transfer server, skipping to avoid incorrect filtering")
+				continue
 			}
 
 			var protocols []string

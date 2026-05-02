@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"                 //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/iotsitewise" //nolint:staticcheck
 
@@ -54,7 +56,9 @@ func (l *IoTSiteWiseAssetLister) List(_ context.Context, o interface{}) ([]resou
 						ResourceArn: item.Arn,
 					})
 				if err != nil {
-					return nil, err
+					logrus.WithError(err).WithField("arn", *item.Arn).
+						Warn("unable to list tags for IoT SiteWise asset, skipping to avoid incorrect filtering")
+					continue
 				}
 
 				resources = append(resources, &IoTSiteWiseAsset{

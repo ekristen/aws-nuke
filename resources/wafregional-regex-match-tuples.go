@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"                 //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/waf"         //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/wafregional" //nolint:staticcheck
@@ -48,7 +50,9 @@ func (l *WAFRegionalRegexMatchTupleLister) List(_ context.Context, o interface{}
 				RegexMatchSetId: set.RegexMatchSetId,
 			})
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("id", *set.RegexMatchSetId).
+					Warn("unable to get WAF Regional regex match set, skipping to avoid incorrect filtering")
+				continue
 			}
 
 			for _, tuple := range regexMatchSet.RegexMatchSet.RegexMatchTuples {

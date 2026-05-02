@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"                    //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/mediastore"     //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/mediastoredata" //nolint:staticcheck
@@ -68,7 +70,9 @@ func (l *MediaStoreDataItemsLister) List(_ context.Context, o interface{}) ([]re
 		svc.Endpoint = *container.Endpoint
 		output, err := svc.ListItems(params)
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("container", *container.Name).
+				Warn("unable to list items for MediaStore container, skipping to avoid incorrect filtering")
+			continue
 		}
 
 		for _, item := range output.Items {

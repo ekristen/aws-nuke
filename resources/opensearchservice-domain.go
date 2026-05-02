@@ -5,6 +5,8 @@ import (
 
 	"time"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/service/opensearchservice" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -59,12 +61,16 @@ func (l *OSDomainLister) List(_ context.Context, o interface{}) ([]resource.Reso
 	for _, domain := range descResp.DomainStatusList {
 		configResp, err := svc.DescribeDomainConfig(&opensearchservice.DescribeDomainConfigInput{DomainName: domain.DomainName})
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("arn", *domain.ARN).
+				Warn("unable to describe domain config for OpenSearch domain, skipping to avoid incorrect filtering")
+			continue
 		}
 
 		lto, err := svc.ListTags(&opensearchservice.ListTagsInput{ARN: domain.ARN})
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("arn", *domain.ARN).
+				Warn("unable to list tags for OpenSearch domain, skipping to avoid incorrect filtering")
+			continue
 		}
 
 		resources = append(resources, &OSDomain{
