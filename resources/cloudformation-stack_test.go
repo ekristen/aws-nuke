@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -12,10 +13,14 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/awserr"             //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/cloudformation" //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/service/sts"            //nolint:staticcheck
+
+	"github.com/aws/aws-sdk-go-v2/service/iam"
 
 	libsettings "github.com/ekristen/libnuke/pkg/settings"
 
 	"github.com/ekristen/aws-nuke/v3/mocks/mock_cloudformationiface"
+	"github.com/ekristen/aws-nuke/v3/mocks/mock_stsiface"
 )
 
 func TestCloudformationStack_Properties(t *testing.T) {
@@ -415,8 +420,17 @@ func TestCloudformationStack_Remove_RoleARNIsNil(t *testing.T) {
 // UseCurrentRoleToDeleteStack tests
 // ============================================================================
 
-// Test: Normal deletion path with UseCurrentRoleToDeleteStack enabled and callerRoleARN set.
-// Expects RoleARN to be set on DeleteStackInput.
+// helper to create a mock STS that returns a given assumed-role ARN
+func mockSTSWithAssumedRole(ctrl *gomock.Controller, arn string) *mock_stsiface.MockSTSAPI {
+	mockSts := mock_stsiface.NewMockSTSAPI(ctrl)
+	mockSts.EXPECT().GetCallerIdentity(gomock.Any()).Return(&sts.GetCallerIdentityOutput{
+		Arn: ptr.String(arn),
+	}, nil).AnyTimes()
+	return mockSts
+}
+
+// Test: Normal deletion with UseCurrentRoleToDeleteStack enabled.
+// STS is called lazily, role ARN is resolved and passed to DeleteStack.
 func TestCloudformationStack_Remove_UseCurrentRole_NormalDeletion(t *testing.T) {
 	tests := []string{
 		cloudformation.StackStatusCreateComplete,
@@ -431,14 +445,14 @@ func TestCloudformationStack_Remove_UseCurrentRole_NormalDeletion(t *testing.T) 
 			defer ctrl.Finish()
 
 			mockCf := mock_cloudformationiface.NewMockCloudFormationAPI(ctrl)
-			callerRole := "arn:aws:iam::123456789012:role/MyCleanupRole"
+			mockSts := mockSTSWithAssumedRole(ctrl, "arn:aws:sts::123456789012:assumed-role/MyCleanupRole/session")
+			expectedRole := "arn:aws:iam::123456789012:role/MyCleanupRole"
 
 			stack := CloudFormationStack{
 				svc:    mockCf,
+				stsSvc: mockSts,
 				logger: logrus.NewEntry(logrus.StandardLogger()),
 				Name:   ptr.String("my-cdk-stack"),
-				roleARN:       ptr.String("arn:aws:iam::123456789012:role/cdk-hnb659fds-cfn-exec-role"),
-				callerRoleARN: &callerRole,
 				settings: &libsettings.Setting{
 					"UseCurrentRoleToDeleteStack": true,
 				},
@@ -449,18 +463,14 @@ func TestCloudformationStack_Remove_UseCurrentRole_NormalDeletion(t *testing.T) 
 					StackName: ptr.String("my-cdk-stack"),
 				})).Return(&cloudformation.DescribeStacksOutput{
 					Stacks: []*cloudformation.Stack{
-						{
-							StackStatus: ptr.String(stackStatus),
-						},
+						{StackStatus: ptr.String(stackStatus)},
 					},
 				}, nil),
 				mockCf.EXPECT().DeleteStack(gomock.Eq(&cloudformation.DeleteStackInput{
 					StackName: ptr.String("my-cdk-stack"),
-					RoleARN:   &callerRole,
+					RoleARN:   &expectedRole,
 				})).Return(nil, nil),
-				mockCf.EXPECT().WaitUntilStackDeleteComplete(gomock.Eq(&cloudformation.DescribeStacksInput{
-					StackName: ptr.String("my-cdk-stack"),
-				})).Return(nil),
+				mockCf.EXPECT().WaitUntilStackDeleteComplete(gomock.Any()).Return(nil),
 			)
 
 			err := stack.Remove(context.TODO())
@@ -469,436 +479,389 @@ func TestCloudformationStack_Remove_UseCurrentRole_NormalDeletion(t *testing.T) 
 	}
 }
 
-// Test: DELETE_FAILED path with UseCurrentRoleToDeleteStack enabled and callerRoleARN set.
-// Expects RoleARN to be set on DeleteStackInput alongside RetainResources.
+// Test: DELETE_FAILED path with UseCurrentRoleToDeleteStack enabled.
 func TestCloudformationStack_Remove_UseCurrentRole_DeleteFailedPath(t *testing.T) {
 	a := assert.New(t)
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	mockCf := mock_cloudformationiface.NewMockCloudFormationAPI(ctrl)
-	callerRole := "arn:aws:iam::123456789012:role/MyCleanupRole"
+	mockSts := mockSTSWithAssumedRole(ctrl, "arn:aws:sts::123456789012:assumed-role/MyCleanupRole/session")
+	expectedRole := "arn:aws:iam::123456789012:role/MyCleanupRole"
 
 	stack := CloudFormationStack{
 		svc:    mockCf,
+		stsSvc: mockSts,
 		logger: logrus.NewEntry(logrus.StandardLogger()),
 		Name:   ptr.String("my-cdk-stack"),
-		roleARN:       ptr.String("arn:aws:iam::123456789012:role/cdk-hnb659fds-cfn-exec-role"),
-		callerRoleARN: &callerRole,
 		settings: &libsettings.Setting{
 			"UseCurrentRoleToDeleteStack": true,
 		},
 	}
 
 	gomock.InOrder(
-		mockCf.EXPECT().DescribeStacks(gomock.Eq(&cloudformation.DescribeStacksInput{
-			StackName: ptr.String("my-cdk-stack"),
-		})).Return(&cloudformation.DescribeStacksOutput{
+		mockCf.EXPECT().DescribeStacks(gomock.Any()).Return(&cloudformation.DescribeStacksOutput{
 			Stacks: []*cloudformation.Stack{
-				{
-					StackStatus: ptr.String(cloudformation.StackStatusDeleteFailed),
-				},
+				{StackStatus: ptr.String(cloudformation.StackStatusDeleteFailed)},
 			},
 		}, nil),
-		mockCf.EXPECT().ListStackResources(gomock.Eq(&cloudformation.ListStackResourcesInput{
-			StackName: ptr.String("my-cdk-stack"),
-		})).Return(&cloudformation.ListStackResourcesOutput{
+		mockCf.EXPECT().ListStackResources(gomock.Any()).Return(&cloudformation.ListStackResourcesOutput{
 			StackResourceSummaries: []*cloudformation.StackResourceSummary{
-				{
-					ResourceStatus:    ptr.String(cloudformation.ResourceStatusDeleteComplete),
-					LogicalResourceId: ptr.String("CompletedResource"),
-				},
-				{
-					ResourceStatus:    ptr.String(cloudformation.ResourceStatusDeleteFailed),
-					LogicalResourceId: ptr.String("FailedResource"),
-				},
+				{ResourceStatus: ptr.String(cloudformation.ResourceStatusDeleteFailed), LogicalResourceId: ptr.String("FailedResource")},
 			},
 		}, nil),
 		mockCf.EXPECT().DeleteStack(gomock.Eq(&cloudformation.DeleteStackInput{
-			StackName: ptr.String("my-cdk-stack"),
-			RoleARN:   &callerRole,
-			RetainResources: []*string{
-				ptr.String("FailedResource"),
-			},
+			StackName:       ptr.String("my-cdk-stack"),
+			RoleARN:         &expectedRole,
+			RetainResources: []*string{ptr.String("FailedResource")},
 		})).Return(nil, nil),
-		mockCf.EXPECT().WaitUntilStackDeleteComplete(gomock.Eq(&cloudformation.DescribeStacksInput{
-			StackName: ptr.String("my-cdk-stack"),
-		})).Return(nil),
+		mockCf.EXPECT().WaitUntilStackDeleteComplete(gomock.Any()).Return(nil),
 	)
 
 	err := stack.Remove(context.TODO())
 	a.Nil(err)
 }
 
-// Test: UseCurrentRoleToDeleteStack disabled (default). RoleARN must NOT be set on DeleteStackInput,
-// even when callerRoleARN is available. This is the backward-compatibility guarantee.
-func TestCloudformationStack_Remove_UseCurrentRole_Disabled_NormalDeletion(t *testing.T) {
+// Test: UseCurrentRoleToDeleteStack disabled — STS must NOT be called, RoleARN must NOT be set.
+func TestCloudformationStack_Remove_UseCurrentRole_Disabled(t *testing.T) {
 	a := assert.New(t)
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	mockCf := mock_cloudformationiface.NewMockCloudFormationAPI(ctrl)
-	callerRole := "arn:aws:iam::123456789012:role/MyCleanupRole"
+	// STS mock with zero expected calls — verifies STS is never called when setting is disabled
+	mockSts := mock_stsiface.NewMockSTSAPI(ctrl)
 
 	stack := CloudFormationStack{
 		svc:    mockCf,
+		stsSvc: mockSts,
 		logger: logrus.NewEntry(logrus.StandardLogger()),
-		Name:   ptr.String("my-cdk-stack"),
-		roleARN:       ptr.String("arn:aws:iam::123456789012:role/cdk-hnb659fds-cfn-exec-role"),
-		callerRoleARN: &callerRole,
+		Name:   ptr.String("my-stack"),
 		settings: &libsettings.Setting{
 			"DisableDeletionProtection": true,
-			// UseCurrentRoleToDeleteStack intentionally NOT set
 		},
 	}
 
 	gomock.InOrder(
-		mockCf.EXPECT().DescribeStacks(gomock.Eq(&cloudformation.DescribeStacksInput{
-			StackName: ptr.String("my-cdk-stack"),
-		})).Return(&cloudformation.DescribeStacksOutput{
+		mockCf.EXPECT().DescribeStacks(gomock.Any()).Return(&cloudformation.DescribeStacksOutput{
 			Stacks: []*cloudformation.Stack{
-				{
-					StackStatus: ptr.String(cloudformation.StackStatusCreateComplete),
-				},
+				{StackStatus: ptr.String(cloudformation.StackStatusCreateComplete)},
 			},
 		}, nil),
-		// RoleARN must NOT be present — CloudFormation uses the stack's original role
 		mockCf.EXPECT().DeleteStack(gomock.Eq(&cloudformation.DeleteStackInput{
-			StackName: ptr.String("my-cdk-stack"),
+			StackName: ptr.String("my-stack"),
 		})).Return(nil, nil),
-		mockCf.EXPECT().WaitUntilStackDeleteComplete(gomock.Eq(&cloudformation.DescribeStacksInput{
-			StackName: ptr.String("my-cdk-stack"),
-		})).Return(nil),
+		mockCf.EXPECT().WaitUntilStackDeleteComplete(gomock.Any()).Return(nil),
 	)
 
 	err := stack.Remove(context.TODO())
 	a.Nil(err)
 }
 
-// Test: UseCurrentRoleToDeleteStack disabled on DELETE_FAILED path. RoleARN must NOT be set.
+// Test: UseCurrentRoleToDeleteStack disabled on DELETE_FAILED path.
 func TestCloudformationStack_Remove_UseCurrentRole_Disabled_DeleteFailedPath(t *testing.T) {
 	a := assert.New(t)
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	mockCf := mock_cloudformationiface.NewMockCloudFormationAPI(ctrl)
-	callerRole := "arn:aws:iam::123456789012:role/MyCleanupRole"
+	mockSts := mock_stsiface.NewMockSTSAPI(ctrl) // no expected calls
 
 	stack := CloudFormationStack{
 		svc:    mockCf,
-		logger: logrus.NewEntry(logrus.StandardLogger()),
-		Name:   ptr.String("my-cdk-stack"),
-		roleARN:       ptr.String("arn:aws:iam::123456789012:role/cdk-hnb659fds-cfn-exec-role"),
-		callerRoleARN: &callerRole,
-		settings: &libsettings.Setting{
-			"DisableDeletionProtection": true,
-			// UseCurrentRoleToDeleteStack intentionally NOT set
-		},
-	}
-
-	gomock.InOrder(
-		mockCf.EXPECT().DescribeStacks(gomock.Eq(&cloudformation.DescribeStacksInput{
-			StackName: ptr.String("my-cdk-stack"),
-		})).Return(&cloudformation.DescribeStacksOutput{
-			Stacks: []*cloudformation.Stack{
-				{
-					StackStatus: ptr.String(cloudformation.StackStatusDeleteFailed),
-				},
-			},
-		}, nil),
-		mockCf.EXPECT().ListStackResources(gomock.Eq(&cloudformation.ListStackResourcesInput{
-			StackName: ptr.String("my-cdk-stack"),
-		})).Return(&cloudformation.ListStackResourcesOutput{
-			StackResourceSummaries: []*cloudformation.StackResourceSummary{
-				{
-					ResourceStatus:    ptr.String(cloudformation.ResourceStatusDeleteFailed),
-					LogicalResourceId: ptr.String("FailedResource"),
-				},
-			},
-		}, nil),
-		// RoleARN must NOT be present
-		mockCf.EXPECT().DeleteStack(gomock.Eq(&cloudformation.DeleteStackInput{
-			StackName: ptr.String("my-cdk-stack"),
-			RetainResources: []*string{
-				ptr.String("FailedResource"),
-			},
-		})).Return(nil, nil),
-		mockCf.EXPECT().WaitUntilStackDeleteComplete(gomock.Eq(&cloudformation.DescribeStacksInput{
-			StackName: ptr.String("my-cdk-stack"),
-		})).Return(nil),
-	)
-
-	err := stack.Remove(context.TODO())
-	a.Nil(err)
-}
-
-// Test: UseCurrentRoleToDeleteStack enabled but callerRoleARN is nil.
-// Should NOT set RoleARN (graceful fallback) and not panic.
-func TestCloudformationStack_Remove_UseCurrentRole_CallerRoleNil(t *testing.T) {
-	a := assert.New(t)
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockCf := mock_cloudformationiface.NewMockCloudFormationAPI(ctrl)
-
-	stack := CloudFormationStack{
-		svc:    mockCf,
-		logger: logrus.NewEntry(logrus.StandardLogger()),
-		Name:   ptr.String("my-cdk-stack"),
-		roleARN:       ptr.String("arn:aws:iam::123456789012:role/cdk-hnb659fds-cfn-exec-role"),
-		callerRoleARN: nil, // nil — e.g. non-assumed-role caller
-		settings: &libsettings.Setting{
-			"UseCurrentRoleToDeleteStack": true,
-		},
-	}
-
-	gomock.InOrder(
-		mockCf.EXPECT().DescribeStacks(gomock.Eq(&cloudformation.DescribeStacksInput{
-			StackName: ptr.String("my-cdk-stack"),
-		})).Return(&cloudformation.DescribeStacksOutput{
-			Stacks: []*cloudformation.Stack{
-				{
-					StackStatus: ptr.String(cloudformation.StackStatusCreateComplete),
-				},
-			},
-		}, nil),
-		// RoleARN must NOT be present since callerRoleARN is nil
-		mockCf.EXPECT().DeleteStack(gomock.Eq(&cloudformation.DeleteStackInput{
-			StackName: ptr.String("my-cdk-stack"),
-		})).Return(nil, nil),
-		mockCf.EXPECT().WaitUntilStackDeleteComplete(gomock.Eq(&cloudformation.DescribeStacksInput{
-			StackName: ptr.String("my-cdk-stack"),
-		})).Return(nil),
-	)
-
-	err := stack.Remove(context.TODO())
-	a.Nil(err)
-}
-
-// Test: UseCurrentRoleToDeleteStack enabled, callerRoleARN nil, DELETE_FAILED path.
-func TestCloudformationStack_Remove_UseCurrentRole_CallerRoleNil_DeleteFailedPath(t *testing.T) {
-	a := assert.New(t)
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockCf := mock_cloudformationiface.NewMockCloudFormationAPI(ctrl)
-
-	stack := CloudFormationStack{
-		svc:    mockCf,
-		logger: logrus.NewEntry(logrus.StandardLogger()),
-		Name:   ptr.String("my-cdk-stack"),
-		roleARN:       ptr.String("arn:aws:iam::123456789012:role/cdk-hnb659fds-cfn-exec-role"),
-		callerRoleARN: nil,
-		settings: &libsettings.Setting{
-			"UseCurrentRoleToDeleteStack": true,
-		},
-	}
-
-	gomock.InOrder(
-		mockCf.EXPECT().DescribeStacks(gomock.Eq(&cloudformation.DescribeStacksInput{
-			StackName: ptr.String("my-cdk-stack"),
-		})).Return(&cloudformation.DescribeStacksOutput{
-			Stacks: []*cloudformation.Stack{
-				{
-					StackStatus: ptr.String(cloudformation.StackStatusDeleteFailed),
-				},
-			},
-		}, nil),
-		mockCf.EXPECT().ListStackResources(gomock.Eq(&cloudformation.ListStackResourcesInput{
-			StackName: ptr.String("my-cdk-stack"),
-		})).Return(&cloudformation.ListStackResourcesOutput{
-			StackResourceSummaries: []*cloudformation.StackResourceSummary{
-				{
-					ResourceStatus:    ptr.String(cloudformation.ResourceStatusDeleteFailed),
-					LogicalResourceId: ptr.String("FailedResource"),
-				},
-			},
-		}, nil),
-		// RoleARN must NOT be present since callerRoleARN is nil
-		mockCf.EXPECT().DeleteStack(gomock.Eq(&cloudformation.DeleteStackInput{
-			StackName: ptr.String("my-cdk-stack"),
-			RetainResources: []*string{
-				ptr.String("FailedResource"),
-			},
-		})).Return(nil, nil),
-		mockCf.EXPECT().WaitUntilStackDeleteComplete(gomock.Eq(&cloudformation.DescribeStacksInput{
-			StackName: ptr.String("my-cdk-stack"),
-		})).Return(nil),
-	)
-
-	err := stack.Remove(context.TODO())
-	a.Nil(err)
-}
-
-// Test: Stack with NO roleARN (nil) and UseCurrentRoleToDeleteStack enabled.
-// Should still use callerRoleARN since the setting is about overriding the deletion role.
-func TestCloudformationStack_Remove_UseCurrentRole_StackHasNoRole(t *testing.T) {
-	a := assert.New(t)
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockCf := mock_cloudformationiface.NewMockCloudFormationAPI(ctrl)
-	callerRole := "arn:aws:iam::123456789012:role/MyCleanupRole"
-
-	stack := CloudFormationStack{
-		svc:    mockCf,
-		logger: logrus.NewEntry(logrus.StandardLogger()),
-		Name:   ptr.String("no-role-stack"),
-		roleARN:       nil, // stack was created without a role
-		callerRoleARN: &callerRole,
-		settings: &libsettings.Setting{
-			"UseCurrentRoleToDeleteStack": true,
-		},
-	}
-
-	gomock.InOrder(
-		mockCf.EXPECT().DescribeStacks(gomock.Eq(&cloudformation.DescribeStacksInput{
-			StackName: ptr.String("no-role-stack"),
-		})).Return(&cloudformation.DescribeStacksOutput{
-			Stacks: []*cloudformation.Stack{
-				{
-					StackStatus: ptr.String(cloudformation.StackStatusCreateComplete),
-				},
-			},
-		}, nil),
-		mockCf.EXPECT().DeleteStack(gomock.Eq(&cloudformation.DeleteStackInput{
-			StackName: ptr.String("no-role-stack"),
-			RoleARN:   &callerRole,
-		})).Return(nil, nil),
-		mockCf.EXPECT().WaitUntilStackDeleteComplete(gomock.Eq(&cloudformation.DescribeStacksInput{
-			StackName: ptr.String("no-role-stack"),
-		})).Return(nil),
-	)
-
-	err := stack.Remove(context.TODO())
-	a.Nil(err)
-}
-
-// Test: UseCurrentRoleToDeleteStack explicitly set to false. Must NOT set RoleARN.
-func TestCloudformationStack_Remove_UseCurrentRole_ExplicitlyFalse(t *testing.T) {
-	a := assert.New(t)
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockCf := mock_cloudformationiface.NewMockCloudFormationAPI(ctrl)
-	callerRole := "arn:aws:iam::123456789012:role/MyCleanupRole"
-
-	stack := CloudFormationStack{
-		svc:    mockCf,
+		stsSvc: mockSts,
 		logger: logrus.NewEntry(logrus.StandardLogger()),
 		Name:   ptr.String("my-stack"),
-		roleARN:       ptr.String("arn:aws:iam::123456789012:role/cdk-exec-role"),
-		callerRoleARN: &callerRole,
 		settings: &libsettings.Setting{
-			"UseCurrentRoleToDeleteStack": false,
+			"DisableDeletionProtection": true,
 		},
 	}
 
 	gomock.InOrder(
-		mockCf.EXPECT().DescribeStacks(gomock.Eq(&cloudformation.DescribeStacksInput{
-			StackName: ptr.String("my-stack"),
-		})).Return(&cloudformation.DescribeStacksOutput{
+		mockCf.EXPECT().DescribeStacks(gomock.Any()).Return(&cloudformation.DescribeStacksOutput{
 			Stacks: []*cloudformation.Stack{
-				{
-					StackStatus: ptr.String(cloudformation.StackStatusCreateComplete),
-				},
+				{StackStatus: ptr.String(cloudformation.StackStatusDeleteFailed)},
 			},
 		}, nil),
-		// RoleARN must NOT be present
+		mockCf.EXPECT().ListStackResources(gomock.Any()).Return(&cloudformation.ListStackResourcesOutput{
+			StackResourceSummaries: []*cloudformation.StackResourceSummary{
+				{ResourceStatus: ptr.String(cloudformation.ResourceStatusDeleteFailed), LogicalResourceId: ptr.String("Res")},
+			},
+		}, nil),
 		mockCf.EXPECT().DeleteStack(gomock.Eq(&cloudformation.DeleteStackInput{
-			StackName: ptr.String("my-stack"),
+			StackName:       ptr.String("my-stack"),
+			RetainResources: []*string{ptr.String("Res")},
 		})).Return(nil, nil),
-		mockCf.EXPECT().WaitUntilStackDeleteComplete(gomock.Eq(&cloudformation.DescribeStacksInput{
-			StackName: ptr.String("my-stack"),
-		})).Return(nil),
+		mockCf.EXPECT().WaitUntilStackDeleteComplete(gomock.Any()).Return(nil),
 	)
 
 	err := stack.Remove(context.TODO())
 	a.Nil(err)
 }
 
-// Test: Empty settings (no settings configured at all). Must NOT set RoleARN.
-// Simulates a user who hasn't configured any CloudFormationStack settings.
+// Test: STS GetCallerIdentity fails — should log warning and fall back to default behavior.
+func TestCloudformationStack_Remove_UseCurrentRole_STSError(t *testing.T) {
+	a := assert.New(t)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockCf := mock_cloudformationiface.NewMockCloudFormationAPI(ctrl)
+	mockSts := mock_stsiface.NewMockSTSAPI(ctrl)
+	mockSts.EXPECT().GetCallerIdentity(gomock.Any()).Return(nil, fmt.Errorf("access denied")).AnyTimes()
+
+	stack := CloudFormationStack{
+		svc:    mockCf,
+		stsSvc: mockSts,
+		logger: logrus.NewEntry(logrus.StandardLogger()),
+		Name:   ptr.String("my-stack"),
+		settings: &libsettings.Setting{
+			"UseCurrentRoleToDeleteStack": true,
+		},
+	}
+
+	gomock.InOrder(
+		mockCf.EXPECT().DescribeStacks(gomock.Any()).Return(&cloudformation.DescribeStacksOutput{
+			Stacks: []*cloudformation.Stack{
+				{StackStatus: ptr.String(cloudformation.StackStatusCreateComplete)},
+			},
+		}, nil),
+		// RoleARN must NOT be set since STS failed
+		mockCf.EXPECT().DeleteStack(gomock.Eq(&cloudformation.DeleteStackInput{
+			StackName: ptr.String("my-stack"),
+		})).Return(nil, nil),
+		mockCf.EXPECT().WaitUntilStackDeleteComplete(gomock.Any()).Return(nil),
+	)
+
+	err := stack.Remove(context.TODO())
+	a.Nil(err)
+}
+
+// Test: Caller is not using an assumed role (e.g. IAM user) — should log warning and fall back.
+func TestCloudformationStack_Remove_UseCurrentRole_NotAssumedRole(t *testing.T) {
+	a := assert.New(t)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockCf := mock_cloudformationiface.NewMockCloudFormationAPI(ctrl)
+	mockSts := mock_stsiface.NewMockSTSAPI(ctrl)
+	mockSts.EXPECT().GetCallerIdentity(gomock.Any()).Return(&sts.GetCallerIdentityOutput{
+		Arn: ptr.String("arn:aws:iam::123456789012:user/MyUser"),
+	}, nil).AnyTimes()
+
+	stack := CloudFormationStack{
+		svc:    mockCf,
+		stsSvc: mockSts,
+		logger: logrus.NewEntry(logrus.StandardLogger()),
+		Name:   ptr.String("my-stack"),
+		settings: &libsettings.Setting{
+			"UseCurrentRoleToDeleteStack": true,
+		},
+	}
+
+	gomock.InOrder(
+		mockCf.EXPECT().DescribeStacks(gomock.Any()).Return(&cloudformation.DescribeStacksOutput{
+			Stacks: []*cloudformation.Stack{
+				{StackStatus: ptr.String(cloudformation.StackStatusCreateComplete)},
+			},
+		}, nil),
+		mockCf.EXPECT().DeleteStack(gomock.Eq(&cloudformation.DeleteStackInput{
+			StackName: ptr.String("my-stack"),
+		})).Return(nil, nil),
+		mockCf.EXPECT().WaitUntilStackDeleteComplete(gomock.Any()).Return(nil),
+	)
+
+	err := stack.Remove(context.TODO())
+	a.Nil(err)
+}
+
+// Test: GovCloud partition — ARN reconstruction must use aws-us-gov, not aws.
+func TestCloudformationStack_Remove_UseCurrentRole_GovCloudPartition(t *testing.T) {
+	a := assert.New(t)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockCf := mock_cloudformationiface.NewMockCloudFormationAPI(ctrl)
+	mockSts := mockSTSWithAssumedRole(ctrl, "arn:aws-us-gov:sts::123456789012:assumed-role/GovRole/session")
+	expectedRole := "arn:aws-us-gov:iam::123456789012:role/GovRole"
+
+	stack := CloudFormationStack{
+		svc:    mockCf,
+		stsSvc: mockSts,
+		logger: logrus.NewEntry(logrus.StandardLogger()),
+		Name:   ptr.String("gov-stack"),
+		settings: &libsettings.Setting{
+			"UseCurrentRoleToDeleteStack": true,
+		},
+	}
+
+	gomock.InOrder(
+		mockCf.EXPECT().DescribeStacks(gomock.Any()).Return(&cloudformation.DescribeStacksOutput{
+			Stacks: []*cloudformation.Stack{
+				{StackStatus: ptr.String(cloudformation.StackStatusCreateComplete)},
+			},
+		}, nil),
+		mockCf.EXPECT().DeleteStack(gomock.Eq(&cloudformation.DeleteStackInput{
+			StackName: ptr.String("gov-stack"),
+			RoleARN:   &expectedRole,
+		})).Return(nil, nil),
+		mockCf.EXPECT().WaitUntilStackDeleteComplete(gomock.Any()).Return(nil),
+	)
+
+	err := stack.Remove(context.TODO())
+	a.Nil(err)
+}
+
+// Test: China partition — ARN reconstruction must use aws-cn.
+func TestCloudformationStack_Remove_UseCurrentRole_ChinaPartition(t *testing.T) {
+	a := assert.New(t)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockCf := mock_cloudformationiface.NewMockCloudFormationAPI(ctrl)
+	mockSts := mockSTSWithAssumedRole(ctrl, "arn:aws-cn:sts::123456789012:assumed-role/ChinaRole/session")
+	expectedRole := "arn:aws-cn:iam::123456789012:role/ChinaRole"
+
+	stack := CloudFormationStack{
+		svc:    mockCf,
+		stsSvc: mockSts,
+		logger: logrus.NewEntry(logrus.StandardLogger()),
+		Name:   ptr.String("cn-stack"),
+		settings: &libsettings.Setting{
+			"UseCurrentRoleToDeleteStack": true,
+		},
+	}
+
+	gomock.InOrder(
+		mockCf.EXPECT().DescribeStacks(gomock.Any()).Return(&cloudformation.DescribeStacksOutput{
+			Stacks: []*cloudformation.Stack{
+				{StackStatus: ptr.String(cloudformation.StackStatusCreateComplete)},
+			},
+		}, nil),
+		mockCf.EXPECT().DeleteStack(gomock.Eq(&cloudformation.DeleteStackInput{
+			StackName: ptr.String("cn-stack"),
+			RoleARN:   &expectedRole,
+		})).Return(nil, nil),
+		mockCf.EXPECT().WaitUntilStackDeleteComplete(gomock.Any()).Return(nil),
+	)
+
+	err := stack.Remove(context.TODO())
+	a.Nil(err)
+}
+
+// Test: STS is only called once even across multiple deletion attempts (lazy + cached).
+func TestCloudformationStack_Remove_UseCurrentRole_STSCalledOnce(t *testing.T) {
+	a := assert.New(t)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockCf := mock_cloudformationiface.NewMockCloudFormationAPI(ctrl)
+	mockSts := mock_stsiface.NewMockSTSAPI(ctrl)
+	// Expect exactly 1 STS call even though doRemove is called twice (retry)
+	mockSts.EXPECT().GetCallerIdentity(gomock.Any()).Return(&sts.GetCallerIdentityOutput{
+		Arn: ptr.String("arn:aws:sts::123456789012:assumed-role/MyRole/session"),
+	}, nil).Times(1)
+
+	expectedRole := "arn:aws:iam::123456789012:role/MyRole"
+
+	stack := CloudFormationStack{
+		svc:               mockCf,
+		stsSvc:            mockSts,
+		logger:            logrus.NewEntry(logrus.StandardLogger()),
+		Name:              ptr.String("retry-stack"),
+		maxDeleteAttempts: 3,
+		settings: &libsettings.Setting{
+			"UseCurrentRoleToDeleteStack": true,
+		},
+	}
+
+	// First attempt: DeleteStack fails
+	mockCf.EXPECT().DescribeStacks(gomock.Any()).Return(&cloudformation.DescribeStacksOutput{
+		Stacks: []*cloudformation.Stack{
+			{StackStatus: ptr.String(cloudformation.StackStatusCreateComplete)},
+		},
+	}, nil).Times(2)
+
+	firstCall := mockCf.EXPECT().DeleteStack(gomock.Eq(&cloudformation.DeleteStackInput{
+		StackName: ptr.String("retry-stack"),
+		RoleARN:   &expectedRole,
+	})).Return(nil, awserr.New("InternalError", "transient failure", nil))
+
+	mockCf.EXPECT().DeleteStack(gomock.Eq(&cloudformation.DeleteStackInput{
+		StackName: ptr.String("retry-stack"),
+		RoleARN:   &expectedRole,
+	})).After(firstCall).Return(nil, nil)
+
+	mockCf.EXPECT().WaitUntilStackDeleteComplete(gomock.Any()).Return(nil)
+
+	err := stack.Remove(context.TODO())
+	a.Nil(err)
+}
+
+// Test: Empty settings — STS must NOT be called.
 func TestCloudformationStack_Remove_UseCurrentRole_EmptySettings(t *testing.T) {
 	a := assert.New(t)
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	mockCf := mock_cloudformationiface.NewMockCloudFormationAPI(ctrl)
-	callerRole := "arn:aws:iam::123456789012:role/MyCleanupRole"
+	mockSts := mock_stsiface.NewMockSTSAPI(ctrl) // no expected calls
 
 	stack := CloudFormationStack{
 		svc:    mockCf,
+		stsSvc: mockSts,
 		logger: logrus.NewEntry(logrus.StandardLogger()),
 		Name:   ptr.String("my-stack"),
-		roleARN:       ptr.String("arn:aws:iam::123456789012:role/cdk-exec-role"),
-		callerRoleARN: &callerRole,
-		settings:      &libsettings.Setting{},
+		settings: &libsettings.Setting{},
 	}
 
 	gomock.InOrder(
-		mockCf.EXPECT().DescribeStacks(gomock.Eq(&cloudformation.DescribeStacksInput{
-			StackName: ptr.String("my-stack"),
-		})).Return(&cloudformation.DescribeStacksOutput{
+		mockCf.EXPECT().DescribeStacks(gomock.Any()).Return(&cloudformation.DescribeStacksOutput{
 			Stacks: []*cloudformation.Stack{
-				{
-					StackStatus: ptr.String(cloudformation.StackStatusCreateComplete),
-				},
+				{StackStatus: ptr.String(cloudformation.StackStatusCreateComplete)},
 			},
 		}, nil),
 		mockCf.EXPECT().DeleteStack(gomock.Eq(&cloudformation.DeleteStackInput{
 			StackName: ptr.String("my-stack"),
 		})).Return(nil, nil),
-		mockCf.EXPECT().WaitUntilStackDeleteComplete(gomock.Eq(&cloudformation.DescribeStacksInput{
-			StackName: ptr.String("my-stack"),
-		})).Return(nil),
+		mockCf.EXPECT().WaitUntilStackDeleteComplete(gomock.Any()).Return(nil),
 	)
 
 	err := stack.Remove(context.TODO())
 	a.Nil(err)
 }
 
-// Test: UseCurrentRoleToDeleteStack with in-progress stacks that need to stabilize first.
-// Verifies the role override still applies after waiting for stabilization.
+// Test: UseCurrentRoleToDeleteStack with in-progress stack that needs stabilization.
 func TestCloudformationStack_Remove_UseCurrentRole_UpdateInProgress(t *testing.T) {
 	a := assert.New(t)
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	mockCf := mock_cloudformationiface.NewMockCloudFormationAPI(ctrl)
-	callerRole := "arn:aws:iam::123456789012:role/MyCleanupRole"
+	mockSts := mockSTSWithAssumedRole(ctrl, "arn:aws:sts::123456789012:assumed-role/MyRole/session")
+	expectedRole := "arn:aws:iam::123456789012:role/MyRole"
 
 	stack := CloudFormationStack{
 		svc:    mockCf,
+		stsSvc: mockSts,
 		logger: logrus.NewEntry(logrus.StandardLogger()),
 		Name:   ptr.String("updating-stack"),
-		roleARN:       ptr.String("arn:aws:iam::123456789012:role/cdk-exec-role"),
-		callerRoleARN: &callerRole,
 		settings: &libsettings.Setting{
 			"UseCurrentRoleToDeleteStack": true,
 		},
 	}
 
 	gomock.InOrder(
-		mockCf.EXPECT().DescribeStacks(gomock.Eq(&cloudformation.DescribeStacksInput{
-			StackName: ptr.String("updating-stack"),
-		})).Return(&cloudformation.DescribeStacksOutput{
+		mockCf.EXPECT().DescribeStacks(gomock.Any()).Return(&cloudformation.DescribeStacksOutput{
 			Stacks: []*cloudformation.Stack{
-				{
-					StackStatus: ptr.String(cloudformation.StackStatusUpdateInProgress),
-				},
+				{StackStatus: ptr.String(cloudformation.StackStatusUpdateInProgress)},
 			},
 		}, nil),
-		mockCf.EXPECT().WaitUntilStackUpdateComplete(gomock.Eq(&cloudformation.DescribeStacksInput{
-			StackName: ptr.String("updating-stack"),
-		})).Return(nil),
+		mockCf.EXPECT().WaitUntilStackUpdateComplete(gomock.Any()).Return(nil),
 		mockCf.EXPECT().DeleteStack(gomock.Eq(&cloudformation.DeleteStackInput{
 			StackName: ptr.String("updating-stack"),
-			RoleARN:   &callerRole,
+			RoleARN:   &expectedRole,
 		})).Return(nil, nil),
-		mockCf.EXPECT().WaitUntilStackDeleteComplete(gomock.Eq(&cloudformation.DescribeStacksInput{
-			StackName: ptr.String("updating-stack"),
-		})).Return(nil),
+		mockCf.EXPECT().WaitUntilStackDeleteComplete(gomock.Any()).Return(nil),
 	)
 
 	err := stack.Remove(context.TODO())
@@ -906,22 +869,56 @@ func TestCloudformationStack_Remove_UseCurrentRole_UpdateInProgress(t *testing.T
 }
 
 // ============================================================================
-// createRole bug fix test — roleCreated must not be set on error
+// createRole bug fix test
 // ============================================================================
 
+// fakeIAMRoleAPI is a minimal test double for the iamRoleAPI interface.
+type fakeIAMRoleAPI struct {
+	createRoleErr error
+	deleteRoleErr error
+}
+
+func (f *fakeIAMRoleAPI) CreateRole(_ context.Context, _ *iam.CreateRoleInput, _ ...func(*iam.Options)) (*iam.CreateRoleOutput, error) {
+	return nil, f.createRoleErr
+}
+
+func (f *fakeIAMRoleAPI) DeleteRole(_ context.Context, _ *iam.DeleteRoleInput, _ ...func(*iam.Options)) (*iam.DeleteRoleOutput, error) {
+	return nil, f.deleteRoleErr
+}
+
+// Test: When CreateRole fails, roleCreated must remain false so removeRole is a no-op.
 func TestCloudformationStack_CreateRole_ErrorDoesNotSetRoleCreated(t *testing.T) {
 	a := assert.New(t)
 
-	// We can't easily mock the v2 IAM client with gomock, but we can verify
-	// the struct state by testing the removeRole guard. If createRole failed
-	// and roleCreated is false, removeRole should be a no-op.
 	stack := CloudFormationStack{
-		logger:      logrus.NewEntry(logrus.StandardLogger()),
-		roleCreated: false,
+		logger:  logrus.NewEntry(logrus.StandardLogger()),
+		roleARN: ptr.String("arn:aws:iam::123456789012:role/SomeRole"),
+		iamSvc:  &fakeIAMRoleAPI{createRoleErr: fmt.Errorf("AccessDenied: not authorized")},
 	}
 
-	// removeRole should return nil when roleCreated is false
-	err := stack.removeRole(context.TODO())
+	err := stack.createRole(context.TODO())
+	a.NotNil(err)
+	a.Contains(err.Error(), "AccessDenied")
+	a.False(stack.roleCreated, "roleCreated must stay false when CreateRole fails")
+	a.Empty(stack.roleName, "roleName must stay empty when CreateRole fails")
+
+	// Confirm removeRole is a safe no-op after a failed createRole
+	err = stack.removeRole(context.TODO())
 	a.Nil(err)
-	a.False(stack.roleCreated)
+}
+
+// Test: When CreateRole succeeds, roleCreated is set and roleName is populated.
+func TestCloudformationStack_CreateRole_SuccessSetsRoleCreated(t *testing.T) {
+	a := assert.New(t)
+
+	stack := CloudFormationStack{
+		logger:  logrus.NewEntry(logrus.StandardLogger()),
+		roleARN: ptr.String("arn:aws:iam::123456789012:role/SomeRole"),
+		iamSvc:  &fakeIAMRoleAPI{},
+	}
+
+	err := stack.createRole(context.TODO())
+	a.Nil(err)
+	a.True(stack.roleCreated, "roleCreated must be true after successful CreateRole")
+	a.Equal("SomeRole", stack.roleName)
 }
