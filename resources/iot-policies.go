@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/gotidy/ptr"
+	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go/aws"         //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/iot" //nolint:staticcheck
@@ -50,12 +51,16 @@ func (l *IoTPolicyLister) List(_ context.Context, o interface{}) ([]resource.Res
 
 			p, err = listIoTPolicyTargets(p)
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("name", *policy.PolicyName).
+					Warn("unable to list targets for IoT policy, skipping to avoid incorrect filtering")
+				continue
 			}
 
 			p, err = listIoTPolicyDeprecatedVersions(p)
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("name", *policy.PolicyName).
+					Warn("unable to list policy versions for IoT policy, skipping to avoid incorrect filtering")
+				continue
 			}
 
 			resources = append(resources, p)

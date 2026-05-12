@@ -60,7 +60,9 @@ func (l *DSQLClusterLister) List(ctx context.Context, o interface{}) ([]resource
 				Identifier: clusterSummary.Identifier,
 			})
 			if err != nil {
-				return nil, err
+				opts.Logger.WithError(err).WithField("arn", *clusterSummary.Arn).
+					Warn("unable to get DSQL cluster, skipping to avoid incorrect filtering")
+				continue
 			}
 			// get cluster tags
 			var tags map[string]string

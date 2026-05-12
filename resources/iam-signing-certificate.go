@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/gotidy/ptr"
+	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go/aws"         //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/iam" //nolint:staticcheck
@@ -52,7 +53,9 @@ func (l *IAMSigningCertificateLister) List(_ context.Context, o interface{}) ([]
 				UserName: out.UserName,
 			})
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("user", *out.UserName).
+					Warn("unable to list signing certificates for IAM user, skipping to avoid incorrect filtering")
+				continue
 			}
 
 			for _, signingCert := range resp.Certificates {

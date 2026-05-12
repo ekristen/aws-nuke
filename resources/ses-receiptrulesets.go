@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws/awserr"  //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/ses" //nolint:staticcheck
 
@@ -60,7 +62,9 @@ func (l *SESReceiptRuleSetLister) List(_ context.Context, o interface{}) ([]reso
 
 		activeRuleSetOutput, err := svc.DescribeActiveReceiptRuleSet(&ses.DescribeActiveReceiptRuleSetInput{})
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("ruleSet", *ruleName).
+				Warn("unable to describe active receipt rule set, skipping to avoid incorrect filtering")
+			continue
 		}
 		if activeRuleSetOutput.Metadata == nil {
 			ruleSetState = false

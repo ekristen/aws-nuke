@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"                  //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/iottwinmaker" //nolint:staticcheck
 
@@ -60,7 +62,9 @@ func (l *IoTTwinMakerWorkspaceLister) List(_ context.Context, o interface{}) ([]
 					ResourceARN: item.Arn,
 				})
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("arn", *item.Arn).
+					Warn("unable to list tags for IoT TwinMaker workspace, skipping to avoid incorrect filtering")
+				continue
 			}
 
 			resources = append(resources, &IoTTwinMakerWorkspace{

@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/service/opsworks" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -43,7 +45,9 @@ func (l *OpsWorksAppLister) List(_ context.Context, o interface{}) ([]resource.R
 		appsParams.StackId = stack.StackId
 		output, err := svc.DescribeApps(appsParams)
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("stack", *stack.StackId).
+				Warn("unable to describe apps for OpsWorks stack, skipping to avoid incorrect filtering")
+			continue
 		}
 
 		for _, app := range output.Apps {

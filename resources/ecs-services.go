@@ -67,7 +67,9 @@ func (l *ECSServiceLister) List(_ context.Context, o interface{}) ([]resource.Re
 		for {
 			output, err := svc.ListServices(serviceParams)
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("cluster", *clusterArn).
+					Warn("unable to list services for ECS cluster, skipping to avoid incorrect filtering")
+				break
 			}
 
 			for _, serviceArn := range output.ServiceArns {

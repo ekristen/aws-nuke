@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"         //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/ec2" //nolint:staticcheck
 
@@ -55,7 +57,9 @@ func (l *EC2VPCEndpointLister) List(_ context.Context, o interface{}) ([]resourc
 
 		resp, err := svc.DescribeVpcEndpoints(params)
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("vpc", *vpc.VpcId).
+				Warn("unable to describe VPC endpoints for VPC, skipping to avoid incorrect filtering")
+			continue
 		}
 
 		for _, vpcEndpoint := range resp.VpcEndpoints {

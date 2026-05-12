@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"         //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/iam" //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
@@ -84,12 +86,16 @@ func (l *IAMUserHTTPSGitCredentialLister) List(_ context.Context, o interface{})
 				ServiceName: aws.String("codecommit.amazonaws.com"),
 			})
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("user", *role.UserName).
+				Warn("unable to list service specific credentials for IAM user, skipping to avoid incorrect filtering")
+			continue
 		}
 
 		userTags, err := svc.ListUserTags(&iam.ListUserTagsInput{UserName: role.UserName})
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("user", *role.UserName).
+				Warn("unable to list tags for IAM user, skipping to avoid incorrect filtering")
+			continue
 		}
 
 		for _, meta := range resp.ServiceSpecificCredentials {

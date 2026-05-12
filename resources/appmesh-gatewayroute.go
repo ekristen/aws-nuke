@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/service/appmesh" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -58,7 +60,9 @@ func (l *AppMeshGatewayRouteLister) List(_ context.Context, o interface{}) ([]re
 			},
 		)
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("mesh", *meshName).
+				Warn("unable to list virtual gateways for App Mesh, skipping to avoid incorrect filtering")
+			continue
 		}
 	}
 
@@ -76,7 +80,9 @@ func (l *AppMeshGatewayRouteLister) List(_ context.Context, o interface{}) ([]re
 			},
 		)
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("gateway", *vg.VirtualGatewayName).
+				Warn("unable to list gateway routes for App Mesh virtual gateway, skipping to avoid incorrect filtering")
+			continue
 		}
 	}
 

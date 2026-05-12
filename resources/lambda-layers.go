@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/service/lambda" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -59,7 +61,9 @@ func (l *LambdaLayerLister) List(_ context.Context, o interface{}) ([]resource.R
 			return true
 		})
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("layer", *layer.LayerName).
+				Warn("unable to list layer versions for Lambda layer, skipping to avoid incorrect filtering")
+			continue
 		}
 	}
 

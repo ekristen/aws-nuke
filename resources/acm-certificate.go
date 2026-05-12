@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"         //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/acm" //nolint:staticcheck
 
@@ -59,7 +61,9 @@ func (l *ACMCertificateLister) List(_ context.Context, o interface{}) ([]resourc
 				CertificateArn: certificate.CertificateArn,
 			})
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("arn", *certificate.CertificateArn).
+					Warn("unable to describe ACM certificate, skipping to avoid incorrect filtering")
+				continue
 			}
 
 			tagParams := &acm.ListTagsForCertificateInput{
@@ -68,7 +72,9 @@ func (l *ACMCertificateLister) List(_ context.Context, o interface{}) ([]resourc
 
 			tagResp, tagErr := svc.ListTagsForCertificate(tagParams)
 			if tagErr != nil {
-				return nil, tagErr
+				logrus.WithError(tagErr).WithField("arn", *certificate.CertificateArn).
+					Warn("unable to list tags for ACM certificate, skipping to avoid incorrect filtering")
+				continue
 			}
 
 			resources = append(resources, &ACMCertificate{

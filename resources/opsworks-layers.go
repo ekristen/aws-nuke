@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/service/opsworks" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -43,7 +45,9 @@ func (l *OpsWorksLayerLister) List(_ context.Context, o interface{}) ([]resource
 		layerParams.StackId = stack.StackId
 		output, err := svc.DescribeLayers(layerParams)
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("stack", *stack.StackId).
+				Warn("unable to describe layers for OpsWorks stack, skipping to avoid incorrect filtering")
+			continue
 		}
 
 		for _, layer := range output.Layers {

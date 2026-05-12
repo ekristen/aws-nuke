@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"                    //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/servicecatalog" //nolint:staticcheck
 
@@ -65,7 +67,9 @@ func (l *ServiceCatalogPortfolioProductAttachmentLister) List(_ context.Context,
 
 		resp, err := svc.ListPortfoliosForProduct(portfolioParams)
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("product", *productID).
+				Warn("unable to list portfolios for ServiceCatalog product, skipping to avoid incorrect filtering")
+			continue
 		}
 
 		for _, portfolioDetail := range resp.PortfolioDetails {

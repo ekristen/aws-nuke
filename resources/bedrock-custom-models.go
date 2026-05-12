@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"             //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/bedrock" //nolint:staticcheck
 
@@ -48,7 +50,9 @@ func (l *BedrockCustomModelLister) List(_ context.Context, o interface{}) ([]res
 					ResourceARN: modelSummary.ModelArn,
 				})
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("arn", *modelSummary.ModelArn).
+					Warn("unable to list tags for Bedrock custom model, skipping to avoid incorrect filtering")
+				continue
 			}
 			resources = append(resources, &BedrockCustomModel{
 				svc:  svc,

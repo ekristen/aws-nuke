@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/service/elb" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -57,7 +59,10 @@ func (l *ELBLister) List(_ context.Context, o interface{}) ([]resource.Resource,
 			LoadBalancerNames: elbNames[:requestElements],
 		})
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).
+				Warn("unable to describe tags for ELB batch, skipping batch to avoid incorrect filtering")
+			elbNames = elbNames[requestElements:]
+			continue
 		}
 		for _, elbTagInfo := range tagResp.TagDescriptions {
 			elbEntity := elbNameToRsc[*elbTagInfo.LoadBalancerName]

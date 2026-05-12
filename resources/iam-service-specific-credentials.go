@@ -53,7 +53,9 @@ func (l *IAMServiceSpecificCredentialLister) List(ctx context.Context, o interfa
 		}
 		serviceCredentials, err := svc.ListServiceSpecificCredentials(params)
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("user", *user.Name).
+				Warn("unable to list service specific credentials for IAM user, skipping to avoid incorrect filtering")
+			continue
 		}
 
 		for _, credential := range serviceCredentials.ServiceSpecificCredentials {

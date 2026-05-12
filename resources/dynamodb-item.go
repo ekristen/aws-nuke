@@ -56,7 +56,9 @@ func (l *DynamoDBTableItemLister) List(ctx context.Context, o interface{}) ([]re
 
 		descResp, descErr := svc.DescribeTable(describeParams)
 		if descErr != nil {
-			return nil, descErr
+			logrus.WithError(descErr).WithField("table", *dynamoTable.Name).
+				Warn("unable to describe DynamoDB table, skipping to avoid incorrect filtering")
+			continue
 		}
 
 		keyName := descResp.Table.KeySchema[0].AttributeName
@@ -70,7 +72,9 @@ func (l *DynamoDBTableItemLister) List(ctx context.Context, o interface{}) ([]re
 
 		scanResp, scanErr := svc.Scan(params)
 		if scanErr != nil {
-			return nil, scanErr
+			logrus.WithError(scanErr).WithField("table", *dynamoTable.Name).
+				Warn("unable to scan DynamoDB table, skipping to avoid incorrect filtering")
+			continue
 		}
 
 		for _, itemMap := range scanResp.Items {

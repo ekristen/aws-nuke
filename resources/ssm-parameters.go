@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"         //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/ssm" //nolint:staticcheck
 
@@ -50,7 +52,9 @@ func (l *SSMParameterLister) List(_ context.Context, o interface{}) ([]resource.
 
 			tagResp, tagErr := svc.ListTagsForResource(tagParams)
 			if tagErr != nil {
-				return nil, tagErr
+				logrus.WithError(tagErr).WithField("name", *parameter.Name).
+					Warn("unable to list tags for SSM parameter, skipping to avoid incorrect filtering")
+				continue
 			}
 
 			resources = append(resources, &SSMParameter{

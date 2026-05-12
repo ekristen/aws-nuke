@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/service/iam" //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 
@@ -43,7 +45,9 @@ func (l *IAMUserSSHPublicKeyLister) List(_ context.Context, o interface{}) ([]re
 		})
 
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("user", *user.UserName).
+				Warn("unable to list SSH public keys for IAM user, skipping to avoid incorrect filtering")
+			continue
 		}
 
 		for _, publicKey := range listOutput.SSHPublicKeys {

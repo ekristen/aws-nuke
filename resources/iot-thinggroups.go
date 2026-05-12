@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"         //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/iot" //nolint:staticcheck
 
@@ -56,7 +58,9 @@ func (l *IoTThingGroupLister) List(_ context.Context, o interface{}) ([]resource
 			ThingGroupName: thingGroup.GroupName,
 		})
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("arn", *thingGroup.GroupArn).
+				Warn("unable to describe IoT thing group, skipping to avoid incorrect filtering")
+			continue
 		}
 
 		thingGroupType := "static"

@@ -93,7 +93,9 @@ func (l *IAMUserPolicyAttachmentLister) List(_ context.Context, o interface{}) (
 				UserName: user.UserName,
 			})
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("user", *user.UserName).
+				Warn("unable to list attached policies for IAM user, skipping to avoid incorrect filtering")
+			continue
 		}
 
 		for _, pol := range resp.AttachedPolicies {

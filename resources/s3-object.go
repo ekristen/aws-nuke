@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gotidy/ptr"
+	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 
@@ -48,7 +49,9 @@ func (l *S3ObjectLister) List(ctx context.Context, o interface{}) ([]resource.Re
 		for {
 			resp, err := svc.ListObjectVersions(ctx, params)
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("bucket", *bucket.Name).
+					Warn("unable to list object versions for S3 bucket, skipping to avoid incorrect filtering")
+				break
 			}
 
 			for i := range resp.Versions {

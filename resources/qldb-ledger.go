@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"          //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/qldb" //nolint:staticcheck
 
@@ -48,7 +50,9 @@ func (l *QLDBLedgerLister) List(_ context.Context, o interface{}) ([]resource.Re
 		for _, ledger := range resp.Ledgers {
 			ledgerDescription, err := svc.DescribeLedger(&qldb.DescribeLedgerInput{Name: ledger.Name})
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("name", *ledger.Name).
+					Warn("unable to describe QLDB ledger, skipping to avoid incorrect filtering")
+				continue
 			}
 
 			resources = append(resources, &QLDBLedger{

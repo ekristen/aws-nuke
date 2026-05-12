@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"             //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/route53" //nolint:staticcheck
 
@@ -44,7 +46,9 @@ func (l *Route53TrafficPolicyLister) List(_ context.Context, o interface{}) ([]r
 			instances, err := instancesForPolicy(svc, trafficPolicy.Id, trafficPolicy.LatestVersion)
 
 			if err != nil {
-				return nil, fmt.Errorf("failed to get instance for policy %s %w", *trafficPolicy.Id, err)
+				logrus.WithError(err).WithField("id", *trafficPolicy.Id).
+					Warn("unable to list instances for Route53 traffic policy, skipping to avoid incorrect filtering")
+				continue
 			}
 
 			resources = append(resources, &Route53TrafficPolicy{

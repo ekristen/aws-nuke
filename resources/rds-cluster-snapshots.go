@@ -5,6 +5,8 @@ import (
 
 	"fmt"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"         //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/rds" //nolint:staticcheck
 
@@ -45,7 +47,9 @@ func (l *RDSClusterSnapshotLister) List(_ context.Context, o interface{}) ([]res
 			ResourceName: snapshot.DBClusterSnapshotArn,
 		})
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("arn", *snapshot.DBClusterSnapshotArn).
+				Warn("unable to list tags for RDS cluster snapshot, skipping to avoid incorrect filtering")
+			continue
 		}
 
 		resources = append(resources, &RDSClusterSnapshot{

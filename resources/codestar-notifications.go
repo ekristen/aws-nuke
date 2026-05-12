@@ -5,6 +5,8 @@ import (
 
 	"fmt"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"                           //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/codestarnotifications" //nolint:staticcheck
 
@@ -48,7 +50,9 @@ func (l *CodeStarNotificationRuleLister) List(_ context.Context, o interface{}) 
 				Arn: notification.Arn,
 			})
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("arn", *notification.Arn).
+					Warn("unable to describe CodeStar notification rule, skipping to avoid incorrect filtering")
+				continue
 			}
 
 			resources = append(resources, &CodeStarNotificationRule{

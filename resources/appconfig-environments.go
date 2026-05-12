@@ -61,7 +61,9 @@ func (l *AppConfigEnvironmentLister) List(ctx context.Context, o interface{}) ([
 			return true
 		})
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("app", *application.id).
+				Warn("unable to list environments for AppConfig application, skipping to avoid incorrect filtering")
+			continue
 		}
 	}
 	return resources, nil

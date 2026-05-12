@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/textract"
 	textracttypes "github.com/aws/aws-sdk-go-v2/service/textract/types"
+	"github.com/sirupsen/logrus"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
@@ -52,7 +53,9 @@ func (l *TextractAdapterLister) List(ctx context.Context, o interface{}) ([]reso
 				AdapterId: adapter.AdapterId,
 			})
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("id", *adapter.AdapterId).
+					Warn("unable to get Textract adapter, skipping to avoid incorrect filtering")
+				continue
 			}
 
 			resources = append(resources, &TextractAdapter{

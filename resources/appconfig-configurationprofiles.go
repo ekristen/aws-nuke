@@ -65,7 +65,9 @@ func (l *AppConfigConfigurationProfileLister) List(ctx context.Context, o interf
 			return true
 		})
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("app", *application.id).
+				Warn("unable to list configuration profiles for AppConfig application, skipping to avoid incorrect filtering")
+			continue
 		}
 	}
 	return resources, nil

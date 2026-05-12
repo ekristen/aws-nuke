@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/service/opsworks" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -42,7 +44,9 @@ func (l *OpsWorksInstanceLister) List(_ context.Context, o interface{}) ([]resou
 		instanceParams.StackId = stack.StackId
 		output, err := svc.DescribeInstances(instanceParams)
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("stack", *stack.StackId).
+				Warn("unable to describe instances for OpsWorks stack, skipping to avoid incorrect filtering")
+			continue
 		}
 
 		for _, instance := range output.Instances {

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gotidy/ptr"
+	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go/service/iam" //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
@@ -54,7 +55,9 @@ func (l *IAMUserMFADeviceLister) List(_ context.Context, o interface{}) ([]resou
 			UserName: user.UserName,
 		})
 		if listErr != nil {
-			return nil, listErr
+			logrus.WithError(listErr).WithField("user", *user.UserName).
+				Warn("unable to list MFA devices for IAM user, skipping to avoid incorrect filtering")
+			continue
 		}
 
 		for _, p := range res.MFADevices {

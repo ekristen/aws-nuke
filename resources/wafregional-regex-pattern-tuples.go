@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"                 //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/waf"         //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/wafregional" //nolint:staticcheck
@@ -48,7 +50,9 @@ func (l *WAFRegionalRegexPatternStringLister) List(_ context.Context, o interfac
 				RegexPatternSetId: set.RegexPatternSetId,
 			})
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("id", *set.RegexPatternSetId).
+					Warn("unable to get WAF Regional regex pattern set, skipping to avoid incorrect filtering")
+				continue
 			}
 
 			for _, patternString := range regexPatternSet.RegexPatternSet.RegexPatternStrings {

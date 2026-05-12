@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"                  //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/bedrockagent" //nolint:staticcheck
 
@@ -47,7 +49,9 @@ func (l *BedrockDataSourceLister) List(_ context.Context, o interface{}) ([]reso
 		for {
 			resp, err := svc.ListDataSources(params)
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("knowledgeBase", *knowledgeBaseResponse.KnowledgeBaseId).
+					Warn("unable to list data sources for Bedrock knowledge base, skipping to avoid incorrect filtering")
+				break
 			}
 
 			for _, item := range resp.DataSourceSummaries {

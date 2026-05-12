@@ -56,7 +56,9 @@ func (l *BedrockAgentCoreGatewayLister) List(ctx context.Context, o interface{})
 				GatewayIdentifier: gateway.GatewayId,
 			})
 			if err != nil {
-				return nil, err
+				opts.Logger.WithError(err).WithField("id", *gateway.GatewayId).
+					Warn("unable to get Bedrock agent core gateway, skipping to avoid incorrect filtering")
+				continue
 			}
 
 			// Get tags for the gateway

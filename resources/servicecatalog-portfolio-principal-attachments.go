@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"                    //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/servicecatalog" //nolint:staticcheck
 
@@ -63,7 +65,9 @@ func (l *ServiceCatalogPrincipalPortfolioAttachmentLister) List(_ context.Contex
 
 		resp, err := svc.ListPrincipalsForPortfolio(principalParams)
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("portfolio", *portfolio.Id).
+				Warn("unable to list principals for ServiceCatalog portfolio, skipping to avoid incorrect filtering")
+			continue
 		}
 
 		for _, principal := range resp.Principals {

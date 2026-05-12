@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/service/elasticsearchservice" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -41,11 +43,15 @@ func (l *ESDomainLister) List(_ context.Context, o interface{}) ([]resource.Reso
 		dedo, err := svc.DescribeElasticsearchDomain(
 			&elasticsearchservice.DescribeElasticsearchDomainInput{DomainName: domain.DomainName})
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("name", *domain.DomainName).
+				Warn("unable to describe Elasticsearch domain, skipping to avoid incorrect filtering")
+			continue
 		}
 		lto, err := svc.ListTags(&elasticsearchservice.ListTagsInput{ARN: dedo.DomainStatus.ARN})
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("name", *domain.DomainName).
+				Warn("unable to list tags for Elasticsearch domain, skipping to avoid incorrect filtering")
+			continue
 		}
 		resources = append(resources, &ESDomain{
 			svc:        svc,

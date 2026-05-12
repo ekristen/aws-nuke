@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/service/appmesh" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -59,7 +61,9 @@ func (l *AppMeshVirtualServiceLister) List(_ context.Context, o interface{}) ([]
 			},
 		)
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("mesh", *meshName).
+				Warn("unable to list virtual services for App Mesh, skipping to avoid incorrect filtering")
+			continue
 		}
 	}
 
