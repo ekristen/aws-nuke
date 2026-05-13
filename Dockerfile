@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.22-labs@sha256:4c116b618ed48404d579b5467127b20986f2a6b29e4b9be2fee841f632db6a86
+# syntax=docker/dockerfile:1.24-labs@sha256:7d49dad25a050e14338ba7028b0460243f9d911dedc160a8fe20c34738fef3af
 FROM alpine:3.23.4@sha256:5b10f432ef3da1b8d4c7eb6c487f2f5a8f096bc91145e68878dd4a5019afde11 AS base
 RUN apk add --no-cache ca-certificates
 RUN adduser -D aws-nuke
