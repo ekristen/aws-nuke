@@ -584,6 +584,9 @@ nav:
     - Route 53 Profile Association: resources/route-53-profile-association.md
     - Route 53 Profile: resources/route-53-profile.md
     - Route 53 Resolver Endpoint: resources/route-53-resolver-endpoint.md
+    - Route 53 Resolver Firewall Query Log Config: resources/route-53-resolver-firewall-query-log-config.md
+    - Route 53 Resolver Firewall Rule Group: resources/route-53-resolver-firewall-rule-group.md
+    - Route 53 Resolver Firewall Domain List: resources/route-53-resolver-firewall-domain-list.md
     - Route 53 Resolver Rule: resources/route-53-resolver-rule.md
     - Route 53 Resource Record Set: resources/route-53-resource-record-set.md
     - Route 53 Traffic Policy: resources/route-53-traffic-policy.md
