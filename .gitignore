@@ -7,4 +7,5 @@ cosign.key
 /config.*.yaml
 *.p12
 *.p8
-**/public
+**/publicaws-nuke-patched
+*.tar.gz
