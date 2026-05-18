@@ -109,7 +109,7 @@ func (i *RDSInstance) Remove(_ context.Context) error {
 			return err
 		}
 		switch status {
-		case "stopped", "inaccessible-encryption-credentials-recoverable":
+		case "stopped":
 			_, err := i.svc.StartDBCluster(&rds.StartDBClusterInput{
 				DBClusterIdentifier: i.instance.DBClusterIdentifier,
 			})
