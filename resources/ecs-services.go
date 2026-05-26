@@ -8,6 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go-v2/service/ecs"
+	ecstypes "github.com/aws/aws-sdk-go-v2/service/ecs/types"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
@@ -27,12 +28,20 @@ func init() {
 	})
 }
 
-type ECSServiceLister struct{}
+type ECSServiceLister struct {
+	mockSvc ECSServiceClient
+}
 
 func (l *ECSServiceLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 
-	svc := ecs.NewFromConfig(*opts.Config)
+	var svc ECSServiceClient
+	if l.mockSvc != nil {
+		svc = l.mockSvc
+	} else {
+		svc = ecs.NewFromConfig(*opts.Config)
+	}
+
 	resources := make([]resource.Resource, 0)
 	clusters := []string{}
 
@@ -60,8 +69,9 @@ func (l *ECSServiceLister) List(ctx context.Context, o interface{}) ([]resource.
 	// to prevent assuming default is always used
 	for _, clusterArn := range clusters {
 		serviceParams := &ecs.ListServicesInput{
-			Cluster:    ptr.String(clusterArn),
-			MaxResults: ptr.Int32(10),
+			Cluster:                ptr.String(clusterArn),
+			MaxResults:             ptr.Int32(10),
+			ResourceManagementType: ecstypes.ResourceManagementTypeCustomer,
 		}
 
 		for {
@@ -107,7 +117,7 @@ func (l *ECSServiceLister) List(ctx context.Context, o interface{}) ([]resource.
 }
 
 type ECSService struct {
-	svc        *ecs.Client
+	svc        ECSServiceClient
 	ServiceARN *string           `description:"The ARN of the ECS service"`
 	ClusterARN *string           `description:"The ARN of the ECS cluster"`
 	Tags       map[string]string `description:"The tags associated with the service"`

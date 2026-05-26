@@ -356,6 +356,7 @@ nav:
     - Ecs Capacity Provider: resources/ecs-capacity-provider.md
     - Ecs Cluster Instance: resources/ecs-cluster-instance.md
     - Ecs Cluster: resources/ecs-cluster.md
+    - Ecs Express Gateway Service: resources/ecs-express-gateway-service.md
     - Ecs Service: resources/ecs-service.md
     - Ecs Task Definition: resources/ecs-task-definition.md
     - Ecs Task: resources/ecs-task.md
