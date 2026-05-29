@@ -184,7 +184,7 @@ func (suite *TestECSExpressGatewayServiceRemoveSuite) TestRemove() {
 		InfrastructureRoleArn: suite.infraRoleArn,
 		ServiceName:           aws.String(svcName),
 		PrimaryContainer: &ecstypes.ExpressGatewayContainer{
-			Image: aws.String("public.ecr.aws/docker/library/nginx:latest"),
+			Image: aws.String("public.ecr.aws/docker/library/nginx:alpine"),
 		},
 	})
 	if err != nil {
@@ -220,7 +220,7 @@ func (suite *TestECSExpressGatewayServiceListSuite) SetupSuite() {
 		InfrastructureRoleArn: suite.infraRoleArn,
 		ServiceName:           aws.String(svcName),
 		PrimaryContainer: &ecstypes.ExpressGatewayContainer{
-			Image: aws.String("public.ecr.aws/docker/library/nginx:latest"),
+			Image: aws.String("public.ecr.aws/docker/library/nginx:alpine"),
 		},
 	})
 	if err != nil {
