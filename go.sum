@@ -82,6 +82,8 @@ github.com/aws/aws-sdk-go-v2/service/s3 v1.97.3 h1:HwxWTbTrIHm5qY+CAEur0s/figc3q
 github.com/aws/aws-sdk-go-v2/service/s3 v1.97.3/go.mod h1:uoA43SdFwacedBfSgfFSjjCvYe8aYBS7EnU5GZ/YKMM=
 github.com/aws/aws-sdk-go-v2/service/s3control v1.52.7 h1:cewH1fJ35N26pujUo8pXtqngf0QZio0ko62rT1x2Uak=
 github.com/aws/aws-sdk-go-v2/service/s3control v1.52.7/go.mod h1:zZ6ah0Hp8TqLZERFcwSQ2T5A4lMkX5vujkDvSkFiXh8=
+github.com/aws/aws-sdk-go-v2/service/s3files v1.0.3 h1:S3+dpkrgIdGvw8kt4bESzv+uUo49Cqnn/rnx1Sjh9j8=
+github.com/aws/aws-sdk-go-v2/service/s3files v1.0.3/go.mod h1:peu+U0l09wQS8QIDhZU9dHM35RkvmtBjaVPWNioftX8=
 github.com/aws/aws-sdk-go-v2/service/shield v1.34.18 h1:iHMYstjSQnilPg+PNEeLYbzP0pLSlGMKvIEeFZM3NLE=
 github.com/aws/aws-sdk-go-v2/service/shield v1.34.18/go.mod h1:hFrOHd6PRSYqXMmvrTOWN9IldfoEJevOF55LpUgCLeg=
 github.com/aws/aws-sdk-go-v2/service/shield v1.34.25 h1:mTkHhGBTt/7wd/7dMQwPpoI9xWeuR9HMk87WQSMmRTE=
