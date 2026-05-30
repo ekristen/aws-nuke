@@ -164,11 +164,12 @@ func (suite *TestLambdaEventSourceMappingSuite) TearDownSuite() {
 }
 
 func (suite *TestLambdaEventSourceMappingSuite) Test_List() {
-	// Create a mapping scoped to this test
+	// Create a mapping with a tag so we can verify tag retrieval
 	mappingResp, err := suite.lambdaSvc.CreateEventSourceMapping(suite.ctx, &lambda.CreateEventSourceMappingInput{
 		EventSourceArn: aws.String(suite.queueArn),
 		FunctionName:   aws.String(suite.functionName),
 		Enabled:        aws.Bool(false),
+		Tags:           map[string]string{"aws-nuke-test": "true"},
 	})
 	assert.NoError(suite.T(), err)
 
@@ -183,15 +184,18 @@ func (suite *TestLambdaEventSourceMappingSuite) Test_List() {
 	assert.NoError(suite.T(), err)
 	assert.Greater(suite.T(), len(resources), 0)
 
-	found := false
+	var found *LambdaEventSourceMapping
 	for _, r := range resources {
 		mapping := r.(*LambdaEventSourceMapping)
 		if *mapping.UUID == *mappingResp.UUID {
-			found = true
+			found = mapping
 			break
 		}
 	}
-	assert.True(suite.T(), found, "expected to find the created event source mapping in list results")
+	assert.NotNil(suite.T(), found, "expected to find the created event source mapping in list results")
+	if found != nil {
+		assert.Equal(suite.T(), "true", found.Tags["aws-nuke-test"], "expected tag to be present on listed mapping")
+	}
 }
 
 func (suite *TestLambdaEventSourceMappingSuite) Test_Remove() {

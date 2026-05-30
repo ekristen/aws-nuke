@@ -48,13 +48,25 @@ func (l *LambdaEventSourceMappingLister) List(ctx context.Context, o interface{}
 			return nil, err
 		}
 
-		for _, mapping := range resp.EventSourceMappings {
+		// Use index-based iteration to avoid copying the 344-byte
+		// EventSourceMappingConfiguration struct on each iteration.
+		for i := range resp.EventSourceMappings {
+			mapping := &resp.EventSourceMappings[i]
+			tagsResp, err := svc.ListTags(ctx, &lambda.ListTagsInput{
+				Resource: mapping.EventSourceMappingArn,
+			})
+			if err != nil {
+				return nil, err
+			}
+
 			resources = append(resources, &LambdaEventSourceMapping{
-				svc:            svc,
-				UUID:           mapping.UUID,
-				EventSourceArn: mapping.EventSourceArn,
-				FunctionArn:    mapping.FunctionArn,
-				State:          mapping.State,
+				svc:                   svc,
+				UUID:                  mapping.UUID,
+				EventSourceMappingArn: mapping.EventSourceMappingArn,
+				EventSourceArn:        mapping.EventSourceArn,
+				FunctionArn:           mapping.FunctionArn,
+				State:                 mapping.State,
+				Tags:                  tagsResp.Tags,
 			})
 		}
 	}
@@ -63,11 +75,13 @@ func (l *LambdaEventSourceMappingLister) List(ctx context.Context, o interface{}
 }
 
 type LambdaEventSourceMapping struct {
-	svc            LambdaEventSourceMappingClient
-	UUID           *string
-	EventSourceArn *string
-	FunctionArn    *string
-	State          *string
+	svc                   LambdaEventSourceMappingClient
+	UUID                  *string
+	EventSourceMappingArn *string
+	EventSourceArn        *string
+	FunctionArn           *string
+	State                 *string
+	Tags                  map[string]string
 }
 
 func (r *LambdaEventSourceMapping) Remove(ctx context.Context) error {
