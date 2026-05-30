@@ -3,7 +3,7 @@ package resources
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go/service/lambda" //nolint:staticcheck
+	"github.com/aws/aws-sdk-go-v2/service/lambda"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
@@ -23,61 +23,65 @@ func init() {
 	})
 }
 
-type LambdaEventSourceMappingLister struct{}
+type LambdaEventSourceMappingLister struct {
+	mockSvc LambdaEventSourceMappingClient
+}
 
-func (l *LambdaEventSourceMappingLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *LambdaEventSourceMappingLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 
-	svc := lambda.New(opts.Session)
+	var svc LambdaEventSourceMappingClient
+	if l.mockSvc != nil {
+		svc = l.mockSvc
+	} else {
+		svc = lambda.NewFromConfig(*opts.Config)
+	}
+
 	resources := make([]resource.Resource, 0)
 
 	params := &lambda.ListEventSourceMappingsInput{}
-	for {
-		resp, err := svc.ListEventSourceMappings(params)
+	paginator := lambda.NewListEventSourceMappingsPaginator(svc, params)
+
+	for paginator.HasMorePages() {
+		resp, err := paginator.NextPage(ctx)
 		if err != nil {
 			return nil, err
 		}
 
 		for _, mapping := range resp.EventSourceMappings {
 			resources = append(resources, &LambdaEventSourceMapping{
-				svc:     svc,
-				mapping: mapping,
+				svc:            svc,
+				UUID:           mapping.UUID,
+				EventSourceArn: mapping.EventSourceArn,
+				FunctionArn:    mapping.FunctionArn,
+				State:          mapping.State,
 			})
 		}
-
-		if resp.NextMarker == nil {
-			break
-		}
-
-		params.Marker = resp.NextMarker
 	}
 
 	return resources, nil
 }
 
 type LambdaEventSourceMapping struct {
-	svc     *lambda.Lambda
-	mapping *lambda.EventSourceMappingConfiguration
+	svc            LambdaEventSourceMappingClient
+	UUID           *string
+	EventSourceArn *string
+	FunctionArn    *string
+	State          *string
 }
 
-func (m *LambdaEventSourceMapping) Remove(_ context.Context) error {
-	_, err := m.svc.DeleteEventSourceMapping(&lambda.DeleteEventSourceMappingInput{
-		UUID: m.mapping.UUID,
+func (r *LambdaEventSourceMapping) Remove(ctx context.Context) error {
+	_, err := r.svc.DeleteEventSourceMapping(ctx, &lambda.DeleteEventSourceMappingInput{
+		UUID: r.UUID,
 	})
 
 	return err
 }
 
-func (m *LambdaEventSourceMapping) Properties() types.Properties {
-	properties := types.NewProperties()
-	properties.Set("UUID", m.mapping.UUID)
-	properties.Set("EventSourceArn", m.mapping.EventSourceArn)
-	properties.Set("FunctionArn", m.mapping.FunctionArn)
-	properties.Set("State", m.mapping.State)
-
-	return properties
+func (r *LambdaEventSourceMapping) Properties() types.Properties {
+	return types.NewPropertiesFromStruct(r)
 }
 
-func (m *LambdaEventSourceMapping) String() string {
-	return *m.mapping.UUID
+func (r *LambdaEventSourceMapping) String() string {
+	return *r.UUID
 }
