@@ -6,6 +6,7 @@ import (
 	"archive/zip"
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"testing"
 	"time"
@@ -56,10 +57,6 @@ func (suite *TestLambdaEventSourceMappingSuite) SetupSuite() {
 
 	roleArn := suite.createIAMRole(suffix)
 	suite.createSQSQueue(suffix)
-
-	// IAM roles take a few seconds to propagate before Lambda accepts them
-	time.Sleep(15 * time.Second)
-
 	suite.createLambdaFunction(roleArn)
 }
 
@@ -124,15 +121,32 @@ func (suite *TestLambdaEventSourceMappingSuite) createLambdaFunction(roleArn str
 		suite.T().Fatalf("failed to close zip: %v", err)
 	}
 
-	_, err = suite.lambdaSvc.CreateFunction(suite.ctx, &lambda.CreateFunctionInput{
+	input := &lambda.CreateFunctionInput{
 		FunctionName: aws.String(suite.functionName),
 		Role:         aws.String(roleArn),
 		Runtime:      lambdatypes.RuntimePython314,
 		Handler:      aws.String("index.handler"),
 		Code:         &lambdatypes.FunctionCode{ZipFile: buf.Bytes()},
-	})
-	if err != nil {
-		suite.T().Fatalf("failed to create Lambda function: %v", err)
+	}
+
+	// Retry CreateFunction with backoff until the IAM role propagates.
+	deadline := time.Now().Add(2 * time.Minute)
+	delay := 2 * time.Second
+	for {
+		_, err = suite.lambdaSvc.CreateFunction(suite.ctx, input)
+		if err == nil {
+			break
+		}
+		// Lambda returns InvalidParameterValueException when the IAM role has not
+		// yet propagated globally; retry with backoff until it does.
+		var invalidParam *lambdatypes.InvalidParameterValueException
+		if !errors.As(err, &invalidParam) || time.Now().After(deadline) {
+			suite.T().Fatalf("failed to create Lambda function: %v", err)
+		}
+		time.Sleep(delay)
+		if delay < 30*time.Second {
+			delay *= 2
+		}
 	}
 
 	waiter := lambda.NewFunctionActiveV2Waiter(suite.lambdaSvc)
