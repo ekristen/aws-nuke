@@ -10,10 +10,12 @@ import (
 	"github.com/gotidy/ptr"
 	"github.com/sirupsen/logrus"
 
-	"github.com/aws/aws-sdk-go/aws"                    //nolint:staticcheck
-	"github.com/aws/aws-sdk-go/aws/awserr"             //nolint:staticcheck
-	"github.com/aws/aws-sdk-go/service/cloudformation" //nolint:staticcheck
-	"github.com/aws/aws-sdk-go/service/cloudformation/cloudformationiface"
+	"github.com/aws/aws-sdk-go/aws"                                        //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/aws/awserr"                                 //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/service/cloudformation"                     //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/service/cloudformation/cloudformationiface" //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/service/sts"                                //nolint:staticcheck
+	"github.com/aws/aws-sdk-go/service/sts/stsiface"                       //nolint:staticcheck
 
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
@@ -40,8 +42,16 @@ func init() {
 		Settings: []string{
 			"DisableDeletionProtection",
 			"CreateRoleToDeleteStack",
+			"UseCurrentRoleToDeleteStack",
 		},
 	})
+}
+
+// iamRoleAPI is the subset of the IAM v2 client used by CloudFormationStack for role
+// create/delete operations. Defined as an interface to enable test mocking.
+type iamRoleAPI interface {
+	CreateRole(ctx context.Context, params *iam.CreateRoleInput, optFns ...func(*iam.Options)) (*iam.CreateRoleOutput, error)
+	DeleteRole(ctx context.Context, params *iam.DeleteRoleInput, optFns ...func(*iam.Options)) (*iam.DeleteRoleOutput, error)
 }
 
 type CloudFormationStackLister struct{}
@@ -51,6 +61,7 @@ func (l *CloudFormationStackLister) List(_ context.Context, o interface{}) ([]re
 
 	svc := cloudformation.New(opts.Session)
 	iamSvc := iam.NewFromConfig(*opts.Config)
+	stsSvc := sts.New(opts.Session)
 
 	params := &cloudformation.DescribeStacksInput{}
 	resources := make([]resource.Resource, 0)
@@ -63,6 +74,7 @@ func (l *CloudFormationStackLister) List(_ context.Context, o interface{}) ([]re
 		for _, stack := range resp.Stacks {
 			newResource := &CloudFormationStack{
 				svc:               svc,
+				stsSvc:            stsSvc,
 				iamSvc:            iamSvc,
 				logger:            opts.Logger,
 				maxDeleteAttempts: CloudformationMaxDeleteAttempt,
@@ -94,21 +106,24 @@ func (l *CloudFormationStackLister) List(_ context.Context, o interface{}) ([]re
 }
 
 type CloudFormationStack struct {
-	svc               cloudformationiface.CloudFormationAPI
-	iamSvc            *iam.Client
-	settings          *settings.Setting
-	logger            *logrus.Entry
-	Name              *string
-	Status            *string
-	CreationTime      *time.Time
-	LastUpdatedTime   *time.Time
-	Tags              []*cloudformation.Tag
-	description       *string
-	parentID          *string
-	roleARN           *string
-	maxDeleteAttempts int
-	roleCreated       bool
-	roleName          string
+	svc                cloudformationiface.CloudFormationAPI
+	stsSvc             stsiface.STSAPI
+	iamSvc             iamRoleAPI
+	settings           *settings.Setting
+	logger             *logrus.Entry
+	Name               *string
+	Status             *string
+	CreationTime       *time.Time
+	LastUpdatedTime    *time.Time
+	Tags               []*cloudformation.Tag
+	description        *string
+	parentID           *string
+	roleARN            *string
+	callerRoleARN      *string
+	callerRoleResolved bool
+	maxDeleteAttempts  int
+	roleCreated        bool
+	roleName           string
 }
 
 func (r *CloudFormationStack) Filter() error {
@@ -150,10 +165,14 @@ func (r *CloudFormationStack) createRole(ctx context.Context) error {
 		},
 	})
 
+	if err != nil {
+		return err
+	}
+
 	r.roleCreated = true
 	r.roleName = roleParts[len(roleParts)-1]
 
-	return err
+	return nil
 }
 
 func (r *CloudFormationStack) removeRole(ctx context.Context) error {
@@ -165,6 +184,69 @@ func (r *CloudFormationStack) removeRole(ctx context.Context) error {
 		RoleName: ptr.String(r.roleName),
 	})
 	return err
+}
+
+// resolveCallerRoleARN lazily resolves the caller's IAM role ARN from STS on first call.
+// This is only invoked when UseCurrentRoleToDeleteStack is enabled, avoiding unnecessary
+// STS API calls for users who don't use this setting.
+// Note: IAM roles with path prefixes (e.g. /my-path/MyRole) cannot be fully reconstructed
+// from the STS assumed-role ARN because STS omits the path component.
+func (r *CloudFormationStack) resolveCallerRoleARN() *string {
+	if r.callerRoleResolved {
+		return r.callerRoleARN
+	}
+	r.callerRoleResolved = true
+
+	identity, err := r.stsSvc.GetCallerIdentity(&sts.GetCallerIdentityInput{})
+	if err != nil {
+		r.logger.Warnf("CloudFormationStack stackName=%s failed to resolve caller role ARN: %s", *r.Name, err.Error())
+		return nil
+	}
+	if identity.Arn == nil {
+		r.logger.Warnf("CloudFormationStack stackName=%s GetCallerIdentity returned nil ARN", *r.Name)
+		return nil
+	}
+
+	// Convert assumed-role ARN (arn:<partition>:sts::<ACCT>:assumed-role/ROLE/SESSION)
+	// to role ARN (arn:<partition>:iam::<ACCT>:role/ROLE)
+	arnStr := *identity.Arn
+	if !strings.Contains(arnStr, ":assumed-role/") {
+		r.logger.Warnf("CloudFormationStack stackName=%s caller ARN is not an assumed-role ARN (%s), cannot resolve role ARN", *r.Name, arnStr)
+		return nil
+	}
+
+	parts := strings.Split(arnStr, ":")
+	if len(parts) < 6 {
+		r.logger.Warnf("CloudFormationStack stackName=%s caller ARN has unexpected format (%s)", *r.Name, arnStr)
+		return nil
+	}
+
+	partition := parts[1]
+	accountID := parts[4]
+	rolePart := strings.Split(parts[5], "/")
+	if len(rolePart) < 2 {
+		r.logger.Warnf("CloudFormationStack stackName=%s caller ARN resource segment has unexpected format (%s)", *r.Name, parts[5])
+		return nil
+	}
+
+	roleARN := fmt.Sprintf("arn:%s:iam::%s:role/%s", partition, accountID, rolePart[1])
+	r.callerRoleARN = &roleARN
+	return r.callerRoleARN
+}
+
+// applyRoleOverride sets the RoleARN on a DeleteStackInput if UseCurrentRoleToDeleteStack is enabled.
+func (r *CloudFormationStack) applyRoleOverride(input *cloudformation.DeleteStackInput) {
+	if !r.settings.GetBool("UseCurrentRoleToDeleteStack") {
+		return
+	}
+	callerRole := r.resolveCallerRoleARN()
+	if callerRole != nil {
+		r.logger.Infof("CloudFormationStack stackName=%s UseCurrentRoleToDeleteStack: overriding RoleARN with %s", *r.Name, *callerRole)
+		input.RoleARN = callerRole
+	} else {
+		r.logger.Warnf("CloudFormationStack stackName=%s UseCurrentRoleToDeleteStack enabled "+
+			"but callerRoleARN could not be resolved, falling back to default role behavior", *r.Name)
+	}
 }
 
 func (r *CloudFormationStack) removeWithAttempts(ctx context.Context, attempt int) error {
@@ -270,7 +352,8 @@ func (r *CloudFormationStack) doRemove() error { //nolint:gocyclo
 			StackName: r.Name,
 		})
 	} else if *stack.StackStatus == cloudformation.StackStatusDeleteFailed {
-		r.logger.Infof("CloudFormationStack stackName=%s delete failed. Attempting to retain and delete stack", *r.Name)
+		r.logger.Infof("CloudFormationStack stackName=%s delete failed (reason=%s). Attempting to retain and delete stack",
+			*r.Name, ptr.ToString(stack.StackStatusReason))
 		// This means the CFS has undetectable resources.
 		// In order to move on with nuking, we retain them in the deletion.
 		retainableResources, err := r.svc.ListStackResources(&cloudformation.ListStackResourcesInput{
@@ -282,16 +365,22 @@ func (r *CloudFormationStack) doRemove() error { //nolint:gocyclo
 
 		retain := make([]*string, 0)
 
-		for _, r := range retainableResources.StackResourceSummaries {
-			if *r.ResourceStatus != cloudformation.ResourceStatusDeleteComplete {
-				retain = append(retain, r.LogicalResourceId)
+		for _, res := range retainableResources.StackResourceSummaries {
+			if *res.ResourceStatus != cloudformation.ResourceStatusDeleteComplete {
+				retain = append(retain, res.LogicalResourceId)
+				r.logger.Infof("CloudFormationStack stackName=%s retaining resource %s (type=%s, status=%s, reason=%s)",
+					*r.Name, ptr.ToString(res.LogicalResourceId), ptr.ToString(res.ResourceType),
+					ptr.ToString(res.ResourceStatus), ptr.ToString(res.ResourceStatusReason))
 			}
 		}
 
-		if _, err = r.svc.DeleteStack(&cloudformation.DeleteStackInput{
+		deleteInput := &cloudformation.DeleteStackInput{
 			StackName:       r.Name,
 			RetainResources: retain,
-		}); err != nil {
+		}
+		r.applyRoleOverride(deleteInput)
+
+		if _, err = r.svc.DeleteStack(deleteInput); err != nil {
 			return err
 		}
 
@@ -301,9 +390,14 @@ func (r *CloudFormationStack) doRemove() error { //nolint:gocyclo
 	} else {
 		if err := r.waitForStackToStabilize(*stack.StackStatus); err != nil {
 			return err
-		} else if _, err := r.svc.DeleteStack(&cloudformation.DeleteStackInput{
+		}
+
+		deleteInput := &cloudformation.DeleteStackInput{
 			StackName: r.Name,
-		}); err != nil {
+		}
+		r.applyRoleOverride(deleteInput)
+
+		if _, err := r.svc.DeleteStack(deleteInput); err != nil {
 			return err
 		} else if err := r.svc.WaitUntilStackDeleteComplete(&cloudformation.DescribeStacksInput{
 			StackName: r.Name,
