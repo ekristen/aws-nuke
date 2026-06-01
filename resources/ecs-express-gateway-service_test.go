@@ -17,6 +17,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ecs"
 	ecstypes "github.com/aws/aws-sdk-go-v2/service/ecs/types"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
+	"github.com/aws/aws-sdk-go-v2/service/sts"
 
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
@@ -31,6 +32,7 @@ type TestECSExpressGatewayServiceSuite struct {
 	ecsSvc        *ecs.Client
 	iamSvc        *iam.Client
 	cfg           aws.Config
+	accountID     string
 	execRoleArn   *string
 	infraRoleArn  *string
 	execRoleName  *string
@@ -48,6 +50,13 @@ func (suite *TestECSExpressGatewayServiceSuite) SetupSuite() {
 	suite.cfg = cfg
 	suite.ecsSvc = ecs.NewFromConfig(cfg)
 	suite.iamSvc = iam.NewFromConfig(cfg)
+
+	stsSvc := sts.NewFromConfig(cfg)
+	identity, err := stsSvc.GetCallerIdentity(suite.ctx, &sts.GetCallerIdentityInput{})
+	if err != nil {
+		suite.T().Fatalf("failed to get caller identity: %v", err)
+	}
+	suite.accountID = aws.ToString(identity.Account)
 
 	ts := time.Now().UnixNano()
 	execRoleName := fmt.Sprintf("aws-nuke-testing-exec-%d", ts)
@@ -72,7 +81,8 @@ func (suite *TestECSExpressGatewayServiceSuite) createExpressGatewayServiceWithR
 		}
 		if strings.Contains(err.Error(), "Cannot assume role") ||
 			strings.Contains(err.Error(), "not authorized to perform: sts:AssumeRole") ||
-			strings.Contains(err.Error(), "AccessDenied") {
+			strings.Contains(err.Error(), "AccessDenied") ||
+			strings.Contains(err.Error(), "security token included in the request is invalid") {
 			time.Sleep(3 * time.Second)
 			continue
 		}
@@ -105,9 +115,10 @@ func (suite *TestECSExpressGatewayServiceSuite) createExecutionRole(roleName str
 func (suite *TestECSExpressGatewayServiceSuite) createInfrastructureRole(roleName string) {
 	// ECS Express Gateway assumes the infrastructure role via an internal delegation role
 	// (ECSApplicationInfraManagerDelegationRole) rather than directly as the ecs.amazonaws.com
-	// service principal. The second statement allows any account's delegation role to assume
-	// this role without hardcoding AWS's internal account ID.
-	trust := `{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"Service":"ecs.amazonaws.com"},"Action":"sts:AssumeRole"},{"Effect":"Allow","Principal":{"AWS":"*"},"Action":"sts:AssumeRole","Condition":{"StringLike":{"aws:PrincipalArn":"arn:aws:iam::*:role/ECSApplicationInfraManagerDelegationRole"}}}]}`
+	// service principal. The PrincipalArn condition is scoped to the current account (retrieved
+	// via STS GetCallerIdentity) to prevent any other account's role by the same name from
+	// assuming this test role.
+	trust := fmt.Sprintf(`{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"Service":"ecs.amazonaws.com"},"Action":"sts:AssumeRole"},{"Effect":"Allow","Principal":{"AWS":"*"},"Action":"sts:AssumeRole","Condition":{"StringLike":{"aws:PrincipalArn":"arn:aws:iam::%s:role/ECSApplicationInfraManagerDelegationRole"}}}]}`, suite.accountID)
 
 	role, err := suite.iamSvc.CreateRole(suite.ctx, &iam.CreateRoleInput{
 		RoleName:                 aws.String(roleName),

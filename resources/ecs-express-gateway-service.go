@@ -174,5 +174,5 @@ func (r *ECSExpressGatewayService) Remove(ctx context.Context) error {
 }
 
 func (r *ECSExpressGatewayService) String() string {
-	return *r.ServiceARN
+	return ptr.ToString(r.ServiceARN)
 }
