@@ -595,6 +595,9 @@ nav:
     - S3 Multipart Upload: resources/s3-multipart-upload.md
     - S3 Object: resources/s3-object.md
     - SNS Endpoint: resources/sns-endpoint.md
+    - S3Files File System: resources/s3-files-file-system.md
+    - S3Files Mount Target: resources/s3-files-mount-target.md
+    - S3Files Access Point: resources/s3-files-access-point.md
     - SNS Platform Application: resources/sns-platform-application.md
     - SNS Subscription: resources/sns-subscription.md
     - SNS Topic: resources/sns-topic.md
