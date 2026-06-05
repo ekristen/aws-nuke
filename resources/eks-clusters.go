@@ -2,11 +2,12 @@ package resources
 
 import (
 	"context"
-
+	"errors"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/eks"
+	ekstypes "github.com/aws/aws-sdk-go-v2/service/eks/types"
 	"github.com/gotidy/ptr"
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -87,11 +88,48 @@ func (r *EKSCluster) Remove(ctx context.Context) error {
 			return err
 		}
 	}
+
+	if err := r.removeCapabilities(ctx); err != nil {
+		return err
+	}
+
 	_, err := r.svc.DeleteCluster(ctx, &eks.DeleteClusterInput{
 		Name: r.Name,
 	})
 
 	return err
+}
+
+func (r *EKSCluster) removeCapabilities(ctx context.Context) error {
+	params := &eks.ListCapabilitiesInput{
+		ClusterName: r.Name,
+		MaxResults:  aws.Int32(100),
+	}
+
+	paginator := eks.NewListCapabilitiesPaginator(r.svc, params)
+	for paginator.HasMorePages() {
+		resp, err := paginator.NextPage(ctx)
+		if err != nil {
+			return err
+		}
+
+		for _, capability := range resp.Capabilities {
+			_, err := r.svc.DeleteCapability(ctx, &eks.DeleteCapabilityInput{
+				ClusterName:    r.Name,
+				CapabilityName: capability.CapabilityName,
+			})
+			if err != nil {
+				var notFound *ekstypes.ResourceNotFoundException
+				if errors.As(err, &notFound) {
+					continue
+				}
+
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
 func (r *EKSCluster) Properties() types.Properties {
