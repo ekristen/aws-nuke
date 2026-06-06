@@ -39,10 +39,12 @@ func (l *EC2AddressLister) List(_ context.Context, o interface{}) ([]resource.Re
 	resources := make([]resource.Resource, 0)
 	for _, out := range resp.Addresses {
 		resources = append(resources, &EC2Address{
-			svc:          svc,
-			AllocationID: out.AllocationId,
-			PublicIP:     out.PublicIp,
-			Tags:         out.Tags,
+			svc:                svc,
+			AllocationID:       out.AllocationId,
+			PublicIP:           out.PublicIp,
+			CustomerOwnedIP:    out.CustomerOwnedIp,
+			NetworkBorderGroup: out.NetworkBorderGroup,
+			Tags:               out.Tags,
 		})
 	}
 
@@ -53,6 +55,7 @@ type EC2Address struct {
 	svc                *ec2.EC2
 	AllocationID       *string
 	PublicIP           *string
+	CustomerOwnedIP    *string
 	NetworkBorderGroup *string
 	Tags               []*ec2.Tag
 }
@@ -74,5 +77,14 @@ func (r *EC2Address) Properties() types.Properties {
 }
 
 func (r *EC2Address) String() string {
-	return *r.PublicIP
+	if r.PublicIP != nil {
+		return *r.PublicIP
+	}
+	if r.CustomerOwnedIP != nil {
+		return *r.CustomerOwnedIP
+	}
+	if r.AllocationID != nil {
+		return *r.AllocationID
+	}
+	return ""
 }

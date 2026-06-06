@@ -157,12 +157,17 @@ func (r *AthenaWorkGroup) Filter() error {
 
 		// If the workgroup is already in r "clean" state, then
 		// don't add it to our plan
+		if wgConfigRes.WorkGroup == nil || wgConfigRes.WorkGroup.Configuration == nil {
+			return nil
+		}
 		wgConfig := wgConfigRes.WorkGroup.Configuration
+		resultConfigClean := wgConfig.ResultConfiguration == nil ||
+			*wgConfig.ResultConfiguration == athena.ResultConfiguration{}
 		isCleanConfig := wgConfig.BytesScannedCutoffPerQuery == nil &&
 			!ptr.ToBool(wgConfig.EnforceWorkGroupConfiguration) &&
 			!ptr.ToBool(wgConfig.PublishCloudWatchMetricsEnabled) &&
 			!ptr.ToBool(wgConfig.RequesterPaysEnabled) &&
-			*wgConfig.ResultConfiguration == athena.ResultConfiguration{} &&
+			resultConfigClean &&
 			len(wgTagsRes.Tags) == 0
 
 		if isCleanConfig {
