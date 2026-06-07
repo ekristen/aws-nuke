@@ -55,7 +55,7 @@ func (l *S3FilesMountTargetLister) List(ctx context.Context, o interface{}) ([]r
 				resources = append(resources, &S3FilesMountTarget{
 					svc:          l.svc,
 					ID:           p.MountTargetId,
-					FileSystemId: fsID,
+					FileSystemID: fsID,
 				})
 			}
 
@@ -73,7 +73,7 @@ func (l *S3FilesMountTargetLister) List(ctx context.Context, o interface{}) ([]r
 type S3FilesMountTarget struct {
 	svc          S3FilesAPI
 	ID           *string `description:"The ID of the S3 file system mount target"`
-	FileSystemId *string `description:"The ID of the S3 file system that this mount target belongs to"`
+	FileSystemID *string `description:"The ID of the S3 file system that this mount target belongs to"`
 }
 
 func (r *S3FilesMountTarget) Remove(ctx context.Context) error {

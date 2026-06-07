@@ -55,7 +55,7 @@ func (l *S3FilesAccessPointLister) List(ctx context.Context, o interface{}) ([]r
 				resources = append(resources, &S3FilesAccessPoint{
 					svc:          l.svc,
 					ID:           p.AccessPointId,
-					FileSystemId: fsID,
+					FileSystemID: fsID,
 				})
 			}
 
@@ -73,7 +73,7 @@ func (l *S3FilesAccessPointLister) List(ctx context.Context, o interface{}) ([]r
 type S3FilesAccessPoint struct {
 	svc          S3FilesAPI
 	ID           *string `description:"The ID of the S3 file system access point"`
-	FileSystemId *string `description:"The ID of the S3 file system that this access point belongs to"`
+	FileSystemID *string `description:"The ID of the S3 file system that this access point belongs to"`
 }
 
 func (r *S3FilesAccessPoint) Remove(ctx context.Context) error {
