@@ -19,7 +19,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.239.0
 	github.com/aws/aws-sdk-go-v2/service/ecs v1.54.6
 	github.com/aws/aws-sdk-go-v2/service/efs v1.35.4
-	github.com/aws/aws-sdk-go-v2/service/eks v1.74.10
+	github.com/aws/aws-sdk-go-v2/service/eks v1.76.4
 	github.com/aws/aws-sdk-go-v2/service/iam v1.38.10
 	github.com/aws/aws-sdk-go-v2/service/inspector2 v1.44.12
 	github.com/aws/aws-sdk-go-v2/service/lakeformation v1.46.6
