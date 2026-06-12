@@ -2,25 +2,20 @@
 generated: true
 ---
 
-# LambdaEventSourceMapping
+# S3FilesAccessPoint
 
 
 ## Resource
 
 ```text
-LambdaEventSourceMapping
+S3FilesAccessPoint
 ```
 
 ## Properties
 
 
-- `EventSourceArn`: No Description
-- `EventSourceMappingArn`: No Description
-- `FunctionArn`: No Description
-- `State`: No Description
-- `UUID`: No Description
-- `tag:<key>:`: This resource has tags with property `Tags`. These are key/value pairs that are
-	added as their own property with the prefix of `tag:` (e.g. [tag:example: "value"]) 
+- `FileSystemId`: The ID of the S3 file system that this access point belongs to
+- `ID`: The ID of the S3 file system access point
 
 !!! note - Using Properties
     Properties are what [Filters](../config-filtering.md) are written against in your configuration. You use the property

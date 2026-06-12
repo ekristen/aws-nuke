@@ -2,23 +2,24 @@
 generated: true
 ---
 
-# LambdaEventSourceMapping
+# S3TablesTable
 
 
 ## Resource
 
 ```text
-LambdaEventSourceMapping
+S3TablesTable
 ```
 
 ## Properties
 
 
-- `EventSourceArn`: No Description
-- `EventSourceMappingArn`: No Description
-- `FunctionArn`: No Description
-- `State`: No Description
-- `UUID`: No Description
+- `CreationDate`: The date and time the table was created.
+- `ManagedByService`: The AWS service that manages the table, if applicable.
+- `Name`: The name of the table.
+- `Namespace`: The namespace the table belongs to.
+- `TableBucketName`: The name of the table bucket the table belongs to.
+- `Type`: The type of the table bucket (aws or customer).
 - `tag:<key>:`: This resource has tags with property `Tags`. These are key/value pairs that are
 	added as their own property with the prefix of `tag:` (e.g. [tag:example: "value"]) 
 

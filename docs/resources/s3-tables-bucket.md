@@ -2,23 +2,21 @@
 generated: true
 ---
 
-# LambdaEventSourceMapping
+# S3TablesBucket
 
 
 ## Resource
 
 ```text
-LambdaEventSourceMapping
+S3TablesBucket
 ```
 
 ## Properties
 
 
-- `EventSourceArn`: No Description
-- `EventSourceMappingArn`: No Description
-- `FunctionArn`: No Description
-- `State`: No Description
-- `UUID`: No Description
+- `CreationDate`: The date and time the table bucket was created.
+- `Name`: The name of the table bucket.
+- `Type`: The type of the table bucket (aws or customer).
 - `tag:<key>:`: This resource has tags with property `Tags`. These are key/value pairs that are
 	added as their own property with the prefix of `tag:` (e.g. [tag:example: "value"]) 
 
@@ -33,4 +31,12 @@ resources support properties. To write a filter against the string representatio
 the filter.
 
 The string value is always what is used in the output of the log format when a resource is identified.
+
+### DependsOn
+
+!!! important - Experimental Feature
+    This resource depends on a resource using the experimental feature. This means that the resource will
+    only be deleted if all the resources of a particular type are deleted first or reach a terminal state.
+
+- [S3TablesNamespace](./s3-tables-namespace.md)
 
