@@ -2,7 +2,7 @@ package resources
 
 import (
 	"context"
-	stderrors "errors"
+	"errors"
 
 	"github.com/sirupsen/logrus"
 
@@ -10,7 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/comprehend"
 	comptypes "github.com/aws/aws-sdk-go-v2/service/comprehend/types"
 
-	"github.com/ekristen/libnuke/pkg/errors"
+	liberrors "github.com/ekristen/libnuke/pkg/errors"
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
@@ -69,7 +69,7 @@ func (ce *ComprehendDocumentClassifier) Remove(ctx context.Context) error {
 			aws.ToString(ce.documentClassifier.DocumentClassifierArn), ce.documentClassifier.Status)
 
 		_, err := ce.svc.DeleteDocumentClassifier(ctx, &comprehend.DeleteDocumentClassifierInput{
-			DocumentClassifierArn: aws.String(aws.ToString(ce.documentClassifier.DocumentClassifierArn)),
+			DocumentClassifierArn: ce.documentClassifier.DocumentClassifierArn,
 		})
 		return err
 	case comptypes.ModelStatusSubmitted, comptypes.ModelStatusTraining:
@@ -77,7 +77,7 @@ func (ce *ComprehendDocumentClassifier) Remove(ctx context.Context) error {
 			aws.ToString(ce.documentClassifier.DocumentClassifierArn), ce.documentClassifier.Status)
 
 		_, err := ce.svc.StopTrainingDocumentClassifier(ctx, &comprehend.StopTrainingDocumentClassifierInput{
-			DocumentClassifierArn: aws.String(aws.ToString(ce.documentClassifier.DocumentClassifierArn)),
+			DocumentClassifierArn: ce.documentClassifier.DocumentClassifierArn,
 		})
 		return err
 	default:
@@ -106,7 +106,7 @@ func (ce *ComprehendDocumentClassifier) HandleWait(ctx context.Context) error {
 	if err != nil {
 		// Check if classifier no longer exists
 		var rnf *comptypes.ResourceNotFoundException
-		if stderrors.As(err, &rnf) {
+		if errors.As(err, &rnf) {
 			logrus.Info("ComprehendDocumentClassifier removed")
 			return nil
 		}
@@ -118,15 +118,15 @@ func (ce *ComprehendDocumentClassifier) HandleWait(ctx context.Context) error {
 
 	switch resp.DocumentClassifierProperties.Status {
 	case comptypes.ModelStatusDeleting:
-		return errors.ErrWaitResource("document classifier is still deleting")
+		return liberrors.ErrWaitResource("document classifier is still deleting")
 	case comptypes.ModelStatusStopped:
 		logrus.Info("ComprehendDocumentClassifier stopped, attempting deletion")
 		_, err := ce.svc.DeleteDocumentClassifier(ctx, &comprehend.DeleteDocumentClassifierInput{
-			DocumentClassifierArn: aws.String(aws.ToString(ce.documentClassifier.DocumentClassifierArn)),
+			DocumentClassifierArn: ce.documentClassifier.DocumentClassifierArn,
 		})
 		return err
 
 	default:
-		return errors.ErrWaitResource("document classifier not deleted yet")
+		return liberrors.ErrWaitResource("document classifier not deleted yet")
 	}
 }
