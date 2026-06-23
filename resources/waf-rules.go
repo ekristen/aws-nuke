@@ -3,6 +3,7 @@ package resources
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
 	"go.uber.org/ratelimit"
 
 	"github.com/aws/aws-sdk-go/aws"         //nolint:staticcheck
@@ -56,7 +57,9 @@ func (l *WAFRuleLister) List(_ context.Context, o interface{}) ([]resource.Resou
 				RuleId: rule.RuleId,
 			})
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("id", *rule.RuleId).
+					Warn("unable to get WAF rule, skipping to avoid incorrect filtering")
+				continue
 			}
 
 			resources = append(resources, &WAFRule{

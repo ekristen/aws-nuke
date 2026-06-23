@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"             //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/bedrock" //nolint:staticcheck
 
@@ -48,7 +50,9 @@ func (l *BedrockGuardrailLister) List(_ context.Context, o interface{}) ([]resou
 					ResourceARN: guardrail.Arn,
 				})
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("arn", *guardrail.Arn).
+					Warn("unable to list tags for Bedrock guardrail, skipping to avoid incorrect filtering")
+				continue
 			}
 
 			resources = append(resources, &BedrockGuardrail{

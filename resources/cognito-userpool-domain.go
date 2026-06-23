@@ -51,7 +51,9 @@ func (l *CognitoUserPoolDomainLister) List(ctx context.Context, o interface{}) (
 		}
 		userPoolDetails, err := svc.DescribeUserPool(describeParams)
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("id", *userPool.ID).
+				Warn("unable to describe Cognito user pool, skipping to avoid incorrect filtering")
+			continue
 		}
 		if userPoolDetails.UserPool.Domain == nil {
 			// No domain on this user pool so skip

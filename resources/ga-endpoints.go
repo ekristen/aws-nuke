@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"                       //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/globalaccelerator" //nolint:staticcheck
 
@@ -67,7 +69,9 @@ func (l *GlobalAcceleratorEndpointGroupLister) List(_ context.Context, o interfa
 		for {
 			output, err := svc.ListListeners(listenerParams)
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("arn", *acceleratorARN).
+					Warn("unable to list listeners for Global Accelerator, skipping to avoid incorrect filtering")
+				break
 			}
 
 			for _, listener := range output.Listeners {
@@ -92,7 +96,9 @@ func (l *GlobalAcceleratorEndpointGroupLister) List(_ context.Context, o interfa
 		for {
 			output, err := svc.ListEndpointGroups(params)
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("arn", *listenerArn).
+					Warn("unable to list endpoint groups for Global Accelerator listener, skipping to avoid incorrect filtering")
+				break
 			}
 
 			for _, endpointGroup := range output.EndpointGroups {

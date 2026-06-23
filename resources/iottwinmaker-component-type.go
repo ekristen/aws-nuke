@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"                  //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/iottwinmaker" //nolint:staticcheck
 
@@ -69,7 +71,9 @@ func (l *IoTTwinMakerComponentTypeLister) List(_ context.Context, o interface{})
 							ResourceARN: item.Arn,
 						})
 					if err != nil {
-						return nil, err
+						logrus.WithError(err).WithField("arn", *item.Arn).
+							Warn("unable to list tags for IoT TwinMaker component type, skipping to avoid incorrect filtering")
+						continue
 					}
 					tags = tagResp.Tags
 				}

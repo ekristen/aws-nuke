@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"                  //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/bedrockagent" //nolint:staticcheck
 
@@ -48,7 +50,9 @@ func (l *BedrockAgentAliasLister) List(_ context.Context, o interface{}) ([]reso
 		for {
 			output, err := svc.ListAgentAliases(params)
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("agent", agentID).
+					Warn("unable to list aliases for Bedrock agent, skipping to avoid incorrect filtering")
+				break
 			}
 
 			for _, agentAliasInfo := range output.AgentAliasSummaries {

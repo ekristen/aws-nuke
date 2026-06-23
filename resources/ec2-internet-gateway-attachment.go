@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/gotidy/ptr"
+	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go/aws"         //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/ec2" //nolint:staticcheck
@@ -56,7 +57,9 @@ func (l *EC2InternetGatewayAttachmentLister) List(_ context.Context, o interface
 
 		resp, err := svc.DescribeInternetGateways(params)
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("vpc", *vpc.VpcId).
+				Warn("unable to describe internet gateways for VPC, skipping to avoid incorrect filtering")
+			continue
 		}
 
 		for _, igw := range resp.InternetGateways {

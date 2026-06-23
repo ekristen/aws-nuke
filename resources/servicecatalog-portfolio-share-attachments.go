@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"                    //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/servicecatalog" //nolint:staticcheck
 
@@ -62,7 +64,9 @@ func (l *ServiceCatalogPortfolioShareAttachmentLister) List(_ context.Context, o
 
 		resp, err := svc.ListPortfolioAccess(accessParams)
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("portfolio", *portfolio.Id).
+				Warn("unable to list portfolio access for ServiceCatalog portfolio, skipping to avoid incorrect filtering")
+			continue
 		}
 
 		for _, account := range resp.AccountIds {

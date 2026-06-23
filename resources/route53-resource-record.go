@@ -7,6 +7,8 @@ import (
 	"github.com/gotidy/ptr"
 
 	"github.com/aws/aws-sdk-go/aws"             //nolint:staticcheck
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/service/route53" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -46,7 +48,9 @@ func (l *Route53ResourceRecordSetLister) List(ctx context.Context, o interface{}
 		zone := r.(*Route53HostedZone)
 		rrs, err := ListResourceRecordsForZone(svc, zone.ID, zone.Name, zone.Tags)
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("zone", *zone.ID).
+				Warn("unable to list resource records for Route53 zone, skipping to avoid incorrect filtering")
+			continue
 		}
 
 		resources = append(resources, rrs...)

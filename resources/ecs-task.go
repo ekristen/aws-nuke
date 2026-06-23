@@ -74,7 +74,9 @@ func (l *ECSTaskLister) List(_ context.Context, o interface{}) ([]resource.Resou
 		}
 		output, err := svc.ListTasks(taskParams)
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("cluster", *clusterArn).
+				Warn("unable to list tasks for ECS cluster, skipping to avoid incorrect filtering")
+			continue
 		}
 
 		for _, taskArn := range output.TaskArns {

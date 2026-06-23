@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/service/imagebuilder" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -41,7 +43,9 @@ func (l *ImageBuilderComponentLister) List(_ context.Context, o interface{}) ([]
 		for _, out := range resp.ComponentVersionList {
 			resources, err = ListImageBuilderComponentVersions(svc, out.Arn, resources)
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("arn", *out.Arn).
+					Warn("unable to list component build versions, skipping to avoid incorrect filtering")
+				continue
 			}
 		}
 

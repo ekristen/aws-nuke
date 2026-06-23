@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/eks"
 	"github.com/gotidy/ptr"
+	"github.com/sirupsen/logrus"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
@@ -53,7 +54,9 @@ func (l *EKSClusterLister) List(ctx context.Context, o interface{}) ([]resource.
 		for _, cluster := range resp.Clusters {
 			dcResp, err := svc.DescribeCluster(ctx, &eks.DescribeClusterInput{Name: aws.String(cluster)})
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("name", cluster).
+					Warn("unable to describe EKS cluster, skipping to avoid incorrect filtering")
+				continue
 			}
 			resources = append(resources, &EKSCluster{
 				svc:        svc,

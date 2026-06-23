@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/service/iam" //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 
@@ -67,7 +69,9 @@ func (l *IAMUserPolicyLister) List(_ context.Context, o interface{}) ([]resource
 			UserName: user.UserName,
 		})
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("user", *user.UserName).
+				Warn("unable to list policies for IAM user, skipping to avoid incorrect filtering")
+			continue
 		}
 
 		for _, policyName := range policies.PolicyNames {

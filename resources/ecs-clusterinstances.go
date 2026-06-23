@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"         //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/ecs" //nolint:staticcheck
 
@@ -62,7 +64,9 @@ func (l *ECSClusterInstanceLister) List(_ context.Context, o interface{}) ([]res
 		}
 		output, err := svc.ListContainerInstances(instanceParams)
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("cluster", *clusterArn).
+				Warn("unable to list container instances for ECS cluster, skipping to avoid incorrect filtering")
+			continue
 		}
 
 		for _, instanceArn := range output.ContainerInstanceArns {

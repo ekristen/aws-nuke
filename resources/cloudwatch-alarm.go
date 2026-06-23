@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gotidy/ptr"
+	"github.com/sirupsen/logrus"
 	"go.uber.org/ratelimit"
 
 	"github.com/aws/aws-sdk-go/aws"                //nolint:staticcheck
@@ -61,7 +62,9 @@ func (l *CloudWatchAlarmLister) List(_ context.Context, o interface{}) ([]resour
 		for _, metricAlarm := range output.MetricAlarms {
 			tags, err := GetAlarmTags(svc, metricAlarm.AlarmArn)
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("arn", *metricAlarm.AlarmArn).
+					Warn("unable to list tags for CloudWatch alarm, skipping to avoid incorrect filtering")
+				continue
 			}
 			resources = append(resources, &CloudWatchAlarm{
 				svc:  svc,
@@ -74,7 +77,9 @@ func (l *CloudWatchAlarmLister) List(_ context.Context, o interface{}) ([]resour
 		for _, compositeAlarm := range output.CompositeAlarms {
 			tags, err := GetAlarmTags(svc, compositeAlarm.AlarmArn)
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("arn", *compositeAlarm.AlarmArn).
+					Warn("unable to list tags for CloudWatch alarm, skipping to avoid incorrect filtering")
+				continue
 			}
 			resources = append(resources, &CloudWatchAlarm{
 				svc:  svc,

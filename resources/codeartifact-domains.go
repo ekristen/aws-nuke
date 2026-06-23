@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/service/codeartifact" //nolint:staticcheck
 
 	"github.com/ekristen/libnuke/pkg/registry"
@@ -42,7 +44,9 @@ func (l *CodeArtifactDomainLister) List(_ context.Context, o interface{}) ([]res
 		for _, domain := range resp.Domains {
 			desc, err := svc.DescribeDomain(&codeartifact.DescribeDomainInput{Domain: domain.Name})
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("name", *domain.Name).
+					Warn("unable to describe CodeArtifact domain, skipping to avoid incorrect filtering")
+				continue
 			}
 
 			resources = append(resources, &CodeArtifactDomain{

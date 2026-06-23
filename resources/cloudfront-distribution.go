@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gotidy/ptr"
+	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/cloudfront"
@@ -62,7 +63,9 @@ func (l *CloudFrontDistributionLister) List(ctx context.Context, o interface{}) 
 				Resource: item.ARN,
 			})
 			if err != nil {
-				return nil, err
+				logrus.WithError(err).WithField("id", *item.Id).
+					Warn("unable to list tags for CloudFront distribution, skipping to avoid incorrect filtering")
+				continue
 			}
 
 			resources = append(resources, &CloudFrontDistribution{

@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go/aws"         //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/waf" //nolint:staticcheck
 
@@ -60,7 +62,9 @@ func (l *WAFWebACLRuleAttachmentLister) List(_ context.Context, o interface{}) (
 
 		resp, err := svc.GetWebACL(webACLParams)
 		if err != nil {
-			return nil, err
+			logrus.WithError(err).WithField("id", *webACL.WebACLId).
+				Warn("unable to get WAF WebACL, skipping to avoid incorrect filtering")
+			continue
 		}
 
 		for _, webACLRule := range resp.WebACL.Rules {
