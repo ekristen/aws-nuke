@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"         //nolint:staticcheck
-	"github.com/aws/aws-sdk-go/service/eks" //nolint:staticcheck
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/eks"
+	ekstypes "github.com/aws/aws-sdk-go-v2/service/eks/types"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
@@ -31,67 +32,51 @@ func init() {
 
 type EKSNodegroupLister struct{}
 
-func (l *EKSNodegroupLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *EKSNodegroupLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
-	svc := eks.New(opts.Session)
+	svc := eks.NewFromConfig(*opts.Config)
 
-	var clusterNames []*string
+	var clusterNames []string
 	var resources []resource.Resource
 
-	clusterInputParams := &eks.ListClustersInput{
-		MaxResults: aws.Int64(100),
-	}
-
 	// fetch all cluster names
-	for {
-		resp, err := svc.ListClusters(clusterInputParams)
+	clustersPaginator := eks.NewListClustersPaginator(svc, &eks.ListClustersInput{
+		MaxResults: aws.Int32(100),
+	})
+	for clustersPaginator.HasMorePages() {
+		resp, err := clustersPaginator.NextPage(ctx)
 		if err != nil {
 			return nil, err
 		}
 
 		clusterNames = append(clusterNames, resp.Clusters...)
-
-		if resp.NextToken == nil {
-			break
-		}
-
-		clusterInputParams.NextToken = resp.NextToken
 	}
-
-	nodegroupsInputParams := &eks.ListNodegroupsInput{
-		MaxResults: aws.Int64(100),
-	}
-	describeNodegroupInputParams := &eks.DescribeNodegroupInput{}
 
 	// fetch the associated node groups
 	for _, clusterName := range clusterNames {
-		nodegroupsInputParams.ClusterName = clusterName
-		describeNodegroupInputParams.ClusterName = clusterName
-
-		for {
-			resp, err := svc.ListNodegroups(nodegroupsInputParams)
+		nodegroupsPaginator := eks.NewListNodegroupsPaginator(svc, &eks.ListNodegroupsInput{
+			ClusterName: aws.String(clusterName),
+			MaxResults:  aws.Int32(100),
+		})
+		for nodegroupsPaginator.HasMorePages() {
+			resp, err := nodegroupsPaginator.NextPage(ctx)
 			if err != nil {
 				return nil, err
 			}
 
 			for _, nodegroupName := range resp.Nodegroups {
-				describeNodegroupInputParams.NodegroupName = nodegroupName
-				nodegroupDescriptionResponse, err := svc.DescribeNodegroup(describeNodegroupInputParams)
+				descResp, err := svc.DescribeNodegroup(ctx, &eks.DescribeNodegroupInput{
+					ClusterName:   aws.String(clusterName),
+					NodegroupName: aws.String(nodegroupName),
+				})
 				if err != nil {
 					return nil, err
 				}
 				resources = append(resources, &EKSNodegroup{
 					svc:       svc,
-					nodegroup: nodegroupDescriptionResponse.Nodegroup,
+					nodegroup: descResp.Nodegroup,
 				})
 			}
-
-			if resp.NextToken == nil {
-				nodegroupsInputParams.NextToken = nil
-				break
-			}
-
-			nodegroupsInputParams.NextToken = resp.NextToken
 		}
 	}
 
@@ -99,12 +84,12 @@ func (l *EKSNodegroupLister) List(_ context.Context, o interface{}) ([]resource.
 }
 
 type EKSNodegroup struct {
-	svc       *eks.EKS
-	nodegroup *eks.Nodegroup
+	svc       *eks.Client
+	nodegroup *ekstypes.Nodegroup
 }
 
-func (ng *EKSNodegroup) Remove(_ context.Context) error {
-	_, err := ng.svc.DeleteNodegroup(&eks.DeleteNodegroupInput{
+func (ng *EKSNodegroup) Remove(ctx context.Context) error {
+	_, err := ng.svc.DeleteNodegroup(ctx, &eks.DeleteNodegroupInput{
 		ClusterName:   ng.nodegroup.ClusterName,
 		NodegroupName: ng.nodegroup.NodegroupName,
 	})
