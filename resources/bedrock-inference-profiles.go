@@ -18,6 +18,17 @@ import (
 
 const BedrockInferenceProfileResource = "BedrockInferenceProfile"
 
+// BedrockInferenceProfileClient is the interface for the bedrock operations used by the inference
+// profile lister and resource. It exists so the List and Remove paths can be exercised with a mock.
+type BedrockInferenceProfileClient interface {
+	ListInferenceProfiles(ctx context.Context, params *bedrock.ListInferenceProfilesInput,
+		optFns ...func(*bedrock.Options)) (*bedrock.ListInferenceProfilesOutput, error)
+	ListTagsForResource(ctx context.Context, params *bedrock.ListTagsForResourceInput,
+		optFns ...func(*bedrock.Options)) (*bedrock.ListTagsForResourceOutput, error)
+	DeleteInferenceProfile(ctx context.Context, params *bedrock.DeleteInferenceProfileInput,
+		optFns ...func(*bedrock.Options)) (*bedrock.DeleteInferenceProfileOutput, error)
+}
+
 func init() {
 	registry.Register(&registry.Registration{
 		Name:     BedrockInferenceProfileResource,
@@ -27,11 +38,20 @@ func init() {
 	})
 }
 
-type BedrockInferenceProfileLister struct{}
+type BedrockInferenceProfileLister struct {
+	mockSvc BedrockInferenceProfileClient
+}
 
 func (l *BedrockInferenceProfileLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
-	svc := bedrock.NewFromConfig(*opts.Config)
+
+	var svc BedrockInferenceProfileClient
+	if l.mockSvc != nil {
+		svc = l.mockSvc
+	} else {
+		svc = bedrock.NewFromConfig(*opts.Config)
+	}
+
 	var resources []resource.Resource
 
 	params := &bedrock.ListInferenceProfilesInput{
@@ -48,12 +68,15 @@ func (l *BedrockInferenceProfileLister) List(ctx context.Context, o interface{})
 
 		for _, profile := range resp.InferenceProfileSummaries {
 			var tags map[string]string
-			if profile.InferenceProfileArn != nil {
+			// Only application inference profiles support tagging. System-defined
+			// (cross-Region) profiles reject ListTagsForResource, so skip them to
+			// avoid noisy warnings for resources that are filtered out anyway.
+			if profile.Type == bedrocktypes.InferenceProfileTypeApplication && profile.InferenceProfileArn != nil {
 				tagsResp, err := svc.ListTagsForResource(ctx, &bedrock.ListTagsForResourceInput{
 					ResourceARN: profile.InferenceProfileArn,
 				})
 				if err != nil {
-					opts.Logger.Warnf("unable to fetch tags for inference profile: %s", *profile.InferenceProfileArn)
+					opts.Logger.WithError(err).Warnf("unable to fetch tags for inference profile: %s", *profile.InferenceProfileArn)
 				} else {
 					tags = make(map[string]string)
 					for _, tag := range tagsResp.Tags {
@@ -81,7 +104,7 @@ func (l *BedrockInferenceProfileLister) List(ctx context.Context, o interface{})
 }
 
 type BedrockInferenceProfile struct {
-	svc         *bedrock.Client
+	svc         BedrockInferenceProfileClient
 	ID          *string
 	Name        *string
 	ARN         *string
