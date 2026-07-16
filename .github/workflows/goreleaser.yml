@@ -76,7 +76,7 @@ jobs:
         run: |
           echo "GORELEASER_ARGS=--snapshot --skip-publish" >> $GITHUB_ENV
       - name: setup quill
-        uses: 1password/load-secrets-action@92467eb28f72e8255933372f1e0707c567ce2259 # v4
+        uses: 1password/load-secrets-action@3a12b0ab99d9cd590a3e9b5a90ea017210ed9556 # v4
         if: startsWith(github.ref, 'refs/tags/') == true && (github.actor == github.repository_owner || github.actor == 'ekristen-dev[bot]')
         with:
           export-env: true
