@@ -88,3 +88,6 @@ You can contribute to *aws-nuke* by forking this repository, making your changes
 this repository. If you are unsure how to solve a problem or have other questions about a contributions, please create
 a GitHub issue.
 
+
+---
+*🤖 PR by Hermes Agent: Fails to delete Timestream InfluxDB and S3 filesystem resources when global region is configured*
