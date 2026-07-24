@@ -43,6 +43,7 @@ func init() {
 			"DisableDeletionProtection",
 			"CreateRoleToDeleteStack",
 			"UseCurrentRoleToDeleteStack",
+			"ForceDeleteStack",
 		},
 	})
 }
@@ -234,6 +235,19 @@ func (r *CloudFormationStack) resolveCallerRoleARN() *string {
 	return r.callerRoleARN
 }
 
+// applyForceDelete sets DeletionMode=FORCE_DELETE_STACK on a DeleteStackInput
+// if ForceDeleteStack is enabled. CloudFormation drops the stack record and
+// orphans any resources it cannot delete, instead of leaving the stack in
+// DELETE_FAILED. Useful for tear-down scenarios where the goal is to release
+// the stack, not preserve its resources.
+func (r *CloudFormationStack) applyForceDelete(input *cloudformation.DeleteStackInput) {
+	if !r.settings.GetBool("ForceDeleteStack") {
+		return
+	}
+	r.logger.Infof("CloudFormationStack stackName=%s ForceDeleteStack: using DeletionMode=FORCE_DELETE_STACK", *r.Name)
+	input.DeletionMode = aws.String(cloudformation.DeletionModeForceDeleteStack)
+}
+
 // applyRoleOverride sets the RoleARN on a DeleteStackInput if UseCurrentRoleToDeleteStack is enabled.
 func (r *CloudFormationStack) applyRoleOverride(input *cloudformation.DeleteStackInput) {
 	if !r.settings.GetBool("UseCurrentRoleToDeleteStack") {
@@ -379,6 +393,7 @@ func (r *CloudFormationStack) doRemove() error { //nolint:gocyclo
 			RetainResources: retain,
 		}
 		r.applyRoleOverride(deleteInput)
+		r.applyForceDelete(deleteInput)
 
 		if _, err = r.svc.DeleteStack(deleteInput); err != nil {
 			return err
@@ -396,6 +411,7 @@ func (r *CloudFormationStack) doRemove() error { //nolint:gocyclo
 			StackName: r.Name,
 		}
 		r.applyRoleOverride(deleteInput)
+		r.applyForceDelete(deleteInput)
 
 		if _, err := r.svc.DeleteStack(deleteInput); err != nil {
 			return err

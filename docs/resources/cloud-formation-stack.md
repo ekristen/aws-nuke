@@ -38,6 +38,7 @@ The string value is always what is used in the output of the log format when a r
 - `DisableDeletionProtection`
 - `CreateRoleToDeleteStack`
 - `UseCurrentRoleToDeleteStack`
+- `ForceDeleteStack`
 
 
 ### DisableDeletionProtection
@@ -91,5 +92,24 @@ CloudFormationStack:
     If the assumed role has an IAM path prefix (e.g. `arn:aws:iam::123456789012:role/my-path/MyRole`), the STS
     assumed-role ARN omits the path component. The reconstructed role ARN will not include the path, which may
     result in an incorrect ARN. This is uncommon in typical CDK or CloudFormation use cases.
+
+
+### ForceDeleteStack
+
+When enabled, aws-nuke passes `DeletionMode=FORCE_DELETE_STACK` to the `DeleteStack` API. CloudFormation drops the
+stack record even when individual resources fail to delete, leaving any failed resources orphaned in the account
+instead of leaving the stack in `DELETE_FAILED`.
+
+This is useful when a stack is stuck in `DELETE_FAILED` and the goal is to release the stack record regardless of
+whether all its resources can be deleted.
+
+```yaml
+CloudFormationStack:
+  ForceDeleteStack: "true"
+```
+
+!!! warning "Orphaned Resources"
+    Resources that fail to delete remain in the account after the stack is gone. Filters scoped to the stack
+    (such as filters on `CloudFormationStack` by stack name) no longer apply to those resources.
 
 
