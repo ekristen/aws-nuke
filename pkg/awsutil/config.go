@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/credentials/stscreds"
@@ -204,6 +205,14 @@ func (SkipGlobal) HandleInitialize(
 // when operating in a non-global region context. This ensures global
 // services like CloudFront and IAM are only processed once in the
 // "global" pseudo-region rather than in every regional scan.
+//
+// Resources that need a global-service client from a regional scanner
+// (e.g. CloudFormationStack.CreateRoleToDeleteStack recovery) should
+// build the client with Region = "aws-global" to bypass this filter:
+//
+//	iam.NewFromConfig(*opts.Config, func(o *iam.Options) {
+//	    o.Region = "aws-global"
+//	})
 type SkipRegionalForGlobalService struct{}
 
 func (SkipRegionalForGlobalService) ID() string {
@@ -218,6 +227,12 @@ func (SkipRegionalForGlobalService) HandleInitialize(
 	service := middleware.GetServiceID(ctx)
 
 	if IsGlobalService(service) {
+		// Allow callers that explicitly built the client for aws-global —
+		// the sanctioned pattern for code that needs a global service from
+		// a regional context (e.g. CreateRoleToDeleteStack recovery).
+		if awsmiddleware.GetRegion(ctx) == "aws-global" {
+			return next.HandleInitialize(ctx, in)
+		}
 		return out, md, liberrors.ErrSkipRequest(
 			fmt.Sprintf("service '%s' is global, but the session is not", service))
 	}
