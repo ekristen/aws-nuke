@@ -1,18 +1,17 @@
 package awsutil
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"           //nolint:staticcheck
-	"github.com/aws/aws-sdk-go/aws/endpoints" //nolint:staticcheck
+	stsv2 "github.com/aws/aws-sdk-go-v2/service/sts"
 	"github.com/gotidy/ptr"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go/service/ec2" //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/iam" //nolint:staticcheck
-	"github.com/aws/aws-sdk-go/service/sts" //nolint:staticcheck
 
 	"github.com/ekristen/aws-nuke/v3/pkg/config"
 )
@@ -29,6 +28,7 @@ type Account struct {
 }
 
 func NewAccount(creds *Credentials, customEndpoints config.CustomEndpoints) (*Account, error) {
+	ctx := context.Background()
 	creds.CustomEndpoints = customEndpoints
 	account := Account{
 		Credentials: creds,
@@ -48,50 +48,61 @@ func NewAccount(creds *Credentials, customEndpoints config.CustomEndpoints) (*Ac
 		return &account, nil
 	}
 
-	defaultSession, err := account.NewSession(DefaultRegionID, "")
+	// Use SDK v2 STS for GetCallerIdentity so that non-standard partitions
+	// (e.g. aws-eusc) are resolved via the v2 endpoint ruleset instead of
+	// the frozen v1 partition table.
+	stsConfig, err := account.NewConfig(ctx, DefaultRegionID, "sts")
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to create default session in %s", DefaultRegionID)
+		return nil, errors.Wrapf(err, "failed to create v2 config for sts in %s", DefaultRegionID)
 	}
-
-	identityOutput, err := sts.New(defaultSession, &aws.Config{STSRegionalEndpoint: endpoints.RegionalSTSEndpoint}).GetCallerIdentity(nil)
+	identityOutput, err := stsv2.NewFromConfig(*stsConfig).GetCallerIdentity(ctx, &stsv2.GetCallerIdentityInput{})
 	if err != nil {
 		return nil, errors.Wrap(err, "failed get caller identity")
 	}
 
-	regionsOutput, err := ec2.New(defaultSession).DescribeRegions(&ec2.DescribeRegionsInput{
-		AllRegions: ptr.Bool(true),
-	})
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to get regions")
-	}
-
-	globalSession, err := account.NewSession(GlobalRegionID, "")
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to create global session in %s", GlobalRegionID)
-	}
-
-	aliasesOutput, err := iam.New(globalSession).ListAccountAliases(nil)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed get account alias")
-	}
-
-	var aliases []string
-	for _, alias := range aliasesOutput.AccountAliases {
-		if alias != nil {
-			aliases = append(aliases, *alias)
+	// EC2 DescribeRegions uses SDK v1 and only works for standard partitions.
+	// For non-standard partitions (e.g. aws-eusc) this call may fail; that is
+	// non-fatal — regions from the config file are used directly in that case.
+	regions := []string{"global"}
+	var disabledRegions []string
+	defaultSession, sessionErr := account.NewSession(DefaultRegionID, "")
+	if sessionErr != nil {
+		logrus.Warnf("skipping region discovery: failed to create session in %s: %v", DefaultRegionID, sessionErr)
+	} else {
+		regionsOutput, regErr := ec2.New(defaultSession).DescribeRegions(&ec2.DescribeRegionsInput{
+			AllRegions: ptr.Bool(true),
+		})
+		if regErr != nil {
+			logrus.Warnf("skipping region discovery: EC2 DescribeRegions unavailable in %s: %v", DefaultRegionID, regErr)
+		} else {
+			for _, region := range regionsOutput.Regions {
+				logrus.Debugf("region: %s, status: %s",
+					ptr.ToString(region.RegionName), ptr.ToString(region.OptInStatus))
+				if ptr.ToString(region.OptInStatus) == "not-opted-in" {
+					disabledRegions = append(disabledRegions, *region.RegionName)
+				} else {
+					regions = append(regions, *region.RegionName)
+				}
+			}
 		}
 	}
 
-	regions := []string{"global"}
-	var disabledRegions []string
-	for _, region := range regionsOutput.Regions {
-		logrus.Debugf("region: %s, status: %s",
-			ptr.ToString(region.RegionName), ptr.ToString(region.OptInStatus))
-
-		if ptr.ToString(region.OptInStatus) == "not-opted-in" {
-			disabledRegions = append(disabledRegions, *region.RegionName)
+	// IAM ListAccountAliases uses the global IAM endpoint and may not be
+	// reachable from non-standard partitions. Failure is non-fatal.
+	var aliases []string
+	globalSession, globalErr := account.NewSession(GlobalRegionID, "")
+	if globalErr != nil {
+		logrus.Warnf("skipping alias lookup: failed to create global session: %v", globalErr)
+	} else {
+		aliasesOutput, aliasErr := iam.New(globalSession).ListAccountAliases(nil)
+		if aliasErr != nil {
+			logrus.Warnf("skipping alias lookup: IAM ListAccountAliases unavailable: %v", aliasErr)
 		} else {
-			regions = append(regions, *region.RegionName)
+			for _, alias := range aliasesOutput.AccountAliases {
+				if alias != nil {
+					aliases = append(aliases, *alias)
+				}
+			}
 		}
 	}
 
