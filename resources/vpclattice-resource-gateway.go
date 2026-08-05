@@ -3,6 +3,7 @@ package resources
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/vpclattice"
 	vpclatticeTypes "github.com/aws/aws-sdk-go-v2/service/vpclattice/types"
@@ -45,6 +46,13 @@ func (l *VPCLatticeResourceGatewayLister) List(ctx context.Context, o interface{
 		}
 
 		for i := range resp.Items {
+			tagResp, err := svc.ListTagsForResource(ctx, &vpclattice.ListTagsForResourceInput{
+				ResourceArn: resp.Items[i].Arn,
+			})
+			if err != nil {
+				return nil, err
+			}
+
 			resources = append(resources, &VPCLatticeResourceGateway{
 				svc:           svc,
 				ID:            resp.Items[i].Id,
@@ -52,6 +60,8 @@ func (l *VPCLatticeResourceGatewayLister) List(ctx context.Context, o interface{
 				ARN:           resp.Items[i].Arn,
 				Status:        string(resp.Items[i].Status),
 				IPAddressType: string(resp.Items[i].IpAddressType),
+				CreatedAt:     resp.Items[i].CreatedAt,
+				Tags:          tagResp.Tags,
 			})
 		}
 	}
@@ -66,6 +76,8 @@ type VPCLatticeResourceGateway struct {
 	ARN           *string
 	Status        string
 	IPAddressType string
+	CreatedAt     *time.Time
+	Tags          map[string]string
 }
 
 func (r *VPCLatticeResourceGateway) Filter() error {

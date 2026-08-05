@@ -3,6 +3,7 @@ package resources
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/vpclattice"
 	vpclatticeTypes "github.com/aws/aws-sdk-go-v2/service/vpclattice/types"
@@ -42,6 +43,13 @@ func (l *VPCLatticeServiceNetworkResourceAssociationLister) List(ctx context.Con
 		}
 
 		for i := range resp.Items {
+			tagResp, err := svc.ListTagsForResource(ctx, &vpclattice.ListTagsForResourceInput{
+				ResourceArn: resp.Items[i].Arn,
+			})
+			if err != nil {
+				return nil, err
+			}
+
 			resources = append(resources, &VPCLatticeServiceNetworkResourceAssociation{
 				svc:                       svc,
 				ID:                        resp.Items[i].Id,
@@ -50,6 +58,8 @@ func (l *VPCLatticeServiceNetworkResourceAssociationLister) List(ctx context.Con
 				ServiceNetworkName:        resp.Items[i].ServiceNetworkName,
 				ResourceConfigurationName: resp.Items[i].ResourceConfigurationName,
 				IsManagedAssociation:      resp.Items[i].IsManagedAssociation,
+				CreatedAt:                 resp.Items[i].CreatedAt,
+				Tags:                      tagResp.Tags,
 			})
 		}
 	}
@@ -65,6 +75,8 @@ type VPCLatticeServiceNetworkResourceAssociation struct {
 	ServiceNetworkName        *string
 	ResourceConfigurationName *string
 	IsManagedAssociation      *bool
+	CreatedAt                 *time.Time
+	Tags                      map[string]string
 }
 
 func (r *VPCLatticeServiceNetworkResourceAssociation) Filter() error {
