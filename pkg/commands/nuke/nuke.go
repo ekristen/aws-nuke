@@ -57,14 +57,15 @@ func execute(baseCtx context.Context, c *cli.Command) error { //nolint:funlen,go
 
 	// Create the parameters object that will be used to configure the nuke process.
 	params := &libnuke.Parameters{
-		Force:          c.Bool("force"),
-		ForceSleep:     c.Int("force-sleep"),
-		Quiet:          c.Bool("quiet"),
-		NoDryRun:       c.Bool("no-dry-run"),
-		Includes:       c.StringSlice("include"),
-		Excludes:       c.StringSlice("exclude"),
-		Alternatives:   c.StringSlice("cloud-control"),
-		MaxWaitRetries: c.Int("max-wait-retries"),
+		Force:             c.Bool("force"),
+		ForceSleep:        c.Int("force-sleep"),
+		Quiet:             c.Bool("quiet"),
+		NoDryRun:          c.Bool("no-dry-run"),
+		Includes:          c.StringSlice("include"),
+		Excludes:          c.StringSlice("exclude"),
+		Alternatives:      c.StringSlice("cloud-control"),
+		MaxWaitRetries:    c.Int("max-wait-retries"),
+		MaxFailureRetries: c.Int("max-failure-retries"),
 	}
 
 	if len(c.StringSlice("feature-flag")) > 0 {
@@ -294,6 +295,11 @@ func init() { //nolint:funlen
 		&cli.IntFlag{
 			Name:   "max-wait-retries",
 			Usage:  "maximum number of retries to wait for dependencies to be removed",
+			Action: common.CheckRealInt,
+		},
+		&cli.IntFlag{
+			Name:   "max-failure-retries",
+			Usage:  "maximum number of retries to wait for failed dependencies to be removed",
 			Action: common.CheckRealInt,
 		},
 		&cli.DurationFlag{
