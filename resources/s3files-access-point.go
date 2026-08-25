@@ -24,18 +24,21 @@ func init() {
 }
 
 type S3FilesAccessPointLister struct {
-	svc S3FilesAPI
+	mockSvc S3FilesAPI
 }
 
 func (l *S3FilesAccessPointLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 	var resources []resource.Resource
 
-	if l.svc == nil {
-		l.svc = s3files.NewFromConfig(*opts.Config)
+	var svc S3FilesAPI
+	if l.mockSvc == nil {
+		svc = s3files.NewFromConfig(*opts.Config)
+	} else {
+		svc = l.mockSvc
 	}
 
-	fsIDs, err := listS3FileSystems(ctx, l.svc)
+	fsIDs, err := listS3FileSystems(ctx, svc)
 	if err != nil {
 		return nil, err
 	}
@@ -46,14 +49,14 @@ func (l *S3FilesAccessPointLister) List(ctx context.Context, o interface{}) ([]r
 		}
 
 		for {
-			res, err := l.svc.ListAccessPoints(ctx, params)
+			res, err := svc.ListAccessPoints(ctx, params)
 			if err != nil {
 				return nil, err
 			}
 
 			for _, p := range res.AccessPoints {
 				resources = append(resources, &S3FilesAccessPoint{
-					svc:          l.svc,
+					svc:          svc,
 					ID:           p.AccessPointId,
 					FileSystemID: fsID,
 				})

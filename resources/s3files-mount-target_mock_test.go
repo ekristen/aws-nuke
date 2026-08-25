@@ -42,7 +42,7 @@ func Test_Mock_S3FilesMountTarget_List(t *testing.T) {
 		MountTargets: []s3filestypes.ListMountTargetsDescription{},
 	}, nil)
 
-	lister := &S3FilesMountTargetLister{svc: mockSvc}
+	lister := &S3FilesMountTargetLister{mockSvc: mockSvc}
 
 	resources, err := lister.List(context.TODO(), testListerOpts)
 	a.Nil(err)
