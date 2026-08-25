@@ -27,7 +27,7 @@ func Test_Mock_S3FilesFileSystem_List(t *testing.T) {
 		},
 	}, nil)
 
-	lister := &S3FilesFileSystemLister{svc: mockSvc}
+	lister := &S3FilesFileSystemLister{mockSvc: mockSvc}
 
 	resources, err := lister.List(context.TODO(), testListerOpts)
 	a.Nil(err)
@@ -57,7 +57,7 @@ func Test_Mock_S3FilesFileSystem_List_Pagination(t *testing.T) {
 		}, nil),
 	)
 
-	lister := &S3FilesFileSystemLister{svc: mockSvc}
+	lister := &S3FilesFileSystemLister{mockSvc: mockSvc}
 
 	resources, err := lister.List(context.TODO(), testListerOpts)
 	a.Nil(err)

@@ -44,7 +44,7 @@ func Test_Mock_S3FilesAccessPoint_List(t *testing.T) {
 		},
 	}, nil)
 
-	lister := &S3FilesAccessPointLister{svc: mockSvc}
+	lister := &S3FilesAccessPointLister{mockSvc: mockSvc}
 
 	resources, err := lister.List(context.TODO(), testListerOpts)
 	a.Nil(err)
