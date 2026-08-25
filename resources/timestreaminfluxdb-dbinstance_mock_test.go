@@ -60,7 +60,7 @@ func Test_Mock_TimestreamInfluxDBDbInstance_List(t *testing.T) {
 		}, nil)
 
 	lister := &TimestreamInfluxDBDbInstanceLister{
-		svc: mockSvc,
+		mockSvc: mockSvc,
 	}
 
 	resources, err := lister.List(context.TODO(), testListerOpts)
