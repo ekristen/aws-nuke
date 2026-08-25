@@ -284,6 +284,7 @@ nav:
     - Database Migration Service Certificate: resources/database-migration-service-certificate.md
     - Database Migration Service Endpoint: resources/database-migration-service-endpoint.md
     - Database Migration Service Event Subscription: resources/database-migration-service-event-subscription.md
+    - Database Migration Service Replication Config: resources/database-migration-service-replication-config.md
     - Database Migration Service Replication Instance: resources/database-migration-service-replication-instance.md
     - Database Migration Service Replication Task: resources/database-migration-service-replication-task.md
     - Database Migration Service Subnet Group: resources/database-migration-service-subnet-group.md
@@ -596,6 +597,9 @@ nav:
     - S3 Access Grants Location: resources/s3-access-grants-location.md
     - S3 Access Point: resources/s3-access-point.md
     - S3 Bucket: resources/s3-bucket.md
+    - S3 Files Access Point: resources/s3-files-access-point.md
+    - S3 Files File System: resources/s3-files-file-system.md
+    - S3 Files Mount Target: resources/s3-files-mount-target.md
     - S3 Multipart Upload: resources/s3-multipart-upload.md
     - S3 Object: resources/s3-object.md
     - S3 Tables Bucket: resources/s3-tables-bucket.md
@@ -605,9 +609,6 @@ nav:
     - S3 Vectors Index: resources/s3-vectors-index.md
     - S3 Vectors Vector: resources/s3-vectors-vector.md
     - SNS Endpoint: resources/sns-endpoint.md
-    - S3Files File System: resources/s3-files-file-system.md
-    - S3Files Mount Target: resources/s3-files-mount-target.md
-    - S3Files Access Point: resources/s3-files-access-point.md
     - SNS Platform Application: resources/sns-platform-application.md
     - SNS Subscription: resources/sns-subscription.md
     - SNS Topic: resources/sns-topic.md
