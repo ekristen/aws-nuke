@@ -104,9 +104,7 @@ func (l *KMSKeyLister) List(_ context.Context, o interface{}) ([]resource.Resour
 			})
 			if err != nil {
 				logrus.WithError(err).Error("unable to list aliases")
-			}
-
-			if len(keyAliases.Aliases) > 0 {
+			} else if len(keyAliases.Aliases) > 0 {
 				kmsKey.Alias = keyAliases.Aliases[0].AliasName
 			}
 
