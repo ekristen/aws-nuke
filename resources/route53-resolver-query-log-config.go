@@ -34,25 +34,26 @@ func (l *Route53ResolverQueryLogConfigLister) List(ctx context.Context, o interf
 	opts := o.(*nuke.ListerOpts)
 	var resources []resource.Resource
 
-	if l.svc == nil {
-		l.svc = r53r.NewFromConfig(*opts.Config)
+	svc := l.svc
+	if svc == nil {
+		svc = r53r.NewFromConfig(*opts.Config)
 	}
 
-	resourceAssociations, vpcErr := qlcsToAssociationIds(ctx, l.svc)
+	resourceAssociations, vpcErr := qlcsToAssociationIds(ctx, svc)
 	if vpcErr != nil {
 		return nil, vpcErr
 	}
 
 	params := &r53r.ListResolverQueryLogConfigsInput{}
 	for {
-		resp, err := l.svc.ListResolverQueryLogConfigs(ctx, params)
+		resp, err := svc.ListResolverQueryLogConfigs(ctx, params)
 		if err != nil {
 			return nil, err
 		}
 
 		for _, qlc := range resp.ResolverQueryLogConfigs {
 			resources = append(resources, &Route53ResolverQueryLogConfig{
-				svc:                    l.svc,
+				svc:                    svc,
 				resourceAssociationIds: resourceAssociations[*qlc.Id],
 				Arn:                    qlc.Arn,
 				AssociationCount:       qlc.AssociationCount,

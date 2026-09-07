@@ -31,11 +31,12 @@ func (l *S3FilesMountTargetLister) List(ctx context.Context, o interface{}) ([]r
 	opts := o.(*nuke.ListerOpts)
 	var resources []resource.Resource
 
-	if l.svc == nil {
-		l.svc = s3files.NewFromConfig(*opts.Config)
+	svc := l.svc
+	if svc == nil {
+		svc = s3files.NewFromConfig(*opts.Config)
 	}
 
-	fsIDs, err := listS3FileSystems(ctx, l.svc)
+	fsIDs, err := listS3FileSystems(ctx, svc)
 	if err != nil {
 		return nil, err
 	}
@@ -46,14 +47,14 @@ func (l *S3FilesMountTargetLister) List(ctx context.Context, o interface{}) ([]r
 		}
 
 		for {
-			res, err := l.svc.ListMountTargets(ctx, params)
+			res, err := svc.ListMountTargets(ctx, params)
 			if err != nil {
 				return nil, err
 			}
 
 			for _, p := range res.MountTargets {
 				resources = append(resources, &S3FilesMountTarget{
-					svc:          l.svc,
+					svc:          svc,
 					ID:           p.MountTargetId,
 					FileSystemID: fsID,
 				})
