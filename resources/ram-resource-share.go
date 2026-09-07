@@ -34,17 +34,17 @@ type RAMResourceShareLister struct {
 func (l *RAMResourceShareLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	var resources []resource.Resource
 
-	if l.svc == nil {
+	svc := l.svc
+	if svc == nil {
 		opts := o.(*nuke.ListerOpts)
-		svc := ram.NewFromConfig(*opts.Config)
-		l.svc = svc
+		svc = ram.NewFromConfig(*opts.Config)
 	}
 
 	params := &ram.GetResourceSharesInput{
 		ResourceOwner: "SELF",
 	}
 	for {
-		resp, err := l.svc.GetResourceShares(ctx, params)
+		resp, err := svc.GetResourceShares(ctx, params)
 
 		if err != nil {
 			return nil, err
@@ -52,7 +52,7 @@ func (l *RAMResourceShareLister) List(ctx context.Context, o interface{}) ([]res
 
 		for _, share := range resp.ResourceShares {
 			resources = append(resources, &RAMResourceShare{
-				svc:              l.svc,
+				svc:              svc,
 				Name:             share.Name,
 				OwningAccountID:  share.OwningAccountId,
 				ResourceShareARN: share.ResourceShareArn,
