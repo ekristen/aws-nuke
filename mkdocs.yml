@@ -377,6 +377,9 @@ nav:
     - Emr Serverless Job Run: resources/emr-serverless-job-run.md
     - Es Domain: resources/es-domain.md
     - Firehose Delivery Stream: resources/firehose-delivery-stream.md
+    - Fis Experiment Template: resources/fis-experiment-template.md
+    - Fis Experiment: resources/fis-experiment.md
+    - Fis Target Account Configuration: resources/fis-target-account-configuration.md
     - Fms Notification Channel: resources/fms-notification-channel.md
     - Fms Policy: resources/fms-policy.md
     - Fsx Backup: resources/fsx-backup.md
