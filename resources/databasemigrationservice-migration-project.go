@@ -58,6 +58,31 @@ type DatabaseMigrationServiceMigrationProject struct {
 }
 
 func (r *DatabaseMigrationServiceMigrationProject) Remove(ctx context.Context) error {
+	paginator := dmsv2.NewDescribeMetadataModelConversionsPaginator(r.svc, &dmsv2.DescribeMetadataModelConversionsInput{
+		MigrationProjectIdentifier: r.ARN,
+	})
+
+	for paginator.HasMorePages() {
+		output, err := paginator.NextPage(ctx)
+		if err != nil {
+			return err
+		}
+
+		for _, request := range output.Requests {
+			if request.Status == nil || request.RequestIdentifier == nil || (*request.Status != "RECEIVED" && *request.Status != "IN_PROGRESS") {
+				continue
+			}
+
+			_, err := r.svc.CancelMetadataModelConversion(ctx, &dmsv2.CancelMetadataModelConversionInput{
+				MigrationProjectIdentifier: r.ARN,
+				RequestIdentifier:          request.RequestIdentifier,
+			})
+			if err != nil {
+				return err
+			}
+		}
+	}
+
 	_, err := r.svc.DeleteMigrationProject(ctx, &dmsv2.DeleteMigrationProjectInput{
 		MigrationProjectIdentifier: r.ARN,
 	})
