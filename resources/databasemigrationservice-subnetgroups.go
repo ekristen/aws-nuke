@@ -20,6 +20,9 @@ func init() {
 		Scope:    nuke.Account,
 		Resource: &DatabaseMigrationServiceSubnetGroup{},
 		Lister:   &DatabaseMigrationServiceSubnetGroupLister{},
+		DependsOn: []string{
+			DatabaseMigrationServiceInstanceProfileResource,
+		},
 	})
 }
 
