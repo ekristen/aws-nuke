@@ -32,6 +32,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/networkfirewall v1.53.0
 	github.com/aws/aws-sdk-go-v2/service/qbusiness v1.34.8
 	github.com/aws/aws-sdk-go-v2/service/ram v1.34.19
+	github.com/aws/aws-sdk-go-v2/service/rds v1.115.0
 	github.com/aws/aws-sdk-go-v2/service/route53profiles v1.4.17
 	github.com/aws/aws-sdk-go-v2/service/route53resolver v1.41.5
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.97.3

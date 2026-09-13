@@ -557,6 +557,7 @@ nav:
     - Quick Sight User: resources/quick-sight-user.md
     - RDS Cluster Snapshot: resources/rds-cluster-snapshot.md
     - RDS Event Subscription: resources/rds-event-subscription.md
+    - RDS Global Cluster: resources/rds-global-cluster.md
     - RDS Instance: resources/rds-instance.md
     - RDS Option Group: resources/rds-option-group.md
     - RDS Proxy: resources/rds-proxy.md
