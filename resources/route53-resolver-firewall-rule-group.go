@@ -34,30 +34,31 @@ func (l *Route53ResolverFirewallRuleGroupLister) List(ctx context.Context, o int
 	opts := o.(*nuke.ListerOpts)
 	var resources []resource.Resource
 
-	if l.svc == nil {
-		l.svc = r53r.NewFromConfig(*opts.Config)
+	svc := l.svc
+	if svc == nil {
+		svc = r53r.NewFromConfig(*opts.Config)
 	}
 
-	vpcAssociations, vpcErr := ruleGroupsToAssociationIds(ctx, l.svc)
+	vpcAssociations, vpcErr := ruleGroupsToAssociationIds(ctx, svc)
 	if vpcErr != nil {
 		return nil, vpcErr
 	}
 
 	params := &r53r.ListFirewallRuleGroupsInput{}
 	for {
-		resp, err := l.svc.ListFirewallRuleGroups(ctx, params)
+		resp, err := svc.ListFirewallRuleGroups(ctx, params)
 		if err != nil {
 			return nil, err
 		}
 
 		for _, firewallRuleGroup := range resp.FirewallRuleGroups {
-			firewallRules, ruleErr := getFirewallRules(ctx, l.svc, firewallRuleGroup.Id)
+			firewallRules, ruleErr := getFirewallRules(ctx, svc, firewallRuleGroup.Id)
 			if ruleErr != nil {
 				return nil, ruleErr
 			}
 
 			resources = append(resources, &Route53ResolverFirewallRuleGroup{
-				svc:               l.svc,
+				svc:               svc,
 				vpcAssociationIds: vpcAssociations[*firewallRuleGroup.Id],
 				rules:             firewallRules,
 				Arn:               firewallRuleGroup.Arn,
