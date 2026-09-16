@@ -46,7 +46,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/textract v1.40.22
 	github.com/aws/aws-sdk-go-v2/service/timestreaminfluxdb v1.20.6
 	github.com/aws/aws-sdk-go-v2/service/transfer v1.55.5
-	github.com/aws/smithy-go v1.27.2
+	github.com/aws/smithy-go v1.27.7
 	github.com/ekristen/libnuke v1.3.0
 	github.com/fatih/color v1.19.0
 	github.com/golang/mock v1.6.0
@@ -56,7 +56,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.4
 	github.com/stretchr/testify v1.11.1
-	github.com/urfave/cli/v3 v3.9.0
+	github.com/urfave/cli/v3 v3.10.1
 	go.uber.org/mock v0.6.0
 	go.uber.org/ratelimit v0.3.1
 	golang.org/x/text v0.34.0

@@ -36,21 +36,22 @@ func (l *S3FilesFileSystemLister) List(ctx context.Context, o interface{}) ([]re
 	opts := o.(*nuke.ListerOpts)
 	var resources []resource.Resource
 
-	if l.svc == nil {
-		l.svc = s3files.NewFromConfig(*opts.Config)
+	svc := l.svc
+	if svc == nil {
+		svc = s3files.NewFromConfig(*opts.Config)
 	}
 
 	params := &s3files.ListFileSystemsInput{}
 
 	for {
-		res, err := l.svc.ListFileSystems(ctx, params)
+		res, err := svc.ListFileSystems(ctx, params)
 		if err != nil {
 			return nil, err
 		}
 
 		for _, p := range res.FileSystems {
 			resources = append(resources, &S3FilesFileSystem{
-				svc:  l.svc,
+				svc:  svc,
 				ID:   p.FileSystemId,
 				Name: p.Name,
 			})
