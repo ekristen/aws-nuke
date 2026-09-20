@@ -15,7 +15,7 @@ MGNLaunchConfigurationTemplate
 
 
 - `Arn`: The ARN of the launch configuration template
-- `CopyPrivateIp`: Whether to copy the private IP address
+- `CopyPrivateIP`: Whether to copy the private IP address
 - `CopyTags`: Whether to copy tags to the launched instance
 - `Ec2LaunchTemplateID`: The ID of the associated EC2 launch template
 - `EnableMapAutoTagging`: Whether to enable automatic tagging

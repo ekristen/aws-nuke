@@ -18,6 +18,10 @@ import (
 
 const AccessAnalyzerResource = "AccessAnalyzer"
 
+// securityHubV2AnalyzerPrefix is the name prefix of the unused access analyzer that Security Hub V2 provisions on the
+// account's behalf. It is owned by the service and cannot be deleted, not even once Security Hub V2 is disabled.
+const securityHubV2AnalyzerPrefix = "_AccessAnalyzerForSecurityHubV2"
+
 func init() {
 	registry.Register(&registry.Registration{
 		Name:                AccessAnalyzerResource,
@@ -69,6 +73,9 @@ type AccessAnalyzer struct {
 func (r *AccessAnalyzer) Filter() error {
 	if strings.Contains(ptr.ToString(r.Name), "ORGANIZATION") {
 		return errors.New("cannot delete organization analyzer")
+	}
+	if strings.HasPrefix(ptr.ToString(r.Name), securityHubV2AnalyzerPrefix) {
+		return errors.New("cannot delete analyzer managed by security hub v2")
 	}
 	return nil
 }

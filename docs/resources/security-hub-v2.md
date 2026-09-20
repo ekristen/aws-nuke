@@ -2,21 +2,21 @@
 generated: true
 ---
 
-# S3VectorsIndex
+# SecurityHubV2
 
 
 ## Resource
 
 ```text
-S3VectorsIndex
+SecurityHubV2
 ```
 
 ## Properties
 
 
-- `BucketName`: No Description
-- `IndexARN`: No Description
-- `IndexName`: No Description
+- `Features`: The enablement status of each opt-in feature
+- `HubV2ARN`: The ARN of the Security Hub V2 service resource
+- `SubscribedAt`: The date and time the account subscribed to Security Hub V2
 
 !!! note - Using Properties
     Properties are what [Filters](../config-filtering.md) are written against in your configuration. You use the property
@@ -29,12 +29,4 @@ resources support properties. To write a filter against the string representatio
 the filter.
 
 The string value is always what is used in the output of the log format when a resource is identified.
-
-### DependsOn
-
-!!! important - Experimental Feature
-    This resource depends on a resource using the experimental feature. This means that the resource will
-    only be deleted if all the resources of a particular type are deleted first or reach a terminal state.
-
-- [S3VectorsVector](./s3-vectors-vector.md)
 

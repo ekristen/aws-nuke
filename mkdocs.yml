@@ -318,6 +318,7 @@ nav:
     - EC2 Internet Gateway: resources/ec2-internet-gateway.md
     - EC2 Key Pair: resources/ec2-key-pair.md
     - EC2 Launch Template: resources/ec2-launch-template.md
+    - EC2 Local Gateway Route Table VPC Association: resources/ec2-local-gateway-route-table-vpc-association.md
     - EC2 Nat Gateway: resources/ec2-nat-gateway.md
     - EC2 Network Acl: resources/ec2-network-acl.md
     - EC2 Network Interface: resources/ec2-network-interface.md
@@ -552,6 +553,12 @@ nav:
     - Pinpoint Phone Number: resources/pinpoint-phone-number.md
     - Pipes Pipe: resources/pipes-pipe.md
     - Polly Lexicon: resources/polly-lexicon.md
+    - Q Business Application: resources/q-business-application.md
+    - Q Business Data Source: resources/q-business-data-source.md
+    - Q Business Index: resources/q-business-index.md
+    - Q Business Plugin: resources/q-business-plugin.md
+    - Q Business Retriever: resources/q-business-retriever.md
+    - Q Business Web Experience: resources/q-business-web-experience.md
     - Qldb Ledger: resources/qldb-ledger.md
     - Quick Sight Subscription: resources/quick-sight-subscription.md
     - Quick Sight User: resources/quick-sight-user.md
@@ -565,6 +572,7 @@ nav:
     - RDSdb Cluster: resources/rdsdb-cluster.md
     - RDSdb Parameter Group: resources/rdsdb-parameter-group.md
     - RDSdb Subnet Group: resources/rdsdb-subnet-group.md
+    - Ram Resource Share: resources/ram-resource-share.md
     - Redshift Cluster: resources/redshift-cluster.md
     - Redshift Parameter Group: resources/redshift-parameter-group.md
     - Redshift Scheduled Action: resources/redshift-scheduled-action.md
@@ -588,6 +596,9 @@ nav:
     - Route 53 Profile Association: resources/route-53-profile-association.md
     - Route 53 Profile: resources/route-53-profile.md
     - Route 53 Resolver Endpoint: resources/route-53-resolver-endpoint.md
+    - Route 53 Resolver Firewall Domain List: resources/route-53-resolver-firewall-domain-list.md
+    - Route 53 Resolver Firewall Rule Group: resources/route-53-resolver-firewall-rule-group.md
+    - Route 53 Resolver Query Log Config: resources/route-53-resolver-query-log-config.md
     - Route 53 Resolver Rule: resources/route-53-resolver-rule.md
     - Route 53 Resource Record Set: resources/route-53-resource-record-set.md
     - Route 53 Traffic Policy: resources/route-53-traffic-policy.md
@@ -596,6 +607,9 @@ nav:
     - S3 Access Grants Location: resources/s3-access-grants-location.md
     - S3 Access Point: resources/s3-access-point.md
     - S3 Bucket: resources/s3-bucket.md
+    - S3 Files Access Point: resources/s3-files-access-point.md
+    - S3 Files File System: resources/s3-files-file-system.md
+    - S3 Files Mount Target: resources/s3-files-mount-target.md
     - S3 Multipart Upload: resources/s3-multipart-upload.md
     - S3 Object: resources/s3-object.md
     - S3 Tables Bucket: resources/s3-tables-bucket.md
@@ -605,9 +619,6 @@ nav:
     - S3 Vectors Index: resources/s3-vectors-index.md
     - S3 Vectors Vector: resources/s3-vectors-vector.md
     - SNS Endpoint: resources/sns-endpoint.md
-    - S3Files File System: resources/s3-files-file-system.md
-    - S3Files Mount Target: resources/s3-files-mount-target.md
-    - S3Files Access Point: resources/s3-files-access-point.md
     - SNS Platform Application: resources/sns-platform-application.md
     - SNS Subscription: resources/sns-subscription.md
     - SNS Topic: resources/sns-topic.md
@@ -632,6 +643,7 @@ nav:
     - Sage Maker User Profiles: resources/sage-maker-user-profiles.md
     - Scheduler Schedule: resources/scheduler-schedule.md
     - Secrets Manager Secret: resources/secrets-manager-secret.md
+    - Security Hub V2: resources/security-hub-v2.md
     - Security Hub: resources/security-hub.md
     - Service Catalog Constraint Portfolio Attachment: resources/service-catalog-constraint-portfolio-attachment.md
     - Service Catalog Portfolio Product Attachment: resources/service-catalog-portfolio-product-attachment.md

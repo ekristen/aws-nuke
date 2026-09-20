@@ -4,7 +4,7 @@ go 1.26.1
 
 require (
 	github.com/aws/aws-sdk-go v1.55.8
-	github.com/aws/aws-sdk-go-v2 v1.42.0
+	github.com/aws/aws-sdk-go-v2 v1.47.0
 	github.com/aws/aws-sdk-go-v2/config v1.28.11
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.71
 	github.com/aws/aws-sdk-go-v2/service/amp v1.36.0
@@ -39,6 +39,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3files v1.0.3
 	github.com/aws/aws-sdk-go-v2/service/s3tables v1.15.1
 	github.com/aws/aws-sdk-go-v2/service/s3vectors v1.4.10
+	github.com/aws/aws-sdk-go-v2/service/securityhub v1.82.0
 	github.com/aws/aws-sdk-go-v2/service/shield v1.34.25
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.42.25
 	github.com/aws/aws-sdk-go-v2/service/ssmquicksetup v1.3.10
@@ -46,7 +47,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/textract v1.40.22
 	github.com/aws/aws-sdk-go-v2/service/timestreaminfluxdb v1.20.6
 	github.com/aws/aws-sdk-go-v2/service/transfer v1.55.5
-	github.com/aws/smithy-go v1.27.7
+	github.com/aws/smithy-go v1.28.1
 	github.com/ekristen/libnuke v1.3.0
 	github.com/fatih/color v1.19.0
 	github.com/golang/mock v1.6.0
@@ -66,8 +67,8 @@ require (
 require (
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.7.10 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.16.33 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/configsources v1.4.29 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.7.29 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/configsources v1.5.3 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.8.3 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.8.1 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/v4a v1.4.22 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.13.7 // indirect
