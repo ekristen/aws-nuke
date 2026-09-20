@@ -20,16 +20,6 @@ var globalServiceClients = map[string]string{
 	"waf":        "waf-",
 }
 
-// knownGlobalClientExceptions are files that still build a global service client from
-// opts.Config and have not been converted yet. They are broken in exactly the way this
-// test describes; the entries exist so the guard can be enforced for everything else in
-// the meantime. Do not add to this list.
-var knownGlobalClientExceptions = map[string]bool{
-	// CloudFormationStack's CreateRoleToDeleteStack setting cannot work in any region
-	// for this reason. Converting it is deliberately out of scope for now.
-	"cloudformation-stack.go": true,
-}
-
 // Test_CrossServiceConfig_GlobalClients guards against building a client for a global
 // service straight off opts.Config. The config handed to a lister carries middleware
 // that rejects requests to global services so that those resources are only processed
@@ -48,7 +38,7 @@ func Test_CrossServiceConfig_GlobalClients(t *testing.T) {
 	}
 
 	for _, file := range files {
-		if strings.HasSuffix(file, "_test.go") || knownGlobalClientExceptions[file] {
+		if strings.HasSuffix(file, "_test.go") {
 			continue
 		}
 
