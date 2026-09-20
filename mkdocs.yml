@@ -632,6 +632,7 @@ nav:
     - Sage Maker User Profiles: resources/sage-maker-user-profiles.md
     - Scheduler Schedule: resources/scheduler-schedule.md
     - Secrets Manager Secret: resources/secrets-manager-secret.md
+    - Security Hub V2: resources/security-hub-v2.md
     - Security Hub: resources/security-hub.md
     - Service Catalog Constraint Portfolio Attachment: resources/service-catalog-constraint-portfolio-attachment.md
     - Service Catalog Portfolio Product Attachment: resources/service-catalog-portfolio-product-attachment.md
