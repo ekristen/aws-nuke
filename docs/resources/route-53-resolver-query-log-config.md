@@ -2,21 +2,28 @@
 generated: true
 ---
 
-# S3VectorsIndex
+# Route53ResolverQueryLogConfig
 
 
 ## Resource
 
 ```text
-S3VectorsIndex
+Route53ResolverQueryLogConfig
 ```
 
 ## Properties
 
 
-- `BucketName`: No Description
-- `IndexARN`: No Description
-- `IndexName`: No Description
+- `Arn`: No Description
+- `AssociationCount`: No Description
+- `CreationTime`: No Description
+- `CreatorRequestID`: No Description
+- `DestinationArn`: No Description
+- `ID`: No Description
+- `Name`: No Description
+- `OwnerID`: No Description
+- `ShareStatus`: No Description
+- `Status`: No Description
 
 !!! note - Using Properties
     Properties are what [Filters](../config-filtering.md) are written against in your configuration. You use the property
@@ -29,12 +36,4 @@ resources support properties. To write a filter against the string representatio
 the filter.
 
 The string value is always what is used in the output of the log format when a resource is identified.
-
-### DependsOn
-
-!!! important - Experimental Feature
-    This resource depends on a resource using the experimental feature. This means that the resource will
-    only be deleted if all the resources of a particular type are deleted first or reach a terminal state.
-
-- [S3VectorsVector](./s3-vectors-vector.md)
 

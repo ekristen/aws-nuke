@@ -14,7 +14,7 @@ S3FilesMountTarget
 ## Properties
 
 
-- `FileSystemId`: The ID of the S3 file system that this mount target belongs to
+- `FileSystemID`: The ID of the S3 file system that this mount target belongs to
 - `ID`: The ID of the S3 file system mount target
 
 !!! note - Using Properties
