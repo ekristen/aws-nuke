@@ -23,7 +23,6 @@ import (
 
 const RDSGlobalClusterResource = "RDSGlobalCluster"
 
-// rdsGlobalClusterStatusDeleting is the status of a global cluster whose deletion is already running.
 const rdsGlobalClusterStatusDeleting = "deleting"
 
 func init() {
@@ -42,9 +41,9 @@ type RDSGlobalClusterLister struct {
 	svc RDSAPI
 }
 
-// List returns the Aurora global clusters of the account. A global cluster has to be removed for its member clusters to
-// become deletable: DeleteDBCluster answers with InvalidDBClusterStateFault for a secondary member and with
-// InvalidGlobalClusterStateFault for the primary member.
+// List returns the Aurora global clusters. Their members stay undeletable until the global cluster is gone:
+// DeleteDBCluster fails with InvalidDBClusterStateFault for a secondary and InvalidGlobalClusterStateFault for the
+// primary.
 func (l *RDSGlobalClusterLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 	var resources []resource.Resource
@@ -74,8 +73,7 @@ func (l *RDSGlobalClusterLister) List(ctx context.Context, o interface{}) ([]res
 				ResourceName: globalCluster.GlobalClusterArn,
 			})
 			if err != nil {
-				// A global cluster that a run just deleted is not worth a warning; every other error is, because
-				// missing tags change which filters match.
+				// A global cluster that a run just deleted is not worth a warning; every other error is.
 				if !isGlobalClusterNotFound(err) {
 					opts.Logger.Warnf("unable to fetch tags for global cluster %s: %v",
 						ptr.ToString(globalCluster.GlobalClusterIdentifier), err)
@@ -103,11 +101,9 @@ func (l *RDSGlobalClusterLister) List(ctx context.Context, o interface{}) ([]res
 	return resources, nil
 }
 
-// belongsToRegion reports whether the global cluster is to be listed for the given region. Global clusters are not
-// bound to a region, DescribeGlobalClusters returns the same global clusters in every region, and the global cluster
-// ARN carries no region either. To list every global cluster exactly once, it is listed for the region of its writer
-// member. A global cluster without a writer member has no such region and is listed for every region; the redundant
-// removals of the other regions end in a GlobalClusterNotFoundFault, which counts as removed.
+// belongsToRegion prevents one listing per region: DescribeGlobalClusters returns the same global clusters
+// everywhere and their ARN carries no region, so the writer member's region decides. Without a writer every region
+// lists it, and the extra removals end in a GlobalClusterNotFoundFault.
 func (l *RDSGlobalClusterLister) belongsToRegion(globalCluster *rdstypes.GlobalCluster, region string) bool {
 	for _, member := range globalCluster.GlobalClusterMembers {
 		if !ptr.ToBool(member.IsWriter) {
@@ -129,8 +125,7 @@ type RDSGlobalCluster struct {
 	svc      RDSAPI
 	settings *libsettings.Setting
 
-	// detached holds the member clusters whose removal was already requested, so that an asynchronous removal is not
-	// requested again on every wait.
+	// detached holds the members whose removal AWS already accepted; it applies them asynchronously.
 	detached map[string]bool
 
 	Identifier         *string           `description:"The identifier of the global cluster"`
@@ -142,9 +137,8 @@ type RDSGlobalCluster struct {
 	Tags               map[string]string `description:"The tags of the global cluster"`
 }
 
-// Remove starts the removal of the global cluster. Member removal is asynchronous, and AWS rejects the removal of the
-// writer member while another member is attached, so the removal takes several steps. HandleWait drives the remaining
-// ones.
+// Remove starts the removal. AWS applies member removals asynchronously and rejects the writer while another
+// member is attached, so HandleWait drives the remaining steps.
 func (r *RDSGlobalCluster) Remove(ctx context.Context) error {
 	if err := r.disableDeletionProtection(ctx); err != nil {
 		return err
@@ -155,7 +149,6 @@ func (r *RDSGlobalCluster) Remove(ctx context.Context) error {
 	return err
 }
 
-// HandleWait continues the removal until the global cluster is gone.
 func (r *RDSGlobalCluster) HandleWait(ctx context.Context) error {
 	removed, err := r.advance(ctx)
 	if err != nil {
@@ -189,8 +182,7 @@ func (r *RDSGlobalCluster) String() string {
 	return ptr.ToString(r.Identifier)
 }
 
-// advance performs the next removal step and reports whether the global cluster is gone. The reader members are
-// detached first, the writer member follows once it is the last member, and the empty global cluster is deleted last.
+// advance performs the next removal step and reports whether the global cluster is gone.
 func (r *RDSGlobalCluster) advance(ctx context.Context) (bool, error) {
 	members, found, err := r.members(ctx)
 	if err != nil {
@@ -221,8 +213,7 @@ func (r *RDSGlobalCluster) advance(ctx context.Context) (bool, error) {
 	return false, nil
 }
 
-// members returns the current member clusters. They are read again on every step, because the ones from the listing
-// are outdated as soon as the first member is detached.
+// members re-reads the member clusters, because the listed ones are stale as soon as the first member detaches.
 func (r *RDSGlobalCluster) members(ctx context.Context) ([]rdstypes.GlobalClusterMember, bool, error) {
 	res, err := r.svc.DescribeGlobalClusters(ctx, &rds.DescribeGlobalClustersInput{
 		GlobalClusterIdentifier: r.Identifier,
@@ -314,8 +305,7 @@ func isGlobalClusterNotFound(err error) bool {
 	return errors.As(err, &notFound)
 }
 
-// isMemberNotFound reports whether the member cluster is already detached from the global cluster. AWS answers this
-// case with a generic InvalidParameterValue error instead of a dedicated error type.
+// isMemberNotFound reports an already detached member. AWS uses a generic InvalidParameterValue for it.
 func isMemberNotFound(err error) bool {
 	var apiErr smithy.APIError
 	if !errors.As(err, &apiErr) {

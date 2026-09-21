@@ -194,7 +194,6 @@ func Test_Mock_RDSGlobalCluster_HandleWait(t *testing.T) {
 		Identifier: ptr.String(testGlobalClusterID),
 	}
 
-	// First wait: the reader is gone, so the writer is detached now.
 	mockSvc.EXPECT().DescribeGlobalClusters(gomock.Any(), gomock.Any()).Return(
 		testDescribeOutput(testGlobalClusterMember(testWriterARN, true)), nil)
 	mockSvc.EXPECT().RemoveFromGlobalCluster(gomock.Any(), gomock.Eq(&rds.RemoveFromGlobalClusterInput{
@@ -205,13 +204,11 @@ func Test_Mock_RDSGlobalCluster_HandleWait(t *testing.T) {
 	var waitErr liberrors.ErrWaitResource
 	a.ErrorAs(globalCluster.HandleWait(context.TODO()), &waitErr)
 
-	// Second wait: the removal is still in flight, the global cluster is not empty yet.
 	mockSvc.EXPECT().DescribeGlobalClusters(gomock.Any(), gomock.Any()).Return(
 		testDescribeOutput(testGlobalClusterMember(testWriterARN, true)), nil)
 
 	a.ErrorAs(globalCluster.HandleWait(context.TODO()), &waitErr)
 
-	// Third wait: no members left, the global cluster is deleted.
 	mockSvc.EXPECT().DescribeGlobalClusters(gomock.Any(), gomock.Any()).Return(testDescribeOutput(), nil)
 	mockSvc.EXPECT().DeleteGlobalCluster(gomock.Any(), gomock.Eq(&rds.DeleteGlobalClusterInput{
 		GlobalClusterIdentifier: ptr.String(testGlobalClusterID),

@@ -6,8 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/rds"
 )
 
-// RDSAPI is the subset of the rds client surface used by the SDK v2 based RDS resources. Defining it as an interface
-// lets the listers and resources be exercised with a gomock-generated fake.
+// RDSAPI is the subset of the rds client used by the SDK v2 based RDS resources, so they can run against a fake.
 type RDSAPI interface {
 	DescribeGlobalClusters(ctx context.Context, params *rds.DescribeGlobalClustersInput,
 		optFns ...func(*rds.Options)) (*rds.DescribeGlobalClustersOutput, error)
