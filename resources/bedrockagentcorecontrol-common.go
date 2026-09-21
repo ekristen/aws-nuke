@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"fmt"
 	"slices"
 	"strings"
 
@@ -182,4 +183,135 @@ func resourceIDFromARN(value *string) string {
 	}
 
 	return parsed.Resource
+}
+
+// workloadIdentityOwners returns the names of the workload identities that other
+// AgentCore resources created and own, mapped to a description of the owner. AWS will
+// not let the caller delete an identity that is linked to a live service -- it goes
+// away when its owner does -- so the lister filters these out rather than failing on
+// them every run.
+//
+// Each probe is best effort. An owner type that cannot be listed contributes nothing
+// and its identities are treated as standalone, which is how they behaved before.
+func workloadIdentityOwners(ctx context.Context, svc *bedrockagentcorecontrol.Client,
+	region string, logger *logrus.Entry) map[string]string {
+	owners := map[string]string{}
+
+	// Agent runtimes are the owner behind every harness-managed identity too, since a
+	// harness runs on one, so they need no separate pass here.
+	if slices.Contains(AgentRuntimeSupportedRegions, region) {
+		addAgentRuntimeWorkloadIdentities(ctx, svc, logger, owners)
+	}
+
+	addGatewayWorkloadIdentities(ctx, svc, logger, owners)
+	addRegistryWorkloadIdentities(ctx, svc, logger, owners)
+
+	return owners
+}
+
+// addAgentRuntimeWorkloadIdentities records the identity each agent runtime owns.
+func addAgentRuntimeWorkloadIdentities(ctx context.Context, svc *bedrockagentcorecontrol.Client,
+	logger *logrus.Entry, owners map[string]string) {
+	params := &bedrockagentcorecontrol.ListAgentRuntimesInput{
+		MaxResults: aws.Int32(100),
+	}
+
+	paginator := bedrockagentcorecontrol.NewListAgentRuntimesPaginator(svc, params)
+
+	for paginator.HasMorePages() {
+		resp, err := paginator.NextPage(ctx)
+		if err != nil {
+			logger.Warnf("unable to list agent runtimes to determine workload identity owners: %v", err)
+			return
+		}
+
+		for _, runtime := range resp.AgentRuntimes {
+			getResp, err := svc.GetAgentRuntime(ctx, &bedrockagentcorecontrol.GetAgentRuntimeInput{
+				AgentRuntimeId: runtime.AgentRuntimeId,
+			})
+			if err != nil {
+				logger.Warnf("unable to fetch agent runtime %s: %v", ptr.ToString(runtime.AgentRuntimeId), err)
+				continue
+			}
+
+			if getResp.WorkloadIdentityDetails == nil {
+				continue
+			}
+
+			if name := resourceIDFromARN(getResp.WorkloadIdentityDetails.WorkloadIdentityArn); name != "" {
+				owners[name] = fmt.Sprintf("agent runtime %s", ptr.ToString(runtime.AgentRuntimeId))
+			}
+		}
+	}
+}
+
+// addGatewayWorkloadIdentities records the identity each gateway owns.
+func addGatewayWorkloadIdentities(ctx context.Context, svc *bedrockagentcorecontrol.Client,
+	logger *logrus.Entry, owners map[string]string) {
+	params := &bedrockagentcorecontrol.ListGatewaysInput{
+		MaxResults: aws.Int32(100),
+	}
+
+	paginator := bedrockagentcorecontrol.NewListGatewaysPaginator(svc, params)
+
+	for paginator.HasMorePages() {
+		resp, err := paginator.NextPage(ctx)
+		if err != nil {
+			logger.Warnf("unable to list gateways to determine workload identity owners: %v", err)
+			return
+		}
+
+		for _, gateway := range resp.Items {
+			getResp, err := svc.GetGateway(ctx, &bedrockagentcorecontrol.GetGatewayInput{
+				GatewayIdentifier: gateway.GatewayId,
+			})
+			if err != nil {
+				logger.Warnf("unable to fetch gateway %s: %v", ptr.ToString(gateway.GatewayId), err)
+				continue
+			}
+
+			if getResp.WorkloadIdentityDetails == nil {
+				continue
+			}
+
+			if name := resourceIDFromARN(getResp.WorkloadIdentityDetails.WorkloadIdentityArn); name != "" {
+				owners[name] = fmt.Sprintf("gateway %s", ptr.ToString(gateway.GatewayId))
+			}
+		}
+	}
+}
+
+// addRegistryWorkloadIdentities records the identity each registry owns. A registry does
+// not report the link the way an agent runtime or a gateway does, so the identity is
+// matched by the name the service gives it, and only against registries that exist.
+func addRegistryWorkloadIdentities(ctx context.Context, svc *bedrockagentcorecontrol.Client,
+	logger *logrus.Entry, owners map[string]string) {
+	params := &bedrockagentcorecontrol.ListRegistriesInput{
+		MaxResults: aws.Int32(100),
+	}
+
+	paginator := bedrockagentcorecontrol.NewListRegistriesPaginator(svc, params)
+
+	for paginator.HasMorePages() {
+		resp, err := paginator.NextPage(ctx)
+		if err != nil {
+			logger.Warnf("unable to list registries to determine workload identity owners: %v", err)
+			return
+		}
+
+		for _, registry := range resp.Registries {
+			registryID := ptr.ToString(registry.RegistryId)
+			if registryID == "" {
+				continue
+			}
+
+			owners[registryWorkloadIdentityName(registryID)] = fmt.Sprintf("registry %s", registryID)
+		}
+	}
+}
+
+// registryWorkloadIdentityName is the name the service gives the workload identity it
+// creates for a registry.
+func registryWorkloadIdentityName(registryID string) string {
+	return "registry-" + registryID
 }

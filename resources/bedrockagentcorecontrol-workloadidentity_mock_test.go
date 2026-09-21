@@ -36,3 +36,18 @@ func Test_BedrockAgentCoreWorkloadIdentity_String(t *testing.T) {
 
 	a.Equal("test-identity-name", resource.String())
 }
+
+func Test_BedrockAgentCoreWorkloadIdentity_Filter(t *testing.T) {
+	a := assert.New(t)
+
+	standalone := BedrockAgentCoreWorkloadIdentity{
+		Name: ptr.String("test-workload-identity"),
+	}
+	a.Nil(standalone.Filter())
+
+	owned := BedrockAgentCoreWorkloadIdentity{
+		Name:  ptr.String("test-workload-identity"),
+		owner: ptr.String("registry test-registry-id"),
+	}
+	a.EqualError(owned.Filter(), "linked to registry test-registry-id")
+}

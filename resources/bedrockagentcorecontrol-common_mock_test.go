@@ -89,3 +89,9 @@ func Test_BedrockAgentCore_HarnessManagedResources_UnmanagedMemory(t *testing.T)
 
 	a.Empty(managed.Memories)
 }
+
+func Test_BedrockAgentCore_RegistryWorkloadIdentityName(t *testing.T) {
+	a := assert.New(t)
+
+	a.Equal("registry-Olb0p1W8eCXAG35A", registryWorkloadIdentityName("Olb0p1W8eCXAG35A"))
+}
