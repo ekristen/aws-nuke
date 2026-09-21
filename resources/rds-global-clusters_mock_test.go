@@ -6,6 +6,7 @@ import (
 
 	"github.com/gotidy/ptr"
 	"github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus/hooks/test"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
@@ -99,27 +100,56 @@ func Test_Mock_RDSGlobalCluster_List(t *testing.T) {
 }
 
 func Test_Mock_RDSGlobalCluster_List_TagsError(t *testing.T) {
-	a := assert.New(t)
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+	cases := []struct {
+		name        string
+		tagsErr     error
+		wantWarning bool
+	}{
+		{
+			// The global cluster was deleted between the listing and the tag call, which happens during a run.
+			name:        "global cluster gone",
+			tagsErr:     &rdstypes.GlobalClusterNotFoundFault{},
+			wantWarning: false,
+		},
+		{
+			// Missing tags change what filters match, so any other error has to be visible.
+			name:        "tags denied",
+			tagsErr:     &smithy.GenericAPIError{Code: "AccessDenied", Message: "not authorized"},
+			wantWarning: true,
+		},
+	}
 
-	mockSvc := mock_rdsv2.NewMockRDSAPI(ctrl)
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			a := assert.New(t)
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-	mockSvc.EXPECT().DescribeGlobalClusters(gomock.Any(), gomock.Any(), gomock.Any()).Return(
-		testDescribeOutput(testGlobalClusterMember(testWriterARN, true)), nil)
-	mockSvc.EXPECT().ListTagsForResource(gomock.Any(), gomock.Any()).Return(
-		nil, &rdstypes.GlobalClusterNotFoundFault{})
+			mockSvc := mock_rdsv2.NewMockRDSAPI(ctrl)
 
-	lister := &RDSGlobalClusterLister{svc: mockSvc}
+			mockSvc.EXPECT().DescribeGlobalClusters(gomock.Any(), gomock.Any(), gomock.Any()).Return(
+				testDescribeOutput(testGlobalClusterMember(testWriterARN, true)), nil)
+			mockSvc.EXPECT().ListTagsForResource(gomock.Any(), gomock.Any()).Return(nil, tc.tagsErr)
 
-	resources, err := lister.List(context.TODO(), &nuke.ListerOpts{
-		Region:    &nuke.Region{Name: "us-east-2"},
-		AccountID: ptr.String("012345678901"),
-		Logger:    logrus.NewEntry(logrus.StandardLogger()),
-	})
-	a.Nil(err)
-	a.Len(resources, 1)
-	a.Nil(resources[0].(*RDSGlobalCluster).Tags)
+			logger, hook := test.NewNullLogger()
+			lister := &RDSGlobalClusterLister{svc: mockSvc}
+
+			resources, err := lister.List(context.TODO(), &nuke.ListerOpts{
+				Region:    &nuke.Region{Name: "us-east-2"},
+				AccountID: ptr.String("012345678901"),
+				Logger:    logrus.NewEntry(logger),
+			})
+			a.Nil(err)
+			a.Len(resources, 1)
+			a.Nil(resources[0].(*RDSGlobalCluster).Tags)
+
+			if tc.wantWarning {
+				a.Len(hook.Entries, 1)
+			} else {
+				a.Empty(hook.Entries)
+			}
+		})
+	}
 }
 
 func Test_Mock_RDSGlobalCluster_Remove_DetachesReadersOnly(t *testing.T) {
@@ -190,7 +220,8 @@ func Test_Mock_RDSGlobalCluster_HandleWait(t *testing.T) {
 	a.Nil(globalCluster.HandleWait(context.TODO()))
 }
 
-func Test_Mock_RDSGlobalCluster_HandleWait_DeleteNotEmpty(t *testing.T) {
+// max-wait-retries has no default, so a wait never ends; a failing delete has to surface as an error.
+func Test_Mock_RDSGlobalCluster_HandleWait_DeleteFails(t *testing.T) {
 	a := assert.New(t)
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -207,8 +238,13 @@ func Test_Mock_RDSGlobalCluster_HandleWait_DeleteNotEmpty(t *testing.T) {
 		Identifier: ptr.String(testGlobalClusterID),
 	}
 
+	err := globalCluster.HandleWait(context.TODO())
+
+	var invalidState *rdstypes.InvalidGlobalClusterStateFault
+	a.ErrorAs(err, &invalidState)
+
 	var waitErr liberrors.ErrWaitResource
-	a.ErrorAs(globalCluster.HandleWait(context.TODO()), &waitErr)
+	a.NotErrorIs(err, waitErr)
 }
 
 func Test_Mock_RDSGlobalCluster_Remove_AlreadyGone(t *testing.T) {
@@ -287,7 +323,6 @@ func Test_Mock_RDSGlobalCluster_Remove_KeepsDeletionProtection(t *testing.T) {
 
 	mockSvc := mock_rdsv2.NewMockRDSAPI(ctrl)
 
-	// Without the setting the protection stays, and the delete call fails on the AWS side.
 	mockSvc.EXPECT().DescribeGlobalClusters(gomock.Any(), gomock.Any()).Return(testDescribeOutput(), nil)
 	mockSvc.EXPECT().DeleteGlobalCluster(gomock.Any(), gomock.Any()).Return(
 		nil, &rdstypes.InvalidGlobalClusterStateFault{})
@@ -299,7 +334,8 @@ func Test_Mock_RDSGlobalCluster_Remove_KeepsDeletionProtection(t *testing.T) {
 		settings:           &libsettings.Setting{},
 	}
 
-	a.Nil(globalCluster.Remove(context.TODO()))
+	var invalidState *rdstypes.InvalidGlobalClusterStateFault
+	a.ErrorAs(globalCluster.Remove(context.TODO()), &invalidState)
 }
 
 func Test_Mock_RDSGlobalCluster_Filter(t *testing.T) {

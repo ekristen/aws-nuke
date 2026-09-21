@@ -49,11 +49,12 @@ func (l *RDSGlobalClusterLister) List(ctx context.Context, o interface{}) ([]res
 	opts := o.(*nuke.ListerOpts)
 	var resources []resource.Resource
 
-	if l.svc == nil {
-		l.svc = rds.NewFromConfig(*opts.Config)
+	svc := l.svc
+	if svc == nil {
+		svc = rds.NewFromConfig(*opts.Config)
 	}
 
-	paginator := rds.NewDescribeGlobalClustersPaginator(l.svc, &rds.DescribeGlobalClustersInput{})
+	paginator := rds.NewDescribeGlobalClustersPaginator(svc, &rds.DescribeGlobalClustersInput{})
 
 	for paginator.HasMorePages() {
 		res, err := paginator.NextPage(ctx)
@@ -69,12 +70,16 @@ func (l *RDSGlobalClusterLister) List(ctx context.Context, o interface{}) ([]res
 			}
 
 			var tags map[string]string
-			tagsRes, err := l.svc.ListTagsForResource(ctx, &rds.ListTagsForResourceInput{
+			tagsRes, err := svc.ListTagsForResource(ctx, &rds.ListTagsForResourceInput{
 				ResourceName: globalCluster.GlobalClusterArn,
 			})
 			if err != nil {
-				opts.Logger.Warnf("unable to fetch tags for global cluster %s: %v",
-					ptr.ToString(globalCluster.GlobalClusterIdentifier), err)
+				// A global cluster that a run just deleted is not worth a warning; every other error is, because
+				// missing tags change which filters match.
+				if !isGlobalClusterNotFound(err) {
+					opts.Logger.Warnf("unable to fetch tags for global cluster %s: %v",
+						ptr.ToString(globalCluster.GlobalClusterIdentifier), err)
+				}
 			} else {
 				tags = make(map[string]string, len(tagsRes.TagList))
 				for _, tag := range tagsRes.TagList {
@@ -83,7 +88,7 @@ func (l *RDSGlobalClusterLister) List(ctx context.Context, o interface{}) ([]res
 			}
 
 			resources = append(resources, &RDSGlobalCluster{
-				svc:                l.svc,
+				svc:                svc,
 				Identifier:         globalCluster.GlobalClusterIdentifier,
 				Engine:             globalCluster.Engine,
 				EngineVersion:      globalCluster.EngineVersion,
@@ -262,15 +267,11 @@ func (r *RDSGlobalCluster) deleteGlobalCluster(ctx context.Context) (bool, error
 		GlobalClusterIdentifier: r.Identifier,
 	})
 
-	switch {
-	case err == nil, isGlobalClusterNotFound(err):
+	if err == nil || isGlobalClusterNotFound(err) {
 		return true, nil
-	case isInvalidGlobalClusterState(err):
-		// A member removal is still in flight, so the global cluster is not empty yet.
-		return false, nil
-	default:
-		return false, err
 	}
+
+	return false, err
 }
 
 func (r *RDSGlobalCluster) disableDeletionProtection(ctx context.Context) error {
@@ -311,11 +312,6 @@ func writerARN(members []rdstypes.GlobalClusterMember) *string {
 func isGlobalClusterNotFound(err error) bool {
 	var notFound *rdstypes.GlobalClusterNotFoundFault
 	return errors.As(err, &notFound)
-}
-
-func isInvalidGlobalClusterState(err error) bool {
-	var invalidState *rdstypes.InvalidGlobalClusterStateFault
-	return errors.As(err, &invalidState)
 }
 
 // isMemberNotFound reports whether the member cluster is already detached from the global cluster. AWS answers this
