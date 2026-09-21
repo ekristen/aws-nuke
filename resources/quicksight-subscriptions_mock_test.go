@@ -36,6 +36,17 @@ func Test_Mock_QuicksightSubscription_List_ValidSubscription(t *testing.T) {
 		AccountInfo: &quickSightAccountInfo,
 	}, nil)
 
+	mockQuickSightAPI.EXPECT().ListNamespaces(&quicksight.ListNamespacesInput{
+		AwsAccountId: accountID,
+	}).Return(&quicksight.ListNamespacesOutput{
+		Namespaces: []*quicksight.NamespaceInfoV2{
+			{
+				Name:           aws.String("default"),
+				CapacityRegion: aws.String(testListerOpts.Region.Name),
+			},
+		},
+	}, nil)
+
 	quicksightSubscriptionListener := QuickSightSubscriptionLister{
 		quicksightService: mockQuickSightAPI,
 	}
@@ -49,6 +60,75 @@ func Test_Mock_QuicksightSubscription_List_ValidSubscription(t *testing.T) {
 	assertions.Equal(resource.name, quickSightAccountInfo.AccountName)
 	assertions.Equal(resource.notificationEmail, quickSightAccountInfo.NotificationEmail)
 	assertions.Equal(resource.status, quickSightAccountInfo.AccountSubscriptionStatus)
+}
+
+func Test_Mock_QuicksightSubscription_List_OutsideIdentityRegion(t *testing.T) {
+	assertions := assert.New(t)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	accountID := testListerOpts.AccountID
+	mockQuickSightAPI := mock_quicksightiface.NewMockQuickSightAPI(ctrl)
+
+	mockQuickSightAPI.EXPECT().DescribeAccountSubscription(&quicksight.DescribeAccountSubscriptionInput{
+		AwsAccountId: accountID,
+	}).Return(&quicksight.DescribeAccountSubscriptionOutput{
+		AccountInfo: &quicksight.AccountInfo{
+			AccountName:               aws.String("AccountName"),
+			AccountSubscriptionStatus: aws.String("ACCOUNT_CREATED"),
+		},
+	}, nil)
+
+	mockQuickSightAPI.EXPECT().ListNamespaces(&quicksight.ListNamespacesInput{
+		AwsAccountId: accountID,
+	}).Return(&quicksight.ListNamespacesOutput{
+		Namespaces: []*quicksight.NamespaceInfoV2{
+			{
+				Name:           aws.String("default"),
+				CapacityRegion: aws.String("us-east-1"),
+			},
+		},
+	}, nil)
+
+	quicksightSubscriptionListener := QuickSightSubscriptionLister{
+		quicksightService: mockQuickSightAPI,
+	}
+
+	resources, err := quicksightSubscriptionListener.List(context.TODO(), testListerOpts)
+	assertions.Nil(err)
+	assertions.Equal(0, len(resources))
+}
+
+func Test_Mock_QuicksightSubscription_List_UnknownIdentityRegion(t *testing.T) {
+	assertions := assert.New(t)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	accountID := testListerOpts.AccountID
+	mockQuickSightAPI := mock_quicksightiface.NewMockQuickSightAPI(ctrl)
+
+	mockQuickSightAPI.EXPECT().DescribeAccountSubscription(&quicksight.DescribeAccountSubscriptionInput{
+		AwsAccountId: accountID,
+	}).Return(&quicksight.DescribeAccountSubscriptionOutput{
+		AccountInfo: &quicksight.AccountInfo{
+			AccountName:               aws.String("AccountName"),
+			AccountSubscriptionStatus: aws.String("ACCOUNT_CREATED"),
+		},
+	}, nil)
+
+	// An error that does not name an identity region leaves it unknown, the subscription is
+	// listed so it still gets a removal attempt.
+	mockQuickSightAPI.EXPECT().ListNamespaces(&quicksight.ListNamespacesInput{
+		AwsAccountId: accountID,
+	}).Return(nil, errors.New("MOCK_ERROR"))
+
+	quicksightSubscriptionListener := QuickSightSubscriptionLister{
+		quicksightService: mockQuickSightAPI,
+	}
+
+	resources, err := quicksightSubscriptionListener.List(context.TODO(), testListerOpts)
+	assertions.Nil(err)
+	assertions.Equal(1, len(resources))
 }
 
 func Test_Mock_QuicksightSubscription_List_SubscriptionNotFound(t *testing.T) {

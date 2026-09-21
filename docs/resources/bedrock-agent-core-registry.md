@@ -2,21 +2,23 @@
 generated: true
 ---
 
-# BedrockAgentCoreWorkloadIdentity
+# BedrockAgentCoreRegistry
 
 
 ## Resource
 
 ```text
-BedrockAgentCoreWorkloadIdentity
+BedrockAgentCoreRegistry
 ```
 
 ## Properties
 
 
-- `CreatedTime`: No Description
-- `LastUpdatedTime`: No Description
+- `CreatedAt`: No Description
 - `Name`: No Description
+- `RegistryID`: No Description
+- `Status`: No Description
+- `UpdatedAt`: No Description
 - `tag:<key>:`: This resource has tags with property `Tags`. These are key/value pairs that are
 	added as their own property with the prefix of `tag:` (e.g. [tag:example: "value"]) 
 
@@ -38,8 +40,6 @@ The string value is always what is used in the output of the log format when a r
     This resource depends on a resource using the experimental feature. This means that the resource will
     only be deleted if all the resources of a particular type are deleted first or reach a terminal state.
 
+- [BedrockAgentCoreRegistryRecord](./bedrock-agent-core-registry-record.md)
 - [BedrockAgentCoreHarness](./bedrock-agent-core-harness.md)
-- [BedrockAgentCoreAgentRuntime](./bedrock-agent-core-agent-runtime.md)
-- [BedrockAgentCoreGateway](./bedrock-agent-core-gateway.md)
-- [BedrockAgentCoreRegistry](./bedrock-agent-core-registry.md)
 

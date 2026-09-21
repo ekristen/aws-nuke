@@ -2,6 +2,7 @@ package resources
 
 import (
 	"github.com/gotidy/ptr"
+	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go/aws/session" //nolint:staticcheck
 
@@ -14,4 +15,5 @@ var testListerOpts = &nuke.ListerOpts{
 	},
 	Session:   session.Must(session.NewSession()),
 	AccountID: ptr.String("012345678901"),
+	Logger:    logrus.WithField("test", true),
 }
