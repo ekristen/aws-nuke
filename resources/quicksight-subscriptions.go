@@ -67,6 +67,15 @@ func (l *QuickSightSubscriptionLister) List(_ context.Context, o interface{}) ([
 		return resources, nil
 	}
 
+	// DescribeAccountSubscription answers from any region, but the subscription can only be
+	// deleted through the identity region's endpoint. Only list it there, otherwise every
+	// other region picks it up and fails to remove it.
+	if identityRegion := QuickSightIdentityRegion(quicksightSvc, opts.AccountID); identityRegion != "" &&
+		identityRegion != opts.Region.Name {
+		opts.Logger.Debugf("skipping subscription, identity region is %s", identityRegion)
+		return resources, nil
+	}
+
 	// The account name is only available some time later after the Subscription creation.
 	subscriptionName := subscriptionNameWhenNotAvailable
 	if describeSubscriptionOutput.AccountInfo.AccountName != nil {
