@@ -95,3 +95,29 @@ func Test_BedrockAgentCore_RegistryWorkloadIdentityName(t *testing.T) {
 
 	a.Equal("registry-Olb0p1W8eCXAG35A", registryWorkloadIdentityName("Olb0p1W8eCXAG35A"))
 }
+
+// A harness that is mid-deletion has usually lost its agent runtime already, but it
+// still reports which runtime it ran on, which is what its workload identity is named
+// after.
+func Test_BedrockAgentCore_HarnessManagedResources_DeletingHarnessKeepsRuntime(t *testing.T) {
+	a := assert.New(t)
+
+	managed := &harnessManagedResources{
+		AgentRuntimes: map[string]string{},
+		Memories:      map[string]string{},
+	}
+
+	managed.addHarness(&agentcoretypes.Harness{
+		HarnessId: ptr.String("harness_7j4xv-VgVWqqFI79"),
+		Status:    agentcoretypes.HarnessStatusDeleting,
+		Environment: &agentcoretypes.HarnessEnvironmentProviderMemberAgentCoreRuntimeEnvironment{
+			Value: agentcoretypes.HarnessAgentCoreRuntimeEnvironment{
+				AgentRuntimeId: ptr.String("harness_harness_7j4xv-5FLyDRBKrp"),
+			},
+		},
+	})
+
+	a.Equal(map[string]string{
+		"harness_harness_7j4xv-5FLyDRBKrp": "harness_7j4xv-VgVWqqFI79",
+	}, managed.AgentRuntimes)
+}

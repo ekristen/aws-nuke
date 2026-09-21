@@ -24,9 +24,11 @@ func init() {
 		Scope:    nuke.Account,
 		Resource: &BedrockAgentCoreRegistry{},
 		Lister:   &BedrockAgentCoreRegistryLister{},
-		// A registry holds records, which have to be gone before it can be deleted.
+		// A registry holds records, which have to be gone before it can be deleted, and a
+		// harness holds the registry, so the harness has to go first as well.
 		DependsOn: []string{
 			BedrockAgentCoreRegistryRecordResource,
+			BedrockAgentCoreHarnessResource,
 		},
 	})
 }

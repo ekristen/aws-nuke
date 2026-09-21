@@ -197,10 +197,9 @@ func workloadIdentityOwners(ctx context.Context, svc *bedrockagentcorecontrol.Cl
 	region string, logger *logrus.Entry) map[string]string {
 	owners := map[string]string{}
 
-	// Agent runtimes are the owner behind every harness-managed identity too, since a
-	// harness runs on one, so they need no separate pass here.
 	if slices.Contains(AgentRuntimeSupportedRegions, region) {
 		addAgentRuntimeWorkloadIdentities(ctx, svc, logger, owners)
+		addHarnessWorkloadIdentities(ctx, svc, logger, owners)
 	}
 
 	addGatewayWorkloadIdentities(ctx, svc, logger, owners)
@@ -242,6 +241,25 @@ func addAgentRuntimeWorkloadIdentities(ctx context.Context, svc *bedrockagentcor
 				owners[name] = fmt.Sprintf("agent runtime %s", ptr.ToString(runtime.AgentRuntimeId))
 			}
 		}
+	}
+}
+
+// addHarnessWorkloadIdentities records the identity each harness owns through the agent
+// runtime it runs on. A harness that is being deleted has usually lost that runtime
+// already, so the runtime pass cannot see the link any more, but the harness still
+// reports which runtime it ran on and the service names the identity after it.
+func addHarnessWorkloadIdentities(ctx context.Context, svc *bedrockagentcorecontrol.Client,
+	logger *logrus.Entry, owners map[string]string) {
+	managed := listHarnessManagedResources(ctx, svc, logger)
+
+	for runtimeID, harnessID := range managed.AgentRuntimes {
+		// A runtime that still exists reported its own identity ARN, which is the more
+		// precise answer, so leave that attribution alone.
+		if _, ok := owners[runtimeID]; ok {
+			continue
+		}
+
+		owners[runtimeID] = fmt.Sprintf("harness %s", harnessID)
 	}
 }
 

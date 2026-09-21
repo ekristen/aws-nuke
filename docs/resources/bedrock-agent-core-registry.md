@@ -41,4 +41,5 @@ The string value is always what is used in the output of the log format when a r
     only be deleted if all the resources of a particular type are deleted first or reach a terminal state.
 
 - [BedrockAgentCoreRegistryRecord](./bedrock-agent-core-registry-record.md)
+- [BedrockAgentCoreHarness](./bedrock-agent-core-harness.md)
 
