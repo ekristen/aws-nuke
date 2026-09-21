@@ -14,10 +14,11 @@ CloudWatchEventsRule
 ## Properties
 
 
-- `ARN`: No Description
-- `EventBusName`: No Description
-- `Name`: No Description
-- `State`: No Description
+- `ARN`: The ARN of the rule
+- `EventBusName`: The name of the event bus the rule belongs to
+- `ManagedBy`: The principal of the AWS service that created and manages the rule, if any
+- `Name`: The name of the rule
+- `State`: The state of the rule, e.g. ENABLED or DISABLED
 
 !!! note - Using Properties
     Properties are what [Filters](../config-filtering.md) are written against in your configuration. You use the property
