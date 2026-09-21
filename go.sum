@@ -76,6 +76,8 @@ github.com/aws/aws-sdk-go-v2/service/qbusiness v1.34.8 h1:fMFheeWMyC7aGeTIz+GJAa
 github.com/aws/aws-sdk-go-v2/service/qbusiness v1.34.8/go.mod h1:S8/FKYPSm2WEEGMs5gmbrOrULz0zvJ1CYkf2UEnYzYw=
 github.com/aws/aws-sdk-go-v2/service/ram v1.34.19 h1:KgzHjJvrAw5RQ5tXEyUX1B9zcPuWiCs7h/aT0Q6XYTE=
 github.com/aws/aws-sdk-go-v2/service/ram v1.34.19/go.mod h1:wHbYtm0qUAphMlG61fmCj0qJyVFgYJaHyYcI1sxvLxI=
+github.com/aws/aws-sdk-go-v2/service/rds v1.115.0 h1:oNl6YghOtxu3MiFk1tQ86QlrYMIEJazGUDbBCg9nxLA=
+github.com/aws/aws-sdk-go-v2/service/rds v1.115.0/go.mod h1:JBRYWpz5oXQtHgQC+X8LX9lh0FBCwRHJlWEIT+TTLaE=
 github.com/aws/aws-sdk-go-v2/service/route53profiles v1.4.17 h1:x19QmT0wHVz5v48OqvGY1B18Pdw3Z1XHsc/+eLWRUQ8=
 github.com/aws/aws-sdk-go-v2/service/route53profiles v1.4.17/go.mod h1:Fw3q+gxXdlWm/chYEtIbeILj3bqObPLm7fbn/bPUXaE=
 github.com/aws/aws-sdk-go-v2/service/route53resolver v1.41.5 h1:JJipBAyXEcBqwCwgz3nLxGRHC+IlS8EcQd8edjnsp0w=
