@@ -197,6 +197,8 @@ nav:
     - Bedrock Agent Core Harness: resources/bedrock-agent-core-harness.md
     - Bedrock Agent Core Memory: resources/bedrock-agent-core-memory.md
     - Bedrock Agent Core Oauth 2Credential Provider: resources/bedrock-agent-core-oauth-2credential-provider.md
+    - Bedrock Agent Core Registry Record: resources/bedrock-agent-core-registry-record.md
+    - Bedrock Agent Core Registry: resources/bedrock-agent-core-registry.md
     - Bedrock Agent Core Workload Identity: resources/bedrock-agent-core-workload-identity.md
     - Bedrock Agent: resources/bedrock-agent.md
     - Bedrock Custom Model: resources/bedrock-custom-model.md
