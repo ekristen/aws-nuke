@@ -12,7 +12,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/aws/aws-sdk-go-v2/service/ssmquicksetup"
-	"github.com/aws/aws-sdk-go-v2/service/sts"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
@@ -43,6 +42,10 @@ func (l *SSMQuickSetupConfigurationManagerLister) List(ctx context.Context, o in
 	svc := ssmquicksetup.NewFromConfig(*opts.Config)
 	var resources []resource.Resource
 
+	// IAM is a global service, so it is only reachable through a cross-service config.
+	// See nuke.ListerOpts.CrossServiceConfig.
+	iamSvc := iam.NewFromConfig(*opts.CrossServiceConfig())
+
 	res, err := svc.ListConfigurationManagers(ctx, &ssmquicksetup.ListConfigurationManagersInput{})
 	if err != nil {
 		return nil, err
@@ -51,8 +54,8 @@ func (l *SSMQuickSetupConfigurationManagerLister) List(ctx context.Context, o in
 	for _, p := range res.ConfigurationManagersList {
 		resources = append(resources, &SSMQuickSetupConfigurationManager{
 			svc:          svc,
-			iamSvc:       iam.NewFromConfig(*opts.Config),
-			stsSvc:       sts.NewFromConfig(*opts.Config),
+			iamSvc:       iamSvc,
+			accountID:    opts.AccountID,
 			ARN:          p.ManagerArn,
 			Name:         p.Name,
 			createdRoles: make(map[string]bool), // Track which roles we created
@@ -65,7 +68,7 @@ func (l *SSMQuickSetupConfigurationManagerLister) List(ctx context.Context, o in
 type SSMQuickSetupConfigurationManager struct {
 	svc          *ssmquicksetup.Client
 	iamSvc       *iam.Client
-	stsSvc       *sts.Client
+	accountID    *string
 	ARN          *string
 	Name         *string
 	settings     *settings.Setting
@@ -218,12 +221,7 @@ func (r *SSMQuickSetupConfigurationManager) extractRoleNameFromError(err error) 
 
 // createRoleFromError creates the specific role mentioned in the error message
 func (r *SSMQuickSetupConfigurationManager) createRoleFromError(ctx context.Context, roleName string) error {
-	// Get current account ID
-	callerIdentity, err := r.stsSvc.GetCallerIdentity(ctx, &sts.GetCallerIdentityInput{})
-	if err != nil {
-		return err
-	}
-	accountID := *callerIdentity.Account
+	accountID := ptr.ToString(r.accountID)
 
 	// Determine which type of role to create based on the role name
 	if strings.Contains(roleName, "Administration") {
