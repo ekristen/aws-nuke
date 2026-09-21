@@ -22,6 +22,11 @@ func init() {
 		Scope:    nuke.Account,
 		Resource: &BedrockAgentCoreWorkloadIdentity{},
 		Lister:   &BedrockAgentCoreWorkloadIdentityLister{},
+		// Workload identities created for a harness are linked to it and cannot be deleted
+		// by the caller, so the harness has to go first and take them with it.
+		DependsOn: []string{
+			BedrockAgentCoreHarnessResource,
+		},
 	})
 }
 

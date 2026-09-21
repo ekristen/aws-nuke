@@ -22,6 +22,11 @@ func init() {
 		Scope:    nuke.Account,
 		Resource: &BedrockAgentCoreAgentRuntime{},
 		Lister:   &BedrockAgentCoreAgentRuntimeLister{},
+		// A harness owns the runtime it runs on and AWS refuses to delete that runtime
+		// directly, so the harness has to go first and take the runtime with it.
+		DependsOn: []string{
+			BedrockAgentCoreHarnessResource,
+		},
 	})
 }
 
