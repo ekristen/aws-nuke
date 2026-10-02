@@ -3,6 +3,7 @@ package resources
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/gotidy/ptr"
 
@@ -74,7 +75,8 @@ type ElasticacheUser struct {
 }
 
 func (i *ElasticacheUser) Filter() error {
-	if ptr.ToString(i.userID) == awsutil.Default {
+	id := ptr.ToString(i.userID)
+	if id == awsutil.Default || strings.HasPrefix(id, awsutil.DefaultPrefix) {
 		return fmt.Errorf("cannot delete default user")
 	}
 	return nil

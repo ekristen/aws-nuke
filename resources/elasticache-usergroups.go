@@ -2,6 +2,10 @@ package resources
 
 import (
 	"context"
+	"fmt"
+	"strings"
+
+	"github.com/gotidy/ptr"
 
 	"github.com/aws/aws-sdk-go/aws"                 //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/elasticache" //nolint:staticcheck
@@ -10,6 +14,7 @@ import (
 	"github.com/ekristen/libnuke/pkg/resource"
 	"github.com/ekristen/libnuke/pkg/types"
 
+	"github.com/ekristen/aws-nuke/v3/pkg/awsutil"
 	"github.com/ekristen/aws-nuke/v3/pkg/nuke"
 )
 
@@ -65,6 +70,14 @@ func (l *ElasticacheUserGroupLister) List(_ context.Context, o interface{}) ([]r
 type ElasticacheUserGroup struct {
 	svc     *elasticache.ElastiCache
 	groupID *string
+}
+
+func (i *ElasticacheUserGroup) Filter() error {
+	id := ptr.ToString(i.groupID)
+	if id == awsutil.Default || strings.HasPrefix(id, awsutil.DefaultPrefix) {
+		return fmt.Errorf("cannot delete default user group")
+	}
+	return nil
 }
 
 func (i *ElasticacheUserGroup) Remove(_ context.Context) error {
