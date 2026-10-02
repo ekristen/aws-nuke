@@ -2,7 +2,10 @@ package resources
 
 import (
 	"context"
+	"fmt"
 	"time"
+
+	"github.com/gotidy/ptr"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockagentcorecontrol"
@@ -22,6 +25,15 @@ func init() {
 		Scope:    nuke.Account,
 		Resource: &BedrockAgentCoreWorkloadIdentity{},
 		Lister:   &BedrockAgentCoreWorkloadIdentityLister{},
+		// A workload identity created for another AgentCore resource is linked to it and
+		// cannot be deleted by the caller, so the owner has to go first and take the
+		// identity with it.
+		DependsOn: []string{
+			BedrockAgentCoreHarnessResource,
+			BedrockAgentCoreAgentRuntimeResource,
+			BedrockAgentCoreGatewayResource,
+			BedrockAgentCoreRegistryResource,
+		},
 	})
 }
 
@@ -33,6 +45,7 @@ func (l *BedrockAgentCoreWorkloadIdentityLister) List(ctx context.Context, o int
 	opts := o.(*nuke.ListerOpts)
 	svc := bedrockagentcorecontrol.NewFromConfig(*opts.Config)
 	var resources []resource.Resource
+	var workloadIdentities []*BedrockAgentCoreWorkloadIdentity
 
 	if !l.IsSupportedRegion(opts.Region.Name) {
 		return resources, nil
@@ -70,7 +83,7 @@ func (l *BedrockAgentCoreWorkloadIdentityLister) List(ctx context.Context, o int
 				tags = tagsResp.Tags
 			}
 
-			resources = append(resources, &BedrockAgentCoreWorkloadIdentity{
+			workloadIdentities = append(workloadIdentities, &BedrockAgentCoreWorkloadIdentity{
 				svc:             svc,
 				Name:            identity.Name,
 				CreatedTime:     getResp.CreatedTime,
@@ -78,6 +91,20 @@ func (l *BedrockAgentCoreWorkloadIdentityLister) List(ctx context.Context, o int
 				Tags:            tags,
 			})
 		}
+	}
+
+	if len(workloadIdentities) > 0 {
+		owners := workloadIdentityOwners(ctx, svc, opts.Region.Name, opts.Logger)
+
+		for _, identity := range workloadIdentities {
+			if owner, ok := owners[ptr.ToString(identity.Name)]; ok {
+				identity.owner = ptr.String(owner)
+			}
+		}
+	}
+
+	for _, identity := range workloadIdentities {
+		resources = append(resources, identity)
 	}
 
 	return resources, nil
@@ -89,6 +116,7 @@ type BedrockAgentCoreWorkloadIdentity struct {
 	CreatedTime     *time.Time
 	LastUpdatedTime *time.Time
 	Tags            map[string]string
+	owner           *string
 }
 
 func (r *BedrockAgentCoreWorkloadIdentity) Remove(ctx context.Context) error {
@@ -97,6 +125,17 @@ func (r *BedrockAgentCoreWorkloadIdentity) Remove(ctx context.Context) error {
 	})
 
 	return err
+}
+
+// Filter skips a workload identity that another AgentCore resource created and owns.
+// AWS will not let the caller delete one that is linked to a live service; it goes away
+// when its owner does.
+func (r *BedrockAgentCoreWorkloadIdentity) Filter() error {
+	if r.owner != nil {
+		return fmt.Errorf("linked to %s", *r.owner)
+	}
+
+	return nil
 }
 
 func (r *BedrockAgentCoreWorkloadIdentity) Properties() types.Properties {

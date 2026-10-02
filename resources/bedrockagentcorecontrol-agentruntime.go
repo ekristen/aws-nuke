@@ -2,7 +2,10 @@ package resources
 
 import (
 	"context"
+	"fmt"
 	"time"
+
+	"github.com/gotidy/ptr"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockagentcorecontrol"
@@ -22,6 +25,11 @@ func init() {
 		Scope:    nuke.Account,
 		Resource: &BedrockAgentCoreAgentRuntime{},
 		Lister:   &BedrockAgentCoreAgentRuntimeLister{},
+		// A harness owns the runtime it runs on and AWS refuses to delete that runtime
+		// directly, so the harness has to go first and take the runtime with it.
+		DependsOn: []string{
+			BedrockAgentCoreHarnessResource,
+		},
 	})
 }
 
@@ -33,6 +41,7 @@ func (l *BedrockAgentCoreAgentRuntimeLister) List(ctx context.Context, o interfa
 	opts := o.(*nuke.ListerOpts)
 	svc := bedrockagentcorecontrol.NewFromConfig(*opts.Config)
 	var resources []resource.Resource
+	var runtimes []*BedrockAgentCoreAgentRuntime
 
 	l.SetSupportedRegions(AgentRuntimeSupportedRegions)
 
@@ -64,7 +73,7 @@ func (l *BedrockAgentCoreAgentRuntimeLister) List(ctx context.Context, o interfa
 				tags = tagsResp.Tags
 			}
 
-			resources = append(resources, &BedrockAgentCoreAgentRuntime{
+			runtimes = append(runtimes, &BedrockAgentCoreAgentRuntime{
 				svc:                 svc,
 				AgentRuntimeID:      runtime.AgentRuntimeId,
 				AgentRuntimeName:    runtime.AgentRuntimeName,
@@ -75,6 +84,20 @@ func (l *BedrockAgentCoreAgentRuntimeLister) List(ctx context.Context, o interfa
 				Tags:                tags,
 			})
 		}
+	}
+
+	if len(runtimes) > 0 {
+		managed := listHarnessManagedResources(ctx, svc, opts.Logger)
+
+		for _, runtime := range runtimes {
+			if harnessID, ok := managed.AgentRuntimes[ptr.ToString(runtime.AgentRuntimeID)]; ok {
+				runtime.harness = ptr.String(harnessID)
+			}
+		}
+	}
+
+	for _, runtime := range runtimes {
+		resources = append(resources, runtime)
 	}
 
 	return resources, nil
@@ -89,6 +112,7 @@ type BedrockAgentCoreAgentRuntime struct {
 	Description         *string
 	LastUpdatedAt       *time.Time
 	Tags                map[string]string
+	harness             *string
 }
 
 func (r *BedrockAgentCoreAgentRuntime) Remove(ctx context.Context) error {
@@ -97,6 +121,16 @@ func (r *BedrockAgentCoreAgentRuntime) Remove(ctx context.Context) error {
 	})
 
 	return err
+}
+
+// Filter skips a runtime that a harness owns. AWS will not delete it directly; it goes
+// away when its harness does.
+func (r *BedrockAgentCoreAgentRuntime) Filter() error {
+	if r.harness != nil {
+		return fmt.Errorf("managed by harness %s", *r.harness)
+	}
+
+	return nil
 }
 
 func (r *BedrockAgentCoreAgentRuntime) Properties() libtypes.Properties {

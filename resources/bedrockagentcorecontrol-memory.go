@@ -2,7 +2,10 @@ package resources
 
 import (
 	"context"
+	"fmt"
 	"time"
+
+	"github.com/gotidy/ptr"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockagentcorecontrol"
@@ -33,6 +36,7 @@ func (l *BedrockAgentCoreMemoryLister) List(ctx context.Context, o interface{}) 
 	opts := o.(*nuke.ListerOpts)
 	svc := bedrockagentcorecontrol.NewFromConfig(*opts.Config)
 	var resources []resource.Resource
+	var memories []*BedrockAgentCoreMemory
 
 	if !l.IsSupportedRegion(opts.Region.Name) {
 		return resources, nil
@@ -64,7 +68,7 @@ func (l *BedrockAgentCoreMemoryLister) List(ctx context.Context, o interface{}) 
 				}
 			}
 
-			resources = append(resources, &BedrockAgentCoreMemory{
+			memories = append(memories, &BedrockAgentCoreMemory{
 				svc:       svc,
 				ID:        memory.Id,
 				Status:    string(memory.Status),
@@ -73,6 +77,22 @@ func (l *BedrockAgentCoreMemoryLister) List(ctx context.Context, o interface{}) 
 				Tags:      tags,
 			})
 		}
+	}
+
+	// Harnesses only exist where agent runtimes do, but memories are listed in more
+	// regions than that, so only go looking for owners where one could be.
+	if len(memories) > 0 && harnessesSupportedInRegion(opts.Region.Name) {
+		managed := listHarnessManagedResources(ctx, svc, opts.Logger)
+
+		for _, memory := range memories {
+			if harnessID, ok := managed.Memories[ptr.ToString(memory.ID)]; ok {
+				memory.harness = ptr.String(harnessID)
+			}
+		}
+	}
+
+	for _, memory := range memories {
+		resources = append(resources, memory)
 	}
 
 	return resources, nil
@@ -85,6 +105,7 @@ type BedrockAgentCoreMemory struct {
 	CreatedAt *time.Time
 	UpdatedAt *time.Time
 	Tags      map[string]string
+	harness   *string
 }
 
 func (r *BedrockAgentCoreMemory) Remove(ctx context.Context) error {
@@ -93,6 +114,16 @@ func (r *BedrockAgentCoreMemory) Remove(ctx context.Context) error {
 	})
 
 	return err
+}
+
+// Filter skips a memory that a harness created and manages. AWS will not delete it
+// directly; it goes away when its harness does.
+func (r *BedrockAgentCoreMemory) Filter() error {
+	if r.harness != nil {
+		return fmt.Errorf("managed by harness %s", *r.harness)
+	}
+
+	return nil
 }
 
 func (r *BedrockAgentCoreMemory) Properties() types.Properties {

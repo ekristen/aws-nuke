@@ -41,3 +41,18 @@ func Test_BedrockAgentCoreAgentRuntime_String(t *testing.T) {
 
 	a.Equal("test-runtime-id", resource.String())
 }
+
+func Test_BedrockAgentCoreAgentRuntime_Filter(t *testing.T) {
+	a := assert.New(t)
+
+	standalone := BedrockAgentCoreAgentRuntime{
+		AgentRuntimeID: ptr.String("test-runtime-id"),
+	}
+	a.Nil(standalone.Filter())
+
+	owned := BedrockAgentCoreAgentRuntime{
+		AgentRuntimeID: ptr.String("test-runtime-id"),
+		harness:        ptr.String("test-harness-id"),
+	}
+	a.EqualError(owned.Filter(), "managed by harness test-harness-id")
+}
