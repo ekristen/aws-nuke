@@ -2,7 +2,10 @@ package resources
 
 import (
 	"context"
+	"errors"
 	"fmt"
+
+	"github.com/gotidy/ptr"
 
 	"github.com/aws/aws-sdk-go/aws"                      //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/cloudwatchevents" //nolint:staticcheck
@@ -56,6 +59,7 @@ func (l *CloudWatchEventsRuleLister) List(_ context.Context, o interface{}) ([]r
 					ARN:          rule.Arn,
 					State:        rule.State,
 					EventBusName: bus.Name,
+					ManagedBy:    rule.ManagedBy,
 				})
 			}
 		}
@@ -72,10 +76,18 @@ func (l *CloudWatchEventsRuleLister) List(_ context.Context, o interface{}) ([]r
 
 type CloudWatchEventsRule struct {
 	svc          *cloudwatchevents.CloudWatchEvents
-	Name         *string
-	ARN          *string
-	State        *string
-	EventBusName *string
+	Name         *string `description:"The name of the rule"`
+	ARN          *string `description:"The ARN of the rule"`
+	State        *string `description:"The state of the rule, e.g. ENABLED or DISABLED"`
+	EventBusName *string `description:"The name of the event bus the rule belongs to"`
+	ManagedBy    *string `description:"The principal of the AWS service that created and manages the rule, if any"`
+}
+
+func (r *CloudWatchEventsRule) Filter() error {
+	if ptr.ToString(r.ManagedBy) != "" {
+		return errors.New("cannot delete rule managed by " + ptr.ToString(r.ManagedBy))
+	}
+	return nil
 }
 
 func (r *CloudWatchEventsRule) Remove(_ context.Context) error {

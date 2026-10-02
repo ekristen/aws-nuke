@@ -14,17 +14,17 @@ MGNReplicationConfigurationTemplate
 ## Properties
 
 
-- `Arn`: The ARN of the replication configuration template
+- `ARN`: The ARN of the replication configuration template
 - `AssociateDefaultSecurityGroup`: Whether to associate the default security group
 - `BandwidthThrottling`: The bandwidth throttling setting
 - `CreatePublicIP`: Whether to create a public IP
 - `DataPlaneRouting`: The data plane routing setting
 - `DefaultLargeStagingDiskType`: The default large staging disk type
-- `EbsEncryption`: The EBS encryption setting
-- `EbsEncryptionKeyArn`: The ARN of the EBS encryption key
+- `EBSEncryption`: The EBS encryption setting
+- `EBSEncryptionKeyARN`: The ARN of the EBS encryption key
 - `ReplicationConfigurationTemplateID`: The unique identifier of the replication configuration template
 - `ReplicationServerInstanceType`: The instance type for the replication server
-- `StagingAreaSubnetId`: The subnet ID for the staging area
+- `StagingAreaSubnetID`: The subnet ID for the staging area
 - `UseDedicatedReplicationServer`: Whether to use a dedicated replication server
 - `tag:<key>:`: This resource has tags with property `Tags`. These are key/value pairs that are
 	added as their own property with the prefix of `tag:` (e.g. [tag:example: "value"]) 

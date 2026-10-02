@@ -60,8 +60,11 @@ func (l *CloudFormationStackLister) List(_ context.Context, o interface{}) ([]re
 	opts := o.(*nuke.ListerOpts)
 
 	svc := cloudformation.New(opts.Session)
-	iamSvc := iam.NewFromConfig(*opts.Config)
 	stsSvc := sts.New(opts.Session)
+
+	// IAM is a global service, so it is only reachable through a cross-service config.
+	// See nuke.ListerOpts.CrossServiceConfig.
+	iamSvc := iam.NewFromConfig(*opts.CrossServiceConfig())
 
 	params := &cloudformation.DescribeStacksInput{}
 	resources := make([]resource.Resource, 0)

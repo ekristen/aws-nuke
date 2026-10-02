@@ -19,7 +19,7 @@ EC2VerifiedAccessGroup
 - `ID`: The unique identifier of the Verified Access group
 - `LastUpdatedTime`: The timestamp when the Verified Access group was last updated
 - `Owner`: The AWS account ID that owns the Verified Access group
-- `VerifiedAccessInstanceId`: The ID of the Verified Access instance this group belongs to
+- `VerifiedAccessInstanceID`: The ID of the Verified Access instance this group belongs to
 - `tag:<key>:`: This resource has tags with property `Tags`. These are key/value pairs that are
 	added as their own property with the prefix of `tag:` (e.g. [tag:example: "value"]) 
 

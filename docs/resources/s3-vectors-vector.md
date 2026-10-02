@@ -29,3 +29,4 @@ resources support properties. To write a filter against the string representatio
 the filter.
 
 The string value is always what is used in the output of the log format when a resource is identified.
+

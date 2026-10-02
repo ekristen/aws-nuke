@@ -86,6 +86,12 @@ func (c *Credentials) NewConfig(ctx context.Context, region, serviceType string)
 
 		cfgCopy := root.Copy()
 		cfgCopy.Region = region
+
+		// Copy() is shallow, so the APIOptions slice is shared with the root config.
+		// Clone it before appending, otherwise each region's config can write into
+		// the root's backing array whenever it has spare capacity.
+		cfgCopy.APIOptions = cloneAPIOptions(root.APIOptions, 1)
+
 		if global {
 			cfgCopy.APIOptions = append(cfgCopy.APIOptions, func(stack *middleware.Stack) error {
 				return stack.Initialize.Add(SkipGlobal{}, middleware.After)
@@ -223,6 +229,48 @@ func (SkipRegionalForGlobalService) HandleInitialize(
 	}
 
 	return next.HandleInitialize(ctx, in)
+}
+
+// CrossServiceConfig returns a copy of cfg with the region scanning guards removed.
+//
+// SkipGlobal and SkipRegionalForGlobalService exist so that a resource type is only
+// scanned and deleted in the region that owns it: global services in the "global"
+// pseudo-region, everything else in each real region. Because they are attached to the
+// config, they also block every client built from that config, including ones a
+// resource builds for a *different* service purely to support its own removal, such as
+// a regional resource creating an IAM role so it can delete itself.
+//
+// Use this whenever building a client for a service other than the one the resource
+// itself represents. Do not use it for the resource's own service; that would cause the
+// resource to be processed in every region.
+//
+// The region is deliberately left untouched. Global services resolve to their global
+// endpoint from any region in the partition, so overriding it would only break the
+// non-default partitions.
+func CrossServiceConfig(cfg *aws.Config) *aws.Config {
+	c := cfg.Copy()
+
+	// Copy() is shallow, so clone APIOptions rather than appending into the slice that
+	// is still shared with cfg.
+	c.APIOptions = cloneAPIOptions(cfg.APIOptions, 1)
+	c.APIOptions = append(c.APIOptions, func(stack *middleware.Stack) error {
+		// Only one of these is ever present, and neither is present when custom
+		// endpoints are in play, so a missing middleware is not an error.
+		_, _ = stack.Initialize.Remove(SkipGlobal{}.ID())
+		_, _ = stack.Initialize.Remove(SkipRegionalForGlobalService{}.ID())
+		return nil
+	})
+
+	return &c
+}
+
+// cloneAPIOptions copies a set of API options into a new slice with room for extra
+// entries. aws.Config.Copy() is a shallow copy, so appending to the APIOptions of a
+// copied config can otherwise write into the original config's backing array.
+func cloneAPIOptions(opts []func(*middleware.Stack) error, extra int) []func(*middleware.Stack) error {
+	cloned := make([]func(*middleware.Stack) error, len(opts), len(opts)+extra)
+	copy(cloned, opts)
+	return cloned
 }
 
 type traceRequest struct{}

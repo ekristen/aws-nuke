@@ -16,6 +16,8 @@ KMSKey
 
 - `Alias`: No Description
 - `ID`: No Description
+- `InUse`: Whether an AWS service still holds a grant on the key, meaning a live resource depends on it.
+- `InUseBy`: Comma separated list of the AWS service principals holding grants on the key.
 - `Manager`: No Description
 - `State`: No Description
 - `tag:<key>:`: This resource has tags with property `Tags`. These are key/value pairs that are
@@ -32,6 +34,21 @@ resources support properties. To write a filter against the string representatio
 the filter.
 
 The string value is always what is used in the output of the log format when a resource is identified.
+
+## Settings
+
+- `DeleteInUseKeys`
+
+
+### DeleteInUseKeys
+
+!!! note
+    There is currently no description for this setting. Often times settings are fairly self-explanatory. However, we
+    are working on adding descriptions for all settings.
+
+```text
+DeleteInUseKeys
+```
 
 ### DependsOn
 

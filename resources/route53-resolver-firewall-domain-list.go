@@ -33,20 +33,21 @@ func (l *Route53ResolverFirewallDomainListLister) List(ctx context.Context, o in
 	opts := o.(*nuke.ListerOpts)
 	var resources []resource.Resource
 
-	if l.svc == nil {
-		l.svc = r53r.NewFromConfig(*opts.Config)
+	svc := l.svc
+	if svc == nil {
+		svc = r53r.NewFromConfig(*opts.Config)
 	}
 
 	params := &r53r.ListFirewallDomainListsInput{}
 	for {
-		resp, err := l.svc.ListFirewallDomainLists(ctx, params)
+		resp, err := svc.ListFirewallDomainLists(ctx, params)
 		if err != nil {
 			return nil, err
 		}
 
 		for _, domainList := range resp.FirewallDomainLists {
 			resources = append(resources, &Route53ResolverFirewallDomainList{
-				svc:              l.svc,
+				svc:              svc,
 				Arn:              domainList.Arn,
 				CreatorRequestID: domainList.CreatorRequestId,
 				ID:               domainList.Id,
