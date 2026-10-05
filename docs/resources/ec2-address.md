@@ -15,6 +15,7 @@ EC2Address
 
 
 - `AllocationID`: No Description
+- `CustomerOwnedIP`: No Description
 - `NetworkBorderGroup`: No Description
 - `PublicIP`: No Description
 - `tag:<key>:`: This resource has tags with property `Tags`. These are key/value pairs that are

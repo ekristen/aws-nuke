@@ -15,6 +15,7 @@ CloudWatchEventsTarget
 
 
 - `BusName`: The name of the event bus the rule applies to
+- `ManagedBy`: The principal of the AWS service that created and manages the rule, if any
 - `Name`: The name of the rule
 - `TargetID`: The ID of the target for the rule
 

@@ -14,7 +14,7 @@ S3FilesAccessPoint
 ## Properties
 
 
-- `FileSystemId`: The ID of the S3 file system that this access point belongs to
+- `FileSystemID`: The ID of the S3 file system that this access point belongs to
 - `ID`: The ID of the S3 file system access point
 
 !!! note - Using Properties

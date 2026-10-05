@@ -32,14 +32,15 @@ type TimestreamInfluxDBDbInstanceLister struct {
 func (l *TimestreamInfluxDBDbInstanceLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	var resources []resource.Resource
 
-	if l.svc == nil {
+	svc := l.svc
+	if svc == nil {
 		opts := o.(*nuke.ListerOpts)
-		l.svc = timestreaminfluxdb.NewFromConfig(*opts.Config)
+		svc = timestreaminfluxdb.NewFromConfig(*opts.Config)
 	}
 
 	params := &timestreaminfluxdb.ListDbInstancesInput{}
 	for {
-		resp, err := l.svc.ListDbInstances(ctx, params)
+		resp, err := svc.ListDbInstances(ctx, params)
 		if err != nil {
 			return nil, err
 		}
@@ -47,7 +48,7 @@ func (l *TimestreamInfluxDBDbInstanceLister) List(ctx context.Context, o interfa
 		for i := range resp.Items {
 			item := &resp.Items[i]
 			var tags map[string]string
-			tagsResp, err := l.svc.ListTagsForResource(ctx, &timestreaminfluxdb.ListTagsForResourceInput{
+			tagsResp, err := svc.ListTagsForResource(ctx, &timestreaminfluxdb.ListTagsForResourceInput{
 				ResourceArn: item.Arn,
 			})
 			if err == nil {
@@ -55,7 +56,7 @@ func (l *TimestreamInfluxDBDbInstanceLister) List(ctx context.Context, o interfa
 			}
 
 			resources = append(resources, &TimestreamInfluxDBDbInstance{
-				svc:    l.svc,
+				svc:    svc,
 				ID:     item.Id,
 				Name:   item.Name,
 				Arn:    item.Arn,

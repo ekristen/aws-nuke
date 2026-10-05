@@ -22,7 +22,7 @@ EC2VerifiedAccessEndpoint
 - `EndpointType`: The type of endpoint (network-interface or load-balancer)
 - `ID`: The unique identifier of the Verified Access endpoint
 - `LastUpdatedTime`: The timestamp when the Verified Access endpoint was last updated
-- `VerifiedAccessGroupId`: The ID of the Verified Access group this endpoint belongs to
+- `VerifiedAccessGroupID`: The ID of the Verified Access group this endpoint belongs to
 - `tag:<key>:`: This resource has tags with property `Tags`. These are key/value pairs that are
 	added as their own property with the prefix of `tag:` (e.g. [tag:example: "value"]) 
 

@@ -810,6 +810,52 @@ func (r *MyResource) HandleWait(ctx context.Context) error {
 }
 ```
 
+### Pattern 6: Resource That Calls a Global Service
+
+Some resources need a supporting call to a *different* service in order to delete
+themselves — most often IAM, to create a role that AWS requires before it will let the
+resource go.
+
+The config handed to a lister carries middleware that keeps a resource type from being
+processed outside the region that owns it: global services (IAM, Route 53, CloudFront,
+WAF Classic) only in the `global` pseudo-region, everything else in each real region.
+That middleware is attached to the **config**, so it also rejects calls made by any other
+client built from that config. Building an IAM client from `opts.Config` inside a
+regional resource produces:
+
+```
+operation error IAM: CreateRole, service 'IAM' is global, but the session is not
+```
+
+Use `opts.CrossServiceConfig()` for the supporting client, and hoist it out of the
+listing loop:
+
+```go
+func (l *MyResourceLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
+	opts := o.(*nuke.ListerOpts)
+	svc := myservice.NewFromConfig(*opts.Config)
+
+	// IAM is a global service, so it is only reachable through a cross-service config.
+	iamSvc := iam.NewFromConfig(*opts.CrossServiceConfig())
+	...
+}
+```
+
+**Rules:**
+
+- `opts.Config` for the resource's own service. Using `CrossServiceConfig()` there would
+  cause the resource to be listed and deleted in every region.
+- `opts.CrossServiceConfig()` only for a client of a *different* service.
+- Don't override the region on the returned config. Global services resolve to their
+  global endpoint from any region in the partition; hardcoding `us-east-1` breaks
+  `aws-cn` and `aws-us-gov`.
+- Prefer `opts.AccountID` over an STS `GetCallerIdentity` call when you just need the
+  account ID.
+- This applies to AWS SDK v2 only. Don't add new cross-service clients on `opts.Session`.
+
+`resources/cross-service-config_test.go` enforces this and will fail the build if a
+global service client is constructed from `opts.Config`.
+
 ## Complete Example
 
 Here's a complete example incorporating all best practices:
@@ -936,6 +982,7 @@ Before submitting your resource:
 - [ ] Code passes `golangci-lint run`
 - [ ] Code formatted with `go fmt`
 - [ ] Filters undeletable resources appropriately
+- [ ] Clients for services other than the resource's own use `opts.CrossServiceConfig()`
 - [ ] Settings implemented if needed
 - [ ] Signed commit with conventional commit message
 
