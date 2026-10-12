@@ -26,8 +26,8 @@ github.com/aws/aws-sdk-go-v2/service/appsync v1.42.3 h1:Q903rtU9x/OmFMqXGm303345
 github.com/aws/aws-sdk-go-v2/service/appsync v1.42.3/go.mod h1:n3rcdK67R1TkgyXz+48uIUlpiMUwUd7pdVADSEZ5FGA=
 github.com/aws/aws-sdk-go-v2/service/bedrock v1.64.0 h1:jZOg03lM41zl89h17avGr6AFqAb9g3s/rZytTQslz14=
 github.com/aws/aws-sdk-go-v2/service/bedrock v1.64.0/go.mod h1:f0MnAznWRN75Dnezt6MBnHOKHEpAI/ztr4Q6Lo1IGDk=
-github.com/aws/aws-sdk-go-v2/service/bedrockagentcorecontrol v1.14.1 h1:boU3IIsKnHsKzqavdB/xR5bmp8tBPDPkg+FSBxqqEgY=
-github.com/aws/aws-sdk-go-v2/service/bedrockagentcorecontrol v1.14.1/go.mod h1:rSP65Gc7ucwUaO12JTPl8o835CZlN8d3qUFcdT/6dHE=
+github.com/aws/aws-sdk-go-v2/service/bedrockagentcorecontrol v1.68.0 h1:GjTVTMwKa3pW12fSYsJoY2T3/NUOxWaPQ2FUHRwky9E=
+github.com/aws/aws-sdk-go-v2/service/bedrockagentcorecontrol v1.68.0/go.mod h1:zgWVuxOJtLQ188G6hXAFSHwofDZ5WWO4Akz1GDCeQdE=
 github.com/aws/aws-sdk-go-v2/service/cloudfront v1.44.12 h1:GEdQ1mVjgYH/c7vKrt+rrPS8Ax3wgqOHOBudPE7UIJs=
 github.com/aws/aws-sdk-go-v2/service/cloudfront v1.44.12/go.mod h1:nr2/4ch+huedh56oGZClTeCVENvMBqeEkzkObAFCDQM=
 github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.65.0 h1:3yaFbUbuLfN8n1q01wZtQtHRzUDc/jm0VvniMY0IPE8=
