@@ -2,10 +2,13 @@ package resources
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
-	"github.com/aws/aws-sdk-go/service/ec2" //nolint:staticcheck
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
@@ -27,31 +30,24 @@ func init() {
 
 type EC2HostLister struct{}
 
-func (l *EC2HostLister) List(_ context.Context, o interface{}) ([]resource.Resource, error) {
+func (l *EC2HostLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
 	opts := o.(*nuke.ListerOpts)
 
-	svc := ec2.New(opts.Session)
+	svc := ec2.NewFromConfig(*opts.Config)
 	params := &ec2.DescribeHostsInput{}
+	paginator := ec2.NewDescribeHostsPaginator(svc, params)
 	resources := make([]resource.Resource, 0)
-	for {
-		resp, err := svc.DescribeHosts(params)
+	for paginator.HasMorePages() {
+		resp, err := paginator.NextPage(ctx)
 		if err != nil {
 			return nil, err
 		}
 
-		for _, host := range resp.Hosts {
+		for idx := range resp.Hosts {
 			resources = append(resources, &EC2Host{
 				svc:  svc,
-				host: host,
+				host: &resp.Hosts[idx],
 			})
-		}
-
-		if resp.NextToken == nil {
-			break
-		}
-
-		params = &ec2.DescribeHostsInput{
-			NextToken: resp.NextToken,
 		}
 	}
 
@@ -59,27 +55,43 @@ func (l *EC2HostLister) List(_ context.Context, o interface{}) ([]resource.Resou
 }
 
 type EC2Host struct {
-	svc  *ec2.EC2
-	host *ec2.Host
+	svc  EC2HostAPI
+	host *ec2types.Host
 }
 
 func (i *EC2Host) Filter() error {
-	if *i.host.State == "released" {
+	if i.host.State == ec2types.AllocationStateReleased {
 		return fmt.Errorf("already released")
 	}
 	return nil
 }
 
-func (i *EC2Host) Remove(_ context.Context) error {
+func (i *EC2Host) Remove(ctx context.Context) error {
 	params := &ec2.ReleaseHostsInput{
-		HostIds: []*string{i.host.HostId},
+		HostIds: []string{aws.ToString(i.host.HostId)},
 	}
 
-	_, err := i.svc.ReleaseHosts(params)
+	output, err := i.svc.ReleaseHosts(ctx, params)
 	if err != nil {
 		return err
 	}
-	return nil
+
+	var releaseErrors []error
+	for _, item := range output.Unsuccessful {
+		code := "unknown error"
+		message := "no error message returned"
+		if item.Error != nil {
+			code = aws.ToString(item.Error.Code)
+			message = aws.ToString(item.Error.Message)
+		}
+
+		releaseErrors = append(releaseErrors, fmt.Errorf(
+			"failed to release EC2 host %q: %s: %s",
+			aws.ToString(item.ResourceId), code, message,
+		))
+	}
+
+	return errors.Join(releaseErrors...)
 }
 
 func (i *EC2Host) Properties() types.Properties {
