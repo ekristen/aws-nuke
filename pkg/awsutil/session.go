@@ -37,7 +37,27 @@ var (
 
 	// DefaultAWSPartitionID The default aws partition. Can be customized for non AWS implementations
 	DefaultAWSPartitionID = "aws"
+
+	// knownPartitionPrefixes maps region-name prefixes to partition IDs for
+	// partitions not present in SDK v1's frozen endpoint table.
+	knownPartitionPrefixes = []struct {
+		prefix      string
+		partitionID string
+	}{
+		{"eusc-", "aws-eusc"},
+	}
 )
+
+// PartitionForRegion returns the partition ID for regions that SDK v1 does not know about.
+// Returns an empty string when the region is not matched.
+func PartitionForRegion(region string) string {
+	for _, p := range knownPartitionPrefixes {
+		if strings.HasPrefix(region, p.prefix) {
+			return p.partitionID
+		}
+	}
+	return ""
+}
 
 type Credentials struct {
 	Profile string
