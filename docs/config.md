@@ -84,6 +84,12 @@ blocklist:
 alias contains any of the terms in the list, then the account will be blocked. However, if the bypass alias check flag
 is set, then this feature has no affect.
 
+Matching is a case-insensitive substring check against the account alias. The alias is lowercased before comparison,
+but the configured term is not. Use lowercase terms to ensure they match aliases regardless of casing.
+
+For example, the term `prod` blocks aliases such as `my-prod-account` and `My-PROD-Account`, but the term `Pro` does
+not block `my-pro-account` because only the alias is lowercased during matching.
+
 ```yaml
 blocklist-terms:
   - "prod"
