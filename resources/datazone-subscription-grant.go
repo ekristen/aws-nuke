@@ -42,17 +42,18 @@ func (l *DataZoneSubscriptionGrantLister) List(_ context.Context, o interface{})
 		svc = datazone.New(opts.Session)
 	}
 
-	resources := make([]resource.Resource, 0)
-
-	domainIDs, err := listDataZoneDomainIDs(svc)
+	subscriptions, err := listDataZoneSubscriptions(svc)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, domainID := range domainIDs {
+	resources := make([]resource.Resource, 0)
+	seen := make(map[string]struct{})
+	for _, sub := range subscriptions {
 		params := &datazone.ListSubscriptionGrantsInput{
-			DomainIdentifier: domainID,
-			MaxResults:       aws.Int64(50),
+			DomainIdentifier: sub.DomainID,
+			SubscriptionId:   sub.ID,
+			MaxResults:       aws.Int64(25),
 		}
 
 		for {
@@ -62,11 +63,16 @@ func (l *DataZoneSubscriptionGrantLister) List(_ context.Context, o interface{})
 			}
 
 			for _, grant := range resp.Items {
+				key := aws.StringValue(sub.DomainID) + "/" + aws.StringValue(grant.Id)
+				if _, ok := seen[key]; ok {
+					continue
+				}
+				seen[key] = struct{}{}
 				resources = append(resources, &DataZoneSubscriptionGrant{
 					svc:      svc,
-					DomainID: domainID,
+					DomainID: sub.DomainID,
 					ID:       grant.Id,
-					Status:   aws.String(string(*grant.Status)),
+					Status:   aws.String(aws.StringValue(grant.Status)),
 				})
 			}
 
@@ -100,5 +106,5 @@ func (r *DataZoneSubscriptionGrant) Properties() types.Properties {
 }
 
 func (r *DataZoneSubscriptionGrant) String() string {
-	return aws.ToString(r.ID)
+	return aws.StringValue(r.ID)
 }

@@ -28,8 +28,9 @@ func init() {
 		Scope:    nuke.Account,
 		Resource: &DataZoneProject{},
 		Lister:   &DataZoneProjectLister{},
-		// Projects have no children of their own that block deletion,
-		// so no DependsOn needed here.
+		DependsOn: []string{
+			DataZoneSubscriptionResource,
+		},
 	})
 }
 
@@ -49,39 +50,18 @@ func (l *DataZoneProjectLister) List(_ context.Context, o interface{}) ([]resour
 
 	resources := make([]resource.Resource, 0)
 
-	// First, get all domain IDs — we need to list projects per domain.
-	domainIDs, err := listDataZoneDomainIDs(svc)
+	projects, err := listDataZoneProjects(svc)
 	if err != nil {
 		return nil, err
 	}
 
-	// For each domain, list all projects inside it.
-	for _, domainID := range domainIDs {
-		params := &datazone.ListProjectsInput{
-			DomainIdentifier: domainID,
-			MaxResults:       aws.Int64(50),
-		}
-
-		for {
-			resp, err := svc.ListProjects(params)
-			if err != nil {
-				return nil, err
-			}
-
-			for _, project := range resp.Items {
-				resources = append(resources, &DataZoneProject{
-					svc:      svc,
-					DomainID: domainID,
-					ID:       project.Id,
-					Name:     project.Name,
-				})
-			}
-
-			if resp.NextToken == nil {
-				break
-			}
-			params.NextToken = resp.NextToken
-		}
+	for _, project := range projects {
+		resources = append(resources, &DataZoneProject{
+			svc:      svc,
+			DomainID: project.DomainID,
+			ID:       project.ProjectID,
+			Name:     project.Name,
+		})
 	}
 
 	return resources, nil
@@ -109,5 +89,5 @@ func (r *DataZoneProject) Properties() types.Properties {
 }
 
 func (r *DataZoneProject) String() string {
-	return aws.ToString(r.ID)
+	return aws.StringValue(r.ID)
 }

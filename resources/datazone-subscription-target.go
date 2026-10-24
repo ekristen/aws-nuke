@@ -26,6 +26,9 @@ func init() {
 		Scope:    nuke.Account,
 		Resource: &DataZoneSubscriptionTarget{},
 		Lister:   &DataZoneSubscriptionTargetLister{},
+		DependsOn: []string{
+			DataZoneSubscriptionGrantResource,
+		},
 	})
 }
 
@@ -45,16 +48,17 @@ func (l *DataZoneSubscriptionTargetLister) List(_ context.Context, o interface{}
 
 	resources := make([]resource.Resource, 0)
 
-	domainIDs, err := listDataZoneDomainIDs(svc)
+	projects, err := listDataZoneProjects(svc)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, domainID := range domainIDs {
-		// Subscription targets are scoped to environments, so list environments first.
+	for _, project := range projects {
+		// Both environments and subscription targets are scoped by project/environment.
 		envParams := &datazone.ListEnvironmentsInput{
-			DomainIdentifier: domainID,
-			MaxResults:       aws.Int64(50),
+			DomainIdentifier:  project.DomainID,
+			ProjectIdentifier: project.ProjectID,
+			MaxResults:        aws.Int64(25),
 		}
 
 		for {
@@ -66,9 +70,9 @@ func (l *DataZoneSubscriptionTargetLister) List(_ context.Context, o interface{}
 			for _, env := range envResp.Items {
 				// For each environment, list all subscription targets.
 				targetParams := &datazone.ListSubscriptionTargetsInput{
-					DomainIdentifier:      domainID,
+					DomainIdentifier:      project.DomainID,
 					EnvironmentIdentifier: env.Id,
-					MaxResults:            aws.Int64(50),
+					MaxResults:            aws.Int64(25),
 				}
 
 				for {
@@ -80,7 +84,7 @@ func (l *DataZoneSubscriptionTargetLister) List(_ context.Context, o interface{}
 					for _, target := range targetResp.Items {
 						resources = append(resources, &DataZoneSubscriptionTarget{
 							svc:           svc,
-							DomainID:      domainID,
+							DomainID:      project.DomainID,
 							EnvironmentID: env.Id,
 							ID:            target.Id,
 							Name:          target.Name,
@@ -126,5 +130,5 @@ func (r *DataZoneSubscriptionTarget) Properties() types.Properties {
 }
 
 func (r *DataZoneSubscriptionTarget) String() string {
-	return aws.ToString(r.ID)
+	return aws.StringValue(r.ID)
 }

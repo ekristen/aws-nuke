@@ -37,7 +37,6 @@ func init() {
 		// before attempting to delete any DataZone domains.
 		DependsOn: []string{
 			DataZoneProjectResource,
-			DataZoneSubscriptionGrantResource,
 			DataZoneSubscriptionResource,
 		},
 	})
@@ -65,7 +64,7 @@ func (l *DataZoneDomainLister) List(_ context.Context, o interface{}) ([]resourc
 	// ListDomains returns all DataZone domains in the account.
 	// We page through results in case there are many domains.
 	params := &datazone.ListDomainsInput{
-		MaxResults: aws.Int64(50),
+		MaxResults: aws.Int64(25),
 	}
 
 	for {
@@ -121,7 +120,7 @@ func (r *DataZoneDomain) Properties() types.Properties {
 //
 //	DataZoneDomain - dzd_abc123 (my-domain)
 func (r *DataZoneDomain) String() string {
-	return aws.ToString(r.ID)
+	return aws.StringValue(r.ID)
 }
 
 // listDataZoneDomainIDs is a shared helper used by child resource listers
@@ -131,7 +130,7 @@ func listDataZoneDomainIDs(svc datazoneiface.DataZoneAPI) ([]*string, error) {
 	var domainIDs []*string
 
 	params := &datazone.ListDomainsInput{
-		MaxResults: aws.Int64(50),
+		MaxResults: aws.Int64(25),
 	}
 
 	for {
@@ -151,4 +150,45 @@ func listDataZoneDomainIDs(svc datazoneiface.DataZoneAPI) ([]*string, error) {
 	return domainIDs, nil
 }
 
+// dataZoneProjectRef identifies a project together with its parent domain.
+// DataZone's environment and subscription APIs require project-scoped filters,
+// so child listers use these references to enumerate their resources.
+type dataZoneProjectRef struct {
+	DomainID  *string
+	ProjectID *string
+	Name      *string
+}
 
+func listDataZoneProjects(svc datazoneiface.DataZoneAPI) ([]dataZoneProjectRef, error) {
+	domainIDs, err := listDataZoneDomainIDs(svc)
+	if err != nil {
+		return nil, err
+	}
+
+	var projects []dataZoneProjectRef
+	for _, domainID := range domainIDs {
+		params := &datazone.ListProjectsInput{
+			DomainIdentifier: domainID,
+			MaxResults:       aws.Int64(25),
+		}
+		for {
+			resp, err := svc.ListProjects(params)
+			if err != nil {
+				return nil, err
+			}
+			for _, project := range resp.Items {
+				projects = append(projects, dataZoneProjectRef{
+					DomainID:  domainID,
+					ProjectID: project.Id,
+					Name:      project.Name,
+				})
+			}
+			if resp.NextToken == nil {
+				break
+			}
+			params.NextToken = resp.NextToken
+		}
+	}
+
+	return projects, nil
+}
