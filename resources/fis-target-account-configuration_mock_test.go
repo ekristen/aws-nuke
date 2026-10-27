@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/fis"
 	fistypes "github.com/aws/aws-sdk-go-v2/service/fis/types"
 
@@ -58,6 +59,54 @@ func Test_Mock_FISTargetAccountConfiguration_List(t *testing.T) {
 	a.Equal("target account", *config.Description)
 }
 
+func Test_Mock_FISTargetAccountConfiguration_List_SkipsMissingTemplate(t *testing.T) {
+	a := assert.New(t)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockSvc := mock_fis.NewMockFISAPI(ctrl)
+
+	mockSvc.EXPECT().
+		ListExperimentTemplates(gomock.Any(), gomock.Any()).
+		Return(&fis.ListExperimentTemplatesOutput{
+			ExperimentTemplates: []fistypes.ExperimentTemplateSummary{
+				{Id: ptr.String("EXT-gone")},
+				{Id: ptr.String("EXT-ok")},
+			},
+		}, nil)
+
+	mockSvc.EXPECT().
+		ListTargetAccountConfigurations(gomock.Any(), &fis.ListTargetAccountConfigurationsInput{
+			ExperimentTemplateId: ptr.String("EXT-gone"),
+			MaxResults:           aws.Int32(100),
+		}).
+		Return(nil, &fistypes.ResourceNotFoundException{
+			Message: ptr.String("template not found"),
+		})
+
+	mockSvc.EXPECT().
+		ListTargetAccountConfigurations(gomock.Any(), &fis.ListTargetAccountConfigurationsInput{
+			ExperimentTemplateId: ptr.String("EXT-ok"),
+			MaxResults:           aws.Int32(100),
+		}).
+		Return(&fis.ListTargetAccountConfigurationsOutput{
+			TargetAccountConfigurations: []fistypes.TargetAccountConfigurationSummary{
+				{
+					AccountId: ptr.String("111122223333"),
+				},
+			},
+		}, nil)
+
+	lister := &FISTargetAccountConfigurationLister{
+		svc: mockSvc,
+	}
+
+	resources, err := lister.List(context.TODO(), testListerOpts)
+	a.Nil(err)
+	a.Len(resources, 1)
+	a.Equal("EXT-ok", *resources[0].(*FISTargetAccountConfiguration).ExperimentTemplateID)
+}
+
 func Test_Mock_FISTargetAccountConfiguration_Remove(t *testing.T) {
 	a := assert.New(t)
 	ctrl := gomock.NewController(t)
@@ -98,5 +147,5 @@ func Test_Mock_FISTargetAccountConfiguration_Properties(t *testing.T) {
 	a.Equal("111122223333", props.Get("AccountID"))
 	a.Equal("arn:aws:iam::111122223333:role/FISRole", props.Get("RoleARN"))
 	a.Equal("target account", props.Get("Description"))
-	a.Equal("111122223333", config.String())
+	a.Equal("EXT123:111122223333", config.String())
 }

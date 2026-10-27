@@ -2,9 +2,12 @@ package resources
 
 import (
 	"context"
+	"errors"
+	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/fis"
+	fistypes "github.com/aws/aws-sdk-go-v2/service/fis/types"
 
 	"github.com/ekristen/libnuke/pkg/registry"
 	"github.com/ekristen/libnuke/pkg/resource"
@@ -30,9 +33,10 @@ type FISTargetAccountConfigurationLister struct {
 }
 
 func (l *FISTargetAccountConfigurationLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
-	if l.svc == nil {
+	svc := l.svc
+	if svc == nil {
 		opts := o.(*nuke.ListerOpts)
-		l.svc = fis.NewFromConfig(*opts.Config)
+		svc = fis.NewFromConfig(*opts.Config)
 	}
 
 	var resources []resource.Resource
@@ -42,7 +46,7 @@ func (l *FISTargetAccountConfigurationLister) List(ctx context.Context, o interf
 	}
 
 	for {
-		templates, err := l.svc.ListExperimentTemplates(ctx, templateParams)
+		templates, err := svc.ListExperimentTemplates(ctx, templateParams)
 		if err != nil {
 			return nil, err
 		}
@@ -54,14 +58,19 @@ func (l *FISTargetAccountConfigurationLister) List(ctx context.Context, o interf
 			}
 
 			for {
-				configs, err := l.svc.ListTargetAccountConfigurations(ctx, configParams)
+				configs, err := svc.ListTargetAccountConfigurations(ctx, configParams)
 				if err != nil {
+					// Templates are deleted in the same run, so this template may already be gone.
+					var notFound *fistypes.ResourceNotFoundException
+					if errors.As(err, &notFound) {
+						break
+					}
 					return nil, err
 				}
 
 				for _, item := range configs.TargetAccountConfigurations {
 					resources = append(resources, &FISTargetAccountConfiguration{
-						svc:                  l.svc,
+						svc:                  svc,
 						ExperimentTemplateID: template.Id,
 						AccountID:            item.AccountId,
 						RoleARN:              item.RoleArn,
@@ -109,5 +118,5 @@ func (r *FISTargetAccountConfiguration) Properties() types.Properties {
 }
 
 func (r *FISTargetAccountConfiguration) String() string {
-	return *r.AccountID
+	return fmt.Sprintf("%s:%s", *r.ExperimentTemplateID, *r.AccountID)
 }

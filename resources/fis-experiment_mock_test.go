@@ -83,7 +83,7 @@ func Test_Mock_FISExperiment_Filter(t *testing.T) {
 		{Name: "stopping", Status: string(fistypes.ExperimentStatusStopping), Filtered: true},
 		{Name: "stopped", Status: string(fistypes.ExperimentStatusStopped), Filtered: true},
 		{Name: "failed", Status: string(fistypes.ExperimentStatusFailed), Filtered: true},
-		{Name: "cancelled", Status: string(fistypes.ExperimentStatusCancelled), Filtered: true},
+		{Name: "cancelled", Status: string(fistypes.ExperimentStatusCancelled), Filtered: true}, //nolint:misspell // AWS API value
 	}
 
 	for _, c := range cases {

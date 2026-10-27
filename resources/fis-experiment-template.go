@@ -35,9 +35,10 @@ type FISExperimentTemplateLister struct {
 }
 
 func (l *FISExperimentTemplateLister) List(ctx context.Context, o interface{}) ([]resource.Resource, error) {
-	if l.svc == nil {
+	svc := l.svc
+	if svc == nil {
 		opts := o.(*nuke.ListerOpts)
-		l.svc = fis.NewFromConfig(*opts.Config)
+		svc = fis.NewFromConfig(*opts.Config)
 	}
 
 	var resources []resource.Resource
@@ -47,14 +48,14 @@ func (l *FISExperimentTemplateLister) List(ctx context.Context, o interface{}) (
 	}
 
 	for {
-		resp, err := l.svc.ListExperimentTemplates(ctx, params)
+		resp, err := svc.ListExperimentTemplates(ctx, params)
 		if err != nil {
 			return nil, err
 		}
 
 		for _, item := range resp.ExperimentTemplates {
 			resources = append(resources, &FISExperimentTemplate{
-				svc:            l.svc,
+				svc:            svc,
 				ID:             item.Id,
 				ARN:            item.Arn,
 				Description:    item.Description,
