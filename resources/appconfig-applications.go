@@ -24,6 +24,7 @@ func init() {
 		DependsOn: []string{
 			AppConfigConfigurationProfileResource,
 			AppConfigEnvironmentResource,
+			AppConfigExtensionAssociationResource,
 		},
 	})
 }

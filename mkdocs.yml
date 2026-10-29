@@ -149,6 +149,8 @@ nav:
     - App Config Configuration Profile: resources/app-config-configuration-profile.md
     - App Config Deployment Strategy: resources/app-config-deployment-strategy.md
     - App Config Environment: resources/app-config-environment.md
+    - App Config Extension Association: resources/app-config-extension-association.md
+    - App Config Extension: resources/app-config-extension.md
     - App Config Hosted Configuration Version: resources/app-config-hosted-configuration-version.md
     - App Mesh Gateway Route: resources/app-mesh-gateway-route.md
     - App Mesh Mesh: resources/app-mesh-mesh.md
