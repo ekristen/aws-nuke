@@ -49,12 +49,26 @@ func (l *DynamoDBTableLister) List(_ context.Context, o interface{}) ([]resource
 		svc = dynamodb.New(opts.Session)
 	}
 
-	resp, err := svc.ListTables(&dynamodb.ListTablesInput{})
-	if err != nil {
-		return nil, err
+	var tableNames []*string
+	params := &dynamodb.ListTablesInput{}
+	for {
+		resp, err := svc.ListTables(params)
+		if err != nil {
+			return nil, err
+		}
+
+		tableNames = append(tableNames, resp.TableNames...)
+
+		if resp.LastEvaluatedTableName == nil {
+			break
+		}
+
+		params = &dynamodb.ListTablesInput{
+			ExclusiveStartTableName: resp.LastEvaluatedTableName,
+		}
 	}
 
-	for _, tableName := range resp.TableNames {
+	for _, tableName := range tableNames {
 		table, err := svc.DescribeTable(&dynamodb.DescribeTableInput{
 			TableName: tableName,
 		})

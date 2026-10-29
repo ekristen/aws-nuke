@@ -57,6 +57,51 @@ func Test_Mock_DynamoDBTable_List(t *testing.T) {
 	a.Len(resources, 1)
 }
 
+func Test_Mock_DynamoDBTable_List_Paginated(t *testing.T) {
+	a := assert.New(t)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockSvc := mock_dynamodbiface.NewMockDynamoDBAPI(ctrl)
+
+	gomock.InOrder(
+		mockSvc.EXPECT().ListTables(&dynamodb.ListTablesInput{}).Return(&dynamodb.ListTablesOutput{
+			TableNames:             []*string{ptr.String("TableA")},
+			LastEvaluatedTableName: ptr.String("TableA"),
+		}, nil),
+		mockSvc.EXPECT().ListTables(&dynamodb.ListTablesInput{
+			ExclusiveStartTableName: ptr.String("TableA"),
+		}).Return(&dynamodb.ListTablesOutput{
+			TableNames: []*string{ptr.String("TableB")},
+		}, nil),
+	)
+
+	for _, name := range []string{"TableA", "TableB"} {
+		arn := "arn:aws:dynamodb:us-west-2:123456789012:table/" + name
+		mockSvc.EXPECT().DescribeTable(&dynamodb.DescribeTableInput{
+			TableName: ptr.String(name),
+		}).Return(&dynamodb.DescribeTableOutput{
+			Table: &dynamodb.TableDescription{
+				TableArn: ptr.String(arn),
+			},
+		}, nil)
+
+		mockSvc.EXPECT().ListTagsOfResource(&dynamodb.ListTagsOfResourceInput{
+			ResourceArn: ptr.String(arn),
+		}).Return(&dynamodb.ListTagsOfResourceOutput{}, nil)
+	}
+
+	lister := &DynamoDBTableLister{
+		mockSvc: mockSvc,
+	}
+
+	resources, err := lister.List(context.TODO(), testListerOpts)
+	a.NoError(err)
+	a.Len(resources, 2)
+	a.Equal("TableA", resources[0].(*DynamoDBTable).String())
+	a.Equal("TableB", resources[1].(*DynamoDBTable).String())
+}
+
 func Test_Mock_DynamoDBTable_Remove(t *testing.T) {
 	a := assert.New(t)
 	ctrl := gomock.NewController(t)
