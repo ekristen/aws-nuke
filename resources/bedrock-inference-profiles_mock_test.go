@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/bedrock"
 	bedrocktypes "github.com/aws/aws-sdk-go-v2/service/bedrock/types"
 )
@@ -137,14 +138,18 @@ func Test_Mock_BedrockInferenceProfile_List_SystemDefined(t *testing.T) {
 }
 
 // Test_Mock_BedrockInferenceProfile_List_Application verifies that the lister fetches and maps tags
-// for application (user-created) inference profiles, which do support tagging.
+// for application (user-created) inference profiles, which do support tagging, and verifies
+// that TypeEquals is set to APPLICATION in ListInferenceProfiles.
 func Test_Mock_BedrockInferenceProfile_List_Application(t *testing.T) {
 	a := assert.New(t)
 
 	mockSvc := new(mockBedrockInferenceProfileClient)
 
 	arn := "arn:aws:bedrock:us-east-2:123456789012:application-inference-profile/abc123"
-	mockSvc.On("ListInferenceProfiles", mock.Anything, mock.Anything).Return(&bedrock.ListInferenceProfilesOutput{
+	mockSvc.On("ListInferenceProfiles", mock.Anything, &bedrock.ListInferenceProfilesInput{
+		MaxResults: aws.Int32(100),
+		TypeEquals: bedrocktypes.InferenceProfileTypeApplication,
+	}).Return(&bedrock.ListInferenceProfilesOutput{
 		InferenceProfileSummaries: []bedrocktypes.InferenceProfileSummary{
 			{
 				InferenceProfileId:   ptr.String("abc123"),
@@ -172,4 +177,31 @@ func Test_Mock_BedrockInferenceProfile_List_Application(t *testing.T) {
 	profile := resources[0].(*BedrockInferenceProfile)
 	a.Equal("test", profile.Tags["Environment"])
 	mockSvc.AssertExpectations(t)
+}
+
+func Test_Mock_BedrockInferenceProfile_List_ContextCanceled(t *testing.T) {
+	a := assert.New(t)
+
+	mockSvc := new(mockBedrockInferenceProfileClient)
+
+	arn := "arn:aws:bedrock:us-east-2:123456789012:application-inference-profile/abc123"
+	mockSvc.On("ListInferenceProfiles", mock.Anything, mock.Anything).Return(&bedrock.ListInferenceProfilesOutput{
+		InferenceProfileSummaries: []bedrocktypes.InferenceProfileSummary{
+			{
+				InferenceProfileId:   ptr.String("abc123"),
+				InferenceProfileName: ptr.String("my-app-profile"),
+				InferenceProfileArn:  ptr.String(arn),
+				Type:                 bedrocktypes.InferenceProfileTypeApplication,
+			},
+		},
+	}, nil)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	lister := BedrockInferenceProfileLister{mockSvc: mockSvc}
+
+	resources, err := lister.List(ctx, testListerOpts)
+	a.ErrorIs(err, context.Canceled)
+	a.Nil(resources)
 }
