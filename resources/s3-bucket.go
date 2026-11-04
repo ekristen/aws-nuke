@@ -83,15 +83,19 @@ func (l *S3BucketLister) List(ctx context.Context, o interface{}) ([]resource.Re
 		})
 		if err != nil {
 			var aerr smithy.APIError
-			if errors.As(err, &aerr) {
-				if aerr.ErrorCode() == "NoSuchTagSet" {
-					resources = append(resources, newBucket)
-				}
+			isAPIError := errors.As(err, &aerr)
+			switch {
+			case isAPIError && aerr.ErrorCode() == "NoSuchBucket":
+				// ListBuckets can go on returning a bucket for a while after it is deleted.
+				continue
+			case !isAPIError || aerr.ErrorCode() != "NoSuchTagSet":
+				// Keep the bucket, listed without its tags, rather than drop it from the listing.
+				opts.Logger.WithError(err).Warnf("unable to fetch tags for bucket: %s", ptr.ToString(bucket.Name))
 			}
-			continue
+		} else {
+			newBucket.Tags = tags.TagSet
 		}
 
-		newBucket.Tags = tags.TagSet
 		resources = append(resources, newBucket)
 	}
 
