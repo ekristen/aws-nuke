@@ -22,6 +22,8 @@ github.com/aws/aws-sdk-go-v2/service/amp v1.36.0 h1:bkMWckc+0CtmzdUls0WxNMgJW+Ff
 github.com/aws/aws-sdk-go-v2/service/amp v1.36.0/go.mod h1:LJjtJRt+mqjs4D8JRKGEYjW4w4XNd7s5oXjivdbPXfc=
 github.com/aws/aws-sdk-go-v2/service/apigateway v1.28.12 h1:m7O0X55xKIbwUnGcHOs3AMdPN7ZN6wFA8fyL0wIH1vM=
 github.com/aws/aws-sdk-go-v2/service/apigateway v1.28.12/go.mod h1:n1JY79L1AAtLhKJXIRv9pACaj9IAuoOOAz6cekbTEkk=
+github.com/aws/aws-sdk-go-v2/service/appconfig v1.54.0 h1:3Xm/xVO0zK/mZexXfZxfoLVtnSJTaX91gH4VHklfSho=
+github.com/aws/aws-sdk-go-v2/service/appconfig v1.54.0/go.mod h1:P3YUxR/6QS5I5cIF1lUnvDWsEOPNlEskw3tL+hmiBVo=
 github.com/aws/aws-sdk-go-v2/service/appsync v1.42.3 h1:Q903rtU9x/OmFMqXGm3033459yx/M1F9UcOWwoowH+s=
 github.com/aws/aws-sdk-go-v2/service/appsync v1.42.3/go.mod h1:n3rcdK67R1TkgyXz+48uIUlpiMUwUd7pdVADSEZ5FGA=
 github.com/aws/aws-sdk-go-v2/service/bedrock v1.64.0 h1:jZOg03lM41zl89h17avGr6AFqAb9g3s/rZytTQslz14=

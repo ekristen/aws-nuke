@@ -9,6 +9,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.71
 	github.com/aws/aws-sdk-go-v2/service/amp v1.36.0
 	github.com/aws/aws-sdk-go-v2/service/apigateway v1.28.12
+	github.com/aws/aws-sdk-go-v2/service/appconfig v1.54.0
 	github.com/aws/aws-sdk-go-v2/service/appsync v1.42.3
 	github.com/aws/aws-sdk-go-v2/service/bedrock v1.64.0
 	github.com/aws/aws-sdk-go-v2/service/bedrockagentcorecontrol v1.14.1
