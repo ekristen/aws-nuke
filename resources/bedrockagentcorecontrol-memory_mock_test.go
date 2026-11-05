@@ -38,3 +38,18 @@ func Test_BedrockAgentCoreMemory_String(t *testing.T) {
 
 	a.Equal("test-memory-id", resource.String())
 }
+
+func Test_BedrockAgentCoreMemory_Filter(t *testing.T) {
+	a := assert.New(t)
+
+	standalone := BedrockAgentCoreMemory{
+		ID: ptr.String("test-memory-id"),
+	}
+	a.Nil(standalone.Filter())
+
+	owned := BedrockAgentCoreMemory{
+		ID:      ptr.String("test-memory-id"),
+		harness: ptr.String("test-harness-id"),
+	}
+	a.EqualError(owned.Filter(), "managed by harness test-harness-id")
+}

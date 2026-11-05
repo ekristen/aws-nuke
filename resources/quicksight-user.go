@@ -22,7 +22,7 @@ func init() {
 	registry.Register(&registry.Registration{
 		Name:     QuickSightUserResource,
 		Scope:    nuke.Account,
-		Resource: &QuickSightUserLister{},
+		Resource: &QuickSightUser{},
 		Lister:   &QuickSightUserLister{},
 	})
 }
@@ -42,8 +42,16 @@ func (l *QuickSightUserLister) List(_ context.Context, o interface{}) ([]resourc
 		quicksightSvc = quicksight.New(opts.Session)
 	}
 
+	// Users only exist in the identity region, every other region answers an
+	// AccessDeniedException naming it.
+	if identityRegion := QuickSightIdentityRegion(quicksightSvc, opts.AccountID); identityRegion != "" &&
+		identityRegion != opts.Region.Name {
+		opts.Logger.Debugf("skipping users, identity region is %s", identityRegion)
+		return resources, nil
+	}
+
 	// TODO: support all namespaces
-	namespace := ptr.String("default")
+	namespace := ptr.String(quickSightDefaultNamespace)
 
 	err := quicksightSvc.ListUsersPages(&quicksight.ListUsersInput{
 		AwsAccountId: opts.AccountID,

@@ -66,7 +66,8 @@ func (l *BedrockAgentCoreGatewayTargetLister) List(ctx context.Context, o interf
 					return nil, err
 				}
 
-				for _, target := range targetResp.Items {
+				for i := range targetResp.Items {
+					target := &targetResp.Items[i]
 					resources = append(resources, &BedrockAgentCoreGatewayTarget{
 						svc:               svc,
 						GatewayIdentifier: gateway.GatewayId,
