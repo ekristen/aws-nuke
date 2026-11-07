@@ -56,6 +56,7 @@ func (l *BedrockInferenceProfileLister) List(ctx context.Context, o interface{})
 
 	params := &bedrock.ListInferenceProfilesInput{
 		MaxResults: aws.Int32(100),
+		TypeEquals: bedrocktypes.InferenceProfileTypeApplication,
 	}
 
 	paginator := bedrock.NewListInferenceProfilesPaginator(svc, params)
@@ -67,6 +68,10 @@ func (l *BedrockInferenceProfileLister) List(ctx context.Context, o interface{})
 		}
 
 		for _, profile := range resp.InferenceProfileSummaries {
+			if err := ctx.Err(); err != nil {
+				return nil, err
+			}
+
 			var tags map[string]string
 			// Only application inference profiles support tagging. System-defined
 			// (cross-Region) profiles reject ListTagsForResource, so skip them to
@@ -76,6 +81,9 @@ func (l *BedrockInferenceProfileLister) List(ctx context.Context, o interface{})
 					ResourceARN: profile.InferenceProfileArn,
 				})
 				if err != nil {
+					if ctx.Err() != nil {
+						return nil, ctx.Err()
+					}
 					opts.Logger.WithError(err).Warnf("unable to fetch tags for inference profile: %s", *profile.InferenceProfileArn)
 				} else {
 					tags = make(map[string]string)
