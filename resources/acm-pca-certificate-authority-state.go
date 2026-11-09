@@ -55,8 +55,11 @@ func (l *ACMPCACertificateAuthorityStateLister) List(_ context.Context, o interf
 				tagResp, tagErr := svc.ListTags(tagParams)
 
 				if tagErr != nil {
-					if awsTagErr, ok := err.(awserr.Error); ok {
-						if awsTagErr.Code() == acmpca.ErrCodeInvalidStateException {
+					// A CA in DELETED state refuses ListTags with InvalidStateException;
+					// it is still listed so that Filter() can report it as already deleted.
+					if awsTagErr, ok := tagErr.(awserr.Error); ok {
+						if awsTagErr.Code() == acmpca.ErrCodeInvalidStateException &&
+							aws.StringValue(certificateAuthority.Status) == acmpca.CertificateAuthorityStatusDeleted {
 							break
 						}
 					}
