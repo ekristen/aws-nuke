@@ -23,6 +23,9 @@ func init() {
 		Scope:    nuke.Account,
 		Resource: &ECSCapacityProvider{},
 		Lister:   &ECSCapacityProviderLister{},
+		DependsOn: []string{
+			ECSDaemonResource,
+		},
 	})
 }
 
