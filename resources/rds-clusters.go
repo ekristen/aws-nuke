@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"         //nolint:staticcheck
 	"github.com/aws/aws-sdk-go/service/rds" //nolint:staticcheck
@@ -53,6 +54,7 @@ func (l *RDSDBClusterLister) List(_ context.Context, o interface{}) ([]resource.
 			svc:                svc,
 			id:                 *instance.DBClusterIdentifier,
 			deletionProtection: *instance.DeletionProtection,
+			clusterCreateTime:  instance.ClusterCreateTime,
 			tags:               tags.TagList,
 		})
 	}
@@ -64,6 +66,7 @@ type RDSDBCluster struct {
 	svc                *rds.RDS
 	id                 string
 	deletionProtection bool
+	clusterCreateTime  *time.Time
 	tags               []*rds.Tag
 }
 
@@ -100,6 +103,9 @@ func (i *RDSDBCluster) Properties() types.Properties {
 	properties := types.NewProperties()
 	properties.Set("Identifier", i.id)
 	properties.Set("Deletion Protection", i.deletionProtection)
+	if i.clusterCreateTime != nil {
+		properties.Set("ClusterCreateTime", i.clusterCreateTime.Format(time.RFC3339))
+	}
 
 	for _, tag := range i.tags {
 		properties.SetTag(tag.Key, tag.Value)
