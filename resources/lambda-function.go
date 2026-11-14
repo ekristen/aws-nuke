@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
 
@@ -13,6 +14,10 @@ import (
 )
 
 const LambdaFunctionResource = "LambdaFunction"
+
+// lambdaLastModifiedLayout is the format of FunctionConfiguration.LastModified, for example
+// 2019-08-14T22:32:35.183+0000. It is not RFC 3339 (no colon in the offset).
+const lambdaLastModifiedLayout = "2006-01-02T15:04:05.000-0700"
 
 func init() {
 	registry.Register(&registry.Registration{
@@ -53,7 +58,7 @@ func (l *LambdaFunctionLister) List(ctx context.Context, o interface{}) ([]resou
 			resources = append(resources, &LambdaFunction{
 				svc:          svc,
 				Name:         function.FunctionName,
-				LastModified: function.LastModified,
+				LastModified: parseLambdaLastModified(function.LastModified),
 				Tags:         tags.Tags,
 			})
 		}
@@ -65,8 +70,22 @@ func (l *LambdaFunctionLister) List(ctx context.Context, o interface{}) ([]resou
 type LambdaFunction struct {
 	svc          *lambda.Client
 	Name         *string
-	LastModified *string
+	LastModified *time.Time
 	Tags         map[string]string
+}
+
+func parseLambdaLastModified(value *string) *time.Time {
+	if value == nil {
+		return nil
+	}
+
+	t, err := time.Parse(lambdaLastModifiedLayout, *value)
+	if err != nil {
+		return nil
+	}
+
+	t = t.UTC()
+	return &t
 }
 
 func (r *LambdaFunction) Properties() types.Properties {
